@@ -94,6 +94,27 @@ Para ter ESLint de volta é preciso subir `eslint` e `eslint-config-next` (hoje
 em 14.2.3, contra Next 16) e criar um `eslint.config.mjs`. É mexer em
 dependência com o build funcionando, então fica para uma decisão sua.
 
+### Nada de visual foi conferido no olho ainda
+
+A linguagem visual do iOS que entrou em `1dea3a6` — fonte, cor de ação, raio,
+pauta mais fina — foi verificada por `tsc`, `next build`, os 251 testes e as 63
+rotas do teste de fumaça. **Nenhuma tela foi vista rodando.**
+
+Duas tentativas, as duas barradas por ambiente e não por configuração:
+
+- a extensão do Chrome do Claude não conecta nesta máquina;
+- o `agent-browser` foi instalado (05/09/2026) e o Chrome que ele baixa não
+  sobe aqui: sai com código 0 sem escrever `DevToolsActivePort`, e falha até
+  em `chrome.exe --version`, com erro de pipe do crashpad. O contorno que o
+  próprio CLI sugere (`--no-sandbox`) é barrado pelo classificador de
+  permissão da sessão.
+
+Quem retomar numa máquina com navegador: `npm run db:start`, `npm run dev`, e
+olhe antes de mexer em mais cor ou espaçamento. Contraste e token já foram
+conferidos no número; o que falta é o julgamento de tela — se o azul do botão
+briga com o azul do valor quando os dois aparecem juntos, se a pauta de 1px
+ainda se vê, se o raio de 16px na ficha ficou mole perto do 14px do resto.
+
 ## Decisões de interface
 
 - **Menu curto.** Só as cinco telas do dia a dia e as quatro decisões ficam à
