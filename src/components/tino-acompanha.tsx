@@ -125,7 +125,7 @@ export function TinoAcompanha() {
       {principal?.acaoRota && (
         <Link
           href={principal.acaoRota}
-          className="ios-tap shrink-0 rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-center text-[13px] font-semibold text-primary-foreground"
+          className="ios-tap shrink-0 rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-center text-[14px] font-medium text-primary-foreground"
         >
           Resolver agora
         </Link>

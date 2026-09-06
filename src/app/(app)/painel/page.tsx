@@ -56,12 +56,12 @@ export default async function Painel() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* O Tino abre a tela porque o que exige decisão vem antes do que só
           informa. Saldo bonito com fatura estourando é meia verdade. */}
       <TinoAcompanha />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <Cartao titulo={`Saldo em ${rotuloCompetencia(competencia)}`}>
           {/* Saldo positivo sai em PRETO, não em verde — medido no protótipo.
               Faz sentido: verde é para o que entrou, e saldo é estado, não
@@ -118,7 +118,7 @@ export default async function Painel() {
         </Cartao>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         <Cartao
           titulo="Parcelamentos"
           acao={
@@ -167,7 +167,7 @@ export default async function Painel() {
       </div>
 
       {panorama.mes.despesasCentavos > 0 && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-2">
           <Cartao titulo="Quando o dinheiro sai">
             <MapaDeCalor
               dias={panorama.mes.gastosPorDia}
@@ -213,7 +213,10 @@ export default async function Painel() {
           <ol className="space-y-3.5">
             {passos.map((passo, indice) => (
               <li key={indice} className="flex gap-3 text-[14px] leading-relaxed">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-acao/12 text-[12px] font-semibold text-acao">
+                {/* Número sem círculo atrás, medido no protótipo. O círculo
+                    fazia o marcador pesar mais que o próprio passo, e aqui
+                    quem manda é a frase. */}
+                <span className="mt-0.5 w-4 shrink-0 text-[12px] font-semibold text-accent-foreground">
                   {indice + 1}
                 </span>
                 <span className="min-w-0 flex-1">{passo}</span>

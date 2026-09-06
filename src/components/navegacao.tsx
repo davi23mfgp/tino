@@ -174,7 +174,7 @@ function Linha({
         "flex items-center gap-2.5 rounded-[22px] px-3 py-2.5 text-[14px] transition-colors",
         recolhido && "justify-center px-0",
         ativo
-          ? "bg-acao/[0.12] font-medium text-acao"
+          ? "bg-accent font-medium text-accent-foreground"
           : "text-[color:var(--texto-2)] hover:bg-foreground/[0.04] hover:text-foreground",
       )}
     >

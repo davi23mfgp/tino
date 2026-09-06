@@ -110,7 +110,7 @@ export default async function Cartoes() {
               acao={
                 <Link
                   href="/configuracoes"
-                  className="ios-tap inline-block rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground"
+                  className="ios-tap inline-block rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-[14px] font-medium text-primary-foreground"
                 >
                   Cadastrar cartão
                 </Link>

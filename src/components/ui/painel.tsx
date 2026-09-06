@@ -128,8 +128,11 @@ export function Metrica({
   tom?: Tom
   variacao?: { texto: string; sentido: "sobe" | "desce" | "igual" }
 }) {
+  // Raio 28px, recheio 16px e uma borda de 1px — medido no protótipo. O tile
+  // usa o MESMO raio do cartão que o contém, não um menor: é o que faz os
+  // quatro números lerem como um bloco só dentro do cartão.
   return (
-    <div className="rounded-[var(--raio-campo)] bg-papel-2 px-4 py-4">
+    <div className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
       <Rotulo>{rotulo}</Rotulo>
       <Valor tom={tom} tamanho="medio" className="mt-2">
         {valor}

@@ -114,8 +114,12 @@
     --secondary-foreground: 220 28% 18%;
     --muted: 220 20% 96%;
     --muted-foreground: 220 10% 46%;
+    /* O par "azul claro atrás, azul escuro na frente". Medido em dois lugares
+       do protótipo que usam exatamente o mesmo tom: o item ativo do menu e o
+       número do passo em "O que o Tino faria agora". É um token, não duas
+       coincidências. */
     --accent: 216 86% 95%;
-    --accent-foreground: 216 86% 40%;
+    --accent-foreground: 214 54% 25%;
     --destructive: 356 74% 55%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 16% 90%;
