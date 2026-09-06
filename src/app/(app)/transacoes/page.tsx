@@ -130,7 +130,7 @@ export default function Transacoes() {
                 className={`rounded-full border px-3 py-1.5 text-xs ${
                   transacao.categoriaId
                     ? "border-pauta bg-background"
-                    : "border-atencao/50 bg-atencao/10 text-amber-200"
+                    : "border-atencao/50 bg-atencao/10 text-atencao"
                 }`}
               >
                 <option value="">sem categoria</option>

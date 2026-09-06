@@ -303,15 +303,19 @@
 }
 
 /* A área de conteúdo desloca conforme a coluna da esquerda. Fica em CSS, e não
-   em prop, para o menu poder recolher sem re-renderizar a tela inteira. */
+   em prop, para o menu poder recolher sem re-renderizar a tela inteira.
+
+   Os 16px a mais que a largura da coluna são a margem por onde ela flutua: a
+   coluna deixou de estar colada na borda da tela, então o conteúdo não pode
+   começar exatamente onde ela termina. */
 @media (min-width: 768px) {
   .area-do-app {
-    padding-left: 248px;
+    padding-left: calc(248px + 16px);
     transition: padding-left 0.2s ease;
   }
 
   html[data-menu="recolhido"] .area-do-app {
-    padding-left: 68px;
+    padding-left: calc(68px + 16px);
   }
 }
 

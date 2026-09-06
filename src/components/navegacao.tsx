@@ -315,9 +315,13 @@ export function Navegacao({ mei }: { mei?: boolean }) {
   return (
     <>
       {/* ── Coluna fixa, do tablet para cima ── */}
+      {/* A coluna FLUTUA: margem nos quatro lados, canto arredondado inteiro e
+          a mesma superfície de vidro dos cartões. Antes ela era colada na borda
+          da tela com uma borda à direita — o que o prompt de vidro proíbe, e o
+          que fazia a tela parecer um painel administrativo em vez de um app. */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden shrink-0 flex-col border-r border-pauta bg-papel-1 transition-[width] duration-200 md:flex",
+          "ios-card fixed inset-y-4 left-4 z-30 hidden shrink-0 flex-col transition-[width] duration-200 md:flex",
           recolhido ? "w-[68px]" : "w-[248px]",
         )}
       >
@@ -377,7 +381,11 @@ export function Navegacao({ mei }: { mei?: boolean }) {
       )}
 
       {/* ── Barra do polegar ── */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-pauta bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+      {/* A barra do polegar também flutua, pelo mesmo motivo da coluna. A
+          margem inferior soma o recorte do aparelho: sem isso, no iPhone a
+          barra encosta no risco de início e o último item fica difícil de
+          acertar. */}
+      <nav className="ios-card fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+12px)] z-40 md:hidden">
         <div className="flex items-stretch justify-around">
           {(mei ? NO_POLEGAR_COM_LOJA : NO_POLEGAR).map((item) => {
             const ativo = estaAtivo(caminho, item.rota)

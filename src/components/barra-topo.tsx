@@ -17,7 +17,7 @@ interface Alerta {
 }
 
 const COR: Record<Alerta["severidade"], string> = {
-  CRITICO: "border-negativo/40 bg-negativo/10 text-red-200",
+  CRITICO: "border-negativo/40 bg-negativo/10 text-negativo",
   ATENCAO: "border-atencao/40 bg-atencao/10 text-atencao",
   INFO: "border-pauta bg-papel-2 text-foreground",
 }
@@ -48,10 +48,14 @@ export function BarraTopo({ nome, admin }: { nome: string; admin?: boolean }) {
   }
 
   return (
-    <header className="flex items-center justify-between py-5">
+    // A barra do topo é o terceiro elemento flutuante, junto da coluna e dos
+    // cartões: cartão de vidro com margem, nunca faixa colada no topo.
+    <header className="ios-card my-4 flex items-center justify-between px-5 py-4">
       <div>
-        <p className="text-xs uppercase tracking-widest text-muted-fg">Tino</p>
-        <h1 className="text-xl font-semibold tracking-tight">Olá, {nome.split(" ")[0]}</h1>
+        <p className="text-[11px] uppercase tracking-[0.06em] text-[color:var(--texto-3)]">Tino</p>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em] lg:text-[26px]">
+          Olá, {nome.split(" ")[0]}
+        </h1>
       </div>
 
       <div className="flex items-center gap-2">

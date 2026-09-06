@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils"
 export type EstadoTino = "tranquilo" | "atento" | "apertado" | "critico" | "comemorando" | "pensando"
 
 /** As cores que a pessoa pode dar a ele. */
-export type CorTino = "grafite" | "azul" | "verde" | "ocre" | "vinho" | "roxo"
+export type CorTino = "grafite" | "chumbo" | "cinza" | "prata" | "gelo" | "branco"
 
 /** O que ele pode vestir. Um de cada vez: dois já viram fantasia. */
 export type AcessorioTino = "nenhum" | "oculos" | "gravata" | "bone"
@@ -39,17 +39,22 @@ export const APARENCIA_PADRAO: AparenciaTino = { cor: "grafite", acessorio: "nen
 /**
  * Cada cor é dada em dois tons: o corpo e a sombra dele.
  *
- * A luminosidade fica na faixa do meio de propósito. Tom claro demais some no
- * tema claro, escuro demais some no escuro, e o mascote aparece nos dois — é a
- * mesma pessoa nas duas telas, então a cor não pode depender do tema.
+ * Em 05/09/2026 a paleta virou escala de cinza junto com o resto do app, e os
+ * nomes foram renomeados junto: manter a chave `azul` num tom que não é azul
+ * seria o tipo de rótulo mentiroso que esta base não aceita. Renomear saiu de
+ * graça porque ainda não existe tela para escolher — toda linha do banco está
+ * no padrão.
+ *
+ * Os seis tons estão espalhados na escala inteira, do quase preto ao quase
+ * branco, para que a escolha ainda signifique alguma coisa sem matiz.
  */
 const PELE: Record<CorTino, { corpo: string; sombra: string; nome: string }> = {
-  grafite: { corpo: "oklch(0.74 0.02 258)", sombra: "oklch(0.62 0.025 258)", nome: "Grafite" },
-  azul: { corpo: "oklch(0.72 0.11 248)", sombra: "oklch(0.6 0.12 248)", nome: "Azul" },
-  verde: { corpo: "oklch(0.75 0.1 158)", sombra: "oklch(0.63 0.11 158)", nome: "Verde" },
-  ocre: { corpo: "oklch(0.78 0.11 78)", sombra: "oklch(0.66 0.12 70)", nome: "Ocre" },
-  vinho: { corpo: "oklch(0.68 0.11 18)", sombra: "oklch(0.56 0.12 18)", nome: "Vinho" },
-  roxo: { corpo: "oklch(0.71 0.1 300)", sombra: "oklch(0.59 0.11 300)", nome: "Roxo" },
+  grafite: { corpo: "oklch(0.42 0 0)", sombra: "oklch(0.3 0 0)", nome: "Grafite" },
+  chumbo: { corpo: "oklch(0.55 0 0)", sombra: "oklch(0.42 0 0)", nome: "Chumbo" },
+  cinza: { corpo: "oklch(0.66 0 0)", sombra: "oklch(0.53 0 0)", nome: "Cinza" },
+  prata: { corpo: "oklch(0.78 0 0)", sombra: "oklch(0.64 0 0)", nome: "Prata" },
+  gelo: { corpo: "oklch(0.88 0 0)", sombra: "oklch(0.74 0 0)", nome: "Gelo" },
+  branco: { corpo: "oklch(0.97 0 0)", sombra: "oklch(0.82 0 0)", nome: "Branco" },
 }
 
 export const CORES_TINO = (Object.keys(PELE) as CorTino[]).map((cor) => ({ cor, nome: PELE[cor].nome }))
@@ -98,7 +103,7 @@ function Olho({ x, estado, cor }: { x: number; estado: EstadoTino; cor: string }
       <path
         d={`M${x - 5.6} 36.6 Q${x} 41 ${x + 5.6} 36.6`}
         fill="none"
-        stroke="oklch(0.28 0.02 258)"
+        stroke="oklch(0.2 0 0)"
         strokeWidth="2.2"
         strokeLinecap="round"
       />
@@ -109,7 +114,7 @@ function Olho({ x, estado, cor }: { x: number; estado: EstadoTino; cor: string }
     <g>
       <ellipse cx={x} cy="37" rx="6" ry="6.5" fill="#ffffff" />
       <circle cx={x} cy="37.8" r="3.9" fill={cor} />
-      <circle cx={x} cy="37.8" r="2.05" fill="oklch(0.2 0.02 258)" />
+      <circle cx={x} cy="37.8" r="2.05" fill="oklch(0.16 0 0)" />
       {/* Brilho fora do centro: no centro vira olho de boneco de vitrine. */}
       <circle cx={x - 1.9} cy="35.2" r="1.5" fill="#ffffff" opacity="0.95" />
       {palpebra > 0 && (
@@ -126,7 +131,7 @@ function Olho({ x, estado, cor }: { x: number; estado: EstadoTino; cor: string }
 function Boca({ estado }: { estado: EstadoTino }) {
   const traco = {
     fill: "none",
-    stroke: "oklch(0.3 0.02 258)",
+    stroke: "oklch(0.2 0 0)",
     strokeWidth: 2.3,
     strokeLinecap: "round" as const,
   }
@@ -137,8 +142,8 @@ function Boca({ estado }: { estado: EstadoTino }) {
         <path d="M25.5 48 Q32 55.5 38.5 48" {...traco} />
         {/* Bochecha só na comemoração: é o único estado em que o desenho pode
             passar da conta sem mentir sobre o mês. */}
-        <ellipse cx="17.5" cy="46.5" rx="3.6" ry="2.4" fill="oklch(0.72 0.09 24)" opacity="0.42" />
-        <ellipse cx="46.5" cy="46.5" rx="3.6" ry="2.4" fill="oklch(0.72 0.09 24)" opacity="0.42" />
+        <ellipse cx="17.5" cy="46.5" rx="3.6" ry="2.4" fill="oklch(0.62 0 0)" opacity="0.42" />
+        <ellipse cx="46.5" cy="46.5" rx="3.6" ry="2.4" fill="oklch(0.62 0 0)" opacity="0.42" />
       </g>
     )
   }
@@ -151,7 +156,7 @@ function Boca({ estado }: { estado: EstadoTino }) {
 function Acessorio({ acessorio, cor }: { acessorio: AcessorioTino; cor: string }) {
   if (acessorio === "oculos") {
     return (
-      <g fill="none" stroke="oklch(0.32 0.02 258)" strokeWidth="1.5" opacity="0.9">
+      <g fill="none" stroke="oklch(0.24 0 0)" strokeWidth="1.5" opacity="0.9">
         <circle cx="23" cy="37" r="8.2" />
         <circle cx="41" cy="37" r="8.2" />
         <path d="M31.2 36.2 h1.6" strokeLinecap="round" />
@@ -316,9 +321,9 @@ export function TinoMarca({
         strokeLinecap="round"
       />
       <rect x="6.5" y="16" width="51" height="47" rx="16" fill={pele.corpo} />
-      <circle cx="23" cy="37" r="4.2" fill="oklch(0.24 0.02 258)" />
-      <circle cx="41" cy="37" r="4.2" fill="oklch(0.24 0.02 258)" />
-      <path d="M15 57 h34" stroke="oklch(0.24 0.02 258)" strokeWidth="2" strokeLinecap="round" opacity="0.45" />
+      <circle cx="23" cy="37" r="4.2" fill="oklch(0.18 0 0)" />
+      <circle cx="41" cy="37" r="4.2" fill="oklch(0.18 0 0)" />
+      <path d="M15 57 h34" stroke="oklch(0.18 0 0)" strokeWidth="2" strokeLinecap="round" opacity="0.45" />
     </svg>
   )
 }
