@@ -231,18 +231,19 @@
     position: relative;
     background: var(--papel-1);
     border: 1px solid var(--pauta);
-    border-radius: 16px;
+    border-radius: var(--raio-cartao);
     box-shadow: var(--sombra-ficha);
     overflow: hidden;
   }
 
-  .ficha::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 1px;
-    background: linear-gradient(90deg, oklch(var(--lch-positivo) / 28%), transparent 62%);
-  }
+  /* A pauta colorida no topo saiu em 05/09/2026, com o redesign.
+     Ela era a assinatura da casa e sobreviveu duas rodadas encolhendo — de 2px
+     para 1px, e depois metade da opacidade. Na grade bento, com sete cartões
+     visíveis de uma vez, sete linhas azuis voltaram a virar listra: o olho
+     lia a repetição antes de ler qualquer número. O brief é explícito em não
+     ter contorno colorido em cartão, e aqui a separação já vem da borda de
+     1px, do degrau de superfície e do espaço.
+     Para trazer de volta, basta um ::before de 1px — mas leia isto antes. */
 
   .toque {
     transition:

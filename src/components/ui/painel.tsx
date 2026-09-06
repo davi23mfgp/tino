@@ -3,10 +3,14 @@ import { cn } from "@/lib/utils"
 /**
  * Blocos de tela do Tino.
  *
- * A `.ficha` é o cartão do livro-caixa: papel, uma linha de pauta no topo e
- * nada mais. Todo valor sai em fonte de largura fixa com algarismo tabular —
- * sem isso a coluna de números dança conforme o dígito e conferir extrato vira
- * caça ao erro.
+ * Refeitos em 05/09/2026 a partir do brief em `docs/BRIEF-REDESIGN.md`. A ideia
+ * que manda aqui: a separação entre as coisas vem de espaçamento, borda de 1px
+ * e um degrau de superfície — nunca de contorno colorido. Contorno colorido em
+ * seis cartões empilhados vira listra, e a tela passa a gritar toda de uma vez,
+ * que é o contrário de hierarquia.
+ *
+ * Todo valor sai com algarismo tabular. Sem largura fixa por dígito a coluna de
+ * números dança conforme o dígito e conferir extrato vira caça ao erro.
  */
 
 export function Cartao({
@@ -14,17 +18,27 @@ export function Cartao({
   className,
   titulo,
   acao,
+  /** Desliga o realce no passar do mouse — use em cartão que não é clicável. */
+  estatico = false,
 }: {
   children: React.ReactNode
   className?: string
   titulo?: string
   acao?: React.ReactNode
+  estatico?: boolean
 }) {
   return (
-    <section className={cn("ficha p-5", className)}>
+    <section
+      className={cn(
+        "ficha p-6",
+        !estatico &&
+          "transition-[transform,border-color] duration-200 ease-[var(--curva)] hover:-translate-y-px hover:border-foreground/[0.14]",
+        className,
+      )}
+    >
       {(titulo || acao) && (
-        <header className="mb-4 flex items-center justify-between gap-3">
-          {titulo && <h2 className="text-[15px] font-semibold text-foreground">{titulo}</h2>}
+        <header className="mb-5 flex items-center justify-between gap-3">
+          {titulo && <h2 className="text-[15px] font-[590] tracking-[-0.01em] text-foreground">{titulo}</h2>}
           {acao && <div className="shrink-0 text-[13px] text-acao">{acao}</div>}
         </header>
       )}
@@ -43,23 +57,106 @@ export const TOM: Record<Tom, string> = {
   atencao: "text-atencao",
 }
 
+/**
+ * O rótulo pequeno em maiúscula.
+ *
+ * Ele existe para nomear um número sem competir com ele: 11px, espaçado, e na
+ * cor terciária. É o nível de texto que a pessoa lê uma vez e depois ignora,
+ * porque o que ela volta para ver é o valor.
+ */
+export function Rotulo({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <p className={cn("text-[11px] uppercase tracking-[0.06em] text-[color:var(--texto-3)]", className)}>{children}</p>
+  )
+}
+
+/**
+ * O número herói: o valor que dá nome ao cartão.
+ *
+ * Tamanho grande com tracking negativo — em corpo grande o espaçamento normal
+ * abre demais e o número perde o bloco. É a mesma regra que a Apple usa no
+ * título de sistema.
+ */
+export function Valor({
+  children,
+  tom = "neutro",
+  tamanho = "heroi",
+  className,
+}: {
+  children: React.ReactNode
+  tom?: Tom
+  tamanho?: "heroi" | "medio" | "linha"
+  className?: string
+}) {
+  const escala = {
+    heroi: "text-[44px] leading-[1.05] tracking-[-0.02em]",
+    medio: "text-[27px] leading-[1.1] tracking-[-0.018em]",
+    linha: "text-[15px] leading-snug tracking-[-0.01em]",
+  }[tamanho]
+
+  return <p className={cn("numero font-[590]", escala, TOM[tom], className)}>{children}</p>
+}
+
 export function Metrica({
   rotulo,
   valor,
   detalhe,
   tom = "neutro",
+  /** Comparação com o período anterior. Percentual sem referência não informa. */
+  variacao,
 }: {
   rotulo: string
   valor: string
   detalhe?: string
   tom?: Tom
+  variacao?: { texto: string; sentido: "sobe" | "desce" | "igual" }
 }) {
   return (
-    <div className="rounded-2xl border border-pauta bg-papel-2 px-4 py-3.5">
-      <p className="text-[11px] uppercase tracking-widest text-muted-fg">{rotulo}</p>
-      <p className={cn("numero mt-1.5 text-[25px] font-semibold leading-none", TOM[tom])}>{valor}</p>
-      {detalhe && <p className="mt-1.5 text-[12px] leading-snug text-muted-fg">{detalhe}</p>}
+    <div className="rounded-[var(--raio-campo)] bg-papel-2 px-4 py-4">
+      <Rotulo>{rotulo}</Rotulo>
+      <Valor tom={tom} tamanho="medio" className="mt-2">
+        {valor}
+      </Valor>
+      {variacao && (
+        <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">
+          {variacao.sentido === "sobe" ? "↑" : variacao.sentido === "desce" ? "↓" : "="} {variacao.texto}
+        </p>
+      )}
+      {detalhe && <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">{detalhe}</p>}
     </div>
+  )
+}
+
+/** Pílula: rótulo curto que classifica sem pesar. Categoria, status, filtro. */
+export function Pilula({
+  children,
+  tom = "neutro",
+  className,
+}: {
+  children: React.ReactNode
+  tom?: Tom | "acao"
+  className?: string
+}) {
+  const estilo =
+    tom === "acao"
+      ? "bg-acao/12 text-acao"
+      : {
+          neutro: "bg-foreground/[0.07] text-[color:var(--texto-2)]",
+          positivo: "bg-positivo/12 text-positivo",
+          negativo: "bg-negativo/12 text-negativo",
+          atencao: "bg-atencao/12 text-atencao",
+        }[tom]
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-[var(--raio-pilula)] px-2.5 py-1 text-[12px] leading-none",
+        estilo,
+        className,
+      )}
+    >
+      {children}
+    </span>
   )
 }
 
@@ -74,22 +171,61 @@ export function Barra({ percentual, tom }: { percentual: number; tom?: "verde" |
         : "bg-positivo"
 
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-foreground/[0.08]">
-      <div className={cn("h-full rounded-full transition-all duration-500", cor)} style={{ width: `${limitado}%` }} />
+    <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/[0.09]">
+      <div
+        className={cn("h-full rounded-full transition-[width] duration-500 ease-[var(--curva)]", cor)}
+        style={{ width: `${limitado}%` }}
+      />
     </div>
   )
 }
 
-export function Vazio({ titulo, texto }: { titulo: string; texto?: string }) {
+/**
+ * Tela sem conteúdo.
+ *
+ * Nunca só um texto cinza no meio: quem chega aqui não sabe o que fazer, e a
+ * tela vazia é o momento em que ela mais precisa de um caminho. Por isso o
+ * traço, a frase e — quando existe um próximo passo — o botão.
+ */
+export function Vazio({
+  titulo,
+  texto,
+  acao,
+}: {
+  titulo: string
+  texto?: string
+  acao?: React.ReactNode
+}) {
   return (
-    <div className="rounded-2xl border border-dashed border-pauta px-4 py-10 text-center">
+    <div className="flex flex-col items-center rounded-[var(--raio-campo)] px-4 py-10 text-center">
+      {/* Traço mínimo: uma folha com uma linha escrita e o resto por preencher.
+          Diz "falta lançar" sem precisar de ilustração colorida. */}
+      <svg viewBox="0 0 48 48" aria-hidden className="mb-4 h-9 w-9 text-[color:var(--texto-3)]">
+        <rect x="11" y="7" width="26" height="34" rx="4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path
+          d="M17 17h14M17 24h14M17 31h7"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          opacity="0.55"
+        />
+      </svg>
       <p className="text-[14px] font-medium text-foreground">{titulo}</p>
-      {texto && <p className="mx-auto mt-1 max-w-sm text-[12px] leading-relaxed text-muted-fg">{texto}</p>}
+      {texto && <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-[color:var(--texto-2)]">{texto}</p>}
+      {acao && <div className="mt-4">{acao}</div>}
     </div>
   )
 }
 
-/** Aviso destacado. Usa cor só quando o conteúdo exige ação. */
+/**
+ * Aviso destacado.
+ *
+ * Faixa lateral de 3px e fundo levemente tingido — nunca contorno colorido em
+ * volta do cartão. O contorno transformava o aviso num retângulo que gritava
+ * mais alto que o próprio número, e numa tela com dois avisos a pessoa perdia
+ * a ordem de importância.
+ */
 export function Aviso({
   children,
   tom = "atencao",
@@ -98,10 +234,19 @@ export function Aviso({
   tom?: "atencao" | "critico" | "info"
 }) {
   const estilo = {
-    critico: "border-negativo/40 bg-negativo/10 text-negativo",
-    atencao: "border-atencao/40 bg-atencao/10 text-atencao",
-    info: "border-pauta bg-papel-2 text-muted-fg",
+    critico: "border-l-negativo bg-negativo/[0.07] text-foreground",
+    atencao: "border-l-atencao bg-atencao/[0.07] text-foreground",
+    info: "border-l-foreground/20 bg-papel-2 text-[color:var(--texto-2)]",
   }[tom]
 
-  return <p className={cn("rounded-2xl border p-3 text-[13px] leading-relaxed", estilo)}>{children}</p>
+  return (
+    <div
+      className={cn(
+        "rounded-[var(--raio-campo)] border-l-[3px] py-3.5 pl-4 pr-4 text-[13px] leading-relaxed",
+        estilo,
+      )}
+    >
+      {children}
+    </div>
+  )
 }
