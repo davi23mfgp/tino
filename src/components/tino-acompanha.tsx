@@ -1,22 +1,30 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 
 import { buscar } from "@/lib/cliente"
-import { estadoPorAlertas, FRASE, TinoMascote } from "@/components/tino-mascote"
-import type { EstadoTino } from "@/components/tino-mascote"
 
 /**
  * O Tino acompanhando as contas.
  *
  * Não é enfeite de boas-vindas: mostra o que o motor de alertas achou de mais
- * grave agora, com o caminho para resolver. A expressão dele é o resumo, e o
- * texto ao lado é o motivo — quem só olha a cara já sabe se precisa parar, e
- * quem lê sabe o que fazer.
+ * grave agora, com o caminho para resolver.
  *
- * Sem alerta nenhum ele fica tranquilo e diz isso em uma linha. Não inventa
- * elogio nem dica: silêncio do motor quer dizer que não há nada a apontar.
+ * Sem alerta nenhum ele diz isso em uma linha. Não inventa elogio nem dica:
+ * silêncio do motor quer dizer que não há nada a apontar.
+ *
+ * O MASCOTE AQUI É UMA IMAGEM FIXA, e isso é uma mudança de comportamento que
+ * vale saber. Antes o desenho mudava de expressão conforme a gravidade, e o
+ * documento de identidade tratava isso como regra: "a expressão vem do motor
+ * de alertas, nunca de decoração". O protótipo que o Davi mandou copiar usa
+ * uma renderização única em todas as telas, então a expressão saiu.
+ *
+ * O que segura a regra no lugar dela: a GRAVIDADE CONTINUA ESCRITA. O rótulo
+ * acima do título muda com a severidade, e é ele — não a cara do bonequinho —
+ * que diz se a pessoa precisa parar agora. Sem isso, um robô sorridente ao
+ * lado de "precisa de decisão agora" estaria mentindo sobre o mês.
  */
 
 interface Alerta {
@@ -27,13 +35,11 @@ interface Alerta {
   acaoRota?: string | null
 }
 
-const BORDA: Record<EstadoTino, string> = {
-  critico: "border-negativo/40",
-  atento: "border-atencao/40",
-  apertado: "border-atencao/40",
-  tranquilo: "border-pauta",
-  comemorando: "border-positivo/40",
-  pensando: "border-pauta",
+/** O rótulo herda o trabalho que a expressão fazia: dizer a gravidade. */
+const ROTULO: Record<Alerta["severidade"], { texto: string; cor: string }> = {
+  CRITICO: { texto: "Precisa de decisão", cor: "text-negativo" },
+  ATENCAO: { texto: "Vale olhar", cor: "text-atencao" },
+  INFO: { texto: "Recado do Tino", cor: "text-acao" },
 }
 
 export function TinoAcompanha() {
@@ -52,8 +58,6 @@ export function TinoAcompanha() {
     carregar()
   }, [carregar])
 
-  const estado: EstadoTino = alertas === null ? "pensando" : estadoPorAlertas(alertas)
-
   // O mais grave manda. Entre dois da mesma gravidade, o primeiro que o motor
   // devolveu — ele já ordena por urgência.
   const principal =
@@ -63,40 +67,62 @@ export function TinoAcompanha() {
     null
 
   const restantes = (alertas?.length ?? 0) - (principal ? 1 : 0)
+  const rotulo = principal ? ROTULO[principal.severidade] : ROTULO.INFO
 
   return (
-    <section className={`ficha flex items-start gap-4 border p-5 ${BORDA[estado]}`}>
-      <TinoMascote estado={estado} className="h-16 w-16 shrink-0" />
+    <section className="ficha flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+      {/* `next/image` e não `<img>`: o arquivo de origem tem 816px e 604 KB, e
+          aqui ele aparece a 96px. Servir o original mandaria meio mega para o
+          celular de quem só queria ver o saldo. */}
+      <Image
+        src="/tino-mascote.png"
+        alt=""
+        width={96}
+        height={96}
+        priority
+        className="h-24 w-24 shrink-0 object-contain"
+      />
 
       <div className="min-w-0 flex-1">
-        <p className="font-display text-[15px] font-semibold">{FRASE[estado]}</p>
-
         {principal ? (
           <>
-            <p className="mt-1 text-[13px] font-medium text-foreground">{principal.titulo}</p>
-            <p className="mt-0.5 text-[13px] leading-relaxed text-muted-fg">{principal.texto}</p>
-
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px]">
-              {principal.acaoRota && (
-                <Link href={principal.acaoRota} className="font-medium text-acao hover:underline">
-                  resolver agora
-                </Link>
-              )}
+            <p className={`text-[13px] font-medium ${rotulo.cor}`}>{rotulo.texto}</p>
+            <p className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">
+              {principal.titulo}
+            </p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+              {principal.texto}
               {restantes > 0 && (
-                <span className="text-muted-fg">
-                  e mais {restantes} {restantes === 1 ? "aviso" : "avisos"}
+                <span className="text-[color:var(--texto-3)]">
+                  {" "}
+                  E mais {restantes} {restantes === 1 ? "aviso" : "avisos"}.
                 </span>
               )}
-            </div>
+            </p>
           </>
         ) : (
-          <p className="mt-1 text-[13px] leading-relaxed text-muted-fg">
-            {alertas === null
-              ? "Ainda não consegui ler seus números."
-              : "Nada exigindo decisão hoje. Volto a avisar quando algum limite se aproximar."}
-          </p>
+          <>
+            <p className="text-[13px] font-medium text-acao">Recado do Tino</p>
+            <p className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">
+              {alertas === null ? "Ainda não li seus números." : "Nada exigindo decisão hoje."}
+            </p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+              {alertas === null
+                ? "A conexão falhou. Recarregue a página para eu tentar de novo."
+                : "Volto a avisar quando algum limite se aproximar."}
+            </p>
+          </>
         )}
       </div>
+
+      {principal?.acaoRota && (
+        <Link
+          href={principal.acaoRota}
+          className="ios-tap shrink-0 rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-center text-[13px] font-semibold text-primary-foreground"
+        >
+          Resolver agora
+        </Link>
+      )}
     </section>
   )
 }
