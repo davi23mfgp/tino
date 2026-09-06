@@ -22,6 +22,32 @@ decidiu cada um em 05/09/2026, e a decisão dele é o que vale:**
 O resto do brief entra como escrito. Nada de neon, nada de roxo, nada de
 gradiente sem função.
 
+### Mascote: adiado, com referência escolhida (05/09/2026)
+
+O Davi mandou uma imagem de referência e disse: **"quero o Tino assim, mas
+foque mais na parte do site, deixe o mascote por último."** Então o mascote
+sai da frente da fila; o que está no código hoje (`tino-mascote.tsx`, commit
+`ec79221`) é um passo intermediário, não o alvo.
+
+A referência é um **robô 3D branco**, renderizado com luz de estúdio:
+
+- corpo branco brilhante, plástico, com reflexo suave — nada de traço chapado
+- cabeça oval grande com **viseira escura ocupando quase todo o rosto**; olhos
+  e sorriso são **luz ciano** desenhada dentro dessa viseira
+- braços e mãos arredondados, separados do corpo, num gesto de aceno
+- **emblema redondo com cifrão no peito**
+- fundo em gradiente claro para ciano, sombra suave embaixo
+
+**Isso contraria duas coisas escritas aqui, e a escolha dele ganha:** o
+documento dizia "não é um robô nem um porquinho", e o brief chamava o desenho
+antigo de "robô quadradinho que destoa". Ele quer robô — só que um robô com
+acabamento, não um ícone anguloso.
+
+Ponto a resolver quando chegar a vez: o ciano da referência não é nenhum
+token desta base. Ou ele entra como cor só do mascote, ou a luz da viseira
+usa `acao`. Não decidir isso e sair desenhando é como se inventa um sétimo
+azul na tela.
+
 **Consequência do primeiro item:** a tela tem dois azuis, `acao` e `positivo`.
 Isso só funciona porque eles nunca ocupam o mesmo papel — `acao` é link, botão,
 foco e item ativo; `positivo` é algarismo. Em 05/09/2026 sete pontos que

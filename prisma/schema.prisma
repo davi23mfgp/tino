@@ -287,6 +287,15 @@ model Usuario {
   /// de rota.
   admin Boolean @default(false)
 
+  /// Como esta pessoa deixou o Tino: cor do corpo e acessório.
+  ///
+  /// Fica no usuário e não no lar porque é escolha de gosto, e duas pessoas do
+  /// mesmo lar podem querer coisas diferentes. O que elas NÃO escolhem é a
+  /// expressão dele — essa vem do motor de alertas e é a mesma para as duas,
+  /// porque as contas são as mesmas.
+  tinoCor       String @default("grafite")
+  tinoAcessorio String @default("nenhum")
+
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
