@@ -163,6 +163,19 @@ export function BarraTopo({
         >
           <LogOut className="h-4 w-4" />
         </button>
+
+        {/* A pessoa logada, como no protótipo. O nome some no celular, onde a
+            largura vale mais que a confirmação de quem está logado — a
+            inicial já resolve isso. */}
+        <div className="ml-1 flex items-center gap-2 rounded-[var(--raio-pilula)] bg-papel-2 py-1 pl-1 pr-1 sm:pr-3">
+          <span
+            aria-hidden
+            className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-[12px] font-semibold text-primary-foreground"
+          >
+            {nome.trim().charAt(0).toUpperCase()}
+          </span>
+          <span className="hidden text-[13px] font-medium sm:inline">{nome.split(" ")[0]}</span>
+        </div>
       </div>
     </header>
   )
