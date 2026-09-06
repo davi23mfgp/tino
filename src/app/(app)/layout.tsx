@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { getSessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { Navegacao } from "@/components/navegacao"
 import { TinoDock } from "@/components/tino-dock"
 import { BarraTopo } from "@/components/barra-topo"
@@ -34,7 +35,14 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
       <Navegacao mei={Boolean(lar.meiPerfil)} />
 
       <div className="mx-auto w-full max-w-6xl px-4 pb-28 md:pb-10">
-        <BarraTopo nome={sessao.nome} admin={usuario?.admin ?? false} />
+        {/* A competência vem daqui, do servidor, e não de dentro da barra: no
+            cliente ela sairia do relógio do navegador, e na virada do mês a
+            barra diria um mês e o painel outro. */}
+        <BarraTopo
+          nome={sessao.nome}
+          admin={usuario?.admin ?? false}
+          competencia={rotuloCompetencia(competenciaAtual())}
+        />
         <main className="animate-page-enter">{children}</main>
       </div>
 

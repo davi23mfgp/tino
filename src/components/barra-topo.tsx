@@ -26,9 +26,21 @@ const COR: Record<Alerta["severidade"], string> = {
  * `admin` chega do layout, que já leu o banco. Ele controla só o atalho: a
  * proteção de verdade está na rota, e um atalho escondido nunca foi segurança.
  */
-export function BarraTopo({ nome, admin }: { nome: string; admin?: boolean }) {
+export function BarraTopo({
+  nome,
+  admin,
+  competencia,
+}: {
+  nome: string
+  admin?: boolean
+  /** Vem do servidor para bater com o mês que o painel mostra. Calcular aqui
+      usaria o relógio do navegador, e na virada do mês a barra diria um mês e
+      o painel outro. */
+  competencia?: string
+}) {
   const router = useRouter()
   const [alertas, setAlertas] = useState<Alerta[]>([])
+  const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(false)
 
   useEffect(() => {
@@ -37,6 +49,7 @@ export function BarraTopo({ nome, admin }: { nome: string; admin?: boolean }) {
     buscar<Alerta[]>("/api/tino/alertas")
       .then(setAlertas)
       .catch(() => setAlertas([]))
+      .finally(() => setCarregado(true))
   }, [])
 
   const criticos = alertas.filter((alerta) => alerta.severidade === "CRITICO").length
@@ -48,14 +61,31 @@ export function BarraTopo({ nome, admin }: { nome: string; admin?: boolean }) {
   }
 
   return (
-    // A barra do topo é o terceiro elemento flutuante, junto da coluna e dos
-    // cartões: cartão de vidro com margem, nunca faixa colada no topo.
-    <header className="ios-card my-4 flex items-center justify-between px-5 py-4">
+    <header className="flex items-start justify-between gap-4 py-6">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.06em] text-[color:var(--texto-3)]">Tino</p>
-        <h1 className="text-[22px] font-semibold tracking-[-0.02em] lg:text-[26px]">
+        <p className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--texto-3)]">Tino</p>
+        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] lg:text-[30px]">
           Olá, {nome.split(" ")[0]}
         </h1>
+        {/* A linha de resumo só aparece depois que os alertas chegam. Antes
+            disso ela diria "contas em ordem" sem ter conferido nada — e
+            afirmar que está tudo certo por falta de dado é o defeito que esta
+            base mais evita. */}
+        {carregado && (
+          <p className="mt-1 text-[13px] text-[color:var(--texto-2)]">
+            {/* `first-letter` e não `capitalize`: o segundo maiusculiza TODA
+                palavra e escrevia "Setembro De 2026". */}
+            {competencia && <span className="first-letter:uppercase">{competencia}</span>}
+            {competencia && " · "}
+            {criticos > 0
+              ? criticos === 1
+                ? "1 decisão esperando você"
+                : `${criticos} decisões esperando você`
+              : alertas.length > 0
+                ? "tem coisa para olhar"
+                : "contas em ordem"}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-2">

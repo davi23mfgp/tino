@@ -32,31 +32,33 @@
       system-ui, sans-serif;
 
     /* --- papel e tinta --- */
-    /* Escala de cinza PURA: todo tom é oklch com chroma 0. Decisão do Davi em
-       05/09/2026, vinda do prompt da camada de vidro. O que a tela perde e
-       como isso é compensado está escrito em docs/IDENTIDADE.md — leia antes
-       de reintroduzir qualquer cor. */
-    --background: oklch(0.975 0 0);
-    --foreground: oklch(0.14 0 0);
+    /* Valores medidos no protótipo do próprio Davi
+       (zenith-financial-art.lovable.app), em 05/09/2026, com pipeta no
+       navegador — não estimados de olho. A escala de cinza pura durou três
+       commits e foi revertida: o protótipo dele é colorido, e ele decidiu
+       seguir o protótipo. O histórico dessa ida e volta está em
+       docs/IDENTIDADE.md. */
+    --background: oklch(0.975 0.003 248);
+    --foreground: oklch(0.191 0.02 262);
 
     --papel-1: oklch(1 0 0);
-    --papel-2: oklch(0.945 0 0);
-    --papel-3: oklch(0.92 0 0);
+    --papel-2: oklch(0.968 0.004 248);
+    --papel-3: oklch(0.94 0.005 248);
 
     /* A linha do livro-caixa: separa sem gritar. */
-    --pauta: oklch(0 0 0 / 10%);
-    --muted-fg: oklch(0.5 0 0);
+    --pauta: oklch(0.191 0.02 262 / 9%);
+    --muted-fg: oklch(0.53 0.014 258);
 
     /* --- texto em três níveis --- */
     /* Terciário existe para o rótulo de 11px em maiúscula. Ele precisa sumir
        da leitura principal sem sumir da tela; secundário é para frase de
        apoio, que ainda é lida inteira. */
-    --texto-2: oklch(0.5 0 0);
-    --texto-3: oklch(0.62 0 0);
+    --texto-2: oklch(0.53 0.014 258);
+    --texto-3: oklch(0.63 0.012 258);
 
     /* --- espaço e forma --- */
-    --raio-cartao: 26px;
-    --raio-campo: 18px;
+    --raio-cartao: 16px;
+    --raio-campo: 12px;
     --raio-pilula: 999px;
     --largura-conteudo: 1240px;
     /* Uma curva só no app inteiro, e a duração curta o bastante para não
@@ -64,111 +66,118 @@
     --curva: cubic-bezier(0.32, 0.72, 0, 1);
     --tempo: 200ms;
 
-    /* --- vidro --- */
-    --vidro: oklch(0 0 0 / 4%);
-    --vidro-forte: oklch(0 0 0 / 7%);
-    --sombra-ios: 0 1px 0 0 oklch(1 0 0 / 70%) inset, 0 18px 40px -24px oklch(0 0 0 / 28%);
-    --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
+    /* --- superfície --- */
+    /* O protótipo tem cartão branco chapado sobre fundo cinza-claro, sem
+       vidro e sem halo. O vidro entrou com o prompt anterior e saiu aqui:
+       "exatamente igual ao site" não comporta blur de 28px. O acabamento
+       Apple que ele pediu por cima fica na tipografia, no espaço e na sombra
+       curta — não em efeito de superfície. */
+    --vidro: oklch(0.191 0.02 262 / 4%);
+    --vidro-forte: oklch(0.191 0.02 262 / 7%);
+    --sombra-ios: 0 1px 2px oklch(0.191 0.02 262 / 6%), 0 4px 16px oklch(0.191 0.02 262 / 5%);
+    --sombra-flutuante: 0 8px 30px oklch(0.191 0.02 262 / 12%);
 
-    /* --- os tokens que informam, agora só em luminosidade --- */
-    /* Eles continuam existindo e continuam com nome de FUNÇÃO. O que mudou é
-       que a função deixou de ser dita por matiz e passou a ser dita por
-       LUMINOSIDADE, e os quatro estão espalhados de propósito na escala para
-       não colapsarem num cinza só.
+    /* --- os tokens que informam --- */
+    /* Medidos no protótipo, um a um. Cada um continua com nome de FUNÇÃO, não
+       de cor: trocar o verde por outro verde não obriga a mexer em 40
+       arquivos.
 
-       A ordem não é arbitrária: quanto mais escuro, mais pesa na tela clara.
-       O que a pessoa precisa notar primeiro é o buraco, depois o que está
-       perto do limite, e por último a sobra — sobra boa não precisa gritar.
+       Atenção a uma mudança de significado que veio junto: o AZUL agora é a
+       AÇÃO — botão, link, barra de progresso — e não mais a sobra. O
+       trocadilho de "estar no azul" saiu com ela; quem tem sobra passa a ver
+       verde, como no protótipo.
 
-       Cor sozinha nunca foi acessível de qualquer forma (8% dos homens não
-       distinguem vermelho de verde), então o reforço que a tela usa é o mesmo
-       que já servia a essas pessoas: seta, sinal, peso e espessura de faixa. */
-    --lch-acao: 0.16 0 0;
-    --lch-negativo: 0.3 0 0;
-    --lch-atencao: 0.45 0 0;
-    --lch-positivo: 0.58 0 0;
-    --lch-alerta: 0.52 0 0;
-    --lch-destaque: 0.36 0 0;
-    --lch-dado: 0.42 0 0;
+       Cor sozinha nunca é acessível: cerca de 8% dos homens não distinguem
+       vermelho de verde. O rótulo em maiúscula acima de cada valor (ENTROU,
+       SAIU) é o que carrega o significado para essas pessoas, e por isso ele
+       não é decoração e não pode ser removido. */
+    --lch-acao: 0.601 0.19 258;
+    --lch-positivo: 0.68 0.16 155;
+    --lch-negativo: 0.599 0.21 22;
+    --lch-atencao: 0.78 0.15 70;
+    --lch-alerta: 0.8 0.14 85;
+    --lch-destaque: 0.55 0.16 292;
+    --lch-dado: 0.62 0.1 212;
 
     /* --- shadcn --- */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 14%;
+    --card-foreground: 220 32% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 14%;
-    --primary: 0 0% 16%;
+    --popover-foreground: 220 32% 11%;
+    /* O mesmo azul da ação, aqui como preenchimento de botão. */
+    --primary: 216 86% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 94%;
-    --secondary-foreground: 0 0% 18%;
-    --muted: 0 0% 94.5%;
-    --muted-foreground: 0 0% 50%;
-    --accent: 0 0% 92%;
-    --accent-foreground: 0 0% 16%;
-    --destructive: 0 0% 34%;
+    --secondary: 220 20% 96%;
+    --secondary-foreground: 220 28% 18%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 216 86% 95%;
+    --accent-foreground: 216 86% 40%;
+    --destructive: 356 74% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 88%;
-    --ring: 0 0% 16%;
+    --border: 220 16% 90%;
+    --input: 220 16% 88%;
+    --ring: 216 86% 55%;
 
-    /* 18px: o raio base generoso do prompt de vidro, para campo e botão. O
-       cartão tem raio próprio e mais aberto em `--raio-cartao`. */
-    --radius: 18px;
+    /* 12px em campo e botão; o cartão tem raio próprio em `--raio-cartao`.
+       Separar os dois é o que faz o cartão parecer superfície e o botão
+       parecer controle. */
+    --radius: 12px;
 
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);
   }
 
   .dark {
-    /* Preto profundo com branco, ainda em chroma 0. Continua valendo a regra
-       antiga — preto ABSOLUTO em tela OLED faz cartão e fundo virarem a mesma
-       coisa e a hierarquia some. Estes não são preto: são degraus, e é o
-       degrau que desenha a camada. */
-    --background: oklch(0.11 0 0);
-    --foreground: oklch(0.985 0 0);
+    /* O protótipo só tem tema claro. Este escuro é a contraparte dele,
+       derivada com a regra da casa: mesmo matiz, luminosidade invertida, e
+       preto NUNCA absoluto — em tela OLED o preto puro faz cartão e fundo
+       virarem a mesma coisa e a hierarquia some. */
+    --background: oklch(0.165 0.012 258);
+    --foreground: oklch(0.97 0.004 258);
 
-    --papel-1: oklch(0.175 0 0);
-    --papel-2: oklch(0.24 0 0);
-    --papel-3: oklch(0.28 0 0);
+    --papel-1: oklch(0.208 0.014 258);
+    --papel-2: oklch(0.245 0.015 258);
+    --papel-3: oklch(0.285 0.016 258);
 
-    --pauta: oklch(1 0 0 / 12%);
-    --muted-fg: oklch(0.68 0 0);
+    --pauta: oklch(1 0 0 / 10%);
+    --muted-fg: oklch(0.7 0.014 258);
 
-    --texto-2: oklch(0.68 0 0);
-    --texto-3: oklch(0.55 0 0);
+    --texto-2: oklch(0.7 0.014 258);
+    --texto-3: oklch(0.58 0.012 258);
 
-    /* A escala inverte no escuro: aqui é o tom CLARO que pesa. A ordem de
-       importância continua a mesma — buraco primeiro, limite depois, sobra
-       por último. */
-    --lch-acao: 0.985 0 0;
-    --lch-negativo: 0.88 0 0;
-    --lch-atencao: 0.72 0 0;
-    --lch-positivo: 0.6 0 0;
-    --lch-alerta: 0.66 0 0;
-    --lch-destaque: 0.8 0 0;
-    --lch-dado: 0.74 0 0;
+    /* Cada tom clareia no escuro, como o iOS faz: o tom pensado para papel
+       branco afunda no grafite e o botão some no fundo. */
+    --lch-acao: 0.68 0.17 258;
+    --lch-positivo: 0.76 0.16 155;
+    --lch-negativo: 0.68 0.19 22;
+    --lch-atencao: 0.82 0.14 72;
+    --lch-alerta: 0.85 0.13 88;
+    --lch-destaque: 0.7 0.15 292;
+    --lch-dado: 0.72 0.1 212;
 
     --vidro: oklch(1 0 0 / 6%);
     --vidro-forte: oklch(1 0 0 / 10%);
-    --sombra-ios: 0 1px 0 0 oklch(1 0 0 / 6%) inset, 0 18px 40px -22px oklch(0 0 0 / 80%);
-    --sombra-flutuante: 0 24px 60px -28px oklch(0 0 0 / 90%);
+    --sombra-ios: 0 1px 2px oklch(0 0 0 / 40%), 0 4px 16px oklch(0 0 0 / 30%);
+    --sombra-flutuante: 0 8px 30px oklch(0 0 0 / 55%);
 
-    --card: 0 0% 17.5%;
-    --card-foreground: 0 0% 98.5%;
-    --popover: 0 0% 17.5%;
-    --popover-foreground: 0 0% 98.5%;
-    --primary: 0 0% 98.5%;
-    --primary-foreground: 0 0% 14%;
-    --secondary: 0 0% 25%;
-    --secondary-foreground: 0 0% 98.5%;
-    --muted: 0 0% 24%;
-    --muted-foreground: 0 0% 68%;
-    --accent: 0 0% 28%;
-    --accent-foreground: 0 0% 98.5%;
-    --destructive: 0 0% 75%;
-    --destructive-foreground: 0 0% 14%;
-    --border: 0 0% 27%;
-    --input: 0 0% 30%;
-    --ring: 0 0% 98.5%;
+    --card: 258 16% 13%;
+    --card-foreground: 0 0% 97%;
+    --popover: 258 16% 15%;
+    --popover-foreground: 0 0% 97%;
+    --primary: 216 86% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 258 12% 22%;
+    --secondary-foreground: 0 0% 97%;
+    --muted: 258 12% 21%;
+    --muted-foreground: 258 8% 70%;
+    --accent: 216 60% 24%;
+    --accent-foreground: 216 86% 78%;
+    --destructive: 356 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 258 10% 26%;
+    --input: 258 10% 29%;
+    --ring: 216 86% 58%;
 
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);
@@ -192,19 +201,9 @@
        "1" estreito desalinha a coluna inteira e conferir extrato passa a exigir
        esforço que o papel não exigia. */
     font-variant-numeric: tabular-nums;
-    /* O fundo não é cor sólida: são dois halos fixos que dão profundidade, e é
-       sobre eles que os cartões de vidro flutuam. Sem isso o vidro não tem o
-       que borrar e vira um retângulo cinza. */
-    background-image:
-      radial-gradient(900px 520px at 12% -8%, oklch(0 0 0 / 7%), transparent 62%),
-      radial-gradient(760px 480px at 92% 0%, oklch(0 0 0 / 5%), transparent 62%);
-    background-attachment: fixed;
-  }
-
-  .dark body {
-    background-image:
-      radial-gradient(900px 520px at 12% -8%, oklch(1 0 0 / 8%), transparent 62%),
-      radial-gradient(760px 480px at 92% 0%, oklch(1 0 0 / 5%), transparent 62%);
+    /* Fundo chapado. Os dois halos radiais entraram com o prompt de vidro e
+       saíram aqui: o protótipo tem fundo liso, e halo sem vidro em cima é
+       enfeite que não responde a pergunta nenhuma. */
   }
 
   /* Dinheiro em algarismo tabular.
@@ -256,9 +255,7 @@
   .ficha,
   .ios-card {
     position: relative;
-    background: color-mix(in oklab, var(--papel-1) 78%, transparent);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    background: var(--papel-1);
     border: 1px solid var(--pauta);
     border-radius: var(--raio-cartao);
     box-shadow: var(--sombra-ios);
@@ -310,12 +307,12 @@
    começar exatamente onde ela termina. */
 @media (min-width: 768px) {
   .area-do-app {
-    padding-left: calc(248px + 16px);
+    padding-left: 248px;
     transition: padding-left 0.2s ease;
   }
 
   html[data-menu="recolhido"] .area-do-app {
-    padding-left: calc(68px + 16px);
+    padding-left: 68px;
   }
 }
 
