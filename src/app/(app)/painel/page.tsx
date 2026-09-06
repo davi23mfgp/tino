@@ -6,8 +6,8 @@ import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { GraficoCategorias, GraficoEvolucao, GraficoParcelas } from "@/components/graficos"
+import { Barra, BarrasCategorias, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { GraficoEvolucao, GraficoParcelas } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { TinoAcompanha } from "@/components/tino-acompanha"
@@ -28,6 +28,32 @@ export default async function Painel() {
   const cartoes = panorama.saldoPorConta.filter((conta) => conta.tipo === "CARTAO_CREDITO")
   const faturaTotal = cartoes.reduce((soma, cartao) => soma + Math.abs(Math.min(0, cartao.saldoCentavos)), 0)
   const negativo = panorama.projecao.find((linha) => linha.negativo)
+
+  // A ordem aqui é a ordem de prioridade que aparece na tela, e ela não é
+  // arbitrária: o que custa mais caro se ficar parado vem primeiro. Cheque
+  // especial na frente de tudo, porque é a dívida mais cara que existe.
+  const passos: string[] = []
+
+  if (panorama.saldoTotalCentavos < 0) {
+    passos.push(
+      "Tirar a conta do negativo é a prioridade número um: o cheque especial cobra até 8% ao mês, mais que qualquer outra dívida sua.",
+    )
+  }
+  if (negativo) {
+    passos.push(
+      `No ritmo atual, o caixa fica negativo em ${rotuloCompetencia(negativo.competencia)} (${formatarMoeda(negativo.saldoAcumuladoCentavos)}).`,
+    )
+  }
+  if (parcelamentos.maiorMensalCentavos > 0) {
+    passos.push(
+      `O mês mais pesado à frente leva ${formatarMoeda(parcelamentos.maiorMensalCentavos)} só em parcelas já compradas — esse valor sai antes de qualquer gasto novo.`,
+    )
+  }
+  if (panorama.mes.naoCategorizadas > 0) {
+    passos.push(
+      `${panorama.mes.naoCategorizadas} lançamento(s) sem categoria. Corrigir uma vez ensina o Tino para sempre.`,
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -81,7 +107,7 @@ export default async function Painel() {
 
           <div className="mt-4">
             {panorama.mes.despesasPorCategoria.length > 0 ? (
-              <GraficoCategorias dados={panorama.mes.despesasPorCategoria} />
+              <BarrasCategorias dados={panorama.mes.despesasPorCategoria} />
             ) : (
               <Vazio
                 titulo="Nenhum gasto neste mês"
@@ -179,35 +205,26 @@ export default async function Painel() {
           </Link>
         }
       >
-        <ul className="space-y-2 text-sm">
-          {panorama.saldoTotalCentavos < 0 && (
-            <li>
-              Tirar a conta do negativo é a prioridade número um: o cheque especial cobra até 8% ao mês, mais que
-              qualquer outra dívida sua.
-            </li>
-          )}
-          {negativo && (
-            <li>
-              No ritmo atual, o caixa fica negativo em {rotuloCompetencia(negativo.competencia)}
-              {" "}({formatarMoeda(negativo.saldoAcumuladoCentavos)}).
-            </li>
-          )}
-          {parcelamentos.maiorMensalCentavos > 0 && (
-            <li>
-              O mês mais pesado à frente leva {formatarMoeda(parcelamentos.maiorMensalCentavos)} só em parcelas já
-              compradas — esse valor já está comprometido antes de qualquer gasto novo.
-            </li>
-          )}
-          {panorama.mes.naoCategorizadas > 0 && (
-            <li>
-              {panorama.mes.naoCategorizadas} lançamento(s) sem categoria. Corrigir uma vez ensina o Tino para
-              sempre.
-            </li>
-          )}
-          {panorama.saldoTotalCentavos >= 0 && !negativo && parcelamentos.restanteCentavos === 0 && (
-            <li>Contas em ordem. A sobra do mês pode ir para a reserva ou para as metas.</li>
-          )}
-        </ul>
+        {/* Numerado porque a ordem É a informação: tirar a conta do negativo
+            antes de qualquer aporte não é preferência, é o que sai mais caro
+            se for feito na ordem errada. Numeração em lista que não é
+            sequência seria só enfeite, e aqui não é o caso. */}
+        {passos.length > 0 ? (
+          <ol className="space-y-3.5">
+            {passos.map((passo, indice) => (
+              <li key={indice} className="flex gap-3 text-[14px] leading-relaxed">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-acao/12 text-[12px] font-semibold text-acao">
+                  {indice + 1}
+                </span>
+                <span className="min-w-0 flex-1">{passo}</span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="text-[14px] leading-relaxed text-[color:var(--texto-2)]">
+            Contas em ordem. A sobra do mês pode ir para a reserva ou para as metas.
+          </p>
+        )}
       </Cartao>
     </div>
   )

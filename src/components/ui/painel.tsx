@@ -1,3 +1,4 @@
+import { formatarMoeda } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 
 /**
@@ -177,6 +178,51 @@ export function Barra({ percentual, tom }: { percentual: number; tom?: "verde" |
         style={{ width: `${limitado}%` }}
       />
     </div>
+  )
+}
+
+/**
+ * Onde o dinheiro do mês foi, em barras.
+ *
+ * Substitui a rosca no painel. Para quatro a seis categorias, rótulo com valor
+ * e barra ao lado lê num relance; a rosca obriga a pessoa a cruzar cor com
+ * legenda para descobrir qual fatia é qual. A rosca continua na Análise, onde
+ * a pessoa foi justamente comparar proporção.
+ *
+ * A barra é relativa à MAIOR categoria, não ao total: com o total, a maior
+ * categoria de um mês espalhado ocupa 30% da largura e todas as outras viram
+ * risquinhos indistinguíveis.
+ */
+export function BarrasCategorias({
+  dados,
+  limite = 6,
+}: {
+  dados: { nome: string; totalCentavos: number }[]
+  /** Acima disto a lista deixa de ser um relance e vira tabela. */
+  limite?: number
+}) {
+  const principais = dados.slice(0, limite)
+  const maior = Math.max(...principais.map((linha) => linha.totalCentavos), 1)
+
+  return (
+    <ul className="space-y-3">
+      {principais.map((linha) => (
+        <li key={linha.nome}>
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="min-w-0 truncate text-[13px] text-[color:var(--texto-2)]">{linha.nome}</span>
+            <span className="numero shrink-0 text-[13px] font-medium">
+              {formatarMoeda(linha.totalCentavos)}
+            </span>
+          </div>
+          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-foreground/[0.07]">
+            <div
+              className="h-full rounded-full bg-acao transition-[width] duration-500 ease-[var(--curva)]"
+              style={{ width: `${Math.max(2, (linha.totalCentavos / maior) * 100)}%` }}
+            />
+          </div>
+        </li>
+      ))}
+    </ul>
   )
 }
 
