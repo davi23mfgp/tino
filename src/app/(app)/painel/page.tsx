@@ -4,9 +4,10 @@ import { ArrowRight } from "lucide-react"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
+import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { Barra, BarrasCategorias, Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
+import { Barra, BarrasCategorias, Cartao, Metrica, Rotulo, Valor, Vazio } from "@/components/ui/painel"
 import { GraficoEvolucao, GraficoParcelas } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
@@ -27,6 +28,11 @@ export default async function Painel() {
   const contasLiquidas = panorama.saldoPorConta.filter((conta) => conta.tipo !== "CARTAO_CREDITO")
   const cartoes = panorama.saldoPorConta.filter((conta) => conta.tipo === "CARTAO_CREDITO")
   const faturaTotal = cartoes.reduce((soma, cartao) => soma + Math.abs(Math.min(0, cartao.saldoCentavos)), 0)
+  // O saldo menos o que ja esta devido. Fatura de cartao e divida vem de
+  // modelos diferentes no banco (conta do tipo cartao x tabela de dividas),
+  // entao somar as duas nao conta nada duas vezes.
+  const patrimonioLiquido = panorama.saldoTotalCentavos - faturaTotal - panorama.dividas.totalCentavos
+
   const negativo = panorama.projecao.find((linha) => linha.negativo)
 
   // A ordem aqui é a ordem de prioridade que aparece na tela, e ela não é
@@ -78,15 +84,60 @@ export default async function Painel() {
 
           <div className="mt-4 space-y-2">
             {contasLiquidas.map((conta) => (
-              <div key={conta.id} className="flex items-center justify-between text-sm">
-                <span className="text-muted-fg">{conta.nome}</span>
-                <span className={conta.saldoCentavos < 0 ? "text-negativo" : ""}>
+              <div key={conta.id} className="flex items-center justify-between text-[14px]">
+                <span className="text-[color:var(--texto-2)]">{conta.nome}</span>
+                <span className={cn("numero", conta.saldoCentavos < 0 && "text-negativo")}>
                   {formatarMoeda(conta.saldoCentavos)}
                 </span>
               </div>
             ))}
             {contasLiquidas.length === 0 && <Vazio titulo="Nenhuma conta cadastrada ainda." />}
           </div>
+
+          {/* O QUE O SALDO NÃO CONTA.
+              O cartão fica de fora do número grande de propósito, e a frase
+              acima já diz isso. Mas parar aí deixa a meia-verdade de pé: saldo
+              bonito com fatura estourando engana. Aqui a conta se fecha —
+              desconta o que já está devido e mostra o que sobra de verdade.
+
+              Nada disso é estimativa: fatura vem do saldo dos cartões e dívida
+              vem do que a pessoa cadastrou. Quando não há nem uma nem outra, o
+              bloco não aparece, porque somar zero não informa nada. */}
+          {(faturaTotal > 0 || panorama.dividas.totalCentavos > 0) && (
+            <div className="mt-5 border-t border-pauta pt-4">
+              <Rotulo>Descontando o que você deve</Rotulo>
+
+              <div className="mt-3 space-y-2">
+                {faturaTotal > 0 && (
+                  <div className="flex items-center justify-between text-[14px]">
+                    <span className="text-[color:var(--texto-2)]">Fatura de cartão em aberto</span>
+                    <span className="numero text-negativo">−{formatarMoeda(faturaTotal)}</span>
+                  </div>
+                )}
+                {panorama.dividas.totalCentavos > 0 && (
+                  <div className="flex items-center justify-between text-[14px]">
+                    <span className="text-[color:var(--texto-2)]">Dívidas em aberto</span>
+                    <span className="numero text-negativo">
+                      −{formatarMoeda(panorama.dividas.totalCentavos)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-pauta pt-3">
+                <span className="text-[14px] font-medium">Sobra de verdade</span>
+                <Valor tom={patrimonioLiquido < 0 ? "negativo" : "neutro"} tamanho="cartao">
+                  {formatarMoeda(patrimonioLiquido)}
+                </Valor>
+              </div>
+
+              <p className="mt-2 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+                {patrimonioLiquido < 0
+                  ? "Você deve mais do que tem em conta. Quitar o juro mais caro vem antes de qualquer aporte."
+                  : "É com este número que dá para contar depois de pagar tudo que já está devido."}
+              </p>
+            </div>
+          )}
         </Cartao>
 
         <Cartao titulo="Mês corrente">
