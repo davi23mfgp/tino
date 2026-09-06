@@ -61,7 +61,10 @@ export function BarraTopo({
   }
 
   return (
-    <header className="flex items-start justify-between gap-4 py-6">
+    // Vidro fosco só aqui e na coluna, conforme o brief. Ela gruda no topo:
+    // numa tela longa como a Visão geral, a saudação e o resumo do mês somem
+    // na rolagem, e é justamente onde a pessoa confere em que mês está.
+    <header className="sticky top-0 z-20 -mx-4 mb-1 flex items-start justify-between gap-4 bg-background/80 px-4 py-6 backdrop-blur-xl backdrop-saturate-[1.8]">
       <div>
         <p className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--texto-3)]">Tino</p>
         {/* 22px com tracking de -0,025em, medido no protótipo. Estava em 26px

@@ -325,7 +325,7 @@ export function Navegacao({ mei }: { mei?: boolean }) {
           vidro; voltou a encostar quando o protótipo virou a referência. */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden shrink-0 flex-col border-r border-pauta bg-papel-1 transition-[width] duration-200 md:flex",
+          "fixed inset-y-0 left-0 z-30 hidden shrink-0 flex-col border-r border-pauta bg-papel-1/80 backdrop-blur-xl backdrop-saturate-[1.8] transition-[width] duration-200 md:flex",
           recolhido ? "w-[68px]" : "w-[256px]",
         )}
       >
