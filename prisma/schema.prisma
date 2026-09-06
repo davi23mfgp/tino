@@ -194,6 +194,11 @@ enum OrigemCaptura {
   NOTIFICACAO // aviso de compra do app do banco, repassado pelo celular
   TELEGRAM // mensagem ou arquivo enviado ao bot
   ATALHO // atalho do iOS / widget
+  /// Folha de compartilhamento do Android: a pessoa tocou em "Compartilhar" no
+  /// app do banco e escolheu o Tino. Separado de ATALHO porque o texto chega
+  /// diferente — vem do app de origem, não de um modelo escrito pela pessoa — e
+  /// é olhando a origem que dá para melhorar o leitor depois.
+  COMPARTILHAMENTO
   EMAIL
   MANUAL
 }

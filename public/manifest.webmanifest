@@ -40,5 +40,15 @@
       "short_name": "Análise",
       "url": "/analise"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/compartilhar",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "titulo",
+      "text": "texto",
+      "url": "endereco"
+    }
+  }
 }

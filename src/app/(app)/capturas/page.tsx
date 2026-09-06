@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Check, Copy, Plus, Send, Smartphone, X } from "lucide-react"
+import { Check, Copy, Plus, Send, Share2, Smartphone, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
@@ -68,9 +68,21 @@ export default function Capturas() {
   // o servidor renderizar vazio e o cliente renderizar a URL — o React acusa
   // divergência de hidratação e descarta a árvore inteira.
   const [endereco, setEndereco] = useState("")
+  // Como a pessoa chegou aqui: `/compartilhar` redireciona para cá com o
+  // resultado da captura na busca. Lido pelo `window` e não pelo
+  // `useSearchParams` porque este é o único uso, e o hook obrigaria a página
+  // inteira a entrar num limite de Suspense por causa da renderização estática.
+  const [compartilhado, setCompartilhado] = useState<string | null>(null)
 
   useEffect(() => {
     setEndereco(window.location.origin)
+
+    const veio = new URLSearchParams(window.location.search).get("compartilhado")
+    if (!veio) return
+    setCompartilhado(veio)
+    // Tira o parâmetro do endereço: recarregar a página não deve repetir o
+    // aviso de uma compra que já foi guardada.
+    window.history.replaceState(null, "", window.location.pathname)
   }, [])
 
   const carregar = useCallback(async () => {
@@ -152,6 +164,8 @@ export default function Capturas() {
 
   return (
     <div className="space-y-4">
+      {compartilhado && <AvisoCompartilhado resultado={compartilhado} />}
+
       <Cartao titulo="Anotar em segundos">
         <form onSubmit={anotarRapido} className="flex gap-2">
           <input
@@ -329,6 +343,23 @@ export default function Capturas() {
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           <div className="rounded-2xl border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
+              <Share2 className="size-4" /> Compartilhar do celular (Android)
+            </p>
+            <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
+              <li>1. Instale o Tino na tela de início pelo menu do navegador.</li>
+              <li>
+                2. Chegou o aviso de compra? Toque em <b>Compartilhar</b> e escolha o Tino.
+              </li>
+              <li>3. Pronto. A compra cai na fila acima esperando um toque.</li>
+            </ol>
+            <p className="mt-2 text-[12px] leading-relaxed text-muted-fg">
+              Não precisa de chave nem de programa nenhum. Cobra um toque por compra — o jeito abaixo
+              captura sozinho, mas só depois de você configurar.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-pauta p-4">
+            <p className="flex items-center gap-2 text-[14px] font-medium">
               <Smartphone className="size-4" /> Notificações do banco (Android)
             </p>
             <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
@@ -405,6 +436,58 @@ export default function Capturas() {
           </div>
         )}
       </Cartao>
+    </div>
+  )
+}
+
+/**
+ * O que aconteceu com a compra que a pessoa acabou de compartilhar.
+ *
+ * Ela vem de fora do app, tocou uma vez e caiu aqui: precisa saber em uma
+ * linha se o gasto entrou, e o que fazer se não entrou. Cada caso diz o que
+ * houve e qual é o próximo passo — nenhum pede desculpa, e nenhum é vago.
+ *
+ * Só os dois casos que exigem ação da pessoa levam cor. Captura guardada é o
+ * caminho normal e não gasta token de cor: o que ela precisa ver a seguir é a
+ * fila, logo abaixo.
+ */
+function AvisoCompartilhado({ resultado }: { resultado: string }) {
+  const avisos: Record<string, { texto: string; atencao: boolean }> = {
+    pendente: {
+      texto: "Compra guardada. Confira na fila abaixo antes de virar lançamento.",
+      atencao: false,
+    },
+    confirmada: {
+      texto: "Compra guardada e já lançada — a leitura veio com confiança alta.",
+      atencao: false,
+    },
+    descartada: {
+      texto:
+        "Esse aviso não era gasto: compra negada, estorno ou pré-autorização de posto. Não lancei nada.",
+      atencao: false,
+    },
+    nao_entendida: {
+      texto: "Não achei um valor nesse texto. Guardei do jeito que chegou, na fila abaixo.",
+      atencao: true,
+    },
+    vazio: {
+      texto: "O compartilhamento chegou sem texto. Compartilhe o aviso do banco, não a imagem da tela.",
+      atencao: true,
+    },
+  }
+
+  const aviso = avisos[resultado]
+  if (!aviso) return null
+
+  return (
+    <div
+      role="status"
+      className={cn(
+        "rounded-2xl border p-3 text-[13px] leading-relaxed",
+        aviso.atencao ? "border-atencao/40 bg-atencao/10 text-atencao" : "border-pauta text-muted-fg",
+      )}
+    >
+      {aviso.texto}
     </div>
   )
 }

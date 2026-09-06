@@ -63,7 +63,10 @@ const INSTITUICOES: { termos: string[]; nome: string }[] = [
  * de um lançamento perdido.
  */
 const NAO_E_GASTO: { padrao: RegExp; motivo: string }[] = [
-  { padrao: /\b(negad[ao]|recusad[ao]|nao autorizad[ao]|não autorizad[ao])\b/i, motivo: "compra negada" },
+  // "não aprovada" anda junto de "não autorizada": qual das duas o banco usa
+  // varia, e o texto da recusa é quase idêntico ao da compra aprovada — muda
+  // uma palavra. Cobrir só uma das formas deixa recusa virar gasto.
+  { padrao: /\b(negad[ao]|recusad[ao]|n[ãa]o (autorizad|aprovad)[ao])\b/i, motivo: "compra negada" },
   { padrao: /\b(estorn|reembols|devoluç|devoluc|cancelad[ao])/i, motivo: "estorno ou cancelamento" },
   // Palavras entram no meio da frase ("fatura de setembro fechou"), então o
   // padrão precisa aceitar um trecho entre "fatura" e o verbo.
