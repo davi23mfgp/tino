@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { buscar } from "@/lib/cliente"
-import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 import { GraficoDaDivisao, GraficoDoCorte } from "@/components/graficos"
 import { corteViraPatrimonio, dividirPorArca } from "@/lib/tino/investir"
@@ -259,8 +259,8 @@ export default function Investir() {
             <>
               <Valor tamanho="medio">{formatarMoeda(dados.reserva.atualCentavos)}</Valor>
               <p className="mt-1 text-sm text-muted-fg">
-                de {formatarMoeda(dados.reserva.idealCentavos)} — cobre {dados.reserva.mesesDeFolga.toFixed(1)} mês(es)
-                de custo
+                de {formatarMoeda(dados.reserva.idealCentavos)} — cobre {formatarDecimal(dados.reserva.mesesDeFolga)}{" "}
+                mês(es) de custo
               </p>
 
               <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">

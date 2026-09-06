@@ -8,7 +8,7 @@
  *   reutilizável pelo assistente, pelas telas e pelas rotas de API.
  */
 
-import { bpsParaTaxa, taxaParaBps } from "@/lib/dinheiro"
+import { bpsParaTaxa, formatarDecimal, taxaParaBps } from "@/lib/dinheiro"
 
 // ============================================================
 // JUROS, PARCELAS E CET
@@ -215,11 +215,11 @@ export function analisarEmprestimo(params: {
   if (resultado.cetMensalBps > 500) {
     pontos += 2
     motivos.push(
-      `CET de ${(resultado.cetMensalBps / 100).toFixed(2)}% ao mês (${(resultado.cetAnualBps / 100).toFixed(1)}% ao ano) — caro para crédito pessoal.`,
+      `CET de ${formatarDecimal(resultado.cetMensalBps / 100, 2)}% ao mês (${formatarDecimal(resultado.cetAnualBps / 100, 1)}% ao ano) — caro para crédito pessoal.`,
     )
   } else if (resultado.cetMensalBps > 250) {
     pontos += 1
-    motivos.push(`CET de ${(resultado.cetMensalBps / 100).toFixed(2)}% ao mês. Vale cotar em outro banco antes de assinar.`)
+    motivos.push(`CET de ${formatarDecimal(resultado.cetMensalBps / 100, 2)}% ao mês. Vale cotar em outro banco antes de assinar.`)
   }
 
   if (resultado.totalJurosCentavos > params.valorCentavos) {

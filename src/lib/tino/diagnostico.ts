@@ -16,7 +16,7 @@
  * exatamente o que um contador faz.
  */
 
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import type { Panorama } from "@/lib/tino/panorama"
 
@@ -267,14 +267,14 @@ export function montarDiagnostico(
     {
       chave: "liquidez",
       nome: "Meses de folga",
-      valor: `${liquidez.toFixed(1)} meses`,
+      valor: `${formatarDecimal(liquidez, 1)} meses`,
       numero: Math.round(liquidez * 10) / 10,
       faixa: semDados ? "SEM_DADO" : faixaMaiorMelhor(liquidez, REFERENCIA.liquidez),
       referencia: "6 meses de custo essencial é o alvo · abaixo de 3 é frágil",
       leitura:
         liquidez < 1
           ? "Sem nenhuma receita, o dinheiro disponível não cobre um mês."
-          : `Sem nenhuma receita, o que você tem cobre ${liquidez.toFixed(1)} mês(es) do essencial.`,
+          : `Sem nenhuma receita, o que você tem cobre ${formatarDecimal(liquidez, 1)} mês(es) do essencial.`,
     },
     {
       chave: "custo-fixo",
@@ -295,7 +295,7 @@ export function montarDiagnostico(
       numero: endividamento,
       faixa: semDados ? "SEM_DADO" : faixaMenorMelhor(endividamento, REFERENCIA.endividamento),
       referencia: "até 30% administrável · acima de 100% compromete mais de um ano de renda",
-      leitura: `Sua dívida total equivale a ${(endividamento / 100 / 100 * 12).toFixed(1)} mês(es) de renda.`,
+      leitura: `Sua dívida total equivale a ${formatarDecimal(endividamento / 100 / 100 * 12, 1)} mês(es) de renda.`,
     },
     {
       chave: "essencial",
@@ -374,7 +374,7 @@ export function montarDiagnostico(
     prioridades.push({
       ordem: prioridades.length + 1,
       titulo: `Renegociar ${jurosAlto.credor}`,
-      porque: `Cobra ${(jurosAlto.jurosMensalBps / 100).toFixed(2)}% ao mês sobre ${formatarMoeda(jurosAlto.saldoDevedorCentavos)}.`,
+      porque: `Cobra ${formatarDecimal(jurosAlto.jurosMensalBps / 100, 2)}% ao mês sobre ${formatarMoeda(jurosAlto.saldoDevedorCentavos)}.`,
       acao: "Cotar portabilidade ou crédito com garantia. Trocar juro caro por barato reduz o total sem aumentar a dívida.",
       impactoMensalCentavos: Math.round(jurosAlto.saldoDevedorCentavos * (jurosAlto.jurosMensalBps / 10_000) * 0.5),
     })
@@ -395,7 +395,7 @@ export function montarDiagnostico(
     prioridades.push({
       ordem: prioridades.length + 1,
       titulo: "Formar reserva de emergência",
-      porque: `Hoje o disponível cobre ${liquidez.toFixed(1)} mês(es). O alvo é ${panorama.lar.mesesReserva}.`,
+      porque: `Hoje o disponível cobre ${formatarDecimal(liquidez, 1)} mês(es). O alvo é ${panorama.lar.mesesReserva}.`,
       acao: `Guardar até chegar a ${formatarMoeda(custoEssencialMensal * panorama.lar.mesesReserva)}, em algo com liquidez diária.`,
     })
   }

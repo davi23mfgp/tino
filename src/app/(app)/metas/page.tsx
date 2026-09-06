@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { formatarData } from "@/lib/datas"
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { projetarMeta } from "@/lib/financeiro"
 import { Barra, Cartao, Vazio } from "@/components/ui/painel"
 
@@ -78,7 +78,7 @@ export default async function Metas() {
               <div className="mt-3 space-y-1 text-xs">
                 <p className="text-muted-fg">
                   Aporte atual: {formatarMoeda(meta.aporteMensalCentavos)}/mês
-                  {meta.rendimentoAnualBps > 0 && ` · rendendo ${(meta.rendimentoAnualBps / 100).toFixed(1)}% a.a.`}
+                  {meta.rendimentoAnualBps > 0 && ` · rendendo ${formatarDecimal(meta.rendimentoAnualBps / 100, 1)}% a.a.`}
                 </p>
                 {meta.dataAlvo && (
                   <p className={projecao.noPrazo ? "text-positivo" : "text-atencao"}>

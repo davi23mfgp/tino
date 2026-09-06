@@ -10,7 +10,7 @@
  * A saída é um roteiro por mês: quanto sobra, para onde vai, o que fica de pé.
  */
 
-import { bpsParaTaxa } from "@/lib/dinheiro"
+import { bpsParaTaxa, formatarDecimal } from "@/lib/dinheiro"
 import { competenciaMaisMeses } from "@/lib/datas"
 
 export interface AlvoPagamento {
@@ -159,7 +159,7 @@ export function montarPlanoPagamento(params: {
 
   const maisCara = ordem[0]
   const primeiroPasso = maisCara
-    ? `Ataque primeiro ${maisCara.nome}: é o juro mais alto da fila (${(maisCara.jurosMensalBps / 100).toFixed(2)}% ao mês). Cada real jogado aí rende mais que em qualquer outra dívida sua.`
+    ? `Ataque primeiro ${maisCara.nome}: é o juro mais alto da fila (${formatarDecimal(maisCara.jurosMensalBps / 100, 2)}% ao mês). Cada real jogado aí rende mais que em qualquer outra dívida sua.`
     : "Sem dívida aberta — a sobra do mês pode ir para a reserva de emergência."
 
   return {

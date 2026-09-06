@@ -9,7 +9,7 @@
 import type { SeveridadeAlerta } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
 
@@ -107,7 +107,7 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
       tipo: "juros_abusivo",
       severidade: "CRITICO",
       titulo: `Juro muito alto em ${rotativo.credor}`,
-      texto: `Essa dívida cobra ${(rotativo.jurosMensalBps / 100).toFixed(2)}% ao mês. Trocá-la por um crédito mais barato (portabilidade ou consignado) costuma cortar boa parte do custo.`,
+      texto: `Essa dívida cobra ${formatarDecimal(rotativo.jurosMensalBps / 100, 2)}% ao mês. Trocá-la por um crédito mais barato (portabilidade ou consignado) costuma cortar boa parte do custo.`,
       acaoRota: "/emprestimos",
       chave: `juros_abusivo:${mes}:${rotativo.id}`,
     })
