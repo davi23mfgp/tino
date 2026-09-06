@@ -131,35 +131,55 @@ export default function Transacoes() {
                 </p>
               </div>
 
-              {/* Sem categoria fica em âmbar porque é trabalho pendente, não
-                  erro: o Tino aprende com a correção, e a cor é o convite. */}
-              <select
-                value={transacao.categoriaId ?? ""}
-                onChange={(evento) => recategorizar(transacao.id, evento.target.value)}
-                className={`rounded-[var(--raio-pilula)] px-3 py-1.5 text-[12px] outline-none transition-colors ${
-                  transacao.categoriaId
-                    ? "bg-foreground/[0.06] text-[color:var(--texto-2)] hover:bg-foreground/[0.1]"
-                    : "bg-atencao/12 text-atencao"
-                }`}
-              >
-                <option value="">sem categoria</option>
-                {categorias.map((categoria) => (
-                  <option key={categoria.id} value={categoria.id}>
-                    {categoria.nome}
-                  </option>
-                ))}
-              </select>
+              {/* TRANSFERÊNCIA NÃO PEDE CATEGORIA, e por isso não pode ser
+                  cobrada em âmbar. Dinheiro que sai da conta corrente e entra
+                  na poupança não é gasto de nada — pintar isso de "trabalho
+                  pendente" faz o app cobrar uma tarefa que não existe, e ainda
+                  ensina a pessoa a ignorar o âmbar quando ele for de verdade. */}
+              {transacao.tipo === "TRANSFERENCIA" ? (
+                <span className="rounded-[var(--raio-pilula)] bg-foreground/[0.06] px-3 py-1.5 text-[12px] text-[color:var(--texto-3)]">
+                  entre contas
+                </span>
+              ) : (
+                <select
+                  value={transacao.categoriaId ?? ""}
+                  onChange={(evento) => recategorizar(transacao.id, evento.target.value)}
+                  className={`rounded-[var(--raio-pilula)] px-3 py-1.5 text-[12px] outline-none transition-colors ${
+                    transacao.categoriaId
+                      ? "bg-foreground/[0.06] text-[color:var(--texto-2)] hover:bg-foreground/[0.1]"
+                      : "bg-atencao/12 text-atencao"
+                  }`}
+                >
+                  <option value="">sem categoria</option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.id} value={categoria.id}>
+                      {categoria.nome}
+                    </option>
+                  ))}
+                </select>
+              )}
 
-              {/* Só a entrada ganha cor. Pintar toda saída de vermelho numa
-                  lista de cem linhas faz a pessoa parar de enxergar vermelho,
-                  e aí a cor não avisa mais nada. O sinal antes do valor é o
-                  que separa os dois em toda linha. */}
+              {/* O SINAL SÓ APARECE EM DINHEIRO QUE ENTRA OU SAI DO LAR.
+                  Transferência tem duas pernas — sai da conta corrente, entra
+                  na poupança — e o app gravava as duas. Com menos nos dois
+                  lados, pagar R$ 3.040 de fatura aparecia como R$ 6.080 saindo,
+                  e a pessoa lia um prejuízo que nunca aconteceu. Agora ela sai
+                  sem sinal e em tom secundário: o valor continua conferível,
+                  mas não entra na leitura de quanto se gastou.
+
+                  Só a entrada ganha cor. Pintar toda saída de vermelho numa
+                  lista de cem linhas faz a pessoa parar de enxergar vermelho, e
+                  aí a cor não avisa mais nada. */}
               <span
                 className={`numero w-28 text-right text-[14px] font-medium ${
-                  transacao.tipo === "RECEITA" ? "text-positivo" : ""
+                  transacao.tipo === "RECEITA"
+                    ? "text-positivo"
+                    : transacao.tipo === "TRANSFERENCIA"
+                      ? "text-[color:var(--texto-3)]"
+                      : ""
                 }`}
               >
-                {transacao.tipo === "RECEITA" ? "+" : "−"}
+                {transacao.tipo === "RECEITA" ? "+" : transacao.tipo === "TRANSFERENCIA" ? "" : "−"}
                 {formatarMoeda(transacao.valorCentavos)}
               </span>
             </div>
