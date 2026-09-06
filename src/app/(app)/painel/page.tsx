@@ -127,17 +127,17 @@ export default async function Painel() {
             </Link>
           }
         >
-          <Valor tom="atencao" tamanho="medio">
+          <Valor tom="atencao" tamanho="cartao">
             {formatarMoeda(parcelamentos.restanteCentavos)}
           </Valor>
-          <p className="mt-1 text-[12px] text-muted-fg">
+          <p className="mt-1 text-[13px] text-[color:var(--texto-2)]">
             restante em {parcelamentos.emAndamento} compras · {parcelamentos.percentualPago}% já pago
           </p>
           <div className="mt-3">
             <Barra percentual={parcelamentos.percentualPago} tom="verde" />
           </div>
           {parcelamentos.ultimaCompetencia && (
-            <p className="mt-3 text-[12px] text-muted-fg">
+            <p className="mt-3 text-[13px] text-[color:var(--texto-2)]">
               Última parcela em {rotuloCompetencia(parcelamentos.ultimaCompetencia)}.
             </p>
           )}
@@ -156,8 +156,8 @@ export default async function Painel() {
         </Cartao>
 
         <Cartao titulo="Reserva de emergência">
-          <Valor tamanho="medio">{formatarMoeda(panorama.reserva.atualCentavos)}</Valor>
-          <p className="mt-1 text-[12px] text-muted-fg">
+          <Valor tamanho="cartao">{formatarMoeda(panorama.reserva.atualCentavos)}</Valor>
+          <p className="mt-1 text-[13px] text-[color:var(--texto-2)]">
             de {formatarMoeda(panorama.reserva.idealCentavos)} — cobre {panorama.reserva.mesesDeFolga} mês(es)
           </p>
           <div className="mt-3">

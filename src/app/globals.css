@@ -57,7 +57,10 @@
     --texto-3: oklch(0.63 0.012 258);
 
     /* --- espaço e forma --- */
-    --raio-cartao: 16px;
+    /* 28px, medido no protótipo. Estava em 16px, que é o raio de cartão do
+       iOS — mas o protótipo é mais aberto que isso, e o canto largo é parte do
+       que faz a tela parecer macia em vez de administrativa. */
+    --raio-cartao: 28px;
     --raio-campo: 12px;
     --raio-pilula: 999px;
     --largura-conteudo: 1240px;

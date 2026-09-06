@@ -91,15 +91,22 @@ export function Valor({
 }: {
   children: React.ReactNode
   tom?: Tom
-  tamanho?: "heroi" | "medio" | "linha"
+  tamanho?: "heroi" | "cartao" | "medio" | "linha"
   className?: string
 }) {
-  // Medidas tiradas do protótipo com o inspetor: 44px e 24px, peso 600, e
-  // tracking de -0,03em nos dois. Em corpo grande o espaçamento normal abre
-  // demais e o número perde o bloco — é por isso que ele fecha, e é a mesma
-  // proporção nos dois tamanhos.
+  // Três degraus, todos medidos no protótipo com o inspetor, todos em peso 600
+  // e tracking de -0,03em. Em corpo grande o espaçamento normal abre demais e
+  // o número perde o bloco — por isso ele fecha, na mesma proporção nos três.
+  //
+  //   heroi   44px  o saldo, um por tela
+  //   cartao  28px  o número que dá nome a um cartão
+  //   medio   24px  a métrica dentro de um cartão, em grade de quatro
+  //
+  // A diferença entre 28 e 24 parece pequena escrita, mas é o que separa "este
+  // cartão é sobre este número" de "estes quatro números são irmãos".
   const escala = {
     heroi: "text-[44px] leading-[1.05] tracking-[-0.03em]",
+    cartao: "text-[28px] leading-[1.1] tracking-[-0.03em]",
     medio: "text-[24px] leading-[1.1] tracking-[-0.03em]",
     linha: "text-[15px] leading-snug tracking-[-0.01em]",
   }[tamanho]
@@ -218,7 +225,11 @@ export function BarrasCategorias({
       {principais.map((linha) => (
         <li key={linha.nome}>
           <div className="flex items-baseline justify-between gap-3">
-            <span className="min-w-0 truncate text-[13px] text-[color:var(--texto-2)]">{linha.nome}</span>
+            {/* Nome da categoria em preto, medido no protótipo. Em cinza ele
+                virava legenda do valor; em preto os dois pesam igual, que é o
+                certo — "Mercado" e "R$ 1.120,00" são a mesma informação lida
+                de dois jeitos. */}
+            <span className="min-w-0 truncate text-[13px] text-foreground">{linha.nome}</span>
             <span className="numero shrink-0 text-[13px] font-medium">
               {formatarMoeda(linha.totalCentavos)}
             </span>
