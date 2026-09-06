@@ -1,10 +1,11 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
 import { buscar } from "@/lib/cliente"
+import { cn } from "@/lib/utils"
 
 /**
  * O Tino acompanhando as contas.
@@ -49,6 +50,19 @@ interface Alerta {
  */
 const ROTULO = { texto: "Recado do Tino", cor: "text-acao" }
 
+/**
+ * A cor da bolinha ativa no carrossel.
+ *
+ * Ela carrega a gravidade do aviso que está na vez, e é o que impede o
+ * carrossel de esconder um problema: sem isso, um alerta crítico atrás de dois
+ * informativos ficaria invisível até o giro chegar nele.
+ */
+const SEVERIDADE: Record<Alerta["severidade"], string> = {
+  CRITICO: "bg-negativo",
+  ATENCAO: "bg-atencao",
+  INFO: "bg-acao",
+}
+
 export function TinoAcompanha() {
   const [alertas, setAlertas] = useState<Alerta[] | null>(null)
 
@@ -65,19 +79,56 @@ export function TinoAcompanha() {
     carregar()
   }, [carregar])
 
-  // O mais grave manda. Entre dois da mesma gravidade, o primeiro que o motor
-  // devolveu — ele já ordena por urgência.
-  const principal =
-    alertas?.find((alerta) => alerta.severidade === "CRITICO") ??
-    alertas?.find((alerta) => alerta.severidade === "ATENCAO") ??
-    alertas?.[0] ??
-    null
+  // A fila do carrossel: o mais grave primeiro, e dentro da mesma gravidade a
+  // ordem que o motor devolveu — ele já ordena por urgência. Isso importa
+  // porque o primeiro é o que a pessoa vê antes de qualquer giro, e num
+  // carrossel só o primeiro tem visita garantida.
+  const fila = useMemo(() => {
+    if (!alertas?.length) return []
+    const peso = { CRITICO: 0, ATENCAO: 1, INFO: 2 }
+    return [...alertas].sort((a, b) => peso[a.severidade] - peso[b.severidade])
+  }, [alertas])
 
-  const restantes = (alertas?.length ?? 0) - (principal ? 1 : 0)
+  const [indice, setIndice] = useState(0)
+  const [pausado, setPausado] = useState(false)
+
+  // Volta ao começo quando a fila muda de tamanho, senão o índice fica
+  // apontando para um aviso que não existe mais.
+  useEffect(() => {
+    setIndice(0)
+  }, [fila.length])
+
+  /**
+   * O giro automático, com duas travas.
+   *
+   * Pausa no ponteiro e no foco: puxar da tela um aviso que fala de dinheiro
+   * enquanto a pessoa está lendo o número é pior do que não girar.
+   *
+   * E não gira de jeito nenhum para quem pediu menos movimento no sistema. O
+   * conteúdo continua todo alcançável pelas bolinhas e pelas setas — o giro é
+   * conveniência, nunca o único caminho.
+   */
+  useEffect(() => {
+    if (fila.length < 2 || pausado) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+
+    const relogio = setInterval(() => setIndice((atual) => (atual + 1) % fila.length), 7000)
+    return () => clearInterval(relogio)
+  }, [fila.length, pausado])
+
+  const principal = fila[indice] ?? null
   const rotulo = ROTULO
 
   return (
-    <section className="ficha flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+    <section
+      className="ficha flex flex-col gap-5 p-6 sm:flex-row sm:items-center"
+      // A pausa vale para ponteiro e para foco de teclado: quem está lendo ou
+      // navegando não pode ter o aviso trocado no meio da frase.
+      onMouseEnter={() => setPausado(true)}
+      onMouseLeave={() => setPausado(false)}
+      onFocusCapture={() => setPausado(true)}
+      onBlurCapture={() => setPausado(false)}
+    >
       {/* `next/image` e não `<img>`: o arquivo de origem tem 816px e 604 KB, e
           aqui ele aparece a 96px. Servir o original mandaria meio mega para o
           celular de quem só queria ver o saldo. */}
@@ -94,18 +145,41 @@ export function TinoAcompanha() {
         {principal ? (
           <>
             <p className={`text-[13px] font-medium ${rotulo.cor}`}>{rotulo.texto}</p>
-            <p className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">
-              {principal.titulo}
-            </p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
-              {principal.texto}
-              {restantes > 0 && (
-                <span className="text-[color:var(--texto-3)]">
-                  {" "}
-                  E mais {restantes} {restantes === 1 ? "aviso" : "avisos"}.
+            {/* `aria-live` educado: o leitor de tela anuncia a troca quando a
+                pessoa terminar o que está lendo, em vez de interromper. */}
+            <div aria-live="polite">
+              <p className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">
+                {principal.titulo}
+              </p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+                {principal.texto}
+              </p>
+            </div>
+
+            {/* As bolinhas não são só enfeite de posição: a que está ativa
+                carrega a COR DA GRAVIDADE daquele aviso. Assim, mesmo antes de
+                girar, dá para ver que existe um vermelho na fila. Um carrossel
+                que esconde o crítico atrás de dois informativos seria pior que
+                a lista que havia antes. */}
+            {fila.length > 1 && (
+              <div className="mt-3.5 flex items-center gap-2">
+                {fila.map((aviso, posicao) => (
+                  <button
+                    key={`${aviso.tipo}-${posicao}`}
+                    onClick={() => setIndice(posicao)}
+                    aria-label={`Aviso ${posicao + 1} de ${fila.length}: ${aviso.titulo}`}
+                    aria-current={posicao === indice}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-300 ease-[var(--curva)]",
+                      posicao === indice ? `w-6 ${SEVERIDADE[aviso.severidade]}` : "w-1.5 bg-foreground/20 hover:bg-foreground/40",
+                    )}
+                  />
+                ))}
+                <span className="ml-1 text-[12px] text-[color:var(--texto-3)]">
+                  {indice + 1} de {fila.length}
                 </span>
-              )}
-            </p>
+              </div>
+            )}
           </>
         ) : (
           <>
