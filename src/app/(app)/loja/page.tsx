@@ -308,7 +308,7 @@ export default function Loja() {
           <button
             onClick={fechar}
             disabled={ocupado || carrinho.length === 0}
-            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[15px] font-medium text-white disabled:opacity-50"
+            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[15px] font-medium text-primary-foreground disabled:opacity-50"
           >
             fechar venda
           </button>

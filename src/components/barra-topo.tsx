@@ -100,7 +100,7 @@ export function BarraTopo({
               <span
                 className={cn(
                   "absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold",
-                  criticos > 0 ? "bg-negativo text-white" : "bg-atencao text-primary-foreground",
+                  criticos > 0 ? "bg-negativo text-primary-foreground" : "bg-atencao text-primary-foreground",
                 )}
               >
                 {alertas.length}
