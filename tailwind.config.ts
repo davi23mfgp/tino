@@ -28,8 +28,15 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        /* `color-mix` e não `var()` cru.
+           Estes tokens guardam a cor INTEIRA (um `oklch(...)` completo), e
+           `var()` cru não deixa o Tailwind injetar opacidade: `bg-foreground/[0.09]`
+           virava cor inválida, que o navegador desenha como transparente.
+           Eram 24 usos assim, e o sintoma era discreto — trilha de barra de
+           progresso invisível, realce de hover que não aparecia, fundo que
+           sumia. Nada quebrava; as coisas só não apareciam. */
+        background: "color-mix(in oklab, var(--background) calc(<alpha-value> * 100%), transparent)",
+        foreground: "color-mix(in oklab, var(--foreground) calc(<alpha-value> * 100%), transparent)",
         primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
         secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
         destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
@@ -38,11 +45,14 @@ const config: Config = {
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
 
-        /* Papel, do mais próximo do olho ao mais fundo. */
-        "papel-1": "var(--papel-1)",
-        "papel-2": "var(--papel-2)",
-        "papel-3": "var(--papel-3)",
-        /* A linha do livro-caixa. */
+        /* Papel, do mais próximo do olho ao mais fundo. Pelo mesmo motivo do
+           par acima, passam por `color-mix` para aceitar opacidade. */
+        "papel-1": "color-mix(in oklab, var(--papel-1) calc(<alpha-value> * 100%), transparent)",
+        "papel-2": "color-mix(in oklab, var(--papel-2) calc(<alpha-value> * 100%), transparent)",
+        "papel-3": "color-mix(in oklab, var(--papel-3) calc(<alpha-value> * 100%), transparent)",
+        /* A linha do livro-caixa. Esta já nasce com alfa embutido no próprio
+           token, então fica como está: aplicar opacidade sobre opacidade daria
+           uma linha ainda mais fraca que a pretendida. */
         pauta: "var(--pauta)",
         "muted-fg": "var(--muted-fg)",
 
