@@ -114,23 +114,32 @@ export default function Transacoes() {
           <Vazio titulo="Nenhum lançamento neste filtro" texto="Troque o mês ou importe um extrato." />
         )}
 
+        {/* Linha de 52px e realce só no passar do mouse, conforme o brief.
+            Zebra fixa numa lista longa cria um padrão que compete com o
+            próprio dado; o realce que segue o cursor diz onde a pessoa está
+            sem pintar a tela inteira. */}
         <div className="divide-y divide-pauta">
           {transacoes.map((transacao) => (
-            <div key={transacao.id} className="flex flex-wrap items-center gap-3 py-3">
+            <div
+              key={transacao.id}
+              className="-mx-2 flex min-h-[52px] flex-wrap items-center gap-3 rounded-[var(--raio-campo)] px-2 py-2 transition-colors hover:bg-papel-2"
+            >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{transacao.descricao}</p>
-                <p className="text-[12px] text-muted-fg">
+                <p className="truncate text-[14px]">{transacao.descricao}</p>
+                <p className="text-[12px] text-[color:var(--texto-3)]">
                   {new Date(transacao.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })} · {transacao.conta.nome}
                 </p>
               </div>
 
+              {/* Sem categoria fica em âmbar porque é trabalho pendente, não
+                  erro: o Tino aprende com a correção, e a cor é o convite. */}
               <select
                 value={transacao.categoriaId ?? ""}
                 onChange={(evento) => recategorizar(transacao.id, evento.target.value)}
-                className={`rounded-full border px-3 py-1.5 text-xs ${
+                className={`rounded-[var(--raio-pilula)] px-3 py-1.5 text-[12px] outline-none transition-colors ${
                   transacao.categoriaId
-                    ? "border-pauta bg-background"
-                    : "border-atencao/50 bg-atencao/10 text-atencao"
+                    ? "bg-foreground/[0.06] text-[color:var(--texto-2)] hover:bg-foreground/[0.1]"
+                    : "bg-atencao/12 text-atencao"
                 }`}
               >
                 <option value="">sem categoria</option>
@@ -141,12 +150,16 @@ export default function Transacoes() {
                 ))}
               </select>
 
+              {/* Só a entrada ganha cor. Pintar toda saída de vermelho numa
+                  lista de cem linhas faz a pessoa parar de enxergar vermelho,
+                  e aí a cor não avisa mais nada. O sinal antes do valor é o
+                  que separa os dois em toda linha. */}
               <span
-                className={`w-28 text-right text-sm font-medium ${
+                className={`numero w-28 text-right text-[14px] font-medium ${
                   transacao.tipo === "RECEITA" ? "text-positivo" : ""
                 }`}
               >
-                {transacao.tipo === "RECEITA" ? "+" : "-"}
+                {transacao.tipo === "RECEITA" ? "+" : "−"}
                 {formatarMoeda(transacao.valorCentavos)}
               </span>
             </div>
