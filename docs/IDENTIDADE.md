@@ -22,6 +22,55 @@ decidiu cada um em 05/09/2026, e a decisão dele é o que vale:**
 O resto do brief entra como escrito. Nada de neon, nada de roxo, nada de
 gradiente sem função.
 
+### Virada de 05/09/2026 (noite): escala de cinza pura
+
+O Davi trouxe mais dois prompts (`prompt-ios-vidro-flutuante.md` e
+`prompt-remodelagem-categorias.md`) que exigem **`oklch` com chroma 0 em toda
+a interface** — nada de azul, verde, vermelho ou âmbar. Isso contradiz o
+brief anterior, que definia positivo, atenção e negativo coloridos.
+
+**Ele escolheu o cinza puro, com o custo na frente.** Vale registrar qual é o
+custo, porque quem chegar depois vai achar que foi descuido:
+
+- "Entrou" e "Saiu" deixam de ser distinguíveis por matiz;
+- alerta crítico e aviso informativo perdem a diferença de cor;
+- a expressão do mascote, que vem do motor de alertas, perde a cor que a
+  comunicava;
+- o trocadilho que dava origem à paleta — "estar no azul", "estar no
+  vermelho" — deixa de existir.
+
+**Como isso foi compensado**, e o que precisa continuar valendo:
+
+1. Os quatro tokens continuam existindo e continuam com nome de FUNÇÃO. O que
+   mudou é que a função passou a ser dita por **luminosidade**, e eles estão
+   espalhados de propósito na escala para não colapsarem num cinza só.
+2. A ordem não é arbitrária: no tema claro, quanto mais escuro, mais pesa.
+   `negativo` é o mais pesado, `atencao` no meio, `positivo` o mais leve —
+   sobra boa não precisa gritar. No escuro a escala inverte.
+3. O reforço não-cromático é obrigatório: **seta, sinal, peso de fonte e
+   espessura de faixa lateral**. Onde só a cor separava dois estados, agora
+   precisa ter um segundo sinal.
+
+Efeito colateral bom: cor sozinha nunca foi acessível — cerca de 8% dos
+homens não distinguem vermelho de verde — e o reforço acima serve a essas
+pessoas desde sempre.
+
+### Tipografia: fonte do sistema
+
+Onest e IBM Plex Mono saíram. `--font-ios` é a pilha do sistema. No Mac e no
+iPhone isso é a San Francisco de verdade, que era justamente o que a Onest
+tentava imitar; o custo aceito é que no Windows vira Segoe UI e no Android
+vira Roboto, então o app não é idêntico nas três plataformas.
+
+O algarismo tabular continua, vindo de `font-variant-numeric` no `body`. Era
+o único motivo funcional da monoespaçada, e ele sobreviveu à saída dela.
+
+### Superfície: vidro flutuante
+
+`.ficha` deixou de ser papel opaco e virou vidro — `blur(28px) saturate(180%)`
+sobre um `body` com dois halos radiais fixos. Os halos não são enfeite: sem
+nada atrás para borrar, vidro é só um retângulo cinza.
+
 ### Mascote: adiado, com referência escolhida (05/09/2026)
 
 O Davi mandou uma imagem de referência e disse: **"quero o Tino assim, mas

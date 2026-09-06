@@ -26,31 +26,37 @@
 
 @layer base {
   :root {
-    /* --- papel e tinta --- */
-    /* Claro do redesign de 05/09/2026: #FBFBFD de fundo, #FFFFFF de superfície,
-       #1D1D1F de texto. Superfície mais clara que o fundo — o cartão sobe em
-       direção ao branco, e é a diferença entre os dois que desenha a camada. */
-    --background: #fbfbfd;
-    --foreground: #1d1d1f;
+    /* Pilha do sistema: no Mac e no iPhone resolve para a San Francisco de
+       verdade; nas outras plataformas cai na fonte nativa delas. */
+    --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI",
+      system-ui, sans-serif;
 
-    --papel-1: #ffffff;
-    --papel-2: #f5f5f7;
-    --papel-3: #ececef;
+    /* --- papel e tinta --- */
+    /* Escala de cinza PURA: todo tom é oklch com chroma 0. Decisão do Davi em
+       05/09/2026, vinda do prompt da camada de vidro. O que a tela perde e
+       como isso é compensado está escrito em docs/IDENTIDADE.md — leia antes
+       de reintroduzir qualquer cor. */
+    --background: oklch(0.975 0 0);
+    --foreground: oklch(0.14 0 0);
+
+    --papel-1: oklch(1 0 0);
+    --papel-2: oklch(0.945 0 0);
+    --papel-3: oklch(0.92 0 0);
 
     /* A linha do livro-caixa: separa sem gritar. */
-    --pauta: rgb(0 0 0 / 9%);
-    --muted-fg: #6e6e73;
+    --pauta: oklch(0 0 0 / 10%);
+    --muted-fg: oklch(0.5 0 0);
 
     /* --- texto em três níveis --- */
     /* Terciário existe para o rótulo de 11px em maiúscula. Ele precisa sumir
        da leitura principal sem sumir da tela; secundário é para frase de
        apoio, que ainda é lida inteira. */
-    --texto-2: #6e6e73;
-    --texto-3: #86868b;
+    --texto-2: oklch(0.5 0 0);
+    --texto-3: oklch(0.62 0 0);
 
     /* --- espaço e forma --- */
-    --raio-cartao: 16px;
-    --raio-campo: 12px;
+    --raio-cartao: 26px;
+    --raio-campo: 18px;
     --raio-pilula: 999px;
     --largura-conteudo: 1240px;
     /* Uma curva só no app inteiro, e a duração curta o bastante para não
@@ -58,110 +64,114 @@
     --curva: cubic-bezier(0.32, 0.72, 0, 1);
     --tempo: 200ms;
 
-    /* --- cores que informam --- */
-    /* O azul de sistema do iOS, um degrau mais escuro que o #007AFF. O tom
-       da Apple sobre branco dá 3,6:1, e aqui ele também vira TEXTO de 12px
-       ("Avalanche: paga primeiro o juro mais alto", rótulo de pílula
-       selecionada), não só preenchimento de botão. Escurecer até 4,8:1 põe
-       no critério de AA sem sair do azul que o iOS ensinou a ler como
-       "isto se toca". */
-    --lch-acao: 0.5 0.19 258;
-    --lch-positivo: 0.49 0.13 248;
-    /* Vermelho e âmbar do sistema da Apple, escurecidos para o fundo claro:
-       o #FF453A e o #FF9F0A do brief nasceram para tela escura e sobre branco
-       não chegam perto de 4,5:1 como texto. O matiz é o mesmo. */
-    --lch-negativo: 0.52 0.18 26;
-    --lch-atencao: 0.6 0.13 66;
-    --lch-alerta: 0.68 0.13 88;
-    --lch-destaque: 0.45 0.15 292;
-    --lch-dado: 0.48 0.085 212;
+    /* --- vidro --- */
+    --vidro: oklch(0 0 0 / 4%);
+    --vidro-forte: oklch(0 0 0 / 7%);
+    --sombra-ios: 0 1px 0 0 oklch(1 0 0 / 70%) inset, 0 18px 40px -24px oklch(0 0 0 / 28%);
+    --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
+
+    /* --- os tokens que informam, agora só em luminosidade --- */
+    /* Eles continuam existindo e continuam com nome de FUNÇÃO. O que mudou é
+       que a função deixou de ser dita por matiz e passou a ser dita por
+       LUMINOSIDADE, e os quatro estão espalhados de propósito na escala para
+       não colapsarem num cinza só.
+
+       A ordem não é arbitrária: quanto mais escuro, mais pesa na tela clara.
+       O que a pessoa precisa notar primeiro é o buraco, depois o que está
+       perto do limite, e por último a sobra — sobra boa não precisa gritar.
+
+       Cor sozinha nunca foi acessível de qualquer forma (8% dos homens não
+       distinguem vermelho de verde), então o reforço que a tela usa é o mesmo
+       que já servia a essas pessoas: seta, sinal, peso e espessura de faixa. */
+    --lch-acao: 0.16 0 0;
+    --lch-negativo: 0.3 0 0;
+    --lch-atencao: 0.45 0 0;
+    --lch-positivo: 0.58 0 0;
+    --lch-alerta: 0.52 0 0;
+    --lch-destaque: 0.36 0 0;
+    --lch-dado: 0.42 0 0;
 
     /* --- shadcn --- */
     --card: 0 0% 100%;
-    --card-foreground: 258 22% 14%;
+    --card-foreground: 0 0% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 258 22% 14%;
-    /* Mesmo azul da ação, aqui como preenchimento de botão: o branco por cima
-       precisa dos 4,5:1 que o #007AFF não dá. */
-    --primary: 211 100% 44%;
+    --popover-foreground: 0 0% 14%;
+    --primary: 0 0% 16%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 255 14% 94%;
-    --secondary-foreground: 258 20% 22%;
-    --muted: 255 14% 95%;
-    --muted-foreground: 258 8% 45%;
-    --accent: 255 16% 92%;
-    --accent-foreground: 258 24% 18%;
-    --destructive: 12 68% 46%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 18%;
+    --muted: 0 0% 94.5%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 0 0% 92%;
+    --accent-foreground: 0 0% 16%;
+    --destructive: 0 0% 34%;
     --destructive-foreground: 0 0% 100%;
-    --border: 255 12% 87%;
-    --input: 255 12% 84%;
-    --ring: 211 100% 50%;
+    --border: 0 0% 90%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 16%;
 
-    /* Base do shadcn, usada por campo e botão. O cartão tem raio próprio, mais
-       aberto, em `--raio-cartao`: separar os dois é o que faz o cartão parecer
-       superfície e o botão parecer controle. */
-    --radius: 12px;
+    /* 18px: o raio base generoso do prompt de vidro, para campo e botão. O
+       cartão tem raio próprio e mais aberto em `--raio-cartao`. */
+    --radius: 18px;
 
-    /* Sombra de papel sobre papel: curta e sem borrão. */
-    --sombra-ficha: 0 1px 2px oklch(0.22 0.03 258 / 6%), 0 6px 18px oklch(0.22 0.03 258 / 5%);
-    --sombra-alta: 0 8px 28px oklch(0.22 0.03 258 / 12%), 0 2px 6px oklch(0.22 0.03 258 / 8%);
+    --sombra-ficha: var(--sombra-ios);
+    --sombra-alta: var(--sombra-flutuante);
   }
 
   .dark {
-    /* Escala do redesign: #0B0B0D de fundo, #141416 de superfície, #1B1B1F de
-       superfície elevada. Continua valendo a regra antiga — preto ABSOLUTO em
-       tela OLED faz cartão e fundo virarem a mesma coisa e a hierarquia some.
-       Estes três não são preto: são três degraus a um passo um do outro, e é
-       o degrau, não a cor, que desenha a camada. */
-    --background: #0b0b0d;
-    --foreground: #f5f5f7;
+    /* Preto profundo com branco, ainda em chroma 0. Continua valendo a regra
+       antiga — preto ABSOLUTO em tela OLED faz cartão e fundo virarem a mesma
+       coisa e a hierarquia some. Estes não são preto: são degraus, e é o
+       degrau que desenha a camada. */
+    --background: oklch(0.11 0 0);
+    --foreground: oklch(0.985 0 0);
 
-    --papel-1: #141416;
-    --papel-2: #1b1b1f;
-    --papel-3: #232327;
+    --papel-1: oklch(0.175 0 0);
+    --papel-2: oklch(0.24 0 0);
+    --papel-3: oklch(0.28 0 0);
 
-    --pauta: rgb(255 255 255 / 8%);
-    --muted-fg: #a1a1a6;
+    --pauta: oklch(1 0 0 / 12%);
+    --muted-fg: oklch(0.68 0 0);
 
-    --texto-2: #a1a1a6;
-    --texto-3: #6e6e73;
+    --texto-2: oklch(0.68 0 0);
+    --texto-3: oklch(0.55 0 0);
 
-    /* #0A84FF: o iOS clareia o azul no escuro em vez de reusar o mesmo tom.
-       O #007AFF sobre grafite perde contraste e o botão afunda no fundo. */
-    --lch-acao: 0.645 0.185 258;
-    --lch-positivo: 0.76 0.13 246;
-    /* #FF453A e #FF9F0A do sistema da Apple, que nasceram para tela escura e
-       aqui podem ser usados como são. */
-    --lch-negativo: 0.7 0.17 26;
-    --lch-atencao: 0.78 0.14 70;
-    --lch-alerta: 0.86 0.14 90;
-    --lch-destaque: 0.73 0.14 294;
-    --lch-dado: 0.75 0.09 212;
+    /* A escala inverte no escuro: aqui é o tom CLARO que pesa. A ordem de
+       importância continua a mesma — buraco primeiro, limite depois, sobra
+       por último. */
+    --lch-acao: 0.985 0 0;
+    --lch-negativo: 0.88 0 0;
+    --lch-atencao: 0.72 0 0;
+    --lch-positivo: 0.6 0 0;
+    --lch-alerta: 0.66 0 0;
+    --lch-destaque: 0.8 0 0;
+    --lch-dado: 0.74 0 0;
 
-    --card: 258 16% 13%;
-    --card-foreground: 0 0% 96%;
-    --popover: 258 16% 15%;
-    --popover-foreground: 0 0% 96%;
-    /* No escuro o botão sobe dois pontos de luz — precisa se separar do
-       grafite — mas não os quatro do #0A84FF, que devolveria o rótulo branco
-       a 3,7:1. Aqui dá 4,6:1 no texto e 4,1:1 contra o fundo. */
-    --primary: 211 100% 46%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 258 12% 22%;
-    --secondary-foreground: 0 0% 96%;
-    --muted: 258 12% 21%;
-    --muted-foreground: 258 8% 70%;
-    --accent: 258 12% 24%;
-    --accent-foreground: 0 0% 96%;
-    --destructive: 12 70% 62%;
-    --destructive-foreground: 258 22% 14%;
-    --border: 258 10% 27%;
-    --input: 258 10% 30%;
-    --ring: 211 100% 62%;
+    --vidro: oklch(1 0 0 / 6%);
+    --vidro-forte: oklch(1 0 0 / 10%);
+    --sombra-ios: 0 1px 0 0 oklch(1 0 0 / 6%) inset, 0 18px 40px -22px oklch(0 0 0 / 80%);
+    --sombra-flutuante: 0 24px 60px -28px oklch(0 0 0 / 90%);
 
-    /* Uma sombra só no sistema, conforme o brief. */
-    --sombra-ficha: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 24%);
-    --sombra-alta: 0 10px 32px rgb(0 0 0 / 50%), 0 2px 8px rgb(0 0 0 / 32%);
+    --card: 0 0% 17.5%;
+    --card-foreground: 0 0% 98.5%;
+    --popover: 0 0% 17.5%;
+    --popover-foreground: 0 0% 98.5%;
+    --primary: 0 0% 98.5%;
+    --primary-foreground: 0 0% 14%;
+    --secondary: 0 0% 25%;
+    --secondary-foreground: 0 0% 98.5%;
+    --muted: 0 0% 24%;
+    --muted-foreground: 0 0% 68%;
+    --accent: 0 0% 28%;
+    --accent-foreground: 0 0% 98.5%;
+    --destructive: 0 0% 75%;
+    --destructive-foreground: 0 0% 14%;
+    --border: 0 0% 27%;
+    --input: 0 0% 30%;
+    --ring: 0 0% 98.5%;
+
+    --sombra-ficha: var(--sombra-ios);
+    --sombra-alta: var(--sombra-flutuante);
   }
 
   * {
@@ -171,13 +181,30 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-corpo), ui-sans-serif, system-ui, sans-serif;
+    /* Fonte do sistema. Decisão do Davi em 05/09/2026: no Mac e no iPhone isso
+       é a San Francisco de verdade, que nenhuma fonte auto-hospedada iguala.
+       O custo, aceito por ele, é que no Windows vira Segoe UI e no Android
+       vira Roboto — o app não fica idêntico nas três. */
+    font-family: var(--font-ios);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     /* Algarismo de largura fixa em toda a interface. Numa lista de valores, o
        "1" estreito desalinha a coluna inteira e conferir extrato passa a exigir
        esforço que o papel não exigia. */
     font-variant-numeric: tabular-nums;
+    /* O fundo não é cor sólida: são dois halos fixos que dão profundidade, e é
+       sobre eles que os cartões de vidro flutuam. Sem isso o vidro não tem o
+       que borrar e vira um retângulo cinza. */
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(0 0 0 / 7%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(0 0 0 / 5%), transparent 62%);
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(1 0 0 / 8%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(1 0 0 / 5%), transparent 62%);
   }
 
   /* Dinheiro em algarismo tabular.
@@ -199,7 +226,7 @@
   h1,
   h2,
   .display {
-    font-family: var(--font-display), var(--font-corpo), sans-serif;
+    font-family: var(--font-ios);
     letter-spacing: -0.022em;
   }
 
@@ -218,22 +245,41 @@
 }
 
 @layer components {
-  /* A ficha: o cartão do livro-caixa.
-     A pauta no topo é o único enfeite do sistema — e é o que dá à tela
-     a cara de papel pautado em vez de painel de aplicativo.
+  /* A ficha virou VIDRO em 05/09/2026.
+     Deixou de ser papel opaco e passou a ser uma superfície translúcida que
+     borra o que está atrás. É por isso que o `body` ganhou os dois halos: sem
+     nada atrás para borrar, vidro é só um retângulo cinza.
 
-     Ela encolheu de 2px para 1px e perdeu metade da opacidade quando o resto
-     foi para a linguagem do iOS: numa tela com seis fichas empilhadas, seis
-     barras coloridas viram listra, e superfície do iOS é lisa. O traço fica
-     porque é a assinatura da casa; fica fino porque parou de ser o que se vê
-     primeiro. */
-  .ficha {
+     O `overflow: hidden` fica porque a tabela e o gráfico dentro da ficha
+     precisam ser cortados no raio; o `position: relative` fica porque a
+     pauta do topo era posicionada por ele e outros filhos ainda usam. */
+  .ficha,
+  .ios-card {
     position: relative;
-    background: var(--papel-1);
+    background: color-mix(in oklab, var(--papel-1) 78%, transparent);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
     border: 1px solid var(--pauta);
     border-radius: var(--raio-cartao);
-    box-shadow: var(--sombra-ficha);
+    box-shadow: var(--sombra-ios);
     overflow: hidden;
+  }
+
+  /* Feedback de toque: o cartão afunda um pouco sob o dedo. Só onde há ação —
+     afundar um cartão que não faz nada promete um clique que não existe. */
+  .ios-tap {
+    transition:
+      transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .ios-tap:active {
+    transform: scale(0.97);
+  }
+
+  .bg-vidro {
+    background: var(--vidro);
   }
 
   /* A pauta colorida no topo saiu em 05/09/2026, com o redesign.

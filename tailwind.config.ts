@@ -15,10 +15,14 @@ const config: Config = {
   theme: {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
+      // Uma família só, a do sistema. Os três nomes continuam apontando para
+      // ela para não quebrar as classes já escritas nas telas: `font-numero`
+      // ainda existe, só que hoje o algarismo tabular vem de
+      // `font-variant-numeric`, não da troca de fonte.
       fontFamily: {
-        sans: ["var(--font-corpo)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-corpo)", "sans-serif"],
-        numero: ["var(--font-numero)", "ui-monospace", "monospace"],
+        sans: ["var(--font-ios)"],
+        display: ["var(--font-ios)"],
+        numero: ["var(--font-ios)"],
       },
       colors: {
         border: "hsl(var(--border))",
