@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import { prisma } from "@/lib/prisma"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
@@ -92,8 +94,29 @@ export default async function Cartoes() {
           </Cartao>
         ))}
 
+        {/* Dentro de um Cartao, e não solto sobre o fundo: sem a superfície
+            embaixo, o estado vazio flutuava entre dois cartões e parecia um
+            erro de layout em vez de uma resposta da tela.
+
+            O texto parou de oferecer Open Finance. O adaptador existe em
+            `src/lib/open-finance/`, mas o Davi tirou do menu e não vai usar —
+            oferecer um caminho que não existe na interface é mandar a pessoa
+            procurar por algo que ela não vai achar. */}
         {detalhados.length === 0 && (
-          <Vazio titulo="Nenhum cartão cadastrado" texto="Cadastre em Configurações ou conecte pelo Open Finance." />
+          <Cartao>
+            <Vazio
+              titulo="Nenhum cartão cadastrado"
+              texto="Cadastre o primeiro em Configurações para o Tino acompanhar a fatura."
+              acao={
+                <Link
+                  href="/configuracoes"
+                  className="ios-tap inline-block rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground"
+                >
+                  Cadastrar cartão
+                </Link>
+              }
+            />
+          </Cartao>
         )}
       </div>
 
