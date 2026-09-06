@@ -141,7 +141,7 @@ export function TinoDock() {
               <button
                 key={sugestao}
                 onClick={() => perguntar(sugestao)}
-                className="block w-full rounded-2xl border border-pauta px-3 py-2 text-left text-sm transition hover:border-acao/40 hover:text-acao"
+                className="block w-full rounded-[var(--raio-cartao)] border border-pauta px-3 py-2 text-left text-sm transition hover:border-acao/40 hover:text-acao"
               >
                 {sugestao}
               </button>

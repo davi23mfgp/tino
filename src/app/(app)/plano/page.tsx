@@ -142,7 +142,7 @@ export default async function Plano() {
           <Cartao titulo="Roteiro mês a mês">
             <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
               {plano.passos.map((passo) => (
-                <div key={passo.competencia} className="rounded-2xl border border-pauta p-3">
+                <div key={passo.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{rotuloCompetencia(passo.competencia)}</span>
                     <span className={passo.sobraCentavos < 0 ? "text-negativo" : "text-positivo"}>

@@ -80,7 +80,7 @@ export default async function Projecao() {
       <Cartao titulo="Mês a mês">
         <div className="space-y-3">
           {comAcumulado.map((linha) => (
-            <div key={linha.competencia} className="rounded-2xl border border-pauta p-3">
+            <div key={linha.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{rotuloCompetencia(linha.competencia)}</span>
                 <span

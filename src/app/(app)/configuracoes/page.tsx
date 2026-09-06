@@ -198,12 +198,12 @@ export default function Configuracoes() {
             onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
             placeholder="nome da conta"
             required
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
           <select
             value={nova.tipo}
             onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           >
             {TIPOS_CONTA.map((tipo) => (
               <option key={tipo.valor} value={tipo.valor}>
@@ -215,13 +215,13 @@ export default function Configuracoes() {
             value={nova.instituicao}
             onChange={(evento) => setNova({ ...nova, instituicao: evento.target.value })}
             placeholder="banco"
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
           <input
             value={nova.saldo}
             onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
             placeholder="saldo atual (ex.: -6.582,74)"
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
           {nova.tipo === "CARTAO_CREDITO" && (
             <>
@@ -229,17 +229,17 @@ export default function Configuracoes() {
                 value={nova.limite}
                 onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
                 placeholder="limite total"
-                className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+                className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
               />
               <input
                 value={nova.venc}
                 onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
                 placeholder="dia do vencimento"
-                className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+                className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
               />
             </>
           )}
-          <button className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:col-span-3">
+          <button className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:col-span-3">
             Adicionar conta
           </button>
         </form>
@@ -261,7 +261,7 @@ export default function Configuracoes() {
 
         <div className="mt-4 space-y-2">
           {openFinance?.conexoes.map((conexao) => (
-            <div key={conexao.id} className="flex items-center justify-between rounded-2xl border border-pauta p-3">
+            <div key={conexao.id} className="flex items-center justify-between rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div>
                 <p className="text-sm">{conexao.instituicao}</p>
                 <p className="text-[12px] text-muted-fg">

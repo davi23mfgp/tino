@@ -29,7 +29,7 @@ interface Regra {
   categoria: { nome: string; cor: string; icone: string }
 }
 
-const campo = "w-full rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 export default function Regras() {
   const [regras, setRegras] = useState<Regra[]>([])
@@ -186,7 +186,7 @@ export default function Regras() {
             />
             <button
               disabled={ocupado}
-              className="rounded-2xl bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
+              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
             >
               Criar regra
             </button>

@@ -69,7 +69,7 @@ const AVISO_RISCO: Record<string, { texto: string; tom: string }> = {
   },
 }
 
-const campo = "rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 const VAZIO = { competencia: competenciaAtual(), comercio: "", servicos: "", dasPago: false, dasValor: "", observacao: "" }
 
@@ -256,7 +256,7 @@ export default function Mei() {
         }
       >
         {abrirForm && (
-          <form onSubmit={salvar} className="mb-4 grid gap-3 rounded-2xl border border-pauta bg-papel-2 p-4 sm:grid-cols-2">
+          <form onSubmit={salvar} className="mb-4 grid gap-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
               competência
               <input

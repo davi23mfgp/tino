@@ -70,7 +70,7 @@ export function RelatarProblema() {
               ? "O que você fez, o que esperava e o que apareceu."
               : "Escreva do jeito que você contaria para alguém."
           }
-          className="w-full rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+          className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
         />
 
         <button

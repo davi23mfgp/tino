@@ -131,7 +131,7 @@ export default function ConfiguracoesAdmin() {
                   value={rascunho[parametro.chave] ?? ""}
                   onChange={(evento) => setRascunho({ ...rascunho, [parametro.chave]: evento.target.value })}
                   inputMode="decimal"
-                  className="numero w-40 rounded-2xl border border-pauta bg-background px-4 py-2 text-sm"
+                  className="numero w-40 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2 text-sm"
                 />
                 <span className="text-[12px] text-muted-fg">
                   {parametro.unidade === "centavos" ? "reais" : parametro.unidade === "bps" ? "% ao mês" : "dias"}

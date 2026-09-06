@@ -134,7 +134,7 @@ export default function Importar() {
             <select
               value={contaId}
               onChange={(evento) => setContaId(evento.target.value)}
-              className="w-full rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+              className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
             >
               {contas.map((conta) => (
                 <option key={conta.id} value={conta.id}>
@@ -150,7 +150,7 @@ export default function Importar() {
               type="file"
               accept=".ofx,.qfx,.csv,.txt,.pdf"
               onChange={(evento) => setArquivo(evento.target.files?.[0] ?? null)}
-              className="w-full rounded-2xl border border-pauta bg-background px-4 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-papel-2 file:px-3 file:py-1.5 file:text-xs"
+              className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-papel-2 file:px-3 file:py-1.5 file:text-xs"
             />
           </label>
         </div>
@@ -164,7 +164,7 @@ export default function Importar() {
               onChange={(evento) => setSenhaPdf(evento.target.value)}
               placeholder="senha do arquivo"
               autoComplete="off"
-              className="w-full rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm outline-none focus:border-acao/50"
+              className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm outline-none focus:border-acao/50"
             />
             <p className="text-xs text-atencao/80">
               A senha é usada só para abrir o arquivo agora e não fica guardada em lugar nenhum.

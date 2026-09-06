@@ -99,12 +99,12 @@ export function FilaDeChamados({ chamados }: { chamados: ChamadoNaFila[] }) {
               onChange={(evento) => setRespostas({ ...respostas, [chamado.id]: evento.target.value })}
               placeholder="anotação da resposta (fica com o chamado)"
               rows={2}
-              className="mt-3 w-full rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+              className="mt-3 w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
             />
           )}
 
           {chamado.status === "RESOLVIDO" && chamado.resposta && (
-            <p className="mt-3 rounded-2xl border border-pauta bg-papel-2 p-3 text-[12px] leading-relaxed text-muted-fg">
+            <p className="mt-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-3 text-[12px] leading-relaxed text-muted-fg">
               {chamado.resposta}
             </p>
           )}

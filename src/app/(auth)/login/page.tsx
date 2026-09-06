@@ -43,7 +43,7 @@ export default function Login() {
             placeholder="seu@email.com"
             autoComplete="email"
             required
-            className="w-full rounded-2xl border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
+            className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
           />
           <input
             type="password"
@@ -52,7 +52,7 @@ export default function Login() {
             placeholder="sua senha"
             autoComplete="current-password"
             required
-            className="w-full rounded-2xl border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
+            className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
           />
 
           {erro && <p className="text-sm text-negativo">{erro}</p>}
@@ -60,7 +60,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={entrando}
-            className="w-full rounded-2xl bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            className="w-full rounded-[var(--raio-pilula)] bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
             {entrando ? "Entrando…" : "Entrar"}
           </button>

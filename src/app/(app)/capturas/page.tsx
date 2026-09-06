@@ -172,12 +172,12 @@ export default function Capturas() {
             value={rapido}
             onChange={(evento) => setRapido(evento.target.value)}
             placeholder="mercado 52,30"
-            className="flex-1 rounded-2xl border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
+            className="flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
           />
           <button
             type="submit"
             disabled={ocupado || !rapido.trim()}
-            className="rounded-2xl bg-primary px-5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+            className="rounded-[var(--raio-pilula)] bg-primary px-5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
           >
             <Send className="size-4" />
           </button>
@@ -299,7 +299,7 @@ export default function Capturas() {
         <Cartao titulo="Não consegui ler">
           <div className="space-y-2">
             {naoEntendidas.map((captura) => (
-              <div key={captura.id} className="flex items-start justify-between gap-3 rounded-2xl border border-pauta p-3">
+              <div key={captura.id} className="flex items-start justify-between gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <p className="min-w-0 flex-1 text-[12px] text-muted-fg">{captura.textoBruto}</p>
                 <button
                   onClick={() => descartar(captura.id)}
@@ -341,7 +341,7 @@ export default function Capturas() {
         )}
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <div className="rounded-2xl border border-pauta p-4">
+          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
               <Share2 className="size-4" /> Compartilhar do celular (Android)
             </p>
@@ -358,7 +358,7 @@ export default function Capturas() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-pauta p-4">
+          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
               <Smartphone className="size-4" /> Notificações do banco (Android)
             </p>
@@ -382,7 +382,7 @@ export default function Capturas() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-pauta p-4">
+          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
               <Send className="size-4" /> Telegram (mandar faturas)
             </p>
@@ -410,7 +410,7 @@ export default function Capturas() {
         {chaves.length > 0 && (
           <div className="mt-4 space-y-2">
             {chaves.map((chave) => (
-              <div key={chave.id} className="flex items-center justify-between rounded-2xl border border-pauta p-3">
+              <div key={chave.id} className="flex items-center justify-between rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <div>
                   <p className="text-[13px]">
                     {chave.nome} <span className="text-muted-fg">···{chave.sufixo}</span>

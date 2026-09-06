@@ -63,7 +63,7 @@ const TIPOS = [
   { valor: "OUTRO", rotulo: "Outro" },
 ]
 
-const campo = "rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", parcela: "", parcelasTotal: "", pagas: "0", dia: "10" }
 
@@ -212,7 +212,7 @@ export default function Dividas() {
             />
             <button
               disabled={ocupado}
-              className="rounded-2xl bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
+              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
             >
               Adicionar dívida
             </button>
@@ -231,7 +231,7 @@ export default function Dividas() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-pauta p-4">
+            <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
               <p className="text-[13px] font-medium">Bola de neve: paga primeiro o menor saldo</p>
               <p className="mt-1.5 text-[20px] font-semibold">{comparativo.bolaDeNeve.meses} meses</p>
               <p className="text-[12px] text-muted-fg">
@@ -262,7 +262,7 @@ export default function Dividas() {
             {dados.ordem.map((divida, indice) => {
               const quitacao = dados.plano?.quitacoes.find((linha) => linha.id === divida.id)
               return (
-                <li key={divida.id} className="flex items-center gap-3 rounded-2xl border border-pauta p-3">
+                <li key={divida.id} className="flex items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
                     {indice + 1}
                   </span>
@@ -292,7 +292,7 @@ export default function Dividas() {
           {abertas.map((divida) => {
             const progresso = divida.parcelasTotal ? (divida.parcelasPagas / divida.parcelasTotal) * 100 : 0
             return (
-              <div key={divida.id} className="rounded-2xl border border-pauta p-3.5">
+              <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-[14px] font-medium">{divida.credor}</p>

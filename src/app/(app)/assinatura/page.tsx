@@ -224,7 +224,7 @@ export default function Assinatura() {
               const valorCentavos = ciclo === "ANUAL" ? linha.anualCentavos : linha.mensalCentavos
 
               return (
-                <div key={linha.codigo} className="rounded-2xl border border-pauta bg-papel-2 p-5">
+                <div key={linha.codigo} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-5">
                   <p className="text-[15px] font-semibold">{linha.nome}</p>
                   <p className="mt-1 text-[12px] leading-relaxed text-muted-fg">{linha.chamada}</p>
 

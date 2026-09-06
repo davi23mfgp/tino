@@ -65,7 +65,7 @@ const FORMAS: { valor: FormaPagamento; rotulo: string }[] = [
   { valor: "FIADO", rotulo: "Fiado" },
 ]
 
-const campo = "rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 export default function Loja() {
   const [dados, setDados] = useState<Estado | null>(null)
@@ -202,7 +202,7 @@ export default function Loja() {
                 <button
                   key={produto.id}
                   onClick={() => adicionar(produto)}
-                  className="rounded-2xl border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[13px]"
+                  className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[13px]"
                 >
                   <span className="block font-medium">{produto.nome}</span>
                   <span className="text-muted-fg">{formatarMoeda(produto.precoCentavos)}</span>
@@ -348,7 +348,7 @@ export default function Loja() {
             </div>
 
             {dados.aCair.length > 0 && (
-              <div className="mt-4 rounded-2xl border border-pauta bg-papel-2 p-4">
+              <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
                 <p className="text-[12px] uppercase tracking-widest text-muted-fg">Próximos dias</p>
                 <div className="mt-2 space-y-1">
                   {dados.aCair.slice(0, 6).map((linha) => (

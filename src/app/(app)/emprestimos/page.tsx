@@ -54,7 +54,7 @@ const VEREDITO = {
   EVITAR: { texto: "Não recomendo", tom: "text-negativo", borda: "border-negativo/40 bg-negativo/10" },
 }
 
-const campo = "w-full rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 export default function Emprestimos() {
   const [valor, setValor] = useState("")
@@ -190,7 +190,7 @@ export default function Emprestimos() {
             </p>
 
             {analise.alternativas.length > 0 && (
-              <div className="mt-4 rounded-2xl border border-pauta p-3.5">
+              <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
                 <p className="text-[11px] uppercase tracking-widest text-muted-fg">Antes de assinar</p>
                 <ul className="mt-2 space-y-1.5">
                   {analise.alternativas.map((alternativa) => (
@@ -248,7 +248,7 @@ export default function Emprestimos() {
         <Cartao titulo="Propostas guardadas">
           <div className="space-y-2">
             {salvas.map((simulacao) => (
-              <div key={simulacao.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-pauta p-3">
+              <div key={simulacao.id} className="flex flex-wrap items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px]">{simulacao.titulo}</p>
                   <p className="text-[11px] text-muted-fg">

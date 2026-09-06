@@ -216,7 +216,7 @@ export default function OrcamentoPagina() {
 
         <div className="space-y-2">
           {dados?.linhas.map((linha) => (
-            <div key={linha.categoriaId} className="rounded-2xl border border-pauta p-3">
+            <div key={linha.categoriaId} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="min-w-0 flex-1 truncate text-[14px]">{linha.categoria.nome}</span>
                 <span className={cn("text-[13px] tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>

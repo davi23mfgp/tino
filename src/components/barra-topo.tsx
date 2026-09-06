@@ -121,7 +121,7 @@ export function BarraTopo({
           </button>
 
           {aberto && (
-            <div className="absolute right-0 top-12 z-50 w-[min(380px,90vw)] space-y-2 rounded-2xl border border-pauta bg-card p-3 shadow-alta">
+            <div className="absolute right-0 top-12 z-50 w-[min(380px,90vw)] space-y-2 rounded-[var(--raio-cartao)] border border-pauta bg-card p-3 shadow-alta">
               {alertas.length === 0 && (
                 <p className="px-2 py-6 text-center text-sm text-muted-fg">
                   Nada urgente por aqui. Continue assim.

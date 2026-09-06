@@ -95,7 +95,7 @@ const MODELOS: { tipo: TipoAjuste; titulo: string; texto: string }[] = [
   { tipo: "RECEITA_UNICA", titulo: "Entrada única", texto: "13º, bônus, venda" },
 ]
 
-const campo = "w-full rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 export default function Simulador() {
   const [comparacao, setComparacao] = useState<Comparacao | null>(null)
@@ -266,7 +266,7 @@ export default function Simulador() {
         <Cartao titulo="Suas hipóteses">
           <div className="space-y-3">
             {hipoteses.map((hipotese) => (
-              <div key={hipotese.id} className="rounded-2xl border border-pauta bg-papel-2 p-3">
+              <div key={hipotese.id} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <input
                     value={hipotese.rotulo}
@@ -445,7 +445,7 @@ export default function Simulador() {
                 const negativo = mes.saldoAcumuladoCentavos < 0
 
                 return (
-                  <div key={mes.competencia} className="rounded-2xl border border-pauta p-3">
+                  <div key={mes.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="text-[13px] font-medium">{rotuloCompetencia(mes.competencia)}</span>
                       <span className={cn("text-[15px] font-semibold", negativo ? "text-negativo" : "text-foreground")}>

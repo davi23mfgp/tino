@@ -54,9 +54,9 @@ export default async function ContasAdmin({ searchParams }: { searchParams: Prom
             name="q"
             defaultValue={busca}
             placeholder="e-mail ou nome"
-            className="flex-1 rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
-          <button className="rounded-2xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground">
+          <button className="rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground">
             Buscar
           </button>
         </form>

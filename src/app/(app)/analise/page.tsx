@@ -102,7 +102,7 @@ export default async function Analise() {
       <Cartao titulo="Indicadores">
         <div className="grid gap-3 lg:grid-cols-2">
           {diagnostico.indicadores.map((indicador) => (
-            <div key={indicador.chave} className="rounded-2xl border border-pauta bg-papel-2 p-4">
+            <div key={indicador.chave} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-[13px] font-medium">{indicador.nome}</p>
                 <div className="text-right">
@@ -126,7 +126,7 @@ export default async function Analise() {
       <Cartao titulo="O que fazer, nesta ordem">
         <ol className="space-y-3">
           {diagnostico.prioridades.map((prioridade) => (
-            <li key={prioridade.ordem} className="flex gap-3 rounded-2xl border border-pauta p-3.5">
+            <li key={prioridade.ordem} className="flex gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
               <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
                 {prioridade.ordem}
               </span>
