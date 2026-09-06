@@ -3,6 +3,31 @@
 Escrito para quem for mexer na tela sem ter participado da decisão. O que está
 aqui não é gosto: cada escolha responde a alguma coisa do produto.
 
+## Redesign em curso (aberto em 05/09/2026)
+
+Está rodando um redesign a partir de um brief do Davi
+(`prompt-tino-redesign-apple.md`): acabamento Apple, grade bento na Visão
+geral, primitivos novos (Card, Metric, Stat, Button, Pill, Table, EmptyState,
+Sidebar, PageHeader), e mascote refeito.
+
+**Três pontos do brief batiam com o que já estava decidido aqui. O Davi
+decidiu cada um em 05/09/2026, e a decisão dele é o que vale:**
+
+| Questão | O brief pedia | Decisão | Por quê |
+|---|---|---|---|
+| Cor de `positivo` | verde `#30D158` | **fica azul** | Verde continua proibido nesta base. Já foi rejeitado uma vez, e "estar no azul" é do português, não genérico de fintech |
+| Mascote | símbolo geométrico, sem boca, 2 cores | **realista, simpático e personalizável** | Pedido dele por escrito, depois do brief. A mensagem mais recente ganha do arquivo |
+| Fonte do valor | tirar a mono | **tirar a mono**, `tabular-nums` no sans | `tabular-nums` dá o dígito de largura fixa, que era a função da mono. A regra do doc continua honrada com uma família só |
+
+O resto do brief entra como escrito. Nada de neon, nada de roxo, nada de
+gradiente sem função.
+
+**Consequência do primeiro item:** a tela tem dois azuis, `acao` e `positivo`.
+Isso só funciona porque eles nunca ocupam o mesmo papel — `acao` é link, botão,
+foco e item ativo; `positivo` é algarismo. Em 05/09/2026 sete pontos que
+usavam `positivo` em link foram corrigidos justamente por isso. Ao mexer:
+**clicável leva `acao`, valor leva `positivo`, sem exceção.**
+
 ## De onde vem
 
 A referência não é app de banco nem fintech: é **o livro-caixa e a bobina do
