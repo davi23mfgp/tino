@@ -45,8 +45,11 @@
     --papel-2: oklch(0.968 0.004 248);
     --papel-3: oklch(0.94 0.005 248);
 
-    /* A linha do livro-caixa: separa sem gritar. */
-    --pauta: oklch(0.191 0.02 262 / 9%);
+    /* A linha do livro-caixa: separa sem gritar.
+       12% e não 9%: a borda do protótipo é #e2e5e8, que sobre branco equivale
+       a ~12% da tinta. Com 9% a separação entre cartão e fundo quase sumia
+       numa tela cheia de cartões brancos encostados. */
+    --pauta: oklch(0.191 0.02 262 / 12%);
     --muted-fg: oklch(0.53 0.014 258);
 
     /* --- texto em três níveis --- */
