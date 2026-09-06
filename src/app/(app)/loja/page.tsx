@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 import { conferirVenda, totalDaVenda } from "@/lib/loja/venda"
 import type { FormaPagamento, ItemDaVenda, PagamentoInformado, RegraDeRecebimento } from "@/lib/loja/venda"
 
@@ -265,7 +265,7 @@ export default function Loja() {
             </div>
           )}
 
-          <p className="numero mt-4 text-4xl font-bold">{formatarMoeda(total)}</p>
+          <Valor className="mt-4">{formatarMoeda(total)}</Valor>
 
           <div className="mt-4 flex flex-wrap gap-2">
             {FORMAS.map((opcao) => (

@@ -7,7 +7,7 @@ import { Check, Plus } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 
 /**
  * MEI.
@@ -169,7 +169,7 @@ export default function Mei() {
   return (
     <div className="space-y-4">
       <Cartao titulo={`Faturamento ${ano}`}>
-        <p className="numero text-4xl font-bold">{formatarMoeda(situacao?.faturamentoAnoCentavos ?? 0)}</p>
+        <Valor>{formatarMoeda(situacao?.faturamentoAnoCentavos ?? 0)}</Valor>
         <p className="mt-1 text-sm text-muted-fg">
           de {formatarMoeda(perfil?.limiteAnualEfetivoCentavos ?? 0)} de limite
           {perfil?.limiteProporcional && " (proporcional aos meses de atividade neste primeiro ano)"}

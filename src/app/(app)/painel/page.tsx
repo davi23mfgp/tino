@@ -6,7 +6,7 @@ import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { Barra, BarrasCategorias, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Barra, BarrasCategorias, Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 import { GraficoEvolucao, GraficoParcelas } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
@@ -63,13 +63,9 @@ export default async function Painel() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo={`Saldo em ${rotuloCompetencia(competencia)}`}>
-          <p
-            className={`numero text-4xl font-bold ${
-              panorama.saldoTotalCentavos < 0 ? "text-negativo" : "text-positivo"
-            }`}
-          >
+          <Valor tom={panorama.saldoTotalCentavos < 0 ? "negativo" : "positivo"}>
             {formatarMoeda(panorama.saldoTotalCentavos)}
-          </p>
+          </Valor>
           <p className="mt-1 text-sm text-muted-fg">
             {panorama.saldoTotalCentavos < 0
               ? "Suas contas estão no vermelho — isso é cheque especial, a dívida mais cara que existe."
@@ -127,9 +123,9 @@ export default async function Painel() {
             </Link>
           }
         >
-          <p className="text-3xl font-semibold tracking-tight text-atencao">
+          <Valor tom="atencao" tamanho="medio">
             {formatarMoeda(parcelamentos.restanteCentavos)}
-          </p>
+          </Valor>
           <p className="mt-1 text-[12px] text-muted-fg">
             restante em {parcelamentos.emAndamento} compras · {parcelamentos.percentualPago}% já pago
           </p>
@@ -156,7 +152,7 @@ export default async function Painel() {
         </Cartao>
 
         <Cartao titulo="Reserva de emergência">
-          <p className="text-3xl font-semibold tracking-tight">{formatarMoeda(panorama.reserva.atualCentavos)}</p>
+          <Valor tamanho="medio">{formatarMoeda(panorama.reserva.atualCentavos)}</Valor>
           <p className="mt-1 text-[12px] text-muted-fg">
             de {formatarMoeda(panorama.reserva.idealCentavos)} — cobre {panorama.reserva.mesesDeFolga} mês(es)
           </p>

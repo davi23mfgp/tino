@@ -3,7 +3,7 @@ import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { compromissosFuturos } from "@/lib/parcelamentos"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
 
@@ -47,7 +47,7 @@ export default async function Cartoes() {
   return (
     <div className="space-y-4">
       <Cartao titulo="Fatura atual">
-        <p className="numero text-4xl font-bold">{formatarMoeda(faturaTotal)}</p>
+        <Valor>{formatarMoeda(faturaTotal)}</Valor>
         <p className="mt-1 text-sm text-muted-fg">
           Somando {detalhados.length} cartão(ões). Parcelas futuras não entram aqui — elas aparecem no mês em que caem.
         </p>
