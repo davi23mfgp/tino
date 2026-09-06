@@ -96,7 +96,7 @@ export default async function Painel() {
         <Cartao
           titulo="Parcelamentos"
           acao={
-            <Link href="/parcelamentos" className="text-xs text-positivo hover:underline">
+            <Link href="/parcelamentos" className="text-xs text-acao hover:underline">
               ver todos
             </Link>
           }
@@ -174,7 +174,7 @@ export default async function Painel() {
       <Cartao
         titulo="O que o Tino faria agora"
         acao={
-          <Link href="/plano" className="flex items-center gap-1 text-xs text-positivo hover:underline">
+          <Link href="/plano" className="flex items-center gap-1 text-xs text-acao hover:underline">
             abrir plano <ArrowRight className="h-3 w-3" />
           </Link>
         }

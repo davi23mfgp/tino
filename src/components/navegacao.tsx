@@ -173,7 +173,7 @@ function Linha({
           : "text-muted-fg hover:bg-foreground/[0.04] hover:text-foreground",
       )}
     >
-      <Icone className={cn("size-4 shrink-0", ativo && "text-positivo")} />
+      <Icone className={cn("size-4 shrink-0", ativo && "text-acao")} />
       {!recolhido && <span className="truncate">{item.rotulo}</span>}
     </Link>
   )
@@ -388,7 +388,7 @@ export function Navegacao({ mei }: { mei?: boolean }) {
                 href={item.rota}
                 className={cn(
                   "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
-                  ativo ? "text-positivo" : "text-muted-fg",
+                  ativo ? "text-acao" : "text-muted-fg",
                 )}
               >
                 <Icone className="size-5" />

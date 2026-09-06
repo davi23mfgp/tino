@@ -78,7 +78,7 @@ export function TinoAcompanha() {
 
             <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px]">
               {principal.acaoRota && (
-                <Link href={principal.acaoRota} className="font-medium text-positivo hover:underline">
+                <Link href={principal.acaoRota} className="font-medium text-acao hover:underline">
                   resolver agora
                 </Link>
               )}

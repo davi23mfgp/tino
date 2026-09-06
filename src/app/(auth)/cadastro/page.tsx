@@ -101,7 +101,7 @@ export default function Cadastro() {
             Dá para mudar depois, em Configurações.
             <br />
             Já tem conta?{" "}
-            <Link href="/login" className="text-positivo hover:underline">
+            <Link href="/login" className="text-acao hover:underline">
               Entrar
             </Link>
           </p>
@@ -189,7 +189,7 @@ export default function Cadastro() {
 
         <p className="mt-6 text-center text-sm text-muted-fg">
           Já tem conta?{" "}
-          <Link href="/login" className="text-positivo hover:underline">
+          <Link href="/login" className="text-acao hover:underline">
             Entrar
           </Link>
         </p>
