@@ -22,10 +22,15 @@ import { cn } from "@/lib/utils"
  * de alertas, nunca de decoração". O protótipo que o Davi mandou copiar usa
  * uma renderização única em todas as telas, então a expressão saiu.
  *
- * O que segura a regra no lugar dela: a GRAVIDADE CONTINUA ESCRITA. O rótulo
- * acima do título muda com a severidade, e é ele — não a cara do bonequinho —
- * que diz se a pessoa precisa parar agora. Sem isso, um robô sorridente ao
- * lado de "precisa de decisão agora" estaria mentindo sobre o mês.
+ * O que segura a regra no lugar dela: a GRAVIDADE CONTINUA VISÍVEL, em dois
+ * lugares. O título é o texto do próprio alerta e diz o problema com todas as
+ * letras; e a bolinha ativa do carrossel carrega a cor da severidade. Sem
+ * nenhum dos dois, um robô sorridente ao lado de "precisa de decisão agora"
+ * estaria mentindo sobre o mês.
+ *
+ * Os avisos giram em carrossel, um por vez. A alternativa que existia antes
+ * era mostrar o mais grave e resumir o resto como "e mais 3 avisos" — o que na
+ * prática escondia três coisas que a pessoa precisava ler.
  */
 
 interface Alerta {
@@ -105,8 +110,8 @@ export function TinoAcompanha() {
    * enquanto a pessoa está lendo o número é pior do que não girar.
    *
    * E não gira de jeito nenhum para quem pediu menos movimento no sistema. O
-   * conteúdo continua todo alcançável pelas bolinhas e pelas setas — o giro é
-   * conveniência, nunca o único caminho.
+   * conteúdo continua todo alcançável pelas bolinhas, que são botões de
+   * verdade — o giro é conveniência, nunca o único caminho até um aviso.
    */
   useEffect(() => {
     if (fila.length < 2 || pausado) return
