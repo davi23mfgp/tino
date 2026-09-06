@@ -200,7 +200,7 @@ export default function Mei() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="DAS">
-          <p className="numero text-2xl font-semibold">{formatarMoeda(perfil?.dasMensalCentavos ?? 0)}</p>
+          <Valor tamanho="medio">{formatarMoeda(perfil?.dasMensalCentavos ?? 0)}</Valor>
           <p className="mt-1 text-sm text-muted-fg">
             por mês, vencendo todo dia {perfil?.diaVencimentoDas ?? "—"}.
           </p>

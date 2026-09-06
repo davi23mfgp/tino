@@ -67,7 +67,7 @@ export default async function Cartoes() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="numero text-2xl font-semibold">{formatarMoeda(faturaAberta)}</p>
+                <Valor tamanho="medio">{formatarMoeda(faturaAberta)}</Valor>
                 <p className="text-[12px] text-muted-fg">fatura em aberto</p>
               </div>
             </div>

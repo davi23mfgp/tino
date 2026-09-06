@@ -3,7 +3,7 @@ import { sessaoDaPagina } from "@/lib/pagina"
 import { formatarData } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { projetarMeta } from "@/lib/financeiro"
-import { Barra, Cartao, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Valor, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
 
@@ -58,7 +58,7 @@ export default async function Metas() {
                   <p className="text-[12px] text-muted-fg">{ROTULO_TIPO[meta.tipo] ?? "Meta"}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-semibold">{formatarMoeda(meta.saldoCentavos)}</p>
+                  <Valor tamanho="medio">{formatarMoeda(meta.saldoCentavos)}</Valor>
                   <p className="text-[12px] text-muted-fg">de {formatarMoeda(meta.alvoCentavos)}</p>
                 </div>
               </div>
