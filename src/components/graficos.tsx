@@ -170,6 +170,62 @@ export function GraficoEvolucao({
 }
 
 // ============================================================
+// DOZE MESES, MÊS ATUAL DESTACADO
+// ============================================================
+
+/**
+ * Como cada mês fechou, nos últimos doze.
+ *
+ * A série é a SOBRA, e não entrou-e-saiu lado a lado: a pergunta que a pessoa
+ * traz para cá é "o mês fechou no azul ou no vermelho", e uma barra por mês
+ * responde isso de um relance. Entrou e saiu separados obrigam a fazer a
+ * subtração de cabeça, doze vezes.
+ *
+ * A barra desce abaixo da linha quando o mês fechou negativo, e por isso a
+ * linha do zero fica visível: sem ela, barra para baixo não significa nada.
+ *
+ * O mês atual vai cheio e os anteriores em meio-tom. Não é enfeite — o mês
+ * corrente ainda não terminou, e comparar um mês pela metade com onze meses
+ * fechados é a leitura errada mais fácil de fazer aqui.
+ */
+export function GraficoDozeMeses({
+  dados,
+  competenciaDestacada,
+  altura = 220,
+}: {
+  dados: { competencia: string; sobraCentavos: number }[]
+  competenciaDestacada: string
+  altura?: number
+}) {
+  const cores = useCores()
+  const serie = dados.map((linha) => ({
+    mes: rotuloCompetencia(linha.competencia, true),
+    competencia: linha.competencia,
+    Sobra: linha.sobraCentavos,
+  }))
+
+  return (
+    <ResponsiveContainer width="100%" height={altura}>
+      <BarChart data={serie} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
+        <XAxis dataKey="mes" tick={eixo} axisLine={false} tickLine={false} />
+        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => formatarMoedaCurta(Number(v))} />
+        <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.25} />
+        <Tooltip content={<Dica />} cursor={{ fill: "currentColor", fillOpacity: 0.04 }} />
+        <Bar dataKey="Sobra" radius={[4, 4, 0, 0]}>
+          {serie.map((linha) => (
+            <Cell
+              key={linha.competencia}
+              fill={linha.Sobra < 0 ? cores.negativo : cores.positivo}
+              fillOpacity={linha.competencia === competenciaDestacada ? 1 : 0.45}
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
+// ============================================================
 // GASTOS POR CATEGORIA
 // ============================================================
 

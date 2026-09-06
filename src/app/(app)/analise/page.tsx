@@ -6,7 +6,7 @@ import { balancoMensal } from "@/lib/tino/balanco"
 import { montarDiagnostico, type Faixa } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { GraficoAnel, GraficoBalanco, GraficoCategorias, GraficoEvolucao } from "@/components/graficos"
+import { GraficoAnel, GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { cn } from "@/lib/utils"
@@ -288,8 +288,12 @@ export default async function Analise() {
           )}
         </Cartao>
 
-        <Cartao titulo="Entrou e saiu, mês a mês">
-          <GraficoEvolucao dados={panorama.historico} />
+        <Cartao titulo="Como cada mês fechou">
+          <GraficoDozeMeses dados={panorama.historico} competenciaDestacada={competencia} />
+          <p className="mt-3 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+            Barra para cima é mês que sobrou; para baixo, mês que faltou. O mês atual vai cheio e os anteriores em
+            meio-tom, porque ele ainda não terminou — comparar mês pela metade com mês fechado engana.
+          </p>
         </Cartao>
       </div>
 
