@@ -39,7 +39,12 @@ export function Cartao({
     >
       {(titulo || acao) && (
         <header className="mb-5 flex items-center justify-between gap-3">
-          {titulo && <h2 className="text-[15px] font-[590] tracking-[-0.01em] text-foreground">{titulo}</h2>}
+          {/* 13px, peso normal, cor secundária — medido no protótipo. O título
+              do cartão nomeia, não compete: quem manda no cartão é o número
+              embaixo dele. Antes era 15px seminegrito, e disputava. */}
+          {titulo && (
+            <h2 className="text-[13px] tracking-[-0.013em] text-[color:var(--texto-2)]">{titulo}</h2>
+          )}
           {acao && <div className="shrink-0 text-[13px] text-acao">{acao}</div>}
         </header>
       )}
@@ -89,13 +94,17 @@ export function Valor({
   tamanho?: "heroi" | "medio" | "linha"
   className?: string
 }) {
+  // Medidas tiradas do protótipo com o inspetor: 44px e 24px, peso 600, e
+  // tracking de -0,03em nos dois. Em corpo grande o espaçamento normal abre
+  // demais e o número perde o bloco — é por isso que ele fecha, e é a mesma
+  // proporção nos dois tamanhos.
   const escala = {
-    heroi: "text-[44px] leading-[1.05] tracking-[-0.02em]",
-    medio: "text-[27px] leading-[1.1] tracking-[-0.018em]",
+    heroi: "text-[44px] leading-[1.05] tracking-[-0.03em]",
+    medio: "text-[24px] leading-[1.1] tracking-[-0.03em]",
     linha: "text-[15px] leading-snug tracking-[-0.01em]",
   }[tamanho]
 
-  return <p className={cn("numero font-[590]", escala, TOM[tom], className)}>{children}</p>
+  return <p className={cn("numero font-semibold", escala, TOM[tom], className)}>{children}</p>
 }
 
 export function Metrica({

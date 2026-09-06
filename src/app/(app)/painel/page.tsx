@@ -63,7 +63,11 @@ export default async function Painel() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo={`Saldo em ${rotuloCompetencia(competencia)}`}>
-          <Valor tom={panorama.saldoTotalCentavos < 0 ? "negativo" : "positivo"}>
+          {/* Saldo positivo sai em PRETO, não em verde — medido no protótipo.
+              Faz sentido: verde é para o que entrou, e saldo é estado, não
+              movimento. Verde aqui competiria com o "Entrou" ao lado. O
+              negativo continua vermelho, porque aí é aviso. */}
+          <Valor tom={panorama.saldoTotalCentavos < 0 ? "negativo" : "neutro"}>
             {formatarMoeda(panorama.saldoTotalCentavos)}
           </Valor>
           <p className="mt-1 text-sm text-muted-fg">

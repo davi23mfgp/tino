@@ -307,7 +307,7 @@
    começar exatamente onde ela termina. */
 @media (min-width: 768px) {
   .area-do-app {
-    padding-left: 248px;
+    padding-left: 256px;
     transition: padding-left 0.2s ease;
   }
 

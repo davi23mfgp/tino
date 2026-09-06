@@ -321,7 +321,7 @@ export function Navegacao({ mei }: { mei?: boolean }) {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden shrink-0 flex-col border-r border-pauta bg-papel-1 transition-[width] duration-200 md:flex",
-          recolhido ? "w-[68px]" : "w-[248px]",
+          recolhido ? "w-[68px]" : "w-[256px]",
         )}
       >
         <header
