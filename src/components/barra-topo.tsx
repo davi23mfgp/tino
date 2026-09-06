@@ -64,7 +64,10 @@ export function BarraTopo({
     <header className="flex items-start justify-between gap-4 py-6">
       <div>
         <p className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--texto-3)]">Tino</p>
-        <h1 className="mt-0.5 text-[26px] font-semibold tracking-[-0.02em] lg:text-[30px]">
+        {/* 22px com tracking de -0,025em, medido no protótipo. Estava em 26px
+            e crescia para 30px no desktop, o que empurrava a linha de resumo
+            para longe do título e quebrava o par. */}
+        <h1 className="mt-0.5 text-[22px] font-semibold tracking-[-0.025em]">
           Olá, {nome.split(" ")[0]}
         </h1>
         {/* A linha de resumo só aparece depois que os alertas chegam. Antes
@@ -96,15 +99,24 @@ export function BarraTopo({
             aria-label="Alertas"
           >
             <Bell className="h-4 w-4" />
+            {/* Ponto, não número, como no protótipo. A quantidade exata de
+                avisos não muda o que a pessoa faz — ela abre a lista de
+                qualquer jeito. O que o ponto precisa dizer é "tem coisa
+                aqui", e a cor dele diz se é urgente. A contagem continua
+                anunciada para leitor de tela, onde ela é a única pista. */}
             {alertas.length > 0 && (
-              <span
-                className={cn(
-                  "absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold",
-                  criticos > 0 ? "bg-negativo text-primary-foreground" : "bg-atencao text-primary-foreground",
-                )}
-              >
-                {alertas.length}
-              </span>
+              <>
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute right-1.5 top-1.5 size-2 rounded-full ring-2 ring-[var(--papel-1)]",
+                    criticos > 0 ? "bg-negativo" : "bg-atencao",
+                  )}
+                />
+                <span className="sr-only">
+                  {alertas.length} {alertas.length === 1 ? "aviso" : "avisos"}
+                </span>
+              </>
             )}
           </button>
 

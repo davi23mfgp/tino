@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -159,6 +160,10 @@ function Linha({
   const ativo = estaAtivo(caminho, item.rota)
   const { Icone } = item
 
+  // Medidas tiradas do protótipo: 14px, pílula de raio 22px, 10px por 12px de
+  // recheio. O item ativo é uma PÍLULA AZUL-CLARA com texto azul, não o cinza
+  // com anel que estava aqui — o azul liga o item ativo à cor de ação do resto
+  // da tela, e o cinza não ligava a nada.
   return (
     <Link
       href={item.rota}
@@ -166,14 +171,14 @@ function Linha({
       title={recolhido ? item.rotulo : undefined}
       aria-current={ativo ? "page" : undefined}
       className={cn(
-        "flex items-center gap-2.5 rounded-lg py-2 text-[13px] transition-colors",
-        recolhido ? "justify-center px-0" : "px-2.5",
+        "flex items-center gap-2.5 rounded-[22px] px-3 py-2.5 text-[14px] transition-colors",
+        recolhido && "justify-center px-0",
         ativo
-          ? "bg-foreground/[0.07] font-medium text-foreground ring-1 ring-inset ring-pauta"
-          : "text-muted-fg hover:bg-foreground/[0.04] hover:text-foreground",
+          ? "bg-acao/[0.12] font-medium text-acao"
+          : "text-[color:var(--texto-2)] hover:bg-foreground/[0.04] hover:text-foreground",
       )}
     >
-      <Icone className={cn("size-4 shrink-0", ativo && "text-acao")} />
+      <Icone className="size-4 shrink-0" />
       {!recolhido && <span className="truncate">{item.rotulo}</span>}
     </Link>
   )
@@ -324,14 +329,25 @@ export function Navegacao({ mei }: { mei?: boolean }) {
           recolhido ? "w-[68px]" : "w-[256px]",
         )}
       >
+        {/* A marca ganhou a linha de apoio do protótipo. Ela não é enfeite:
+            "Tino" sozinho não diz o que o app faz, e essa é a primeira coisa
+            que alguém lê ao abrir. */}
         <header
-          className={cn(
-            "flex h-14 items-center gap-2 border-b border-pauta",
-            recolhido ? "justify-center px-2" : "px-3",
-          )}
+          className={cn("flex h-16 items-center gap-2.5", recolhido ? "justify-center px-2" : "px-4")}
         >
-          <TinoMascote estado="tranquilo" animado={false} className="size-7 shrink-0" />
-          {!recolhido && <span className="font-display text-[15px] font-semibold tracking-tight">Tino</span>}
+          <Image
+            src="/tino-mascote.png"
+            alt=""
+            width={36}
+            height={36}
+            className="size-9 shrink-0 object-contain"
+          />
+          {!recolhido && (
+            <div className="min-w-0">
+              <p className="text-[15px] font-semibold tracking-[-0.012em]">Tino</p>
+              <p className="text-[11px] text-[color:var(--texto-2)]">Finanças com cabeça</p>
+            </div>
+          )}
           <button
             onClick={alternar}
             aria-label={recolhido ? "Expandir menu" : "Recolher menu"}

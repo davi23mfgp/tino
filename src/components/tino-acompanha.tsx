@@ -35,12 +35,19 @@ interface Alerta {
   acaoRota?: string | null
 }
 
-/** O rótulo herda o trabalho que a expressão fazia: dizer a gravidade. */
-const ROTULO: Record<Alerta["severidade"], { texto: string; cor: string }> = {
-  CRITICO: { texto: "Precisa de decisão", cor: "text-negativo" },
-  ATENCAO: { texto: "Vale olhar", cor: "text-atencao" },
-  INFO: { texto: "Recado do Tino", cor: "text-acao" },
-}
+/**
+ * "Recado do Tino", sempre, em azul — igual ao protótipo.
+ *
+ * Cheguei a fazer o rótulo mudar com a gravidade ("Precisa de decisão" em
+ * vermelho) para repor o que a expressão do mascote dizia antes. O Davi pediu
+ * idêntico ao protótipo, e idêntico é idêntico.
+ *
+ * A regra de não esconder gravidade continua de pé por outro caminho: o TÍTULO
+ * do cartão é o texto do alerta, e ele diz o problema com todas as letras —
+ * "sua reserva cobre pouco tempo" não deixa dúvida. O que se perdeu foi o
+ * atalho de cor, não a informação.
+ */
+const ROTULO = { texto: "Recado do Tino", cor: "text-acao" }
 
 export function TinoAcompanha() {
   const [alertas, setAlertas] = useState<Alerta[] | null>(null)
@@ -67,7 +74,7 @@ export function TinoAcompanha() {
     null
 
   const restantes = (alertas?.length ?? 0) - (principal ? 1 : 0)
-  const rotulo = principal ? ROTULO[principal.severidade] : ROTULO.INFO
+  const rotulo = ROTULO
 
   return (
     <section className="ficha flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
