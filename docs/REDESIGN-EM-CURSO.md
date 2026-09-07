@@ -561,6 +561,133 @@ alguém puder abrir o app e olhar. `scratch-contrast.js` (script Node solto
 na raiz, usado para recalcular contraste WCAG dos tokens) não é
 entregável desta skin e ficou fora do commit.
 
+## Skin acromática aplicada no app inteiro (07/09/2026, madrugada/manhã)
+
+Retomada da mesma tarefa depois de duas quedas por rate limit da API
+(registrado no pedido — não eram erro de conteúdo). Ponto de partida:
+tokens e casca (`globals.css`/`layout.tsx`/`navegacao.tsx`/
+`tailwind.config.ts`) já fechados no commit `6effc27`. O que faltava era
+aplicar a skin no app inteiro — e a varredura completa mostrou que a
+maior parte das ~30 telas **já estava** em `.ficha`/`.ios-card` (via
+`<Cartao>` de `ui/painel.tsx`) desde sessões anteriores do mesmo
+redesign. O trabalho real desta rodada foi achar e fechar o que ainda
+não estava, não recomeçar do zero.
+
+**Bugs de contraste reais, achados por medir, não por olhar** (o app não
+tem browser nesta máquina, então nada disto foi "visto errado" — foi
+calculado e conferido no CSS compilado):
+
+- `--lch-acao-solido`/`--lch-negativo-solido`/`--lch-positivo-solido` no
+  bloco `.dark` de `globals.css` seguiam a regra geral do arquivo
+  (inverter luminosidade) e viravam quase-branco no escuro — mas essas
+  três hospedam **texto/ícone branco fixo** por cima (faixa crítica do
+  banner, ✓ do checkbox, indicador do toggle de preço, pico do mapa de
+  calor). Branco sobre quase-branco no modo escuro. Corrigido: essas três
+  NÃO invertem mais — ficam no mesmo valor escuro nos dois temas, de
+  propósito (comentário no arquivo explica o porquê, para não virar
+  "conserto" acidental de novo).
+- Consequência do ajuste acima: `checkbox.tsx` usava `text-primary-foreground`
+  no "✓" (que inverteria sozinho e ficaria escuro sobre o fundo agora
+  sempre escuro). Trocado para branco fixo, parceiro certo do token.
+- `dialog.tsx` (botão fechar), `table.tsx` (hover/seleção de linha),
+  `skeleton.tsx` (placeholder de carregamento): `bg-white/[...]` que não
+  invertia com o tema — no claro ficava quase invisível. Trocado por
+  `bg-foreground/[...]`.
+- Chroma residual sobrevivendo de peles anteriores, achado por grep:
+  `cartoes/page.tsx` (gradiente da face do cartão, chroma 0.09/0.04 no
+  hue 262) e `banner.tsx` (texto do tom "atencao", chroma 0.02) —
+  zerados. Confirmado depois no CSS compilado (`.next/`) que não sobra
+  `oklch(...)` com chroma diferente de zero em lugar nenhum.
+
+**O ponto que o pedido chamou de "o que mais precisa de atenção"** —
+valor financeiro positivo/negativo virar ícone, não só cor: `Valor` e
+`Metrica` (`ui/painel.tsx`, usados por praticamente toda tela com
+dinheiro) ganharam `ArrowUpRight`/`ArrowDownRight` de verdade quando
+`tom` é "positivo"/"negativo" — sem prop nova, o ícone nasce do `tom`
+que o componente já recebia. Isso propaga de graça para `/cartoes`,
+`/painel`, `/metas`, `/investir`, `/mei`, `/loja`, `/plano` (os quatro
+KPIs do topo) e mais. Os dois lugares com valor sinalizado que não
+passavam por `Valor`/`Metrica` (variação do balanço em `/analise`, sobra
+por mês no roteiro de `/plano`) ganharam o mesmo ícone à mão. `Metrica`
+também ganhou halo borrado no canto (profundidade, pedido explícito do
+spec) e virou `ios-tap`.
+
+**Grade de KPI em 2 colunas no celular, não 1**: o checklist do spec
+pedia "390px: KPIs em 2 colunas" — as grades de `Metrica` só tinham
+`sm:grid-cols-3/4`, sem `grid-cols-2` na base, então empilhavam 1 por
+linha abaixo de 640px. Corrigido em 20 arquivos (toda tela com grade de
+métricas, incluindo os dois painéis de admin).
+
+**Trilho lateral (desktop) e barra do topo viram flutuando de verdade**:
+antes só a barra do polegar do celular tinha `.ios-card` com margem —
+o trilho de 64px ficava colado na borda esquerda, sem cantos
+arredondados nem fundo visível ao redor (falha direta do item do
+checklist "sidebar/topbar com cantos arredondados nos 4 lados"). Agora
+`TrilhoLateral` é `.ios-card` com `inset-y-3 left-3`, e `BarraTopo`
+também virou `.ios-card` sticky em vez de faixa full-bleed. O ponto de
+troca mobile/desktop subiu de 768px para 1024px (`lg`, como o spec
+pedia) em todo `navegacao.tsx` — trilho, gaveta, cabeçalho móvel e barra
+do polegar trocam juntos no mesmo breakpoint agora. `.area-do-app`
+ajustou o respiro (108px) para a nova geometria.
+
+**Alternador de tema claro/escuro**: já existia pronto
+(`theme-toggle.tsx`, `theme-provider.tsx`, `next-themes` — dependência
+que já estava no projeto, nenhuma lib nova entrou) desde uma sessão
+anterior, mas **não estava montado em nenhuma tela**. Este é o único
+pedaço de lógica nova autorizado nesta tarefa ("opção white e black" de
+verdade); como já vinha pronto, o trabalho foi só montá-lo em
+`BarraTopo`, ao lado de alertas/admin/configurações/sair.
+
+**O que ficou revisado e já estava correto, sem precisar mexer**: todos
+os primitivos de `components/ui/` restantes (`button`, `badge`, `select`,
+`select-native`, `checkbox` fora do ajuste acima, `switch`, `tabs`,
+`tooltip`, `avatar`, `breadcrumb`, `cabecalho-pagina`, `editavel`,
+`empty-state`, `filesystem-item`, `input`, `textarea`, `sheet`, `toast`,
+`label`, `separator`, `scroll-area`, `paginacao`, `tags-selector`,
+`pricing-toggle`) e os componentes de topo (`site-navbar`,
+`trilha-loja`, `aviso-critico`, `buscar-paginas`, `tino-acompanha`,
+`categorias-comparadas`, `mapa-de-calor`, `foto-de-perfil`, `nova-meta`,
+`anotar-rapido`, `ditar-gasto`, `relatar-problema`, `vigias-config`,
+`tino-mascote`, `tino-dock`) já vieram acromáticos e usando os tokens
+certos das sessões anteriores. `graficos.tsx` (recharts, a lib de
+gráfico já usada) já lê os tokens `--lch-*` em runtime e já segue o
+vocabulário do spec (linha em `foreground`, preenchimento em gradiente,
+tooltip em vidro) — não precisou de mudança.
+
+**Verificado, não simulado:**
+- `npm run tipos` (tsc --noEmit): limpo, a cada lote de commits.
+- `npx next build`: 51 rotas, zero erro/warning de tipo.
+- `npm test`: 265/265 (suíte já existente — reskin não muda lógica, sem
+  teste novo).
+- `npm run db:start` + `npm run dev` + `npm run test:fumaca`: **63/63
+  rotas de pé** contra o Postgres local de verdade, login com
+  `demo@tino.local`.
+- CSS COMPILADO (não só fonte): conferido em `.next/dev/static/chunks/`
+  que `--lch-acao-solido` bate `.16 0 0` tanto em `:root` quanto em
+  `.dark` (a correção do bug de contraste chegou ao bundle de verdade,
+  não só ao arquivo-fonte), e que nenhum `oklch(...)` do CSS compilado
+  tem chroma diferente de zero.
+- `grep -riE "blue|indigo|emerald|green-|purple|violet|amber|cyan|#[0-9a-f]{3,6}"`
+  em `src/`: os únicos hits são os já documentados como falso-positivo
+  na sessão anterior (campo `cor` de categoria/conta no BANCO — dado de
+  negócio, não estilo, nunca lido para pintar hue nenhum; `--gradient-blue`,
+  que é o NOME exigido pelo próprio spec de Davi para uma rampa de cinza;
+  `#f8f8f8`/`#1c1c1c`/`#ffffff` — hex sem matiz nenhum) mais o mesmo
+  `DotColor` de `metric-card.tsx` (componente ainda sem uso em tela
+  nenhuma) já registrado antes.
+- `oklch(... c ...)` com chroma ≠ 0: nenhum, nem na fonte nem no CSS
+  compilado.
+- Sem browser nesta máquina (extensão Chrome não conecta) — o toggle
+  claro/escuro foi conferido pelo CSS compilado dos dois blocos
+  (`:root`/`.dark`) batendo com os valores calculados, não por captura de
+  tela.
+
+**`git diff 6effc27..HEAD`**: 33 arquivos, só CSS (`globals.css`),
+`className`/JSX de wrapper (ícones, grade, halo) e o único mount novo do
+`ThemeToggle` em `barra-topo.tsx` — nenhum arquivo de rota
+(`src/app/api/**`), nenhuma mudança de fetch/estado/prop pública, nenhuma
+página nova, nenhuma dependência nova em `package.json`.
+
 ## Pendências que dependem do Davi
 
 - **Cancelamento de assinatura sem "Desfazer"**: ver seção acima
