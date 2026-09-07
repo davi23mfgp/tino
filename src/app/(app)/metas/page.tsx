@@ -4,6 +4,7 @@ import { formatarData } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { projetarMeta } from "@/lib/financeiro"
 import { Barra, Cartao, Valor, Vazio } from "@/components/ui/painel"
+import { NovaMeta } from "@/components/nova-meta"
 
 export const dynamic = "force-dynamic"
 
@@ -38,6 +39,8 @@ export default async function Metas() {
         {concluidas > 0 && (
           <p className="mt-2 text-xs text-positivo">{concluidas} meta(s) já concluída(s).</p>
         )}
+
+        <NovaMeta />
       </Cartao>
 
       <div className="grid gap-4 lg:grid-cols-2">

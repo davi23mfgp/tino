@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
 
 /**
@@ -73,6 +74,7 @@ export default function Dividas() {
   const [nova, setNova] = useState(VAZIO)
   const [abrirForm, setAbrirForm] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  const [frase, setFrase] = useState("")
 
   const carregar = useCallback(async () => {
     const centavos = extra ? paraCentavos(extra) : 0
@@ -106,6 +108,32 @@ export default function Dividas() {
     } finally {
       setOcupado(false)
     }
+  }
+
+  /**
+   * Linguagem natural para dívidas — item 3 do redesign de experiência
+   * (07/09/2026). Em vez de obrigar quem cadastra a preencher oito campos
+   * separados, escreve como falaria e o Tino tenta preencher o formulário.
+   * Não cadastra sozinho: preenche e deixa a pessoa conferir e completar o
+   * que não deu para entender antes de "Adicionar dívida" — dívida errada
+   * no plano de ataque é pior do que oito campos vazios.
+   */
+  function interpretarFrase() {
+    if (!frase.trim()) return
+    const lida = lerDivida(frase)
+    setNova((atual) => ({
+      ...atual,
+      credor: lida.credor ?? atual.credor,
+      tipo: lida.tipo ?? atual.tipo,
+      saldo: lida.saldoDevedorCentavos !== null ? String(lida.saldoDevedorCentavos / 100).replace(".", ",") : atual.saldo,
+      juros: lida.jurosMensalBps !== null ? String(lida.jurosMensalBps / 100).replace(".", ",") : atual.juros,
+      parcela: lida.parcelaCentavos !== null ? String(lida.parcelaCentavos / 100).replace(".", ",") : atual.parcela,
+      parcelasTotal: lida.parcelasTotal !== null ? String(lida.parcelasTotal) : atual.parcelasTotal,
+      pagas: lida.parcelasPagas !== null ? String(lida.parcelasPagas) : atual.pagas,
+      dia: lida.diaVencimento !== null ? String(lida.diaVencimento) : atual.dia,
+    }))
+    setAbrirForm(true)
+    setFrase("")
   }
 
   const abertas = dados?.dividas.filter((divida) => !divida.quitada) ?? []
@@ -153,6 +181,28 @@ export default function Dividas() {
 
         {abrirForm && (
           <form onSubmit={criar} className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="flex gap-2 sm:col-span-3">
+              <input
+                value={frase}
+                onChange={(evento) => setFrase(evento.target.value)}
+                onKeyDown={(evento) => {
+                  if (evento.key === "Enter") {
+                    evento.preventDefault()
+                    interpretarFrase()
+                  }
+                }}
+                placeholder="ou escreva: Nubank 3200, juros 2,5% ao mês, parcela 350, vence dia 10"
+                className={cn(campo, "flex-1")}
+              />
+              <button
+                type="button"
+                onClick={interpretarFrase}
+                className="shrink-0 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[13px] text-acao"
+              >
+                Preencher
+              </button>
+            </div>
+
             <input
               value={nova.credor}
               onChange={(evento) => setNova({ ...nova, credor: evento.target.value })}
