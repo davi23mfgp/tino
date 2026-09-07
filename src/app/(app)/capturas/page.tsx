@@ -9,6 +9,9 @@ import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
+import { SelectNative } from "@/components/ui/select-native"
+import { TagsSelector } from "@/components/ui/tags-selector"
+import { EsqueletoLinhas } from "@/components/ui/skeleton"
 
 /**
  * Captura rápida.
@@ -54,8 +57,6 @@ interface Categoria {
   nome: string
 }
 
-const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[13px] outline-none focus:border-acao/50"
-
 export default function Capturas() {
   const [capturas, setCapturas] = useState<Captura[]>([])
   const [chaves, setChaves] = useState<Chave[]>([])
@@ -65,6 +66,7 @@ export default function Capturas() {
   const [rapido, setRapido] = useState("")
   const [copiado, setCopiado] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  const [carregando, setCarregando] = useState(true)
   // O endereço só existe no navegador. Lê-lo direto no corpo do componente faz
   // o servidor renderizar vazio e o cliente renderizar a URL — o React acusa
   // divergência de hidratação e descarta a árvore inteira.
@@ -96,6 +98,7 @@ export default function Capturas() {
     setChaves(fila.chaves)
     setContas(listaContas)
     setCategorias(listaCategorias)
+    setCarregando(false)
   }, [])
 
   useEffect(() => {
@@ -220,7 +223,13 @@ export default function Capturas() {
         </div>
       </Cartao>
 
-      {pendentes.length > 0 && (
+      {carregando && (
+        <Cartao titulo="Fila de conferência">
+          <EsqueletoLinhas linhas={3} />
+        </Cartao>
+      )}
+
+      {!carregando && pendentes.length > 0 && (
         <Cartao titulo={`${pendentes.length} esperando você`}>
           <div className="mb-3 grid gap-3 sm:grid-cols-2">
             <Metrica rotulo="A confirmar" valor={String(pendentes.length)} />
@@ -251,7 +260,8 @@ export default function Capturas() {
                 </div>
 
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <select
+                  <SelectNative
+                    tamanho="pilula"
                     value={captura.contaId ?? ""}
                     onChange={(evento) =>
                       setCapturas((atual) =>
@@ -260,33 +270,14 @@ export default function Capturas() {
                         ),
                       )
                     }
-                    className={campo}
+                    className="w-auto text-[13px]"
                   >
                     {contas.map((conta) => (
                       <option key={conta.id} value={conta.id}>
                         {conta.nome}
                       </option>
                     ))}
-                  </select>
-
-                  <select
-                    value={captura.categoriaId ?? ""}
-                    onChange={(evento) =>
-                      setCapturas((atual) =>
-                        atual.map((linha) =>
-                          linha.id === captura.id ? { ...linha, categoriaId: evento.target.value || null } : linha,
-                        ),
-                      )
-                    }
-                    className={cn(campo, !captura.categoriaId && "border-atencao/50 text-atencao")}
-                  >
-                    <option value="">sem categoria</option>
-                    {categorias.map((categoria) => (
-                      <option key={categoria.id} value={categoria.id}>
-                        {categoria.nome}
-                      </option>
-                    ))}
-                  </select>
+                  </SelectNative>
 
                   <div className="ml-auto flex gap-2">
                     <button
@@ -306,13 +297,27 @@ export default function Capturas() {
                     </button>
                   </div>
                 </div>
+
+                {/* Categoria como pastilhas — mapeamento do `tags-selector`
+                    do 21st.dev (ver docs/REDESIGN-EM-CURSO.md). Numa linha só
+                    dá para comparar as categorias sem abrir menu nenhum. */}
+                <TagsSelector
+                  className="mt-2"
+                  opcoes={categorias}
+                  valor={captura.categoriaId}
+                  aoEscolher={(id) =>
+                    setCapturas((atual) =>
+                      atual.map((linha) => (linha.id === captura.id ? { ...linha, categoriaId: id } : linha)),
+                    )
+                  }
+                />
               </div>
             ))}
           </div>
         </Cartao>
       )}
 
-      {pendentes.length === 0 && (
+      {!carregando && pendentes.length === 0 && (
         <Cartao titulo="Fila de conferência">
           <Vazio
             titulo="Nada esperando"

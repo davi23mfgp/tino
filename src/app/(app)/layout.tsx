@@ -6,6 +6,7 @@ import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { Navegacao, SubAbas } from "@/components/navegacao"
 import { TinoDock } from "@/components/tino-dock"
 import { BarraTopo } from "@/components/barra-topo"
+import { AvisoCritico } from "@/components/aviso-critico"
 import { Toaster } from "@/components/ui/toast"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
@@ -33,6 +34,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
 
   return (
     <div className="area-do-app min-h-screen">
+      <AvisoCritico />
       <div className="mx-auto w-full max-w-6xl px-4 pb-28 md:pb-10">
         {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
             por isso moram no mesmo container de largura da página) — ver

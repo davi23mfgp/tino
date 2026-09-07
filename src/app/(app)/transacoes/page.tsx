@@ -8,6 +8,10 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { EditavelTexto, EditavelMoeda } from "@/components/ui/editavel"
 import { showToast } from "@/components/ui/toast"
+import { SelectNative } from "@/components/ui/select-native"
+import { Checkbox } from "@/components/ui/checkbox"
+import { EsqueletoLinhas } from "@/components/ui/skeleton"
+import { Paginacao, usePaginacao } from "@/components/ui/paginacao"
 import { cn } from "@/lib/utils"
 
 interface Transacao {
@@ -89,22 +93,34 @@ export default function Transacoes() {
   }
 
   const saldo = totais.receitasCentavos - totais.despesasCentavos
+  // 25 por página: cabe sem rolagem excessiva num notebook comum e ainda
+  // deixa a paginação útil (mês cheio passa fácil de 25 lançamentos). A API
+  // já manda até 200 de uma vez — isto só corta como a lista é MOSTRADA.
+  const { pagina, totalPaginas, itensDaPagina, irPara } = usePaginacao(transacoes, 25)
+
+  // Trocar de mês, busca ou filtro com a pessoa parada na página 3 deixaria
+  // ela "presa" numa página que pode nem existir mais na lista nova.
+  useEffect(() => {
+    irPara(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [competencia, busca, semCategoria])
 
   return (
     <div className="space-y-4">
       <Cartao>
         <div className="flex flex-wrap items-center gap-2">
-          <select
+          <SelectNative
+            tamanho="pilula"
             value={competencia}
             onChange={(evento) => setCompetencia(evento.target.value)}
-            className="rounded-full border border-pauta bg-background px-4 py-2 text-sm"
+            className="w-auto"
           >
             {ultimasCompetencias(18).reverse().map((mes) => (
               <option key={mes} value={mes}>
                 {rotuloCompetencia(mes)}
               </option>
             ))}
-          </select>
+          </SelectNative>
 
           <input
             value={busca}
@@ -114,8 +130,7 @@ export default function Transacoes() {
           />
 
           <label className="flex items-center gap-2 rounded-full border border-pauta px-4 py-2 text-sm">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={semCategoria}
               onChange={(evento) => setSemCategoria(evento.target.checked)}
             />
@@ -132,7 +147,7 @@ export default function Transacoes() {
       </Cartao>
 
       <Cartao>
-        {carregando && <p className="py-8 text-center text-sm text-muted-fg">Carregando…</p>}
+        {carregando && <EsqueletoLinhas linhas={6} />}
 
         {!carregando && transacoes.length === 0 && (
           <Vazio titulo="Nenhum lançamento neste filtro" texto="Troque o mês ou importe um extrato." />
@@ -143,7 +158,7 @@ export default function Transacoes() {
             próprio dado; o realce que segue o cursor diz onde a pessoa está
             sem pintar a tela inteira. */}
         <div className="divide-y divide-pauta">
-          {transacoes.map((transacao) => (
+          {itensDaPagina.map((transacao) => (
             <div
               key={transacao.id}
               className="-mx-2 flex min-h-[52px] flex-wrap items-center gap-3 rounded-[var(--raio-campo)] px-2 py-2 transition-colors hover:bg-papel-2"
@@ -169,14 +184,16 @@ export default function Transacoes() {
                   entre contas
                 </span>
               ) : (
-                <select
+                <SelectNative
+                  tamanho="pilula"
                   value={transacao.categoriaId ?? ""}
                   onChange={(evento) => recategorizar(transacao.id, evento.target.value)}
-                  className={`rounded-[var(--raio-pilula)] px-3 py-1.5 text-[12px] outline-none transition-colors ${
+                  className={cn(
+                    "w-auto text-[12px]",
                     transacao.categoriaId
-                      ? "bg-foreground/[0.06] text-[color:var(--texto-2)] hover:bg-foreground/[0.1]"
-                      : "bg-atencao/12 text-atencao"
-                  }`}
+                      ? "border-transparent bg-foreground/[0.06] text-[color:var(--texto-2)] hover:bg-foreground/[0.1]"
+                      : "border-transparent bg-atencao/12 text-atencao",
+                  )}
                 >
                   <option value="">sem categoria</option>
                   {categorias.map((categoria) => (
@@ -184,7 +201,7 @@ export default function Transacoes() {
                       {categoria.nome}
                     </option>
                   ))}
-                </select>
+                </SelectNative>
               )}
 
               {/* O SINAL SÓ APARECE EM DINHEIRO QUE ENTRA OU SAI DO LAR.
@@ -225,6 +242,8 @@ export default function Transacoes() {
             </div>
           ))}
         </div>
+
+        <Paginacao pagina={pagina} totalPaginas={totalPaginas} aoMudar={irPara} className="mt-4" />
       </Cartao>
     </div>
   )

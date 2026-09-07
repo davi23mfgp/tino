@@ -5,6 +5,9 @@ import { useEffect, useState } from "react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { SelectNative } from "@/components/ui/select-native"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ZonaDeArquivo } from "@/components/ui/filesystem-item"
 
 interface Conta {
   id: string
@@ -131,28 +134,24 @@ export default function Importar() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="space-y-1.5">
             <span className="text-xs uppercase tracking-widest text-muted-fg">Conta</span>
-            <select
-              value={contaId}
-              onChange={(evento) => setContaId(evento.target.value)}
-              className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-            >
+            <SelectNative value={contaId} onChange={(evento) => setContaId(evento.target.value)}>
               {contas.map((conta) => (
                 <option key={conta.id} value={conta.id}>
                   {conta.nome}
                 </option>
               ))}
-            </select>
+            </SelectNative>
           </label>
 
-          <label className="space-y-1.5">
+          <div className="space-y-1.5">
             <span className="text-xs uppercase tracking-widest text-muted-fg">Arquivo</span>
-            <input
-              type="file"
-              accept=".ofx,.qfx,.csv,.txt,.pdf"
-              onChange={(evento) => setArquivo(evento.target.files?.[0] ?? null)}
-              className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-papel-2 file:px-3 file:py-1.5 file:text-xs"
+            <ZonaDeArquivo
+              arquivo={arquivo}
+              aoEscolher={setArquivo}
+              aceita=".ofx,.qfx,.csv,.txt,.pdf"
+              rotulo="Solte o extrato aqui (OFX, CSV ou PDF) ou clique para escolher"
             />
-          </label>
+          </div>
         </div>
 
         {pedirSenha && (
@@ -172,10 +171,13 @@ export default function Importar() {
           </div>
         )}
 
-        <label className="mt-3 flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={faturaCartao} onChange={(e) => setFaturaCartao(e.target.checked)} />
-          É fatura de cartão (todo lançamento é gasto, menos estorno)
-        </label>
+        <div className="mt-3">
+          <Checkbox
+            checked={faturaCartao}
+            onChange={(e) => setFaturaCartao(e.target.checked)}
+            rotulo="É fatura de cartão (todo lançamento é gasto, menos estorno)"
+          />
+        </div>
 
         <button
           onClick={analisar}
