@@ -183,8 +183,98 @@ teste novo pra `lib/tino/alertas.ts` — módulo sem cobertura desde antes
 desta sessão, `Panorama` é tipo grande demais pra montar fixture no
 tempo que sobrava; registrado, não escondido.
 
+## Sessão autônoma de 07/09/2026, manhã — itens 1/2/3 da etapa 4
+
+Davi mandou trabalhar sozinho ("termine tudo, testar tudo") nos itens que
+não dependiam da decisão de cor (bloqueio continua registrado acima, não
+mexido). Os três itens abaixo estavam listados como "NÃO entraram" na
+etapa 4; agora entraram.
+
+**Item 2 — "Desfazer" nas outras 4 telas com exclusão**, commit
+`41801ef`. Mesmo padrão de `/recorrencias` (linha some na hora, toast
+com Desfazer por 5s, DELETE de verdade só sai depois) aplicado em:
+`/regras` (remover regra), `/capturas` (revogar chave), `/configuracoes`
+(revogar conexão Open Finance), `/loja/contas` (apagar conta). Conferi
+cada rota de DELETE antes de aplicar — `regras` revoga chave e conexão
+Open Finance fazem soft-update (`ativa:false` / `status:"REVOGADA"`),
+`regras` e `loja/contas` fazem hard delete sem cascata perigosa.
+
+**Ficou de fora, de propósito: `/assinatura`.** O botão "cancelar" ali
+chama o gateway de pagamento de verdade (Stripe usa
+`cancel_at_period_end`, reversível em tese; Mercado Pago manda
+`status: "cancelled"` direto na API do preapproval, e isso não é
+reversível pela API deles). Um "Desfazer" de fachada — esconder a linha
+e só chamar o DELETE depois de 5s — seria enganoso especificamente aqui:
+se a aba fechar antes dos 5s, a pessoa nunca vê o cancelamento
+acontecer, mas ele não é desfeito automaticamente (ao contrário de
+recorrencia/regra apagada, onde "não rodou o DELETE" é seguro, aqui
+"rodou escondido" ou "não rodou e a pessoa achou que cancelou" são os
+dois jeitos de errar). Fazer isso direito pediria um endpoint de
+reativação que não existe hoje (e que talvez nem exista no Mercado
+Pago). Não decidido sozinho — fica para o Davi dizer se quer que a
+gente construa a reativação ou se o cancelamento continua imediato e
+sem Desfazer, só com um clique a menos de proteção que os outros.
+
+**Item 1 — edição no lugar em `/transacoes`**, commit `b1d35db`.
+Descrição e valor viram campo com um clique (Enter salva, Esc cancela),
+mesmo princípio que a categoria já tinha ali (select embutido na linha).
+Componentes novos e reutilizáveis: `components/ui/editavel.tsx`
+(`EditavelTexto`, `EditavelMoeda`). A API já aceitava os dois campos no
+PATCH; só faltava a tela usar. Resultado imediato com reversão em caso
+de erro de rede (mesmo princípio da etapa 3). Valor de transferência
+não é editável — as duas pernas têm que continuar batendo, e o PATCH
+mexe só num lado.
+
+Não propagado para outras telas com lista (Dívidas, Recorrências,
+Regras, etc.) nesta sessão — o pedido original não detalhava onde
+"edição no lugar" deveria valer além de existir, e Transações é a tela
+de maior volume e a única que já tinha precedente de campo inline.
+Propagar para as outras é trabalho de escopo separado, não escondido
+como feito.
+
+**Item 3 — linguagem natural em `/dividas` e `/metas`**, commit
+`f36910e`. `lib/tino/lingua-natural.ts` (`lerDivida`, `lerMeta`) segue a
+mesma ideia do leitor de capturas (`lerTextoLivre` em
+`lib/captura/notificacao.ts`): a pessoa escreve como falaria e o Tino
+tenta preencher os campos. Diferente das capturas, NÃO cadastra
+sozinho — só preenche o formulário estruturado que já existia (dívidas)
+ou que ganhou UI agora (metas); a pessoa confere e completa antes de
+salvar. Uma dívida ou meta errada no plano custa mais caro que uma
+categoria errada numa compra de R$ 12.
+
+Achado no caminho, não pedido mas necessário para o item fazer sentido:
+**`/metas` não tinha NENHUMA forma de criar meta pela interface.**
+Só existia via a conversa inicial (`lib/semear.ts`) e a rota
+`POST /api/metas`, que nenhuma tela chamava — o próprio chat do Tino
+(`lib/tino/chat.ts:259`) já dizia "crie uma em Metas" para quem
+perguntava de aposentadoria, prometendo uma tela que não cumpria.
+Criado `components/nova-meta.tsx` (client, embutido na página server
+component) para fechar isso, com o mesmo padrão de linguagem natural.
+Edição e exclusão de meta pela tela continuam sem UI (as rotas PATCH/
+DELETE já existem em `/api/metas/[id]`, só não têm botão) — fora do
+escopo pedido desta sessão, registrado como lacuna conhecida.
+
+11 testes novos em `testes/lingua-natural.test.ts`.
+
+**Verificado, não simulado, nos três itens:** Postgres local de
+verdade, login com `demo@tino.local`. Editei e revertei uma transação
+real via PATCH; criei e apaguei registro de teste em `/api/regras`,
+`/api/loja/contas`, `/api/metas`, conferindo a meta aparecendo em
+`GET /metas` antes de apagar. `tsc --noEmit` limpo, `npx next build`
+sem erro, `npm test` 265/265 (11 novos, 254 já existiam), `npm run
+test:fumaca` 63/63 rotas de pé contra o servidor real. Sem navegador
+nesta máquina (extensão Chrome não conecta): a leitura de HTML puro por
+curl não mostra conteúdo de telas client-side pós-hidratação (ex.:
+`/transacoes` aparece "Carregando…" no HTML cru) — coberto em vez
+disso confirmando o build, o tsc, e o PATCH/DELETE reais batendo
+exatamente com o formato que cada componente novo envia.
+
 ## Pendências que dependem do Davi
 
+- **Cancelamento de assinatura sem "Desfazer"**: ver seção acima
+  (07/09/2026, manhã). Decidir se vale construir reativação para aplicar
+  o mesmo padrão das outras telas, ou se o cancelamento continua
+  imediato como está.
 - **`BRIEF-CATEGORIAS-NAO-APLICADO.md`**: prompt de outro produto (catálogo
   de automação: Control4, Hikvision, Home Cinema). Ele pediu para guardar e
   confirmar depois se vale para a Prateleira do MEI.
