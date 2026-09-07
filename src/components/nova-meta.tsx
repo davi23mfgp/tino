@@ -8,6 +8,15 @@ import { enviar } from "@/lib/cliente"
 import { paraCentavos } from "@/lib/dinheiro"
 import { lerMeta } from "@/lib/tino/lingua-natural"
 import { showToast } from "@/components/ui/toast"
+import { SelectNative } from "@/components/ui/select-native"
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 /**
@@ -19,6 +28,11 @@ import { cn } from "@/lib/utils"
  * promessa existia, a tela não cumpria. Isto fecha essa lacuna com o mesmo
  * padrão de linguagem natural das dívidas: escreve como falaria, confere os
  * campos, salva.
+ *
+ * O formulário de conferência virou `<Dialog>` em 07/09/2026 — mapeamento do
+ * `dialog` do originui (21st.dev). Antes ele empurrava o resto da tela de
+ * Metas para baixo ao abrir; como modal, abre por cima e fecha sozinho ao
+ * salvar, sem mover o que já estava na tela.
  */
 
 const TIPOS = [
@@ -99,68 +113,78 @@ export function NovaMeta() {
         />
         <button
           type="button"
-          onClick={interpretarFrase}
+          onClick={frase.trim() ? interpretarFrase : () => setAbrir(true)}
           className="flex shrink-0 items-center gap-1.5 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[13px] text-acao"
         >
           <Plus className="size-3.5" /> nova meta
         </button>
       </div>
 
-      {abrir && (
-        <form onSubmit={criar} className="mt-3 grid gap-2 sm:grid-cols-3">
-          <input
-            value={nova.nome}
-            onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
-            placeholder="nome da meta"
-            required
-            className={cn(campo, "sm:col-span-2")}
-          />
-          <select value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })} className={campo}>
-            {TIPOS.map((tipo) => (
-              <option key={tipo.valor} value={tipo.valor}>
-                {tipo.rotulo}
-              </option>
-            ))}
-          </select>
-          <input
-            value={nova.alvo}
-            onChange={(evento) => setNova({ ...nova, alvo: evento.target.value })}
-            placeholder="quanto quer juntar"
-            required
-            inputMode="decimal"
-            className={campo}
-          />
-          <input
-            value={nova.saldo}
-            onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
-            placeholder="já tem guardado (opcional)"
-            inputMode="decimal"
-            className={campo}
-          />
-          <input
-            value={nova.aporte}
-            onChange={(evento) => setNova({ ...nova, aporte: evento.target.value })}
-            placeholder="aporte por mês (opcional)"
-            inputMode="decimal"
-            className={campo}
-          />
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-3">
-            data alvo (opcional)
-            <input
-              type="date"
-              value={nova.dataAlvo}
-              onChange={(evento) => setNova({ ...nova, dataAlvo: evento.target.value })}
-              className={campo}
-            />
-          </label>
-          <button
-            disabled={ocupado}
-            className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
-          >
-            Criar meta
-          </button>
-        </form>
-      )}
+      <Dialog open={abrir} onOpenChange={setAbrir}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova meta</DialogTitle>
+          </DialogHeader>
+          <form id="form-nova-meta" onSubmit={criar}>
+            <DialogBody className="grid gap-2 sm:grid-cols-3">
+              <input
+                value={nova.nome}
+                onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
+                placeholder="nome da meta"
+                required
+                autoFocus
+                className={cn(campo, "sm:col-span-2")}
+              />
+              <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
+                {TIPOS.map((tipo) => (
+                  <option key={tipo.valor} value={tipo.valor}>
+                    {tipo.rotulo}
+                  </option>
+                ))}
+              </SelectNative>
+              <input
+                value={nova.alvo}
+                onChange={(evento) => setNova({ ...nova, alvo: evento.target.value })}
+                placeholder="quanto quer juntar"
+                required
+                inputMode="decimal"
+                className={campo}
+              />
+              <input
+                value={nova.saldo}
+                onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
+                placeholder="já tem guardado (opcional)"
+                inputMode="decimal"
+                className={campo}
+              />
+              <input
+                value={nova.aporte}
+                onChange={(evento) => setNova({ ...nova, aporte: evento.target.value })}
+                placeholder="aporte por mês (opcional)"
+                inputMode="decimal"
+                className={campo}
+              />
+              <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-3">
+                data alvo (opcional)
+                <input
+                  type="date"
+                  value={nova.dataAlvo}
+                  onChange={(evento) => setNova({ ...nova, dataAlvo: evento.target.value })}
+                  className={campo}
+                />
+              </label>
+            </DialogBody>
+            <DialogFooter>
+              <button
+                disabled={ocupado || !nova.nome || !nova.alvo}
+                className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+              >
+                Criar meta
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

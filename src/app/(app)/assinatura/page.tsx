@@ -7,6 +7,8 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { descontoAnualBps, type Plano } from "@/lib/planos"
 import { Aviso, Cartao, Vazio } from "@/components/ui/painel"
+import { PricingToggle } from "@/components/ui/pricing-toggle"
+import { EsqueletoLinhas } from "@/components/ui/skeleton"
 
 /**
  * Plano, situação de pagamento e troca de plano.
@@ -120,7 +122,7 @@ export default function Assinatura() {
   if (!situacao) {
     return (
       <Cartao>
-        <p className="text-[13px] text-muted-fg">Carregando…</p>
+        <EsqueletoLinhas linhas={3} />
       </Cartao>
     )
   }
@@ -128,6 +130,7 @@ export default function Assinatura() {
   const { assinatura, planos, gateways, diasDeTeste } = situacao
   const disponiveis = gateways.filter((linha) => linha.configurado)
   const ativa = assinatura?.status === "ATIVA"
+  const maiorDesconto = Math.max(0, ...planos.map((linha) => descontoAnualBps(linha)))
 
   return (
     <div className="space-y-4">
@@ -197,17 +200,11 @@ export default function Assinatura() {
         <Cartao
           titulo="Planos"
           acao={
-            <div className="flex gap-1">
-              {(["MENSAL", "ANUAL"] as Ciclo[]).map((opcao) => (
-                <button
-                  key={opcao}
-                  onClick={() => setCiclo(opcao)}
-                  className={`rounded-full border px-3 py-1 text-[12px] ${ciclo === opcao ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
-                >
-                  {opcao === "MENSAL" ? "mensal" : "anual"}
-                </button>
-              ))}
-            </div>
+            <PricingToggle
+              valor={ciclo}
+              aoMudar={setCiclo}
+              rotuloDesconto={maiorDesconto > 0 ? `-${formatarPercentual(maiorDesconto, 0)}` : undefined}
+            />
           }
         >
           {disponiveis.length === 0 && (

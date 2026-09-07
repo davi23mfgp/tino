@@ -6,6 +6,7 @@ import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { descontoAnualBps } from "@/lib/planos"
 import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
 import { TinoMascote } from "@/components/tino-mascote"
+import { SiteNavbar } from "@/components/site-navbar"
 
 export const metadata: Metadata = {
   title: "Tino, o contador que olha suas contas todo dia",
@@ -62,7 +63,9 @@ export default async function Vitrine() {
   const [PLANOS, DIAS_DE_TESTE] = await Promise.all([planosVigentes(), diasDeTesteVigentes()])
 
   return (
-    <main>
+    <>
+      <SiteNavbar />
+      <main>
       {/* ── O que o produto faz, mostrado em vez de prometido ── */}
       <section className="mx-auto max-w-5xl px-5 pb-16 pt-16 sm:pt-24">
         <p className="text-[11px] uppercase tracking-[0.3em] text-muted-fg">Tino</p>
@@ -109,7 +112,7 @@ export default async function Vitrine() {
       </section>
 
       {/* ── As perguntas que ele responde ── */}
-      <section className="border-y border-pauta bg-papel-2/60">
+      <section id="perguntas" className="border-y border-pauta bg-papel-2/60">
         <div className="mx-auto max-w-5xl px-5 py-16">
           <h2 className="font-display text-[24px] font-bold tracking-tight sm:text-[30px]">
             Quatro perguntas que a planilha não responde
@@ -127,7 +130,7 @@ export default async function Vitrine() {
       </section>
 
       {/* ── A loja ── */}
-      <section className="mx-auto max-w-5xl px-5 py-16">
+      <section id="loja" className="mx-auto max-w-5xl px-5 py-16">
         <p className="text-[11px] uppercase tracking-[0.24em] text-muted-fg">Para quem tem loja</p>
         <h2 className="font-display mt-2 max-w-2xl text-[24px] font-bold tracking-tight sm:text-[30px]">
           A maquininha mostra o bruto. O extrato mostra o líquido três semanas depois.
@@ -234,6 +237,7 @@ export default async function Vitrine() {
           </Link>
         </div>
       </footer>
-    </main>
+      </main>
+    </>
   )
 }

@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
 
@@ -210,13 +211,13 @@ export default function Dividas() {
               required
               className={cn(campo, "sm:col-span-2")}
             />
-            <select value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })} className={campo}>
+            <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
               {TIPOS.map((tipo) => (
                 <option key={tipo.valor} value={tipo.valor}>
                   {tipo.rotulo}
                 </option>
               ))}
-            </select>
+            </SelectNative>
             <input
               value={nova.saldo}
               onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
