@@ -105,6 +105,30 @@ precisa parar agora. Se alguém remover esse rótulo, a regra cai junto.
 - decidir o que fazer com `tino-mascote.tsx`, que virou código morto no
   painel mas ainda é usado em outros lugares — conferir antes de apagar
 
+## Conflito novo, registrado em 07/09/2026 — NÃO resolvido sozinho
+
+Davi mandou um documento de especificação novo ("TINO — REDESENHO DE
+EXPERIÊNCIA E VISUAL", com prompt pronto pra colar) comparando o Tino ao
+app **Pierre** e pedindo: navegação de 18 itens pra 6 abas + trilho de 4
+ícones (isso eu apliquei, ver abaixo), tela "Hoje" nova, edição no lugar,
+sistema de vigias — e também **"casca 100% neutra em preto/branco/cinza;
+cor só nos dados. Nenhum botão, ícone de navegação, cabeçalho ou moldura
+usa cor."**
+
+Esse último ponto reabre exatamente a pergunta que este arquivo pede pra
+não reabrir: `acao` hoje é o azul `#297cef` pipetado do protótipo Lovable
+dele, aplicado em botão/link/item ativo do menu — terceira reversão
+sobre a mesma pergunta em três dias seria o padrão de thrashing que a
+seção acima registra como erro, não decisão.
+
+**O que fiz:** apliquei tudo do pedido novo que não depende disso —
+navegação (trilho + 6 abas), tela Hoje, vigias, interação — mantendo
+`acao` = azul como está hoje. **O que não fiz:** não neutralizei botão/
+nav/cabeçalho. Fica esperando confirmação: ele quer mesmo desfazer o
+azul de ação que pediu "exatamente igual" ao protótipo há 2 dias, ou o
+pedido de hoje era só sobre estrutura de navegação e ele não tinha essa
+peça em mente ao escrever "nenhum botão colorido"?
+
 ## Pendências que dependem do Davi
 
 - **`BRIEF-CATEGORIAS-NAO-APLICADO.md`**: prompt de outro produto (catálogo
