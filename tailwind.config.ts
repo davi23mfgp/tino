@@ -66,6 +66,20 @@ const config: Config = {
         alerta: "oklch(var(--lch-alerta) / <alpha-value>)",
         destaque: "oklch(var(--lch-destaque) / <alpha-value>)",
         dado: "oklch(var(--lch-dado) / <alpha-value>)",
+
+        /* Variante ESCURA das três cores que também preenchem SUPERFÍCIE
+           SÓLIDA com texto branco em cima (botão primário, botão destrutivo,
+           faixa crítica, indicador do toggle de preço, mapa de calor no pico).
+           A cor "cheia" de cima (`acao`, `negativo`, `positivo`) é clara demais
+           para hospedar texto branco em cima — medido: branco sobre `acao`
+           cheio dá 2.91:1, bem abaixo do 4.5:1 que WCAG AA pede. Esta variante
+           é o mesmo matiz um degrau mais escuro, calculada para dar >=5:1 com
+           texto branco (contraste real, não visual — ver docs/REDESIGN-EM-CURSO.md).
+           A `acao`/`negativo`/`positivo` claras continuam sendo a cor de
+           TEXTO, ícone, anel de foco e pastilha translúcida — não mudam. */
+        "acao-solido": "oklch(var(--lch-acao-solido) / <alpha-value>)",
+        "negativo-solido": "oklch(var(--lch-negativo-solido) / <alpha-value>)",
+        "positivo-solido": "oklch(var(--lch-positivo-solido) / <alpha-value>)",
       },
       borderRadius: {
         sm: "8px",
@@ -78,6 +92,15 @@ const config: Config = {
       boxShadow: {
         ficha: "var(--sombra-ficha)",
         alta: "var(--sombra-alta)",
+      },
+      backdropBlur: {
+        vidro: "var(--desfoque)",
+        "vidro-forte": "var(--desfoque-forte)",
+      },
+      // `ease-apple` já era escrito em `input.tsx` sem existir — classe morta.
+      // Isto a torna real, na mesma curva usada no resto do app (`--curva`).
+      transitionTimingFunction: {
+        apple: "var(--curva)",
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },

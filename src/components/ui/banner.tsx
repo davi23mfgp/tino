@@ -18,9 +18,13 @@ import { cn } from "@/lib/utils"
 type Tom = "critico" | "atencao" | "info"
 
 const TOM: Record<Tom, string> = {
-  critico: "bg-negativo text-white",
+  // `negativo`/`acao` CLAROS falham contraste com texto branco (2,9–3,2:1,
+  // abaixo do 4,5:1 exigido) — a faixa usa a variante "-solido", calculada
+  // para >=5:1 (ver globals.css). `atencao` já nasceu clara o bastante para
+  // hospedar texto escuro em cima, então segue igual.
+  critico: "bg-negativo-solido text-white",
   atencao: "bg-atencao text-[oklch(0.2_0.02_70)]",
-  info: "bg-acao text-white",
+  info: "bg-acao-solido text-white",
 }
 
 const CHAVE = (id: string) => `tino:banner-dispensado:${id}`

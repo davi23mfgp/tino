@@ -43,7 +43,7 @@ export default function Login() {
             placeholder="seu@email.com"
             autoComplete="email"
             required
-            className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
+            className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 backdrop-blur-vidro px-4 py-3 text-sm outline-none transition-colors focus:border-acao/50 focus:bg-background"
           />
           <input
             type="password"
@@ -52,7 +52,7 @@ export default function Login() {
             placeholder="sua senha"
             autoComplete="current-password"
             required
-            className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
+            className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 backdrop-blur-vidro px-4 py-3 text-sm outline-none transition-colors focus:border-acao/50 focus:bg-background"
           />
 
           {erro && <p className="text-sm text-negativo">{erro}</p>}

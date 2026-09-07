@@ -27,7 +27,7 @@ const TIPOS = [
 ] as const
 
 const campo =
-  "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-positivo/50"
+  "w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 backdrop-blur-vidro px-4 py-3 text-sm outline-none transition-colors focus:border-positivo/50 focus:bg-background"
 
 export default function Cadastro() {
   const router = useRouter()

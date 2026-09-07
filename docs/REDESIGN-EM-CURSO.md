@@ -3,6 +3,157 @@
 Ponto de retomada. Quem abrir isto numa sessão nova consegue continuar sem
 perguntar nada ao Davi.
 
+## RESOLVIDO em 07/09/2026, à noite: casca preta + vidro líquido
+
+Davi decidiu, de forma explícita e definitiva: **"quero o site black e com
+glass liquid estilo apple com os botões que mandei como referência no
+21st."** Isto fecha as duas perguntas que ficavam em aberto mais abaixo
+neste arquivo (seção "Conflito novo, registrado em 07/09/2026"):
+
+- **Casca 100% neutra vs. azul de ação**: preto. Fundo preto é o PADRÃO do
+  app agora — não um dark-mode opcional que convive com um tema claro. O
+  bloco `:root` de `globals.css` (não mais só `.dark`) já é a casca preta;
+  `.dark` virou espelho do mesmo valor só para não quebrar nada que ainda
+  leia a classe. `ThemeProvider` em `app/layout.tsx` ganhou
+  `forcedTheme="dark"`.
+- **Cor de ação azul do Fixa/protótipo**: continua azul (`acao`,
+  `oklch(0.68 0.17 258)`) — Davi não pediu para trocar o matiz, só o fundo
+  e o material das superfícies. Nenhuma paleta nova entrou.
+
+**"Vidro líquido"** é literal, não metáfora: toda superfície do app —
+cartão (`.ficha`), diálogo (`.liquid-glass-elevated`), menu/popover/select
+(`.vidro-menu`), trilho lateral, barra do topo, gaveta móvel, dock do
+Tino — é branco translúcido sobre o preto (`--papel-1/2/3`), com
+`backdrop-filter: blur(...)` de verdade por trás, um traço de luz na
+borda de cima (`--vidro-realce`, como `inset` no `box-shadow` — a luz
+"pegando" a aresta superior do vidro, não uma borda uniforme) e sombra
+funda e macia por baixo (`--sombra-ios`/`--sombra-alta`) para dar
+profundidade. Botões, badges, checkbox, inputs e o toggle de preço seguem
+o mesmo vocabulário. Nenhuma tela nova, nenhuma funcionalidade nova — é
+reskin.
+
+### Achado no caminho: duas classes fantasmas
+
+`dialog.tsx`, `select.tsx` e `dropdown-menu.tsx` já referenciavam
+`liquid-glass-elevated` e `vidro-menu` — e `button.tsx` já referenciava
+`spring-press` — em variantes/`className`, mas **nenhuma das três classes
+existia em `globals.css`**. Ou seja: diálogo, select e menu suspenso
+rodavam sem NENHUM estilo de superfície (fundo transparente, sem borda,
+sem sombra) desde que esses componentes entraram na branch
+(`e505136`/`cb9d02b`), e os botões `default`/`destructive` não tinham
+nenhuma animação de toque. Provavelmente sobra de um rascunho anterior de
+vidro que nunca foi fechado. Esta sessão definiu as três de verdade (ver
+`globals.css`, `@layer components`) — não são invenção nova, são a
+implementação do que o nome da classe já prometia.
+
+### Tokens novos/trocados (`src/app/globals.css`, `tailwind.config.ts`)
+
+| Token | Valor | Papel |
+|---|---|---|
+| `--background` | `oklch(0 0 0)` (preto puro) | casca do app |
+| `--foreground` | `oklch(0.97 0 0)` | texto principal |
+| `--papel-1` | `oklch(1 0 0 / 8%)` | vidro fino — cartão comum (`.ficha`) |
+| `--papel-2` | `oklch(1 0 0 / 12%)` | vidro médio — hover, campo recuado |
+| `--papel-3` | `oklch(1 0 0 / 16%)` | vidro grosso — diálogo, menu, gaveta, dock |
+| `--pauta` | `oklch(1 0 0 / 12%)` | borda do vidro |
+| `--vidro-realce` (novo) | `oklch(1 0 0 / 22%)` | traço de luz no topo do vidro (`inset` no box-shadow) |
+| `--texto-2` | `oklch(0.75 0 0)` | texto secundário |
+| `--texto-3` | `oklch(0.70 0 0)` | rótulo terciário (11px caixa alta) — subiu de L0.63 para L0.70, ver contraste abaixo |
+| `--desfoque` / `--desfoque-forte` (novos) | `20px` / `36px` | intensidade do `backdrop-filter: blur()` — fino (cartão/menu) vs. grosso (diálogo/gaveta/dock) |
+| `--lch-acao/positivo/negativo/atencao/alerta/destaque/dado` | inalterados (eram os valores já calibrados para fundo escuro) | texto, ícone, anel de foco, pastilha translúcida |
+| `--lch-acao-solido`, `--lch-negativo-solido`, `--lch-positivo-solido` (novos) | `0.546`/`0.566`/`0.516` (mesmo C/H) | preenchimento SÓLIDO quando texto branco senta em cima (botão primário, botão destrutivo, faixa crítica do banner, indicador do toggle de preço, pico do mapa de calor) |
+| `--primary` (shadcn) | `215 70% 48%` (= `acao-solido` em HSL) | fundo do botão `default` |
+| `--destructive` (shadcn) | `355 61% 51%` (= `negativo-solido` em HSL) | fundo do botão `destructive` |
+| `--accent` / `--accent-foreground` | `216 52% 13%` / `216 100% 66%` | pastilha ativa (nav, paginação) — acao a 20% sobre preto + acao brilhante em cima |
+
+Classes novas em `@layer components`: `.liquid-glass-elevated` (material
+grosso), `.vidro-menu` (material fino), `.spring-press` (toque com mola).
+`.ficha`/`.ios-card` ganharam `backdrop-filter` real + realce de borda.
+
+### Contraste — calculado, não olhado
+
+Mesmo método já usado para o azul `#297cef` (ver `docs/IDENTIDADE.md`):
+oklch → OKLab → sRGB linear → luminância relativa WCAG → razão de
+contraste, compositando cada camada translúcida sobre o preto puro do
+fundo (as superfícies do vidro não têm cor própria — são branco a X% de
+opacidade sobre o `--background`, então "contraste contra papel-N" é
+"branco a X% sobre preto"). Script em Node, fórmulas padrão de
+CSS Color 4 (matriz oklab→linear-sRGB de Björn Ottosson) + WCAG 2.1.
+
+**Texto contra cada camada** (mínimo AA para texto normal: 4,5:1):
+
+| | preto puro | papel-1 (8%) | papel-2 (12%) | papel-3 (16%) |
+|---|---|---|---|---|
+| `foreground` (L0.97) | 19,3:1 | 16,0:1 | 14,3:1 | 12,5:1 |
+| `texto-2` (L0.75) | 9,4:1 | 7,9:1 | 7,0:1 | 6,1:1 |
+| `texto-3` (L0.70) | 7,9:1 | 6,9:1 | 6,2:1 | 5,5:1 |
+
+Todos passam com folga em qualquer superfície, inclusive a mais clara
+(`papel-3`, pior caso). `texto-3` foi o único que precisou mudar: no valor
+antigo (L0.63, calibrado só contra o fundo escuro anterior) dava 6,0:1
+contra preto mas caía a **3,9:1 contra papel-3** — abaixo do mínimo.
+Subiu para L0.70.
+
+**Texto/ícone branco sobre preenchimento SÓLIDO de cor informativa** —
+onde a maioria falhava, e por que as variantes "-solido" existem:
+
+| Cor | Branco s/ tom claro (`acao`/`negativo`/`positivo`) | Branco s/ tom "-solido" |
+|---|---|---|
+| acao | **2,91:1 (falha)** | **5,16:1 (passa)** |
+| negativo | **3,15:1 (falha)** | **5,13:1 (passa)** |
+| positivo | **2,01:1 (falha)** | **5,14:1 (passa)** |
+| atencao | 1,78:1 (falha) — resolvido com texto ESCURO em cima (já era o padrão em `banner.tsx`, mantido) | — |
+
+Onde isso mudou código: `banner.tsx` (faixa crítico/info),
+`pricing-toggle.tsx` (indicador ativo), `mapa-de-calor.tsx` (célula no
+pico, ~90% de opacidade — praticamente cor cheia), `checkbox.tsx` (✓
+branco sobre a caixa marcada, que pedia só 3:1 de não-texto mas o `acao`
+claro dava 2,9:1). `button.tsx` já herdava `--primary`/`--destructive`
+via `bg-primary`/`bg-destructive`, então só a troca do token em
+`globals.css` resolveu, sem mexer no componente.
+
+**Pastilha de vidro tingido** (badge translúcido, `bg-acao/10 text-acao`
+e equivalentes — o padrão que `success`/`warning`/`info`/`purple` já
+usavam em `badge.tsx`, e que `default`/`destructive` passaram a usar
+também nesta sessão em vez de vazar para o `primary`/`destructive` do
+shadcn): texto na cor cheia sobre o próprio fundo tingido a 10-16% dá
+5,7–9,3:1 em qualquer uma das quatro cores — não precisou de ajuste.
+
+**Não-texto (borda, anel de foco — mínimo 3:1):** o anel de foco (`acao`
+brilhante) contra qualquer papel-N fica entre 4,7:1 e 7,2:1, folgado. A
+borda `pauta` propositalmente NÃO tenta vencer sozinha o contraste com o
+papel que ela cerca (ambas nascem de "branco a X% sobre preto", então têm
+luminância próxima) — quem separa cartão de fundo é o conjunto blur +
+sombra + traço de luz do topo, o mesmo princípio que já valia com o
+contorno colorido banido (ver nota em `ui/painel.tsx`), registrado aqui
+para não ser lido como omissão.
+
+### Verificado, não simulado
+
+`tsc --noEmit` limpo. `npx next build` sem erro (51 rotas). `npm test`
+265/265 (suíte já existente, nenhuma mudança de lógica nesta sessão — é
+reskin). `npm run test:fumaca` 63/63 rotas de pé contra o Postgres local
+de verdade, login com `demo@tino.local`. Conferido também no CSS
+compilado servido pelo `next dev` real (não só nos arquivos-fonte): os
+valores de `--background`, `--papel-1`, `--texto-2`, `--texto-3`,
+`--primary`, `--destructive`, `--accent` batem exatamente com os
+calculados acima, e as três classes `.liquid-glass-elevated`/
+`.vidro-menu`/`.spring-press` (antes fantasmas, ver acima) aparecem
+definidas no bundle. Sem navegador nesta máquina (extensão Chrome não
+conecta) — mesma limitação de sempre; sem isso, não há como ver o blur
+renderizado de verdade, só confirmar que as regras CSS corretas chegam ao
+cliente.
+
+### O que NÃO mudou
+
+Arquitetura shadcn/Tailwind (tokens em CSS var) intacta — nenhum
+componente foi reescrito do zero, só trocou de token ou ganhou a classe
+de vidro que já devia ter. Nenhuma paleta de marca nova. Nenhuma tela,
+rota ou funcionalidade nova. O cartão de crédito em `/cartoes` (gradiente
+grafite escuro, texto branco, comentário no próprio código explicando que
+é "o material do objeto") ficou fora de propósito — já era escuro e
+autocontido antes desta mudança, não é uma superfície de vidro do app.
+
 ## A referência é o protótipo do próprio Davi
 
 **https://zenith-financial-art.lovable.app** — Tino feito por ele no Lovable.

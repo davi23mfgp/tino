@@ -26,7 +26,10 @@ export function PricingToggle({
       <div
         aria-hidden
         className={cn(
-          "absolute inset-y-1 w-[calc(50%-4px)] rounded-[var(--raio-pilula)] bg-acao shadow-sm transition-transform duration-200 ease-[var(--curva)]",
+          // `acao-solido`, não `acao`: o indicador hospeda texto branco em
+          // cima (os dois botões abaixo), e o `acao` claro só dá 2,9:1 com
+          // branco — abaixo do 4,5:1 exigido (ver globals.css).
+          "absolute inset-y-1 w-[calc(50%-4px)] rounded-[var(--raio-pilula)] bg-acao-solido shadow-sm transition-transform duration-200 ease-[var(--curva)]",
           valor === "ANUAL" ? "translate-x-[calc(100%+8px)]" : "translate-x-0",
         )}
       />

@@ -131,7 +131,7 @@ function AbasPrincipais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: stri
             <div
               role="menu"
               aria-label={grupo.titulo}
-              className="invisible absolute left-0 top-full z-30 hidden w-56 -translate-y-1 rounded-[var(--raio-cartao)] border border-pauta bg-card p-1.5 opacity-0 shadow-alta transition-[opacity,transform] duration-150 [@media(hover:hover)]:block [@media(hover:hover)]:group-hover/nav:visible [@media(hover:hover)]:group-hover/nav:translate-y-1 [@media(hover:hover)]:group-hover/nav:opacity-100"
+              className="vidro-menu invisible absolute left-0 top-full z-30 hidden w-56 -translate-y-1 rounded-[var(--raio-cartao)] p-1.5 opacity-0 transition-[opacity,transform] duration-150 [@media(hover:hover)]:block [@media(hover:hover)]:group-hover/nav:visible [@media(hover:hover)]:group-hover/nav:translate-y-1 [@media(hover:hover)]:group-hover/nav:opacity-100"
             >
               <p className="px-2.5 pb-1.5 pt-1 text-[11px] text-muted-fg">{grupo.pergunta}</p>
               {grupo.itens.map((item) => {
@@ -284,7 +284,7 @@ function Gaveta({ grupos, caminho, aoFechar }: { grupos: GrupoNav[]; caminho: st
         onClick={aoFechar}
         className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm md:hidden"
       />
-      <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-1 md:hidden">
+      <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-3 backdrop-blur-vidro-forte backdrop-saturate-[1.7] md:hidden">
         <header className="flex h-14 items-center gap-2 border-b border-pauta px-3">
           <TinoMascote estado="tranquilo" animado={false} className="size-7" />
           <span className="font-display text-[15px] font-semibold">Tino</span>

@@ -31,8 +31,10 @@ export const Checkbox = React.forwardRef<
       <span
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-0 rounded-[6px] border border-pauta bg-background transition-colors",
-          "peer-checked:border-acao peer-checked:bg-acao",
+          "pointer-events-none absolute inset-0 rounded-[6px] border border-pauta bg-papel-2 backdrop-blur-vidro transition-colors",
+          // `acao-solido`, não `acao`: o "✓" branco em cima do `acao` claro
+          // dá só 2,9:1 (abaixo do mínimo de 3:1 para elemento gráfico).
+          "peer-checked:border-acao peer-checked:bg-acao-solido",
           "peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-acao",
           "peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
         )}

@@ -27,8 +27,8 @@ export const SelectNative = React.forwardRef<
       <select
         ref={ref}
         className={cn(
-          "peer w-full appearance-none bg-background pr-8 text-[13px] outline-none transition-colors",
-          "border border-pauta focus:border-acao/50",
+          "peer w-full appearance-none bg-background/60 backdrop-blur-vidro pr-8 text-[13px] outline-none transition-colors",
+          "border border-pauta focus:border-acao/50 focus:bg-background",
           "disabled:cursor-not-allowed disabled:opacity-50",
           tamanho === "pilula"
             ? "rounded-[var(--raio-pilula)] px-4 py-2"

@@ -66,7 +66,7 @@ export function EditavelTexto({
           }
         }}
         className={cn(
-          "-mx-2 -my-1 w-[calc(100%+1rem)] rounded-[var(--raio-campo)] border border-acao/50 bg-background px-2 py-1 text-[14px] outline-none",
+          "-mx-2 -my-1 w-[calc(100%+1rem)] rounded-[var(--raio-campo)] border border-acao/50 bg-background/70 backdrop-blur-vidro px-2 py-1 text-[14px] outline-none",
           className,
         )}
       />
@@ -130,7 +130,7 @@ export function EditavelMoeda({
           }
         }}
         className={cn(
-          "numero w-28 rounded-[var(--raio-campo)] border border-acao/50 bg-background px-2 py-1 text-right text-[14px] outline-none",
+          "numero w-28 rounded-[var(--raio-campo)] border border-acao/50 bg-background/70 backdrop-blur-vidro px-2 py-1 text-right text-[14px] outline-none",
           className,
         )}
       />

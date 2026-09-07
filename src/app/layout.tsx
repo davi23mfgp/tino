@@ -34,9 +34,13 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
+  // Preto é a casca do app, não uma preferência de sistema — as duas
+  // entradas apontam para o mesmo preto (decisão do Davi, 07/09/2026: ver
+  // docs/REDESIGN-EM-CURSO.md). A barra de status do celular e a moldura do
+  // navegador continuam pretas em qualquer tema do aparelho.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f7f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#111111" },
+    { media: "(prefers-color-scheme: light)", color: "#000000" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -52,7 +56,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className="min-h-screen bg-background antialiased"
       >
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        {/* Preto é a casca do app, não um dark-mode opcional (decisão do
+            Davi, 07/09/2026). `forcedTheme` trava a classe `.dark` ligada
+            mesmo que o sistema operacional prefira claro — `:root` e
+            `.dark` em globals.css já são o mesmo preto+vidro, então isto
+            só impede qualquer alternador futuro de expor um tema que não
+            existe mais. */}
+        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
           {children}
         </ThemeProvider>
       </body>

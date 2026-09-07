@@ -8,9 +8,14 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default:     "bg-primary/10 text-primary border border-primary/20",
+        // `acao`/`negativo` (a cor CLARA, não a variante "-solido" de botão
+        // cheio) — mesmo padrão de pastilha de vidro tingido que
+        // success/warning/info/purple abaixo já usavam; `default`/
+        // `destructive` eram os dois únicos que ainda vazavam para o
+        // `primary`/`destructive` do shadcn (a cor sólida de botão).
+        default:     "bg-acao/10 text-acao border border-acao/20",
         secondary:   "bg-papel-2 text-secondary-foreground",
-        destructive: "bg-destructive/10 text-destructive border border-destructive/20",
+        destructive: "bg-negativo/10 text-negativo border border-negativo/20",
         outline:     "border border-border text-foreground bg-transparent",
         // Sem paleta do Tailwind: as cores fixas (emerald, amber, sky, violet)
         // eram o último lugar do app que ignorava os tokens, e sobreviveram a
