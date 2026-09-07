@@ -153,14 +153,24 @@ constrói em cima disso, não de `main`).
   (`VigiaConfig`, migration local) e tela em Configurações. Dois vigias
   novos: fatura acima do limite, vencimento próximo. Não duplicou nada.
 
-**Etapa 4 (interação), feita só em parte:** "resultado imediato"
-(`router.refresh()` depois de anotar, na Hoje) entrou junto da etapa 3.
-NÃO entraram: edição no lugar, "Desfazer" no lugar de confirmação, e
-estender linguagem natural pra dívidas/metas. São mudanças que tocam
-quase toda tela do app (cada formulário do Tino), e fazer isso sem QA
-visual nesta máquina (extensão Chrome não conecta aqui) é risco real de
-quebrar layout sem ninguém perceber até abrir de verdade. Fica registrado
-como próximo passo, não escondido como feito.
+**Etapa 4 (interação), feita só em parte**, commit `e9a2bb3`:
+- "Resultado imediato" (`router.refresh()` depois de anotar, na Hoje) —
+  entrou junto da etapa 3.
+- "Desfazer em vez de confirmar" — `showToast()` ganhou `action`/
+  `duration`; achado no caminho que `<Toaster/>` nunca tinha sido montado
+  em lugar nenhum do app (bug preexistente, não desta sessão), corrigido
+  em `(app)/layout.tsx`. Aplicado num caso concreto (remover conta fixa
+  em `/recorrencias`): a linha some na hora, toast com Desfazer por 5s,
+  o DELETE de verdade só sai depois disso.
+
+NÃO entraram: edição no lugar, estender linguagem natural pra
+dívidas/metas, e o padrão Desfazer nas outras 5 telas com exclusão
+(assinatura, capturas, configurações, loja/contas, regras). São mudanças
+que tocam quase toda tela do app, e fazer isso sem QA visual nesta
+máquina (extensão Chrome não conecta aqui) é risco real de quebrar
+layout sem ninguém perceber até abrir de verdade. Um caso bem verificado
+valeu mais que cinco mal verificados. Fica registrado como próximo
+passo, não escondido como feito.
 
 **Etapa 1 (casca neutra), NÃO feita — de propósito, ver acima.** O
 resto dos tokens (raio, tipografia, cards em 3 pesos) já batia com o que
