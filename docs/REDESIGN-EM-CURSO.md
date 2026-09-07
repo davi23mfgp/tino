@@ -129,6 +129,50 @@ azul de ação que pediu "exatamente igual" ao protótipo há 2 dias, ou o
 pedido de hoje era só sobre estrutura de navegação e ele não tinha essa
 peça em mente ao escrever "nenhum botão colorido"?
 
+## Redesign de experiência de 07/09/2026 — etapas 2/3/5 feitas
+
+Branch `redesign/experiencia-visual` (a partir de `test/escrita-da-api`,
+que tinha 107 arquivos de trabalho não mesclados em `main` — o redesign
+constrói em cima disso, não de `main`).
+
+- **Etapa 2 (navegação)**, commit `efa9f8a`: 18 itens em 3 grupos viraram
+  trilho de 4 ícones (Hoje/Buscar/Configurações/Perfil) + 6 abas em
+  pílula (Hoje/Movimento/Planejar/Dívidas/Futuro/Parecer), sub-abas
+  quando o grupo tem mais de uma tela. `lib/navegacao-grupos.ts` é a
+  única fonte. Regras e Assinatura viraram cards em Configurações.
+  Loja ficou como 7ª aba só pra MEI (fora do brief, mas real).
+- **Etapa 3 (tela Hoje)**, commit `4dbd388`: as 5 coisas do brief no
+  topo de `/painel`, nessa ordem (frase grande, ação recomendada,
+  anotar em uma linha, fila esperando, três números). O conteúdo antigo
+  (gráficos, mapa de calor, evolução) continua embaixo, intocado — não
+  coube mover pra outra página com segurança nesta sessão.
+  `lib/tino/plano-do-lar.ts` extrai lógica que estava duplicada entre
+  `/plano` e a Hoje nova.
+- **Etapa 5 (vigias)**, commit `ba976ed`: o motor de alertas que já
+  existia (`lib/tino/alertas.ts`) ganhou liga/desliga por tipo
+  (`VigiaConfig`, migration local) e tela em Configurações. Dois vigias
+  novos: fatura acima do limite, vencimento próximo. Não duplicou nada.
+
+**Etapa 4 (interação), feita só em parte:** "resultado imediato"
+(`router.refresh()` depois de anotar, na Hoje) entrou junto da etapa 3.
+NÃO entraram: edição no lugar, "Desfazer" no lugar de confirmação, e
+estender linguagem natural pra dívidas/metas. São mudanças que tocam
+quase toda tela do app (cada formulário do Tino), e fazer isso sem QA
+visual nesta máquina (extensão Chrome não conecta aqui) é risco real de
+quebrar layout sem ninguém perceber até abrir de verdade. Fica registrado
+como próximo passo, não escondido como feito.
+
+**Etapa 1 (casca neutra), NÃO feita — de propósito, ver acima.** O
+resto dos tokens (raio, tipografia, cards em 3 pesos) já batia com o que
+a base tinha; só a cor de botão/nav ficou de fora, esperando confirmação.
+
+**Verificado, não simulado:** cada etapa rodou contra o Postgres local
+de verdade (login com `demo@tino.local`, curl com sessão real), tsc
+limpo, 254 testes da suíte (que já existia) continuam verdes. Nenhum
+teste novo pra `lib/tino/alertas.ts` — módulo sem cobertura desde antes
+desta sessão, `Panorama` é tipo grande demais pra montar fixture no
+tempo que sobrava; registrado, não escondido.
+
 ## Pendências que dependem do Davi
 
 - **`BRIEF-CATEGORIAS-NAO-APLICADO.md`**: prompt de outro produto (catálogo
