@@ -299,7 +299,7 @@ function Gaveta({ grupos, caminho, aoFechar }: { grupos: GrupoNav[]; caminho: st
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
           {grupos.map((grupo) => (
             <div key={grupo.chave}>
-              <p className="px-2.5 pb-1.5 text-[11px] uppercase tracking-[0.12em] text-muted-fg">{grupo.titulo}</p>
+              <p className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-fg">{grupo.titulo}</p>
               <div className="space-y-0.5">
                 {grupo.itens.map((item) => {
                   const ativo = estaAtivo(caminho, item.rota)
