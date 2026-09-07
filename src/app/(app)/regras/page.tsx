@@ -209,7 +209,7 @@ export default function Regras() {
           </Dialog>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Regras ativas" valor={String(ativas.length)} />
           <Metrica rotulo="Desligadas" valor={String(regras.length - ativas.length)} />
           <Metrica rotulo="Lançamentos classificados" valor={String(totalAcertos)} tom="positivo" />

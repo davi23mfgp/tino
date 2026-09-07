@@ -119,7 +119,7 @@ export default function Investir() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica
             rotulo="Sobra hoje"
             valor={formatarMoeda(dados?.sobraMensalCentavos ?? 0)}

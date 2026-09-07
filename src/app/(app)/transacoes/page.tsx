@@ -138,7 +138,7 @@ export default function Transacoes() {
           </label>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metrica rotulo="Lançamentos" valor={String(transacoes.length)} />
           <Metrica rotulo="Receitas" valor={formatarMoeda(totais.receitasCentavos)} tom="positivo" />
           <Metrica rotulo="Despesas" valor={formatarMoeda(totais.despesasCentavos)} tom="negativo" />

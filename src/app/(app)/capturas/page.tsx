@@ -231,7 +231,7 @@ export default function Capturas() {
 
       {!carregando && pendentes.length > 0 && (
         <Cartao titulo={`${pendentes.length} esperando você`}>
-          <div className="mb-3 grid gap-3 sm:grid-cols-2">
+          <div className="mb-3 grid grid-cols-2 gap-3">
             <Metrica rotulo="A confirmar" valor={String(pendentes.length)} />
             <Metrica rotulo="Somam" valor={formatarMoeda(totalPendente)} tom="atencao" />
           </div>

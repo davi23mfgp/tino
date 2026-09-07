@@ -76,7 +76,7 @@ export default function Fiado() {
     <div className="space-y-4">
       <TrilhaLoja pagina="Fiado" />
       <Cartao titulo="Fiado">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica
             rotulo="Na rua"
             valor={formatarMoeda(dados?.resumo.totalCentavos ?? 0)}

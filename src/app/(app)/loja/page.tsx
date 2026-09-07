@@ -176,7 +176,7 @@ export default function Loja() {
         }
       >
         {caixa ? (
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Metrica rotulo="Vendido no caixa" valor={formatarMoeda(caixa.resumo.vendidoCentavos)} />
             <Metrica rotulo="Em dinheiro" valor={formatarMoeda(caixa.resumo.emDinheiroCentavos)} />
             <Metrica rotulo="Sangria" valor={formatarMoeda(caixa.resumo.sangriaCentavos)} />
@@ -321,7 +321,7 @@ export default function Loja() {
       <Cartao titulo="Os últimos 30 dias">
         {dados && dados.resumo.vendas > 0 ? (
           <>
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Metrica
                 rotulo="Vendeu"
                 valor={formatarMoeda(dados.resumo.brutoCentavos)}

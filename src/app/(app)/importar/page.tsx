@@ -192,7 +192,7 @@ export default function Importar() {
 
       {previa && (
         <Cartao titulo="Confira antes de gravar">
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Metrica rotulo="Encontrados" valor={String(previa.total)} />
             <Metrica rotulo="Novos" valor={String(previa.novas)} tom="positivo" />
             <Metrica rotulo="Já existiam" valor={String(previa.duplicadas)} />

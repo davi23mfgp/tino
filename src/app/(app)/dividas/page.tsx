@@ -151,7 +151,7 @@ export default function Dividas() {
           </button>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Total devido" valor={formatarMoeda(dados?.totalCentavos ?? 0)} tom="negativo" />
           <Metrica rotulo="Parcelas por mês" valor={formatarMoeda(dados?.parcelaMensalCentavos ?? 0)} />
           <Metrica

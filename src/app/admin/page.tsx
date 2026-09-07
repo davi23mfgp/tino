@@ -52,7 +52,7 @@ export default async function VisaoGeralAdmin() {
         </Aviso>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metrica
           rotulo="MRR"
           valor={formatarMoeda(mrr)}

@@ -134,7 +134,7 @@ export default function ContasDaLoja() {
     <div className="space-y-4">
       <TrilhaLoja pagina="Contas a pagar" />
       <Cartao titulo="Contas da loja">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Em aberto" valor={formatarMoeda(dados?.resumo.abertoCentavos ?? 0)} />
           <Metrica
             rotulo="Vencido"

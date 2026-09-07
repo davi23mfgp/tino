@@ -167,7 +167,7 @@ export default function Emprestimos() {
               </ul>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Metrica rotulo="Parcela" valor={formatarMoeda(analise.parcelaCentavos)} />
               <Metrica
                 rotulo="CET ao mês"

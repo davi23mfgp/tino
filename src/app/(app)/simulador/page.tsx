@@ -375,7 +375,7 @@ export default function Simulador() {
       {comparacao && cenario && base && (
         <>
           <Cartao titulo={temHipotese ? "Com as hipóteses, comparado a hoje" : "Seu cenário atual"}>
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Metrica
                 rotulo="Patrimônio em"
                 valor={formatarMoeda(cenario.patrimonioFinalCentavos)}

@@ -29,7 +29,7 @@ export default async function Plano() {
           <>
             <p className="text-sm leading-relaxed">{plano.primeiroPasso}</p>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Metrica rotulo="Dívida total" valor={formatarMoeda(totalDivida)} tom="negativo" />
               <Metrica
                 rotulo="Livre em"

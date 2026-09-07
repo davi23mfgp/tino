@@ -81,7 +81,7 @@ export default function Estoque() {
     <div className="space-y-4">
       <TrilhaLoja pagina="Prateleira" />
       <Cartao titulo="Prateleira">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Produtos" valor={String(prateleira.length)} />
           <Metrica
             rotulo="Acabando"

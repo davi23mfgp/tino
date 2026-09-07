@@ -179,7 +179,7 @@ export default function Mei() {
           <Barra percentual={situacao?.percentualUsado ?? 0} />
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metrica rotulo="Usado" valor={`${situacao?.percentualUsado ?? 0}%`} />
           <Metrica rotulo="Ainda cabe" valor={formatarMoeda(situacao?.disponivelCentavos ?? 0)} tom="positivo" />
           <Metrica rotulo="Média mensal" valor={formatarMoeda(situacao?.mediaMensalCentavos ?? 0)} />

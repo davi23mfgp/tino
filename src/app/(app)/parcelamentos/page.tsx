@@ -26,7 +26,7 @@ export default async function Parcelamentos() {
   return (
     <div className="space-y-4">
       <Cartao titulo="Compras parceladas">
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metrica rotulo="Em andamento" valor={String(resumo.emAndamento)} detalhe={`${finalizados} finalizadas`} />
           <Metrica rotulo="Valor total" valor={formatarMoeda(resumo.valorTotalCentavos)} />
           <Metrica rotulo="Já pago" valor={formatarMoeda(resumo.jaPagoCentavos)} tom="positivo" />

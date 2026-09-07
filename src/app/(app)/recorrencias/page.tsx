@@ -164,7 +164,7 @@ export default function Recorrencias() {
           </button>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica
             rotulo="Sai todo mês"
             valor={formatarMoeda(dados?.custoFixoMensalCentavos ?? 0)}

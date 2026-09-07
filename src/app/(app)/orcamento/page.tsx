@@ -148,7 +148,7 @@ export default function OrcamentoPagina() {
           </select>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metrica rotulo="Planejado" valor={formatarMoeda(limitePlanejado)} />
           <Metrica rotulo="Gasto" valor={formatarMoeda(gasto)} tom={gasto > limitePlanejado ? "negativo" : "neutro"} />
           <Metrica
