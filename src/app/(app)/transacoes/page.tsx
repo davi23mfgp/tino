@@ -6,6 +6,9 @@ import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { EditavelTexto, EditavelMoeda } from "@/components/ui/editavel"
+import { showToast } from "@/components/ui/toast"
+import { cn } from "@/lib/utils"
 
 interface Transacao {
   id: string
@@ -62,6 +65,27 @@ export default function Transacoes() {
   async function recategorizar(id: string, categoriaId: string) {
     await enviar(`/api/transacoes/${id}`, { categoriaId, criarRegra: true }, "PATCH")
     carregar()
+  }
+
+  /**
+   * Edição no lugar — item 1 do redesign de experiência (07/09/2026). A
+   * linha muda na hora (resultado imediato, mesmo princípio da etapa 3); se
+   * o PATCH falhar, volta ao valor anterior e avisa por toast — o único
+   * jeito de errar aqui é a rede cair, então some sem exigir confirmação.
+   */
+  async function salvarEdicao(id: string, parcial: Partial<Pick<Transacao, "descricao" | "valorCentavos">>) {
+    const anterior = transacoes.find((t) => t.id === id)
+    if (!anterior) return
+    setTransacoes((atual) => atual.map((t) => (t.id === id ? { ...t, ...parcial } : t)))
+    try {
+      await enviar(`/api/transacoes/${id}`, parcial, "PATCH")
+    } catch (erro) {
+      setTransacoes((atual) => atual.map((t) => (t.id === id ? anterior : t)))
+      showToast("Não consegui salvar", {
+        description: erro instanceof Error ? erro.message : undefined,
+        variant: "error",
+      })
+    }
   }
 
   const saldo = totais.receitasCentavos - totais.despesasCentavos
@@ -125,8 +149,12 @@ export default function Transacoes() {
               className="-mx-2 flex min-h-[52px] flex-wrap items-center gap-3 rounded-[var(--raio-campo)] px-2 py-2 transition-colors hover:bg-papel-2"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px]">{transacao.descricao}</p>
-                <p className="text-[12px] text-[color:var(--texto-3)]">
+                <EditavelTexto
+                  valor={transacao.descricao}
+                  aoSalvar={(novo) => salvarEdicao(transacao.id, { descricao: novo })}
+                  className="block"
+                />
+                <p className="px-2 text-[12px] text-[color:var(--texto-3)]">
                   {new Date(transacao.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })} · {transacao.conta.nome}
                 </p>
               </div>
@@ -170,18 +198,30 @@ export default function Transacoes() {
                   Só a entrada ganha cor. Pintar toda saída de vermelho numa
                   lista de cem linhas faz a pessoa parar de enxergar vermelho, e
                   aí a cor não avisa mais nada. */}
-              <span
-                className={`numero w-28 text-right text-[14px] font-medium ${
-                  transacao.tipo === "RECEITA"
-                    ? "text-positivo"
-                    : transacao.tipo === "TRANSFERENCIA"
-                      ? "text-[color:var(--texto-3)]"
-                      : ""
-                }`}
-              >
-                {transacao.tipo === "RECEITA" ? "+" : transacao.tipo === "TRANSFERENCIA" ? "" : "−"}
-                {formatarMoeda(transacao.valorCentavos)}
-              </span>
+              {transacao.tipo === "TRANSFERENCIA" ? (
+                // As duas pernas da transferência têm de continuar batendo uma
+                // com a outra — mudar só este lado aqui faria o dinheiro sumir
+                // de um lado sem aparecer do outro. Por isso não é editável.
+                <span className="numero w-28 text-right text-[14px] font-medium text-[color:var(--texto-3)]">
+                  {formatarMoeda(transacao.valorCentavos)}
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    "flex items-center",
+                    transacao.tipo === "RECEITA" ? "text-positivo" : "",
+                  )}
+                >
+                  <span className="numero text-[14px] font-medium">
+                    {transacao.tipo === "RECEITA" ? "+" : "−"}
+                  </span>
+                  <EditavelMoeda
+                    valorCentavos={transacao.valorCentavos}
+                    aoSalvar={(novo) => salvarEdicao(transacao.id, { valorCentavos: novo })}
+                    className={transacao.tipo === "RECEITA" ? "text-positivo" : ""}
+                  />
+                </span>
+              )}
             </div>
           ))}
         </div>
