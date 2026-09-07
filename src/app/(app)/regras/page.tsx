@@ -5,6 +5,7 @@ import { Plus, RefreshCw, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 
 /**
@@ -76,9 +77,29 @@ export default function Regras() {
     await carregar()
   }
 
-  async function remover(id: string) {
-    await buscar(`/api/regras?id=${id}`, { method: "DELETE" })
-    await carregar()
+  /**
+   * "Desfazer em vez de confirmar" — mesmo padrão de `/recorrencias`. A
+   * regra some da lista na hora; o DELETE de verdade só sai depois de 5s
+   * sem ninguém desfazer.
+   */
+  function remover(regra: Regra) {
+    setRegras((atual) => atual.filter((r) => r.id !== regra.id))
+
+    let desfeito = false
+    showToast(`Regra "${regra.padrao}" removida`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setRegras((atual) => (atual.some((r) => r.id === regra.id) ? atual : [...atual, regra]))
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/regras?id=${regra.id}`, { method: "DELETE" })
+    }, 5000)
   }
 
   /**
@@ -231,7 +252,7 @@ export default function Regras() {
               >
                 {regra.ativa ? "desligar" : "ligar"}
               </button>
-              <button onClick={() => remover(regra.id)} className="text-muted-fg transition hover:text-negativo">
+              <button onClick={() => remover(regra)} className="text-muted-fg transition hover:text-negativo">
                 <Trash2 className="size-4" />
               </button>
             </div>

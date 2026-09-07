@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
 
 /**
  * O que a loja paga para existir.
@@ -94,14 +95,33 @@ export default function ContasDaLoja() {
     }
   }
 
-  async function apagar(id: string) {
-    setOcupado(true)
-    try {
-      await buscar(`/api/loja/contas?id=${id}`, { method: "DELETE" })
-      await carregar()
-    } finally {
-      setOcupado(false)
-    }
+  /**
+   * "Desfazer em vez de confirmar" — mesmo padrão de `/recorrencias`. A
+   * conta some da lista na hora; o DELETE de verdade só sai depois de 5s
+   * sem ninguém desfazer.
+   */
+  function apagar(conta: Conta) {
+    setDados((atual) => (atual ? { ...atual, contas: atual.contas.filter((c) => c.id !== conta.id) } : atual))
+
+    let desfeito = false
+    showToast(`"${conta.descricao}" apagada`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setDados((atual) =>
+            atual && !atual.contas.some((c) => c.id === conta.id)
+              ? { ...atual, contas: [...atual.contas, conta] }
+              : atual,
+          )
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/loja/contas?id=${conta.id}`, { method: "DELETE" })
+    }, 5000)
   }
 
   const contas = dados?.contas ?? []
@@ -236,8 +256,7 @@ export default function ContasDaLoja() {
                     paguei
                   </button>
                   <button
-                    onClick={() => apagar(conta.id)}
-                    disabled={ocupado}
+                    onClick={() => apagar(conta)}
                     aria-label={`apagar ${conta.descricao}`}
                     className="text-muted-fg hover:text-negativo"
                   >

@@ -9,6 +9,7 @@ import Link from "next/link"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
 
@@ -117,6 +118,37 @@ export default function Configuracoes() {
 
     await recarregar()
     router.refresh()
+  }
+
+  /**
+   * "Desfazer em vez de confirmar" — mesmo padrão de `/recorrencias`. A
+   * conexão some da lista na hora; o DELETE de verdade (que só revoga,
+   * sem apagar a conexão) sai depois de 5s sem ninguém desfazer.
+   */
+  function revogarConexao(conexao: Conexao) {
+    setOpenFinance((atual) =>
+      atual ? { ...atual, conexoes: atual.conexoes.filter((c) => c.id !== conexao.id) } : atual,
+    )
+
+    let desfeito = false
+    showToast(`Conexão com ${conexao.instituicao} revogada`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setOpenFinance((atual) =>
+            atual && !atual.conexoes.some((c) => c.id === conexao.id)
+              ? { ...atual, conexoes: [...atual.conexoes, conexao] }
+              : atual,
+          )
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/open-finance?conexaoId=${conexao.id}`, { method: "DELETE" })
+    }, 5000)
   }
 
   async function refazerConversa() {
@@ -279,10 +311,7 @@ export default function Configuracoes() {
                   sincronizar
                 </button>
                 <button
-                  onClick={async () => {
-                    await buscar(`/api/open-finance?conexaoId=${conexao.id}`, { method: "DELETE" })
-                    recarregar()
-                  }}
+                  onClick={() => revogarConexao(conexao)}
                   className="rounded-full border border-pauta px-3 py-1.5 text-xs hover:border-negativo/40"
                 >
                   revogar

@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
 
 /**
@@ -148,6 +149,31 @@ export default function Capturas() {
   async function anotarRapido(evento: React.FormEvent) {
     evento.preventDefault()
     await anotar(rapido)
+  }
+
+  /**
+   * "Desfazer em vez de confirmar" — mesmo padrão de `/recorrencias`. A
+   * chave vira "revogada" na hora; o DELETE de verdade (que só desativa,
+   * não apaga a linha) sai depois de 5s sem ninguém desfazer.
+   */
+  function revogarChave(chave: Chave) {
+    setChaves((atual) => atual.map((c) => (c.id === chave.id ? { ...c, ativa: false } : c)))
+
+    let desfeito = false
+    showToast(`Chave "${chave.nome}" revogada`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setChaves((atual) => atual.map((c) => (c.id === chave.id ? { ...c, ativa: true } : c)))
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/capturas?chaveId=${chave.id}`, { method: "DELETE" })
+    }, 5000)
   }
 
   async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM") {
@@ -422,10 +448,7 @@ export default function Capturas() {
                 </div>
                 {chave.ativa && (
                   <button
-                    onClick={async () => {
-                      await buscar(`/api/capturas?chaveId=${chave.id}`, { method: "DELETE" })
-                      carregar()
-                    }}
+                    onClick={() => revogarChave(chave)}
                     className="rounded-full border border-pauta px-3 py-1.5 text-[11px] text-muted-fg transition hover:border-negativo/40 hover:text-negativo"
                   >
                     revogar
