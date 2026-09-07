@@ -309,20 +309,14 @@
   }
 }
 
-/* A área de conteúdo desloca conforme a coluna da esquerda. Fica em CSS, e não
-   em prop, para o menu poder recolher sem re-renderizar a tela inteira.
-
-   Os 16px a mais que a largura da coluna são a margem por onde ela flutua: a
-   coluna deixou de estar colada na borda da tela, então o conteúdo não pode
-   começar exatamente onde ela termina. */
+/* A área de conteúdo desloca pela largura do trilho lateral (64px).
+   Redesenho de 07/09/2026: o trilho não expande/recolhe mais — são só
+   quatro ícones fixos (Hoje, Buscar, Configurações, Perfil), então não há
+   mais o que a classe `recolhido` precisava resolver. A navegação de
+   verdade agora são as abas do topo, dentro do fluxo normal da página. */
 @media (min-width: 768px) {
   .area-do-app {
-    padding-left: 256px;
-    transition: padding-left 0.2s ease;
-  }
-
-  html[data-menu="recolhido"] .area-do-app {
-    padding-left: 68px;
+    padding-left: 64px;
   }
 }
 
@@ -337,6 +331,17 @@
 
   .safe-top {
     padding-top: env(safe-area-inset-top);
+  }
+
+  /* As abas do topo e a sub-navegação rolam na horizontal no celular; a
+     barra de rolagem ali é ruído — a régua de pontos das próprias pílulas
+     já mostra que dá pra continuar arrastando. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 

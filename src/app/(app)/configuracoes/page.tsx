@@ -301,6 +301,31 @@ export default function Configuracoes() {
         {mensagem && <p className="mt-3 text-sm text-muted-fg">{mensagem}</p>}
       </Cartao>
 
+      {/* Regras e Assinatura saíram da navegação principal em 07/09/2026:
+          são manutenção, não uso do dia a dia — ninguém abre o app de manhã
+          para mexer em regra de categorização ou trocar de plano. Nenhuma
+          das duas telas foi removida, só o link mudou de lugar. */}
+      <Cartao titulo="Preferências">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Link
+            href="/regras"
+            className="rounded-[var(--raio-cartao)] border border-pauta p-4 text-sm transition hover:border-acao/40"
+          >
+            <p className="font-medium">Regras de categorização</p>
+            <p className="mt-1 text-[13px] text-muted-fg">
+              Como o Tino decide sozinho a categoria de um lançamento novo.
+            </p>
+          </Link>
+          <Link
+            href="/assinatura"
+            className="rounded-[var(--raio-cartao)] border border-pauta p-4 text-sm transition hover:border-acao/40"
+          >
+            <p className="font-medium">Assinatura do Tino</p>
+            <p className="mt-1 text-[13px] text-muted-fg">Seu plano, cobrança e cancelamento.</p>
+          </Link>
+        </div>
+      </Cartao>
+
       <RelatarProblema />
     </div>
   )
