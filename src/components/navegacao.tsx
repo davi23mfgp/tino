@@ -381,8 +381,9 @@ export function Navegacao({
 
       {gaveta && <Gaveta grupos={grupos} caminho={caminho} aoFechar={() => setGaveta(false)} />}
 
-      {/* ── Barra do polegar: intocada nesta rodada, já resolvia bem o celular ── */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-pauta bg-papel-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+      {/* ── Barra do polegar: agora painel flutuando (`.ios-card`) com respiro
+          de 12px nas três bordas, em vez de colada full-bleed no rodapé. */}
+      <nav className="ios-card safe-bottom fixed inset-x-3 bottom-3 z-40 md:hidden">
         <div className="flex items-stretch justify-around">
           {(mei ? NO_POLEGAR_LOJA : NO_POLEGAR_BASE).map((item) => {
             const ativo = estaAtivo(caminho, item.rota)

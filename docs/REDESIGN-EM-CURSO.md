@@ -516,6 +516,51 @@ banco de demonstração.
 Commits (nesta ordem, cada um pushado depois de verde):
 `e505136`, `dd81760`, `1bf4828`, `cb9d02b`.
 
+## Fechamento da skin acromática (07/09/2026, tarde) — substitui a casca preta+azul acima
+
+A camada acromática descrita nas seções anteriores (chroma 0 em todo
+`oklch(...)`, claro como padrão, `.dark` opcional) já estava desenhada em
+`globals.css`/`tailwind.config.ts`/`layout.tsx`/`navegacao.tsx` como
+mudança não commitada quando esta rodada de skin foi retomada na branch
+`skin/acromatico-ios` (criada a partir de `redesign/experiencia-visual`
+para isolar o trabalho). Esta seção fecha a verificação e o commit — não
+há reskin adicional além do que já estava desenhado.
+
+Verificação executada (sem browser/screenshot disponível nesta máquina —
+extensão Chrome não conecta; verificação por grep + tsc + build, como
+autorizado):
+
+1. `grep -riE "blue|indigo|emerald|green|purple|violet|amber|cyan|#[0-9a-f]{3,6}"` em
+   `src/`: nenhuma classe Tailwind de matiz (`text-blue-*` etc.) em nenhum
+   arquivo. Os únicos hits são falsos-positivos — nomes de variante/prop
+   histórica (`DotColor = "blue" | "green" | ...` em `metric-card.tsx`,
+   comentário em `badge.tsx` citando as cores antigas que saíram) que já
+   resolvem para tokens de cinza (`bg-acao`, `bg-positivo`, `bg-destaque`),
+   e `#ffffff` (branco) em `tino-mascote.tsx`.
+2. `grep -nE "oklch\([0-9.]+ 0\.[1-9]"` em `globals.css`: vazio — todo
+   `oklch(...)` do arquivo é `oklch(L 0 0)` ou interpolação de variável já
+   acromática.
+3. Sidebar (`.ios-card`/trilho lateral) e topo com cantos arredondados nos
+   4 lados e fundo visível ao redor: confirmado em `globals.css`
+   (`.ficha`/`.ios-card` com `border-radius` completo) e no esqueleto de
+   `navegacao.tsx` (trilho fixo, barra do polegar `.ios-card` com margem
+   `inset-x-3 bottom-3`).
+4. `body` com os dois `radial-gradient` + `background-attachment: fixed`:
+   presentes em `globals.css` (claro e espelho em `.dark body`).
+5. `npm run tipos` (tsc --noEmit): limpo, zero erros.
+   `npx next build`: build de produção completo, 51 rotas geradas, zero
+   erro/warning de tipo.
+6. `git diff --stat` desta rodada toca só
+   `docs/ESTADO-SESSAO.md`, `src/app/globals.css`, `src/app/layout.tsx`,
+   `src/components/navegacao.tsx`, `tailwind.config.ts` — nenhum arquivo
+   de rota (`src/app/api/**`) ou lógica de fetch mudou.
+
+Não coberto nesta rodada: verificação visual real (screenshot/browser),
+por falta de acesso a essa ferramenta nesta máquina — fica para quando
+alguém puder abrir o app e olhar. `scratch-contrast.js` (script Node solto
+na raiz, usado para recalcular contraste WCAG dos tokens) não é
+entregável desta skin e ficou fora do commit.
+
 ## Pendências que dependem do Davi
 
 - **Cancelamento de assinatura sem "Desfazer"**: ver seção acima

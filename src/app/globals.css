@@ -5,23 +5,19 @@
 /* ============================================================
    Tino — identidade visual
    ------------------------------------------------------------
-   A referência não é app de banco: é o livro-caixa e a bobina do
-   cupom. Papel, pauta, tinta e carimbo. O produto fala de dinheiro
-   miúdo, conferido peça por peça, e a tela devia parecer isso.
+   TERCEIRA reversão de direção em pouco tempo — registrada em
+   docs/REDESIGN-EM-CURSO.md para não virar "conserto" acidental:
 
-   As cores usam o vocabulário que o brasileiro já fala: quem tem
-   sobra está "no azul", quem tem buraco está "no vermelho". Por
-   isso positivo é azul e não verde — e porque verde de fintech já
-   é o que todo mundo faz.
-
-   A ação (botão, link, foco) é o azul do iOS. Vem de fora, do
-   sistema operacional em que este app é usado: no celular, azul
-   cheio é o que a pessoa já leu a vida inteira como "isto se
-   toca". Convive com o azul do positivo porque os dois estão em
-   lugares diferentes da escala — a ação é clara e saturada, o
-   valor é fundo e contido — e porque nunca disputam o mesmo
-   pedaço da tela: um é preenchimento de botão, o outro é
-   algarismo.
+     1. Linguagem iOS clara, azul de ação (04/09).
+     2. Casca preta + vidro líquido colorido (commit a134eb0, 07/09).
+     3. ESTA — skin acromática estilo iOS, CLARA por padrão, escuro só
+        opcional via `.dark`. Decisão do Davi em 07/09/2026, tarde.
+        Chroma ZERO em todo `oklch(...)` do app: nenhum matiz, em
+        botão, ícone de navegação, cabeçalho, gráfico ou moldura.
+        Onde antes um valor "dizia" cor (saldo positivo em azul,
+        dívida em vermelho), agora diz por LUMINOSIDADE + ícone/rótulo
+        (seta ArrowUpRight/ArrowDownRight, texto em maiúscula) — nunca
+        por matiz. Ver seção "Cor" logo abaixo.
    ============================================================ */
 
 @layer base {
@@ -31,220 +27,218 @@
     --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI",
       system-ui, sans-serif;
 
-    /* ============================================================
-       Casca preta + vidro líquido — decisão do Davi em 07/09/2026.
-       ------------------------------------------------------------
-       Resolve o que ficava pendente em docs/REDESIGN-EM-CURSO.md (a
-       "casca 100% neutra" e o azul de ação): fundo preto é o PADRÃO do
-       app, não um dark-mode opcional — por isso este bloco (:root, não
-       .dark) já é a casca preta, e .dark abaixo só espelha os mesmos
-       valores para não quebrar nada que ainda leia a classe.
+    /* --- casca clara, acromática --- */
+    --background: oklch(0.975 0 0);
+    --foreground: oklch(0.14 0 0);
 
-       "Vidro líquido" aqui é literal: cada superfície (`papel-1/2/3`,
-       `pauta`) é uma peça de vidro — branco translúcido sobre o preto,
-       com blur por trás (`.ficha`, `.liquid-glass-elevated`, `.vidro-menu`
-       aplicam `backdrop-filter`) e um traço de luz na borda de cima
-       (`--vidro-realce`, usado como `inset` no box-shadow). Cada camada
-       é só ISSO — uma fração de branco a mais sobre o preto — nunca um
-       cinza próprio, e por isso a hierarquia de superfície continua
-       vindo de opacidade + sombra + blur, não de matiz.
+    /* Vidro em três espessuras — agora branco OPACO crescente sobre um fundo
+       CLARO (antes era branco translúcido sobre preto). `papel-1` é o cartão
+       comum (`.ficha`/`.ios-card`, ~78% opaco — o "material fino" do spec:
+       `color-mix(in oklab, var(--card) 78%, transparent)` simplifica pra
+       `oklch(1 0 0 / 78%)` porque `--card` já é branco puro), `papel-2` é
+       hover/campo recuado, `papel-3` é diálogo/menu/gaveta/dock — "material
+       grosso", mais opaco = superfície mais sólida. */
+    --papel-1: oklch(1 0 0 / 78%);
+    --papel-2: oklch(1 0 0 / 88%);
+    --papel-3: oklch(1 0 0 / 94%);
 
-       CONTRASTE FOI CALCULADO, NÃO OLHADO — mesmo método já usado para o
-       azul de ação (#297cef, ver docs/IDENTIDADE.md): oklch → OKLab →
-       sRGB linear → luminância relativa WCAG → razão de contraste,
-       compositando cada camada translúcida sobre o preto puro do fundo.
-       Os números medidos ficam registrados em docs/REDESIGN-EM-CURSO.md;
-       aqui só o resultado. Resumo:
-         texto principal (foreground) sobre preto/papel-1/2/3: 12,5–19,3:1
-         texto secundário (texto-2)   sobre preto/papel-1/2/3:  6,1– 9,4:1
-         texto terciário (texto-3)    sobre preto/papel-1/2/3:  5,5– 7,9:1
-       Todos acima do mínimo AA de 4,5:1 (texto normal), com folga. */
-    --background: oklch(0 0 0);
-    --foreground: oklch(0.97 0 0);
+    /* Borda do vidro: preto a 10% (= `--border` do spec), não branco — sobre
+       fundo claro é o traço escuro que separa o cartão que faz sentido. */
+    --pauta: oklch(0 0 0 / 10%);
+    /* Realce de luz no topo do vidro (Apple: a luz "pega" a borda de cima).
+       Só decorativo, dobrado dentro de `--sombra-ios` abaixo (não é mais um
+       segundo `inset` somado no box-shadow do `.ficha` — o spec já embute o
+       highlight dentro da própria sombra). */
+    --vidro-realce: oklch(1 0 0 / 70%);
 
-    /* Vidro em três espessuras: 8/12/16% de branco sobre o preto. Sobe de
-       papel-1 (cartão comum) a papel-3 (barra flutuante, popover, "material
-       grosso") só na quantidade de luz que o vidro deixa passar — nunca
-       muda de matiz. */
-    --papel-1: oklch(1 0 0 / 8%);
-    --papel-2: oklch(1 0 0 / 12%);
-    --papel-3: oklch(1 0 0 / 16%);
-
-    /* A borda do vidro: um traço de luz um pouco acima do próprio painel,
-       não uma linha que precisa "ganhar" contraste sozinha — quem separa o
-       cartão do fundo é o conjunto blur + sombra + este traço, o mesmo
-       princípio que já valia com o contorno colorido banido (ver `Cartao`
-       nota histórica em `ui/painel.tsx`). */
-    --pauta: oklch(1 0 0 / 12%);
-    /* Realce fino no topo do vidro (Apple: a luz "pega" a borda de cima).
-       Só decorativo — usado como inset no box-shadow, nunca como cor de
-       texto ou de borda que precise carregar contraste sozinha. */
-    --vidro-realce: oklch(1 0 0 / 22%);
-
-    --muted-fg: oklch(0.75 0 0);
+    --muted-fg: oklch(0.5 0 0);
 
     /* --- texto em três níveis --- */
-    /* Terciário existe para o rótulo de 11px em maiúscula. Secundário é
-       para frase de apoio, lida inteira. Os dois precisam passar 4,5:1
-       mesmo no pior caso (texto-3 sobre papel-3, a superfície mais clara
-       do app) — por isso texto-3 subiu de L0.63 (era 6,0:1 só contra o
-       preto, mas caía a 3,9:1 sobre papel-3) para L0.70 (5,5:1 no pior
-       caso). Ver a tabela completa em docs/REDESIGN-EM-CURSO.md. */
-    --texto-2: oklch(0.75 0 0);
-    --texto-3: oklch(0.70 0 0);
+    /* Contraste recalculado do zero pro par claro (método abaixo, "Contraste
+       calculado"): texto-2 (secundário, lido inteiro) e texto-3 (rótulo de
+       11px em caixa alta) picam luminosidade suficiente pra passar 4,5:1 até
+       contra a superfície mais clara do app (`papel-3` ~branco quase puro,
+       ou o próprio `card` branco — pior caso, ver tabela). */
+    --texto-2: oklch(0.42 0 0);
+    --texto-3: oklch(0.5 0 0);
 
     /* --- espaço e forma --- */
-    /* 28px, medido no protótipo. Estava em 16px, que é o raio de cartão do
-       iOS — mas o protótipo é mais aberto que isso, e o canto largo é parte do
-       que faz a tela parecer macia em vez de administrativa. */
-    --raio-cartao: 28px;
+    --raio-cartao: 1.125rem; /* 18px — `--radius` do spec, cartão soma +8px em `.ios-card` */
     --raio-campo: 12px;
     --raio-pilula: 999px;
-    --largura-conteudo: 1240px;
-    /* Uma curva só no app inteiro, e a duração curta o bastante para não
-       atrasar quem já sabe onde vai clicar. */
+    --largura-conteudo: 1560px; /* `max-w-[1560px]` do shell de painéis flutuando */
     --curva: cubic-bezier(0.32, 0.72, 0, 1);
     --tempo: 200ms;
 
     /* --- superfície --- */
-    /* `vidro`/`vidro-forte`: véu translúcido para hover/wash sobre uma
-       superfície já existente (ex.: `bg-vidro`) — mais fraco que os
-       `papel-N`, que são a superfície em si. */
-    --vidro: oklch(1 0 0 / 6%);
-    --vidro-forte: oklch(1 0 0 / 12%);
-    /* Quanto o vidro borra o que está atrás. Dois níveis: o normal (cartão,
-       trilho, menu) e o forte (diálogo, gaveta, dock) — material "mais
-       grosso" também borra mais, como no macOS/visionOS. */
-    --desfoque: 20px;
-    --desfoque-forte: 36px;
-    /* Sombra funda e macia — profundidade de vidro sobre preto, não a
-       sombra curta de papel sobre mesa clara que o app tinha antes. A
-       ambient (primeira camada) cola o painel no preto; a projetada
-       (segunda) é que dá a flutuação. */
-    --sombra-ios: 0 1px 1px oklch(0 0 0 / 50%), 0 10px 28px -8px oklch(0 0 0 / 60%);
-    --sombra-flutuante: 0 24px 64px -12px oklch(0 0 0 / 75%), 0 2px 8px oklch(0 0 0 / 55%);
+    /* Véu de TOQUE (hover/wash) sobre uma superfície já existente. Em fundo
+       claro o véu é PRETO a baixa opacidade (escurece de leve), não branco
+       (que sobre um fundo já quase branco não apareceria). */
+    --vidro: oklch(0 0 0 / 5%);
+    --vidro-forte: oklch(0 0 0 / 9%);
+    --desfoque: 28px; /* `blur(28px)` do `.ios-card` do spec */
+    --desfoque-forte: 40px; /* material grosso: diálogo, gaveta, dock */
+    /* Sombra curta e macia — profundidade discreta sobre fundo claro, não a
+       sombra funda que fazia sentido sobre preto. Vem direto do spec:
+       primeira camada é o highlight de 1px no topo do vidro (inset),
+       segunda é a sombra projetada de verdade. */
+    --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -24px oklch(0 0 0 / 28%);
+    --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
 
     /* --- os tokens que informam --- */
-    /* Medidos um a um, mantidos do tema escuro que o app já tinha (a
-       casca preta só ficou mais escura por baixo deles — eles já eram
-       calibrados para superfície escura, não para o papel claro do
-       protótipo). Cada um continua com nome de FUNÇÃO, não de cor.
+    /* CHROMA ZERO EM TODOS. Cor sozinha nunca é acessível (~8% dos homens
+       não distinguem vermelho de verde) — e agora nem é permitida: o que
+       diferencia positivo/negativo/atenção é a LUMINOSIDADE (tons de cinza
+       diferentes entre si) + o rótulo em maiúscula acima do valor (ENTROU,
+       SAIU) + o ícone de seta (`ArrowUpRight`/`ArrowDownRight` em
+       `ui/painel.tsx`, `Valor`). Nenhum dos três pode ser removido sozinho —
+       juntos é que carregam o significado sem depender de matiz.
 
-       O AZUL é a AÇÃO — botão, link, barra de progresso — não a sobra.
-       Quem tem sobra vê verde.
-
-       Cor sozinha nunca é acessível: cerca de 8% dos homens não distinguem
-       vermelho de verde. O rótulo em maiúscula acima de cada valor (ENTROU,
-       SAIU) é o que carrega o significado para essas pessoas, e por isso ele
-       não é decoração e não pode ser removido. */
-    --lch-acao: 0.68 0.17 258;
-    --lch-positivo: 0.76 0.16 155;
-    --lch-negativo: 0.68 0.19 22;
-    --lch-atencao: 0.82 0.14 72;
-    --lch-alerta: 0.85 0.13 88;
-    --lch-destaque: 0.7 0.15 292;
-    --lch-dado: 0.72 0.1 212;
-
-    /* Variante "sólida" das três cores acima, para quando texto BRANCO
-       senta em cima de um preenchimento cheio (botão primário, botão
-       destrutivo, faixa crítica do banner, indicador do toggle de preço,
-       pico do mapa de calor). Calculado: branco sobre `acao` cheio
-       (L0.68) dá só 2,91:1 — falha até o limite de texto grande (3:1).
-       Estas descem a luminosidade até >=5:1 com texto branco, com folga
-       sobre o mínimo de 4,5:1. Números completos em
+       Valores medidos pra passar >=4,5:1 (AA, texto normal) contra a pior
+       superfície onde cada um aparece como texto (branco puro/`card`, ou a
+       própria pastilha tingida a 10-12%) — números completos na tabela de
        docs/REDESIGN-EM-CURSO.md. */
-    --lch-acao-solido: 0.546 0.17 258;
-    --lch-negativo-solido: 0.566 0.19 22;
-    --lch-positivo-solido: 0.516 0.16 155;
+    --lch-acao: 0.16 0 0;
+    --lch-positivo: 0.2 0 0;
+    --lch-negativo: 0.32 0 0;
+    --lch-atencao: 0.4 0 0;
+    --lch-alerta: 0.46 0 0;
+    --lch-destaque: 0.26 0 0;
+    --lch-dado: 0.52 0 0;
+
+    /* Variante "sólida": mesmo tom (já é escuro o bastante — a diferença
+       clara/escura que existia quando essas cores tinham matiz não faz mais
+       falta: uma vez em cinza, o mesmo valor já passa >=4,5:1 tanto como
+       TEXTO sobre fundo claro quanto como PREENCHIMENTO sob texto branco
+       (`text-primary-foreground`, que já inverte sozinho em `.dark` — ver
+       `banner.tsx`/`checkbox.tsx`/`pricing-toggle.tsx`, que trocaram
+       `text-white` fixo por esse token pra não quebrar no escuro). */
+    --lch-acao-solido: 0.16 0 0;
+    --lch-negativo-solido: 0.32 0 0;
+    --lch-positivo-solido: 0.2 0 0;
 
     /* --- shadcn --- */
-    /* card/popover: mesma espessura do papel-2/3 (aqui expressos em HSL
-       plano, sem alfa, porque `hsl(var(--card))` não aceita `<alpha-value>`
-       — os componentes que precisam do vidro DE VERDADE, com blur real,
-       usam as classes `.liquid-glass-elevated`/`.vidro-menu` abaixo, que
-       leem `--papel-3` diretamente, não este token). */
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 97%;
-    --popover: 0 0% 16%;
-    --popover-foreground: 0 0% 97%;
-    /* Preenchimento sólido de botão primário: a variante "solido" do azul
-       de ação, não o `acao` claro (que falha contraste com texto branco —
-       ver nota acima). */
-    --primary: 215 70% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 97%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 68%;
-    /* Pastilha "ativa" (item de nav selecionado, página atual da paginação):
-       o mesmo azul de ação a 20% sobre preto, com o próprio azul brilhante
-       como texto — o padrão de "chip de vidro tingido" que os badges já
-       usam (`bg-acao/10 text-acao`), calculado para >=5,7:1. */
-    --accent: 216 52% 13%;
-    --accent-foreground: 216 100% 66%;
-    --destructive: 355 61% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 216 100% 66%;
+    /* Trio "L C H" (chroma sempre 0), interpolado via `oklch(var(--x) /
+       <alpha-value>)` no tailwind.config — é o que permite `bg-primary/90`
+       continuar funcionando depois da troca de `hsl()` pra `oklch()`. */
+    --card: 1 0 0;
+    --card-foreground: 0.14 0 0;
+    --popover: 1 0 0;
+    --popover-foreground: 0.14 0 0;
+    --primary: 0.16 0 0;
+    --primary-foreground: 1 0 0;
+    --secondary: 0.94 0 0;
+    --secondary-foreground: 0.18 0 0;
+    --muted: 0.945 0 0;
+    --muted-foreground: 0.5 0 0;
+    --accent: 0.92 0 0;
+    --accent-foreground: 0.16 0 0;
+    --destructive: 0.34 0 0;
+    --destructive-foreground: 1 0 0;
+    /* Borda/campo já nascem com alfa embutido — não passam por `<alpha-value>`. */
+    --border: oklch(0 0 0 / 10%);
+    --input: oklch(0 0 0 / 12%);
+    --ring: 0.16 0 0;
 
-    /* 12px em campo e botão; o cartão tem raio próprio em `--raio-cartao`.
-       Separar os dois é o que faz o cartão parecer superfície e o botão
-       parecer controle. */
+    --chart-1: oklch(0.18 0 0);
+    --chart-2: oklch(0.42 0 0);
+    --chart-3: oklch(0.6 0 0);
+    --chart-4: oklch(0.75 0 0);
+    --chart-5: oklch(0.87 0 0);
+
+    --sidebar: oklch(1 0 0);
+    --sidebar-accent: oklch(0.94 0 0);
+    --sidebar-border: oklch(0 0 0 / 8%);
+
+    --glass: oklch(0 0 0 / 4%);
+    --glass-strong: oklch(0 0 0 / 7%);
+    --gradient-blue: linear-gradient(135deg, oklch(0.32 0 0), oklch(0.1 0 0));
+    --gradient-steel: linear-gradient(135deg, oklch(0.45 0 0), oklch(0.2 0 0));
+    --gradient-mint: linear-gradient(135deg, oklch(0.55 0 0), oklch(0.28 0 0));
+    --gradient-sun: linear-gradient(135deg, oklch(0.62 0 0), oklch(0.36 0 0));
+    --gradient-plum: linear-gradient(135deg, oklch(0.5 0 0), oklch(0.22 0 0));
+
     --radius: 12px;
 
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);
   }
 
-  /* Espelho de `:root`. Preto não é mais um tema opcional que `.dark`
-     carrega sozinho — é a casca do app. Isto existe só para não quebrar
-     nada que ainda troque a classe (`next-themes` continua montado, ver
-     `app/layout.tsx`), não como uma segunda paleta. */
+  /* Escuro OPCIONAL — ligado só via classe `.dark` (não mais o padrão do
+     app). Mesmo matiz zero, luminosidade invertida, preto nunca absoluto
+     (`0.11`, não `0`, pra não voltar ao vidro-sobre-preto anterior). */
   .dark {
-    --background: oklch(0 0 0);
-    --foreground: oklch(0.97 0 0);
+    --background: oklch(0.11 0 0);
+    --foreground: oklch(0.985 0 0);
+
     --papel-1: oklch(1 0 0 / 8%);
     --papel-2: oklch(1 0 0 / 12%);
     --papel-3: oklch(1 0 0 / 16%);
     --pauta: oklch(1 0 0 / 12%);
-    --vidro-realce: oklch(1 0 0 / 22%);
-    --muted-fg: oklch(0.75 0 0);
-    --texto-2: oklch(0.75 0 0);
-    --texto-3: oklch(0.70 0 0);
+    --vidro-realce: oklch(1 0 0 / 6%);
+    --muted-fg: oklch(0.68 0 0);
+
+    --texto-2: oklch(0.72 0 0);
+    --texto-3: oklch(0.68 0 0);
+
     --vidro: oklch(1 0 0 / 6%);
-    --vidro-forte: oklch(1 0 0 / 12%);
-    --desfoque: 20px;
-    --desfoque-forte: 36px;
-    --sombra-ios: 0 1px 1px oklch(0 0 0 / 50%), 0 10px 28px -8px oklch(0 0 0 / 60%);
-    --sombra-flutuante: 0 24px 64px -12px oklch(0 0 0 / 75%), 0 2px 8px oklch(0 0 0 / 55%);
-    --lch-acao: 0.68 0.17 258;
-    --lch-positivo: 0.76 0.16 155;
-    --lch-negativo: 0.68 0.19 22;
-    --lch-atencao: 0.82 0.14 72;
-    --lch-alerta: 0.85 0.13 88;
-    --lch-destaque: 0.7 0.15 292;
-    --lch-dado: 0.72 0.1 212;
-    --lch-acao-solido: 0.546 0.17 258;
-    --lch-negativo-solido: 0.566 0.19 22;
-    --lch-positivo-solido: 0.516 0.16 155;
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 97%;
-    --popover: 0 0% 16%;
-    --popover-foreground: 0 0% 97%;
-    --primary: 215 70% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 97%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 68%;
-    --accent: 216 52% 13%;
-    --accent-foreground: 216 100% 66%;
-    --destructive: 355 61% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 216 100% 66%;
+    --vidro-forte: oklch(1 0 0 / 10%);
+    --desfoque: 28px;
+    --desfoque-forte: 40px;
+    --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -22px oklch(0 0 0 / 80%);
+    --sombra-flutuante: 0 24px 60px -28px oklch(0 0 0 / 90%);
+
+    /* Tons semânticos invertidos: agora precisam ser CLAROS o bastante pra
+       passar >=4,5:1 contra a superfície mais clara do escuro (`card`,
+       L0.175) — ver tabela em docs/REDESIGN-EM-CURSO.md. */
+    --lch-acao: 0.985 0 0;
+    --lch-positivo: 0.9 0 0;
+    --lch-negativo: 0.78 0 0;
+    --lch-atencao: 0.7 0 0;
+    --lch-alerta: 0.64 0 0;
+    --lch-destaque: 0.85 0 0;
+    --lch-dado: 0.6 0 0;
+
+    --lch-acao-solido: 0.985 0 0;
+    --lch-negativo-solido: 0.78 0 0;
+    --lch-positivo-solido: 0.9 0 0;
+
+    --card: 0.175 0 0;
+    --card-foreground: 0.985 0 0;
+    --popover: 0.175 0 0;
+    --popover-foreground: 0.985 0 0;
+    --primary: 0.985 0 0;
+    --primary-foreground: 0.14 0 0;
+    --secondary: 0.25 0 0;
+    --secondary-foreground: 0.985 0 0;
+    --muted: 0.24 0 0;
+    --muted-foreground: 0.68 0 0;
+    --accent: 0.28 0 0;
+    --accent-foreground: 0.985 0 0;
+    --destructive: 0.75 0 0;
+    --destructive-foreground: 0.14 0 0;
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: 0.985 0 0;
+
+    --chart-1: oklch(0.98 0 0);
+    --chart-2: oklch(0.78 0 0);
+    --chart-3: oklch(0.6 0 0);
+    --chart-4: oklch(0.44 0 0);
+    --chart-5: oklch(0.3 0 0);
+
+    --sidebar: oklch(0.15 0 0);
+    --sidebar-accent: oklch(0.25 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+
+    --glass: oklch(1 0 0 / 6%);
+    --glass-strong: oklch(1 0 0 / 10%);
+    --gradient-blue: linear-gradient(135deg, oklch(0.98 0 0), oklch(0.72 0 0));
+    --gradient-steel: linear-gradient(135deg, oklch(0.88 0 0), oklch(0.6 0 0));
+    --gradient-mint: linear-gradient(135deg, oklch(0.92 0 0), oklch(0.7 0 0));
+    --gradient-sun: linear-gradient(135deg, oklch(0.8 0 0), oklch(0.5 0 0));
+    --gradient-plum: linear-gradient(135deg, oklch(0.85 0 0), oklch(0.55 0 0));
+
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);
   }
@@ -256,31 +250,25 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    /* Fonte do sistema. Decisão do Davi em 05/09/2026: no Mac e no iPhone isso
-       é a San Francisco de verdade, que nenhuma fonte auto-hospedada iguala.
-       O custo, aceito por ele, é que no Windows vira Segoe UI e no Android
-       vira Roboto — o app não fica idêntico nas três. */
     font-family: var(--font-ios);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* Algarismo de largura fixa em toda a interface. Numa lista de valores, o
-       "1" estreito desalinha a coluna inteira e conferir extrato passa a exigir
-       esforço que o papel não exigia. */
     font-variant-numeric: tabular-nums;
-    /* Fundo chapado. Os dois halos radiais entraram com o prompt de vidro e
-       saíram aqui: o protótipo tem fundo liso, e halo sem vidro em cima é
-       enfeite que não responde a pergunta nenhuma. */
+    /* Fundo "flutuando": dois halos radiais bem discretos, fixos no viewport
+       (não rolam com o conteúdo) — é o que faz sidebar/topbar/cartão
+       parecerem painéis soltos sobre uma superfície, não um shell contínuo. */
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(0 0 0 / 7%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(0 0 0 / 5%), transparent 62%);
+    background-attachment: fixed;
   }
 
-  /* Dinheiro em algarismo tabular.
-     Sem largura fixa por dígito a coluna de valores dança e conferir extrato
-     vira caça ao erro. É a régua do livro-caixa, e continua valendo.
+  .dark body {
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(1 0 0 / 8%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(1 0 0 / 5%), transparent 62%);
+  }
 
-     O que mudou em 05/09/2026: a régua deixou de exigir TROCAR DE FONTE. O
-     `tabular-nums` dá a mesma largura fixa dentro da própria família de texto,
-     então a função está preservada e a tela ganha uma família só — que é como
-     o iOS faz. As 54 marcações `.numero` continuam valendo e não precisaram
-     mudar; só pararam de puxar a monoespaçada. */
   .numero,
   [data-numero] {
     font-variant-numeric: tabular-nums;
@@ -295,10 +283,6 @@
     letter-spacing: -0.022em;
   }
 
-  /* Seleção e foco falam da mesma coisa — "o sistema está te respondendo" —
-     então usam a cor da ação, não a do saldo positivo. Antes um campo em foco
-     ficava com a mesma borda azul que um valor no azul, e a tela dizia duas
-     coisas diferentes com uma cor só. */
   ::selection {
     background: oklch(var(--lch-acao) / 22%);
   }
@@ -310,69 +294,44 @@
 }
 
 @layer components {
-  /* A ficha é VIDRO — casca preta + vidro líquido, 07/09/2026.
-     Branco translúcido (`--papel-1`) sobre o preto do `body`, com blur de
-     verdade por trás (`backdrop-filter`) e um traço de luz na borda de cima
-     (`--vidro-realce`, como `inset` no box-shadow — a "borda sutil com
-     highlight" do vidro líquido da Apple: luz pegando a aresta superior,
-     não uma borda uniforme). A sombra funda por baixo é o que separa o
-     painel do preto quando não há nada para borrar atrás dele.
+  /* A ficha (`.ficha`/`.ios-card`, mesma classe — nomes convivem pra não
+     quebrar os dois vocabulários já espalhados pelo app): vidro branco
+     opaco crescente sobre o fundo claro, com blur de verdade por trás e o
+     highlight de 1px já embutido em `--sombra-ios` (não é mais um segundo
+     `inset` somado à parte).
 
-     `-webkit-backdrop-filter` porque Safari/iOS ainda pedem o prefixo — é
-     a plataforma que este visual mais tenta parecer, não dá pra deixar de
-     fora. `overflow: hidden` corta tabela/gráfico no raio; `position:
-     relative` porque outros filhos se posicionam por ele. */
+     SÓ `backdrop-filter`, sem `-webkit-backdrop-filter` na linha seguinte —
+     instrução explícita do Davi: o dedupe do build (dois valores da MESMA
+     propriedade em sequência) quebra o efeito no Chrome. */
   .ficha,
   .ios-card {
     position: relative;
     background: var(--papel-1);
     border: 1px solid var(--pauta);
-    border-radius: var(--raio-cartao);
-    box-shadow:
-      inset 0 1px 0 var(--vidro-realce),
-      var(--sombra-ios);
-    backdrop-filter: blur(var(--desfoque)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--desfoque)) saturate(1.6);
+    border-radius: calc(var(--raio-cartao) + 8px);
+    box-shadow: var(--sombra-ios);
+    backdrop-filter: blur(var(--desfoque)) saturate(1.8);
     overflow: hidden;
   }
 
-  /* Material "grosso": diálogo, gaveta lateral, dock do Tino, faixa fixa do
-     trilho — qualquer painel que flutua por cima de conteúdo arbitrário e
-     precisa se destacar mais do que um cartão comum. Mesma família do
-     `.ficha` (vidro sobre preto, realce no topo), com `--papel-3` (mais
-     opaco) e `--desfoque-forte` (borra mais) em vez de `--papel-1`. */
+  /* Material "grosso": diálogo, gaveta, dock, faixa fixa do trilho. */
   .liquid-glass-elevated {
     position: relative;
     background: var(--papel-3);
     border: 1px solid var(--pauta);
-    box-shadow:
-      inset 0 1px 0 var(--vidro-realce),
-      var(--sombra-alta);
-    backdrop-filter: blur(var(--desfoque-forte)) saturate(1.7);
-    -webkit-backdrop-filter: blur(var(--desfoque-forte)) saturate(1.7);
+    box-shadow: var(--sombra-alta);
+    backdrop-filter: blur(var(--desfoque-forte)) saturate(1.8);
   }
 
-  /* Material "fino": menu suspenso, popover, painel de hover da navegação,
-     select. Precisa ser legível sobre qualquer conteúdo atrás — por isso
-     `--papel-3` (mesma opacidade do material grosso) mas com o blur normal,
-     não o forte: um menu costuma abrir perto de onde a pessoa já está
-     olhando, e o blur mais pesado do diálogo ali seria borrão sem motivo. */
+  /* Material "fino": menu suspenso, popover, painel de hover, select. */
   .vidro-menu {
     position: relative;
     background: var(--papel-3);
     border: 1px solid var(--pauta);
-    box-shadow:
-      inset 0 1px 0 var(--vidro-realce),
-      var(--sombra-alta);
-    backdrop-filter: blur(var(--desfoque)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--desfoque)) saturate(1.6);
+    box-shadow: var(--sombra-alta);
+    backdrop-filter: blur(var(--desfoque)) saturate(1.8);
   }
 
-  /* Toque com mola — usado nos botões `default`/`destructive` (ver
-     `ui/button.tsx`), que referenciavam esta classe sem ela existir. Afunda
-     e volta com uma curva de mola em vez de só encolher: é o "leve
-     elevação/brilho" do botão de vidro — o brilho vem do
-     `hover:brightness/shadow` de cada variante, isto só cuida do toque. */
   .spring-press {
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -380,15 +339,12 @@
     transform: scale(0.96);
   }
 
-  /* Feedback de toque: o cartão afunda um pouco sob o dedo. Só onde há ação —
-     afundar um cartão que não faz nada promete um clique que não existe. */
   .ios-tap {
     transition:
       transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
       background-color 0.18s ease,
       box-shadow 0.18s ease;
   }
-
   .ios-tap:active {
     transform: scale(0.97);
   }
@@ -397,31 +353,17 @@
     background: var(--vidro);
   }
 
-  /* A pauta colorida no topo saiu em 05/09/2026, com o redesign.
-     Ela era a assinatura da casa e sobreviveu duas rodadas encolhendo — de 2px
-     para 1px, e depois metade da opacidade. Na grade bento, com sete cartões
-     visíveis de uma vez, sete linhas azuis voltaram a virar listra: o olho
-     lia a repetição antes de ler qualquer número. O brief é explícito em não
-     ter contorno colorido em cartão, e aqui a separação já vem da borda de
-     1px, do degrau de superfície e do espaço.
-     Para trazer de volta, basta um ::before de 1px — mas leia isto antes. */
-
   .toque {
     transition:
       transform 0.14s cubic-bezier(0.32, 0.72, 0, 1),
       background-color 0.14s ease;
   }
-
   .toque:active {
     transform: scale(0.97);
   }
 }
 
-/* A área de conteúdo desloca pela largura do trilho lateral (64px).
-   Redesenho de 07/09/2026: o trilho não expande/recolhe mais — são só
-   quatro ícones fixos (Hoje, Buscar, Configurações, Perfil), então não há
-   mais o que a classe `recolhido` precisava resolver. A navegação de
-   verdade agora são as abas do topo, dentro do fluxo normal da página. */
+/* A área de conteúdo desloca pela largura do trilho lateral (64px). */
 @media (min-width: 768px) {
   .area-do-app {
     padding-left: 64px;
@@ -441,9 +383,6 @@
     padding-top: env(safe-area-inset-top);
   }
 
-  /* As abas do topo e a sub-navegação rolam na horizontal no celular; a
-     barra de rolagem ali é ruído — a régua de pontos das próprias pílulas
-     já mostra que dá pra continuar arrastando. */
   .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -464,8 +403,6 @@
   }
 }
 
-/* O mascote respira devagar quando está tranquilo, e mais rápido quando
-   a situação aperta. Movimento aqui é informação, não enfeite. */
 @keyframes respiro {
   0%,
   100% {

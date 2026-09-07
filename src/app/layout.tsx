@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "Organize contas, dívidas e metas em um lugar só. Projeção de caixa, plano de pagamento e ajuda para decidir empréstimo. Para pessoa física e MEI.",
   manifest: "/manifest.webmanifest",
   // Instalado na tela inicial do celular, o app abre sem barra de navegador.
-  appleWebApp: { capable: true, title: "Tino", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Tino", statusBarStyle: "default" },
   icons: {
     icon: [{ url: "/icones/icone-192.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icones/icone-192.png", sizes: "192x192" }],
@@ -34,13 +34,13 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  // Preto é a casca do app, não uma preferência de sistema — as duas
-  // entradas apontam para o mesmo preto (decisão do Davi, 07/09/2026: ver
-  // docs/REDESIGN-EM-CURSO.md). A barra de status do celular e a moldura do
-  // navegador continuam pretas em qualquer tema do aparelho.
+  // Skin acromática clara por padrão, escuro só opcional via `.dark`
+  // (decisão do Davi, 07/09/2026, tarde — ver docs/REDESIGN-EM-CURSO.md,
+  // que substitui a casca preta forçada da sessão anterior do mesmo dia).
+  // Cada entrada aponta pro `--background` do tema correspondente.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#000000" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f8f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1c1c" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -56,13 +56,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className="min-h-screen bg-background antialiased"
       >
-        {/* Preto é a casca do app, não um dark-mode opcional (decisão do
-            Davi, 07/09/2026). `forcedTheme` trava a classe `.dark` ligada
-            mesmo que o sistema operacional prefira claro — `:root` e
-            `.dark` em globals.css já são o mesmo preto+vidro, então isto
-            só impede qualquer alternador futuro de expor um tema que não
-            existe mais. */}
-        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
+        {/* Claro é a casca do app por padrão; escuro é opcional via `.dark`
+            (decisão do Davi, 07/09/2026, tarde — substitui o preto forçado
+            da sessão anterior do mesmo dia, ver docs/REDESIGN-EM-CURSO.md).
+            Sem `forcedTheme`: o alternador em `theme-toggle.tsx` volta a
+            fazer sentido, e quem não mexeu em nada cai no claro. */}
+        <ThemeProvider attribute="class" defaultTheme="light">
           {children}
         </ThemeProvider>
       </body>
