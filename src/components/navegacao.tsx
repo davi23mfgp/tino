@@ -83,6 +83,15 @@ function Pilula({ item, ativo }: { item: ItemNav; ativo: boolean }) {
  * As seis (ou sete, com loja) abas do topo. Cada uma navega para a PRIMEIRA
  * tela do grupo — a sub-navegação entre as telas do mesmo grupo aparece
  * dentro do conteúdo, pela `<SubAbas>`.
+ *
+ * Do tablet para cima, um grupo com mais de uma tela também abre um painel
+ * ao passar o mouse — mapeamento do `dropdown-navigation` do ln-dev7
+ * (21st.dev). Antes, ir direto para "Metas" a partir de qualquer outra
+ * seção exigia dois cliques: a pílula "Planejar" sempre abre a primeira
+ * tela do grupo (Orçamento), e só depois a sub-navegação aparecia para
+ * escolher Metas. Não troca o clique (que continua indo para a primeira
+ * tela — é o que a pessoa espera de um link) nem some com `<SubAbas>` no
+ * celular, onde não existe "passar o mouse".
  */
 function AbasPrincipais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: string }) {
   return (
@@ -93,9 +102,8 @@ function AbasPrincipais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: stri
       {grupos.map((grupo) => {
         const ativo = grupo.itens.some((item) => estaAtivo(caminho, item.rota))
         const primeiro = grupo.itens[0]
-        return (
+        const pilula = (
           <Link
-            key={grupo.chave}
             href={primeiro.rota}
             title={grupo.pergunta}
             aria-current={ativo ? "page" : undefined}
@@ -108,6 +116,47 @@ function AbasPrincipais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: stri
           >
             {grupo.titulo}
           </Link>
+        )
+
+        if (grupo.itens.length < 2) return <div key={grupo.chave}>{pilula}</div>
+
+        return (
+          <div key={grupo.chave} className="group/nav relative shrink-0">
+            {pilula}
+            {/* O painel some por padrão e só entra em aparelho com mouse de
+                verdade — `(hover:hover)` evita a "armadilha do hover" em
+                tela touch, onde o primeiro toque só acionaria o :hover em
+                vez de seguir o link. Em touch a navegação continua igual a
+                antes: clique na pílula + `<SubAbas>` abaixo do conteúdo. */}
+            <div
+              role="menu"
+              aria-label={grupo.titulo}
+              className="invisible absolute left-0 top-full z-30 hidden w-56 -translate-y-1 rounded-[var(--raio-cartao)] border border-pauta bg-card p-1.5 opacity-0 shadow-alta transition-[opacity,transform] duration-150 [@media(hover:hover)]:block [@media(hover:hover)]:group-hover/nav:visible [@media(hover:hover)]:group-hover/nav:translate-y-1 [@media(hover:hover)]:group-hover/nav:opacity-100"
+            >
+              <p className="px-2.5 pb-1.5 pt-1 text-[11px] text-muted-fg">{grupo.pergunta}</p>
+              {grupo.itens.map((item) => {
+                const { Icone } = item
+                const itemAtivo = estaAtivo(caminho, item.rota)
+                return (
+                  <Link
+                    key={item.rota}
+                    href={item.rota}
+                    role="menuitem"
+                    aria-current={itemAtivo ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] transition-colors",
+                      itemAtivo
+                        ? "bg-accent font-medium text-accent-foreground"
+                        : "text-foreground hover:bg-foreground/[0.05]",
+                    )}
+                  >
+                    <Icone className="size-4 shrink-0 text-muted-fg" />
+                    {item.rotulo}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
         )
       })}
     </nav>
