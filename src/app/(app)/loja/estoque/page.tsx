@@ -6,6 +6,7 @@ import { PackagePlus } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { TrilhaLoja } from "@/components/trilha-loja"
 
 /**
  * Prateleira.
@@ -78,6 +79,7 @@ export default function Estoque() {
 
   return (
     <div className="space-y-4">
+      <TrilhaLoja pagina="Prateleira" />
       <Cartao titulo="Prateleira">
         <div className="grid gap-3 sm:grid-cols-3">
           <Metrica rotulo="Produtos" valor={String(prateleira.length)} />

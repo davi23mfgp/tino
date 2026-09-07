@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { sessaoDeAdmin } from "@/lib/admin"
+import { AbasAdmin, TrilhaAdmin } from "@/app/admin/breadcrumb"
 
 /**
  * Casca do painel de administração.
@@ -16,14 +17,6 @@ import { sessaoDeAdmin } from "@/lib/admin"
  * app.
  */
 
-const ABAS = [
-  { rota: "/admin", rotulo: "Visão geral" },
-  { rota: "/admin/contas", rotulo: "Contas" },
-  { rota: "/admin/pagamentos", rotulo: "Pagamentos" },
-  { rota: "/admin/suporte", rotulo: "Suporte" },
-  { rota: "/admin/configuracoes", rotulo: "Configurações" },
-]
-
 export default async function LayoutAdmin({ children }: { children: React.ReactNode }) {
   const sessao = await sessaoDeAdmin()
 
@@ -32,7 +25,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
       <div className="mx-auto w-full max-w-6xl px-4 pb-16">
         <header className="flex flex-wrap items-center justify-between gap-3 py-5">
           <div>
-            <p className="text-[11px] uppercase tracking-widest text-muted-fg">Tino — administração</p>
+            <TrilhaAdmin />
             <h1 className="text-xl font-semibold tracking-tight">{sessao.nome.split(" ")[0]}, o negócio</h1>
           </div>
           <Link href="/painel" className="text-[13px] text-muted-fg hover:text-foreground">
@@ -40,17 +33,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
           </Link>
         </header>
 
-        <nav className="mb-5 flex flex-wrap gap-1.5 border-b border-pauta pb-3">
-          {ABAS.map((aba) => (
-            <Link
-              key={aba.rota}
-              href={aba.rota}
-              className="rounded-full border border-pauta px-3.5 py-1.5 text-[13px] text-muted-fg transition-colors hover:border-acao/40 hover:text-foreground"
-            >
-              {aba.rotulo}
-            </Link>
-          ))}
-        </nav>
+        <AbasAdmin />
 
         <main>{children}</main>
       </div>

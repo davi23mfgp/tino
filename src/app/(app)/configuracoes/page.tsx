@@ -12,6 +12,8 @@ import { Cartao, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
+import { FotoDePerfil } from "@/components/foto-de-perfil"
+import { SelectNative } from "@/components/ui/select-native"
 
 interface Conta {
   id: string
@@ -158,6 +160,10 @@ export default function Configuracoes() {
 
   return (
     <div className="space-y-4">
+      <Cartao titulo="Sua foto">
+        <FotoDePerfil />
+      </Cartao>
+
       <Cartao titulo="Assinatura">
         <p className="text-[13px] leading-relaxed text-muted-fg">
           Plano contratado, situação do pagamento, próxima cobrança e cancelamento ficam numa tela só.
@@ -233,17 +239,13 @@ export default function Configuracoes() {
             required
             className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
-          <select
-            value={nova.tipo}
-            onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}
-            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-          >
+          <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
             {TIPOS_CONTA.map((tipo) => (
               <option key={tipo.valor} value={tipo.valor}>
                 {tipo.rotulo}
               </option>
             ))}
-          </select>
+          </SelectNative>
           <input
             value={nova.instituicao}
             onChange={(evento) => setNova({ ...nova, instituicao: evento.target.value })}

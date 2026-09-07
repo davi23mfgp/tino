@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
+import { TrilhaLoja } from "@/components/trilha-loja"
 
 /**
  * O que a loja paga para existir.
@@ -131,6 +132,7 @@ export default function ContasDaLoja() {
 
   return (
     <div className="space-y-4">
+      <TrilhaLoja pagina="Contas a pagar" />
       <Cartao titulo="Contas da loja">
         <div className="grid gap-3 sm:grid-cols-3">
           <Metrica rotulo="Em aberto" valor={formatarMoeda(dados?.resumo.abertoCentavos ?? 0)} />

@@ -7,6 +7,7 @@ import { AlertTriangle, Bell, LogOut, Settings, ShieldCheck } from "lucide-react
 
 import { buscar, enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface Alerta {
   id: string
@@ -29,10 +30,12 @@ const COR: Record<Alerta["severidade"], string> = {
 export function BarraTopo({
   nome,
   admin,
+  avatarUrl,
   competencia,
 }: {
   nome: string
   admin?: boolean
+  avatarUrl?: string | null
   /** Vem do servidor para bater com o mês que o painel mostra. Calcular aqui
       usaria o relógio do navegador, e na virada do mês a barra diria um mês e
       o painel outro. */
@@ -181,14 +184,16 @@ export function BarraTopo({
 
         {/* A pessoa logada, como no protótipo. O nome some no celular, onde a
             largura vale mais que a confirmação de quem está logado — a
-            inicial já resolve isso. */}
+            inicial já resolve isso. Foto de perfil (Configurações → Sua
+            foto) substitui a inicial quando existe; ver `ui/avatar.tsx`,
+            que existia no projeto sem nenhuma tela usar. */}
         <div className="ml-1 flex items-center gap-2 rounded-[var(--raio-pilula)] bg-papel-2 py-1 pl-1 pr-1 sm:pr-3">
-          <span
-            aria-hidden
-            className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-[12px] font-semibold text-primary-foreground"
-          >
-            {nome.trim().charAt(0).toUpperCase()}
-          </span>
+          <Avatar className="size-7 shrink-0" aria-hidden>
+            {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
+            <AvatarFallback className="bg-primary text-[12px] font-semibold text-primary-foreground">
+              {nome.trim().charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <span className="hidden text-[13px] font-medium sm:inline">{nome.split(" ")[0]}</span>
         </div>
       </div>

@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import { enviar } from "@/lib/cliente"
 import { TinoMascote } from "@/components/tino-mascote"
 import { BuscarPaginas } from "@/components/buscar-paginas"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -164,7 +165,7 @@ function IconeTrilho({
 }
 
 /** Trilho fixo, do tablet para cima: os quatro ícones que não mudam de tela pra tela. */
-function TrilhoLateral({ mei, nome }: { mei: boolean; nome: string }) {
+function TrilhoLateral({ mei, nome, avatarUrl }: { mei: boolean; nome: string; avatarUrl: string | null }) {
   const caminho = usePathname()
   const router = useRouter()
 
@@ -193,7 +194,16 @@ function TrilhoLateral({ mei, nome }: { mei: boolean; nome: string }) {
               title="Perfil"
               className="toque grid place-items-center rounded-2xl text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
             >
-              <User className="size-[18px]" />
+              {avatarUrl ? (
+                <Avatar className="size-6">
+                  <AvatarImage src={avatarUrl} alt="" />
+                  <AvatarFallback className="bg-primary text-[10px] font-semibold text-primary-foreground">
+                    {nome.trim().charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <User className="size-[18px]" />
+              )}
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-48">
@@ -282,7 +292,15 @@ const NO_POLEGAR_LOJA: ItemNav[] = [
   { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
 ]
 
-export function Navegacao({ mei, nome }: { mei?: boolean; nome: string }) {
+export function Navegacao({
+  mei,
+  nome,
+  avatarUrl,
+}: {
+  mei?: boolean
+  nome: string
+  avatarUrl?: string | null
+}) {
   const caminho = usePathname()
   const [gaveta, setGaveta] = useState(false)
   const grupos = gruposPara(Boolean(mei))
@@ -293,7 +311,7 @@ export function Navegacao({ mei, nome }: { mei?: boolean; nome: string }) {
 
   return (
     <>
-      <TrilhoLateral mei={Boolean(mei)} nome={nome} />
+      <TrilhoLateral mei={Boolean(mei)} nome={nome} avatarUrl={avatarUrl ?? null} />
 
       {/* ── Cabeçalho móvel: hambúrguer + marca, só até o tablet ── */}
       <div className="flex items-center gap-2 pb-2 pt-1 md:hidden">

@@ -19,8 +19,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
       select: { onboardingEm: true, meiPerfil: { select: { id: true } } },
     }),
     // O papel vem do banco, não do token: o token vale 30 dias, e tirar o papel
-    // de alguém precisa valer no próximo clique.
-    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true } }),
+    // de alguém precisa valer no próximo clique. `avatarUrl` pela mesma razão:
+    // trocar a foto não deveria esperar o token vencer para aparecer.
+    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true } }),
   ])
 
   // Lar apagado com token ainda válido: manda para o login em vez de estourar.
@@ -39,7 +40,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
             por isso moram no mesmo container de largura da página) — ver
             `components/navegacao.tsx`. */}
-        <Navegacao mei={Boolean(lar.meiPerfil)} nome={sessao.nome} />
+        <Navegacao mei={Boolean(lar.meiPerfil)} nome={sessao.nome} avatarUrl={usuario?.avatarUrl ?? null} />
 
         {/* A competência vem daqui, do servidor, e não de dentro da barra: no
             cliente ela sairia do relógio do navegador, e na virada do mês a
@@ -47,6 +48,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         <BarraTopo
           nome={sessao.nome}
           admin={usuario?.admin ?? false}
+          avatarUrl={usuario?.avatarUrl ?? null}
           competencia={rotuloCompetencia(competenciaAtual())}
         />
         <SubAbas mei={Boolean(lar.meiPerfil)} />
