@@ -1,7 +1,10 @@
+import { ArrowDownRight, ArrowUpRight } from "lucide-react"
+
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { montarPlanoDoLar } from "@/lib/tino/plano-do-lar"
+import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
@@ -81,7 +84,17 @@ export default async function Plano() {
                 <div key={passo.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{rotuloCompetencia(passo.competencia)}</span>
-                    <span className={passo.sobraCentavos < 0 ? "text-negativo" : "text-positivo"}>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-0.5",
+                        passo.sobraCentavos < 0 ? "text-negativo" : "text-positivo",
+                      )}
+                    >
+                      {passo.sobraCentavos < 0 ? (
+                        <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                      ) : (
+                        <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                      )}
                       sobra {formatarMoeda(passo.sobraCentavos)}
                     </span>
                   </div>

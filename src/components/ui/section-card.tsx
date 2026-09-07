@@ -9,13 +9,12 @@ interface SectionCardProps {
 }
 
 /**
- * SectionCard — padrão Control.Deal.
- * bg papel-1, border pauta, rounded-3xl (24px), header opcional
- * com título 15px font-semibold + ação à direita em acao.
+ * SectionCard — vidro do Tino (`.ios-card`). Header opcional com título
+ * 15px font-semibold + ação à direita em `acao`.
  */
 export function SectionCard({ children, className, title, action }: SectionCardProps) {
   return (
-    <div className={cn("rounded-3xl border border-pauta bg-papel-1 overflow-hidden", className)}>
+    <div className={cn("ios-card overflow-hidden", className)}>
       {(title || action) && (
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           {title && <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>}

@@ -1,3 +1,5 @@
+import { ArrowDownRight, ArrowUpRight } from "lucide-react"
+
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -227,11 +229,15 @@ export default async function Analise() {
               <div className="mb-3 flex items-baseline justify-between gap-3">
                 <p className="text-[13px] font-medium">Como andou nos últimos meses</p>
                 <p
-                  className={`numero text-[13px] ${
+                  className={`numero inline-flex items-center gap-0.5 text-[13px] ${
                     mensal.variacaoCentavos >= 0 ? "text-positivo" : "text-negativo"
                   }`}
                 >
-                  {mensal.variacaoCentavos >= 0 ? "+" : ""}
+                  {mensal.variacaoCentavos >= 0 ? (
+                    <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                  ) : (
+                    <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                  )}
                   {formatarMoeda(mensal.variacaoCentavos)}
                 </p>
               </div>
