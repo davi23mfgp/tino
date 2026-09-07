@@ -2,16 +2,19 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 import { sessaoDaPagina } from "@/lib/pagina"
+import { prisma } from "@/lib/prisma"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
+import { montarPlanoDoLar } from "@/lib/tino/plano-do-lar"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { Barra, BarrasCategorias, Cartao, Metrica, Rotulo, Valor, Vazio } from "@/components/ui/painel"
 import { GraficoEvolucao, GraficoParcelas } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { TinoAcompanha } from "@/components/tino-acompanha"
+import { AnotarRapidoHoje } from "@/components/anotar-rapido"
 
 export const dynamic = "force-dynamic"
 
@@ -19,11 +22,25 @@ export default async function Painel() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
 
-  const [panorama, parcelamentos, compromissos] = await Promise.all([
+  const [panorama, parcelamentos, compromissos, planoDoLar, pendentes, proximaConta] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
     resumoParcelamentos(sessao.larId),
     compromissosFuturos(sessao.larId, 6),
+    montarPlanoDoLar(sessao.larId, competencia),
+    prisma.captura.findMany({
+      where: { larId: sessao.larId, status: "PENDENTE" },
+      orderBy: { criadoEm: "desc" },
+      take: 3,
+    }),
+    prisma.recorrencia.findFirst({
+      where: { larId: sessao.larId, ativa: true, tipo: "DESPESA", proximaData: { gte: new Date() } },
+      orderBy: { proximaData: "asc" },
+    }),
   ])
+  const totalPendentesCount = await prisma.captura.count({
+    where: { larId: sessao.larId, status: "PENDENTE" },
+  })
+  const piorDivida = planoDoLar.plano.ordem[0] ?? null
 
   const contasLiquidas = panorama.saldoPorConta.filter((conta) => conta.tipo !== "CARTAO_CREDITO")
   const cartoes = panorama.saldoPorConta.filter((conta) => conta.tipo === "CARTAO_CREDITO")
@@ -63,7 +80,99 @@ export default async function Painel() {
 
   return (
     <div className="space-y-5">
-      {/* O Tino abre a tela porque o que exige decisão vem antes do que só
+      {/* ════════ HOJE — etapa 3 do redesign de 07/09/2026 ════════
+          Cinco coisas, nessa ordem, e é o que a tela pergunta primeiro:
+          "o que eu faço agora?". O resto da página (saldo detalhado,
+          gráficos, mapa de calor) continua abaixo — não removi nada, só
+          deixei de ser a PRIMEIRA coisa que a pessoa lê. */}
+      <div>
+        {/* 1) A frase grande. */}
+        <p className="text-[22px] font-semibold leading-snug tracking-[-0.015em] sm:text-[26px]">
+          {panorama.mes.sobraCentavos >= 0
+            ? `Sobra ${formatarMoeda(panorama.mes.sobraCentavos)} este mês.`
+            : `Faltam ${formatarMoeda(Math.abs(panorama.mes.sobraCentavos))} pra fechar o mês.`}{" "}
+          {piorDivida ? (
+            <span className="text-[color:var(--texto-2)]">
+              A conta que mais dói é {piorDivida.nome.toLowerCase()}, a {formatarPercentual(piorDivida.jurosMensalBps)} ao mês.
+            </span>
+          ) : (
+            <span className="text-[color:var(--texto-2)]">Nenhuma dívida cara em aberto agora.</span>
+          )}
+        </p>
+
+        {/* 2) A ação recomendada, vinda do mesmo motor que a tela /plano usa. */}
+        {piorDivida && (
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <p className="text-[14px] text-[color:var(--texto-2)]">{planoDoLar.plano.primeiroPasso}</p>
+            <Link
+              href="/plano"
+              className="toque flex shrink-0 items-center gap-1 rounded-[var(--raio-pilula)] bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground"
+            >
+              Ver plano de pagamento <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* 3) Anotar em uma linha. */}
+      <Cartao titulo="Anotar em segundos" estatico>
+        <AnotarRapidoHoje />
+        <p className="mt-2 text-[12px] text-muted-fg">
+          Escreva como você falaria: <b>uber 18</b>, <b>farmácia 38,90</b>, <b>almoço 45</b>.
+        </p>
+      </Cartao>
+
+      {/* 4) O que está esperando confirmação. */}
+      {totalPendentesCount > 0 && (
+        <Cartao
+          titulo={`${totalPendentesCount} esperando você`}
+          acao={
+            <Link href="/capturas" className="text-xs text-acao hover:underline">
+              ver todas
+            </Link>
+          }
+        >
+          <div className="space-y-2">
+            {pendentes.map((captura) => (
+              <div key={captura.id} className="flex items-center justify-between text-[14px]">
+                <span className="truncate text-[color:var(--texto-2)]">
+                  {captura.estabelecimento ?? captura.textoBruto}
+                </span>
+                {captura.valorCentavos !== null && (
+                  <span className="numero shrink-0">{formatarMoeda(captura.valorCentavos)}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </Cartao>
+      )}
+
+      {/* 5) Três números — saldo, sobra do mês, próxima conta a vencer. */}
+      <div className="grid grid-cols-3 gap-3">
+        <Metrica
+          rotulo="Saldo"
+          valor={formatarMoeda(panorama.saldoTotalCentavos)}
+          tom={panorama.saldoTotalCentavos < 0 ? "negativo" : "neutro"}
+        />
+        <Metrica
+          rotulo="Sobra do mês"
+          valor={formatarMoeda(panorama.mes.sobraCentavos)}
+          tom={panorama.mes.sobraCentavos >= 0 ? "positivo" : "negativo"}
+        />
+        <Metrica
+          rotulo="Próxima conta"
+          valor={
+            proximaConta
+              ? `${formatarMoeda(proximaConta.valorCentavos)} · dia ${proximaConta.diaVencimento}`
+              : "nenhuma"
+          }
+          tom="neutro"
+        />
+      </div>
+
+      {/* ════════ o resto da tela, como já estava ════════ */}
+
+      {/* O Tino abre esta parte porque o que exige decisão vem antes do que só
           informa. Saldo bonito com fatura estourando é meia verdade. */}
       <TinoAcompanha />
 
