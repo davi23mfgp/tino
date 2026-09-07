@@ -225,7 +225,11 @@ function TrilhoLateral({ mei, nome, avatarUrl }: { mei: boolean; nome: string; a
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[64px] flex-col items-center gap-2 border-r border-pauta bg-papel-1/80 py-4 backdrop-blur-xl backdrop-saturate-[1.8] md:flex">
+    // Trilho FLUTUANDO, não mais colado na borda: mesma margem de 12px que a
+    // barra do polegar do celular já usa (`inset-x-3 bottom-3`), agora nas
+    // quatro bordas do próprio trilho. `.ios-card` já traz o raio de 26px, o
+    // vidro e a sombra — não precisa repetir aqui.
+    <aside className="ios-card fixed inset-y-3 left-3 z-30 hidden w-[64px] flex-col items-center gap-2 py-4 lg:flex">
       <Link href="/painel" title="Tino" className="mb-2 grid place-items-center">
         <Image src="/tino-mascote.png" alt="" width={30} height={30} className="size-[30px] object-contain" />
       </Link>
@@ -282,9 +286,9 @@ function Gaveta({ grupos, caminho, aoFechar }: { grupos: GrupoNav[]; caminho: st
       <button
         aria-label="Fechar menu"
         onClick={aoFechar}
-        className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm md:hidden"
+        className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm lg:hidden"
       />
-      <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-3 backdrop-blur-vidro-forte backdrop-saturate-[1.7] md:hidden">
+      <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-3 backdrop-blur-vidro-forte backdrop-saturate-[1.7] lg:hidden">
         <header className="flex h-14 items-center gap-2 border-b border-pauta px-3">
           <TinoMascote estado="tranquilo" animado={false} className="size-7" />
           <span className="font-display text-[15px] font-semibold">Tino</span>
@@ -363,7 +367,7 @@ export function Navegacao({
       <TrilhoLateral mei={Boolean(mei)} nome={nome} avatarUrl={avatarUrl ?? null} />
 
       {/* ── Cabeçalho móvel: hambúrguer + marca, só até o tablet ── */}
-      <div className="flex items-center gap-2 pb-2 pt-1 md:hidden">
+      <div className="flex items-center gap-2 pb-2 pt-1 lg:hidden">
         <button
           onClick={() => setGaveta(true)}
           aria-label="Abrir menu"
@@ -383,7 +387,7 @@ export function Navegacao({
 
       {/* ── Barra do polegar: agora painel flutuando (`.ios-card`) com respiro
           de 12px nas três bordas, em vez de colada full-bleed no rodapé. */}
-      <nav className="ios-card safe-bottom fixed inset-x-3 bottom-3 z-40 md:hidden">
+      <nav className="ios-card safe-bottom fixed inset-x-3 bottom-3 z-40 lg:hidden">
         <div className="flex items-stretch justify-around">
           {(mei ? NO_POLEGAR_LOJA : NO_POLEGAR_BASE).map((item) => {
             const ativo = estaAtivo(caminho, item.rota)

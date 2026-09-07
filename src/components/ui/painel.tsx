@@ -1,3 +1,5 @@
+import { ArrowDownRight, ArrowUpRight } from "lucide-react"
+
 import { formatarMoeda } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 
@@ -111,7 +113,21 @@ export function Valor({
     linha: "text-[15px] leading-snug tracking-[-0.01em]",
   }[tamanho]
 
-  return <p className={cn("numero font-semibold", escala, TOM[tom], className)}>{children}</p>
+  // A cor sozinha nunca é o sinal (chroma zero no app inteiro): positivo e
+  // negativo levam a mesma seta que já aparecia como "↑"/"↓" solto em
+  // `Metrica` — aqui vira ícone de verdade, herdando a cor do texto (`currentColor`)
+  // e o tamanho do próprio número (`em`), então escala sozinho nos quatro
+  // tamanhos sem precisar de prop nova.
+  const Seta = tom === "positivo" ? ArrowUpRight : tom === "negativo" ? ArrowDownRight : null
+
+  return (
+    <p className={cn("numero inline-flex items-baseline gap-0.5 font-semibold", escala, TOM[tom], className)}>
+      {Seta && (
+        <Seta aria-hidden className="relative top-[0.09em] size-[0.72em] shrink-0" strokeWidth={2.5} />
+      )}
+      {children}
+    </p>
+  )
 }
 
 export function Metrica({
@@ -132,14 +148,29 @@ export function Metrica({
   // usa o MESMO raio do cartão que o contém, não um menor: é o que faz os
   // quatro números lerem como um bloco só dentro do cartão.
   return (
-    <div className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
+    <div className="ios-tap relative overflow-hidden rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
+      {/* Halo borrado no canto — mesma profundidade discreta dos cartões de
+          KPI do spec, só decorativo (nasce e morre em CSS, não muda o que a
+          tela informa). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-8 -top-10 size-24 rounded-full opacity-[0.14] blur-2xl"
+        style={{ backgroundImage: "var(--gradient-steel)" }}
+      />
       <Rotulo>{rotulo}</Rotulo>
       <Valor tom={tom} tamanho="medio" className="mt-2">
         {valor}
       </Valor>
       {variacao && (
-        <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">
-          {variacao.sentido === "sobe" ? "↑" : variacao.sentido === "desce" ? "↓" : "="} {variacao.texto}
+        <p className="mt-2 flex items-center gap-1 text-[12px] leading-snug text-[color:var(--texto-2)]">
+          {variacao.sentido === "sobe" ? (
+            <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+          ) : variacao.sentido === "desce" ? (
+            <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+          ) : (
+            <span aria-hidden>=</span>
+          )}
+          {variacao.texto}
         </p>
       )}
       {detalhe && <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">{detalhe}</p>}

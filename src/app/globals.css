@@ -199,9 +199,17 @@
     --lch-destaque: 0.85 0 0;
     --lch-dado: 0.6 0 0;
 
-    --lch-acao-solido: 0.985 0 0;
-    --lch-negativo-solido: 0.78 0 0;
-    --lch-positivo-solido: 0.9 0 0;
+    /* Estas três NÃO invertem com o tema, ao contrário de tudo mais neste
+       bloco `.dark` — de propósito. Elas só existem para hospedar texto/ícone
+       BRANCO em cima (faixa crítica do banner, indicador do toggle de preço,
+       ✓ do checkbox, pico do mapa de calor) e ficam pareadas com esse branco
+       fixo, não com um token "-foreground" que inverteria sozinho. Se
+       invertessem (como no rascunho anterior: 0.985/0.78/0.9, quase branco),
+       o texto branco em cima virava branco sobre branco no escuro — achado
+       nesta rodada de skin, não escondido. */
+    --lch-acao-solido: 0.16 0 0;
+    --lch-negativo-solido: 0.32 0 0;
+    --lch-positivo-solido: 0.2 0 0;
 
     --card: 0.175 0 0;
     --card-foreground: 0.985 0 0;
@@ -363,10 +371,14 @@
   }
 }
 
-/* A área de conteúdo desloca pela largura do trilho lateral (64px). */
-@media (min-width: 768px) {
+/* A área de conteúdo desloca pela largura do trilho lateral flutuando:
+   64px de trilho + 12px de margem de cada lado (`inset-y-3 left-3` em
+   `navegacao.tsx`) + um respiro de 20px antes do conteúdo. Breakpoint em
+   1024px (`lg`), não mais 768px (`md`) — o trilho e a barra do polegar
+   trocam de lugar juntos no mesmo ponto agora (ver `navegacao.tsx`). */
+@media (min-width: 1024px) {
   .area-do-app {
-    padding-left: 64px;
+    padding-left: 108px;
   }
 }
 

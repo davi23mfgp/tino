@@ -42,7 +42,11 @@ export const Checkbox = React.forwardRef<
       <Check
         aria-hidden
         strokeWidth={3}
-        className="pointer-events-none relative size-3 scale-0 text-primary-foreground opacity-0 transition-transform peer-checked:scale-100 peer-checked:opacity-100"
+        // `text-white` fixo, não `text-primary-foreground`: `acao-solido` (o
+        // fundo aqui embaixo) não inverte com o tema — ver globals.css. Um
+        // token que invertesse deixaria o "✓" escuro sobre fundo escuro no
+        // modo `.dark`.
+        className="pointer-events-none relative size-3 scale-0 text-white opacity-0 transition-transform peer-checked:scale-100 peer-checked:opacity-100"
       />
     </span>
   )

@@ -23,7 +23,7 @@ const TOM: Record<Tom, string> = {
   // para >=5:1 (ver globals.css). `atencao` já nasceu clara o bastante para
   // hospedar texto escuro em cima, então segue igual.
   critico: "bg-negativo-solido text-white",
-  atencao: "bg-atencao text-[oklch(0.2_0.02_70)]",
+  atencao: "bg-atencao text-[oklch(0.2_0_0)]",
   info: "bg-acao-solido text-white",
 }
 

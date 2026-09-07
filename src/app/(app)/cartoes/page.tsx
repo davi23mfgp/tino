@@ -76,7 +76,7 @@ export default async function Cartoes() {
                   A informação não está no gradiente — está na barra de limite
                   em cima dele, que segue a regra de cor de sempre. Um gradiente
                   e uma cor que informa; a ousadia fica num lugar só. */}
-              <div className="relative overflow-hidden bg-[linear-gradient(135deg,oklch(0.34_0.09_262),oklch(0.19_0.04_262))] p-6 text-white">
+              <div className="relative overflow-hidden bg-[linear-gradient(135deg,oklch(0.34_0_0),oklch(0.19_0_0))] p-6 text-white">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="truncate text-[15px] font-semibold tracking-[-0.012em]">{cartao.nome}</p>

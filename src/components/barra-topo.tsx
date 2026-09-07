@@ -8,6 +8,7 @@ import { AlertTriangle, Bell, LogOut, Settings, ShieldCheck } from "lucide-react
 import { buscar, enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface Alerta {
   id: string
@@ -64,10 +65,12 @@ export function BarraTopo({
   }
 
   return (
-    // Vidro fosco só aqui e na coluna, conforme o brief. Ela gruda no topo:
+    // Painel flutuando (`.ios-card`), não mais faixa full-bleed: cantos
+    // arredondados nos quatro lados e fundo visível ao redor, como o resto
+    // da skin. Continua grudando no topo (`sticky`, com respiro de 12px):
     // numa tela longa como a Visão geral, a saudação e o resumo do mês somem
     // na rolagem, e é justamente onde a pessoa confere em que mês está.
-    <header className="sticky top-0 z-20 -mx-4 mb-1 flex items-start justify-between gap-4 bg-background/80 px-4 py-6 backdrop-blur-xl backdrop-saturate-[1.8]">
+    <header className="ios-card sticky top-3 z-20 mb-4 flex items-start justify-between gap-4 px-4 py-5 sm:px-6">
       <div>
         <p className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--texto-3)]">Tino</p>
         {/* 22px com tracking de -0,025em, medido no protótipo. Estava em 26px
@@ -165,6 +168,13 @@ export function BarraTopo({
             <ShieldCheck className="h-4 w-4" />
           </Link>
         )}
+
+        {/* Alternador de tema claro/escuro — único lugar com lógica nova
+            desta rodada de skin, pedido explicitamente por Davi ("opção
+            white e black" de verdade). `ThemeToggle` já existia
+            (`next-themes`, já era dependência do projeto) sem estar montado
+            em nenhuma tela; este é o lugar visível de sempre. */}
+        <ThemeToggle />
 
         <Link
           href="/configuracoes"
