@@ -700,3 +700,43 @@ página nova, nenhuma dependência nova em `package.json`.
 - Os skills instalados criaram symlinks de caminho absoluto em
   `.claude/skills/`, que quebram em outra máquina. Não commitados, esperando
   decisão dele.
+
+## Bug crítico corrigido: página não abria (07/09/2026, mais tarde)
+
+Ao abrir o app pela primeira vez depois da rodada de skin, TODA página
+quebrava com "This page couldn't load" — não era só um aviso do dev
+overlay, o React de fato recusava renderizar. Causa: `ThemeProvider`
+(montado nesta mesma rodada de skin pra ligar o `ThemeToggle`, ver seção
+anterior) usava `next-themes`, que injeta um `<script>` cru via
+`dangerouslySetInnerHTML` pra aplicar o tema antes do primeiro paint
+(técnica padrão da lib, usada há anos). O Next desta versão (16.3.2)
+recusa isso em dev: "Encountered a script tag while rendering React
+component" — testado também com `next-themes@0.4.6` (a mais recente),
+mesmo erro, então não é bug de versão da lib, é incompatibilidade real
+entre a técnica e este Next.
+
+**Correção:** `src/components/theme-provider.tsx` deixou de depender do
+`next-themes` — vira contexto React pequeno, próprio, sem `<script>`
+nenhum: aplica `.dark` via `classList` depois de montado (`useEffect`),
+lê/grava preferência em `localStorage("theme")`. `next-themes` foi
+desinstalado (`npm uninstall`) — dependência zero a mais, uma a menos.
+`theme-toggle.tsx` só trocou o import de `useTheme` (mesma assinatura, sem
+mudar a lógica do componente). Custo aceito: sem o script de SSR, quem já
+tinha escolhido escuro pode ver um instante de claro no primeiro
+carregamento antes do `useEffect` rodar — troca aceitável por a página
+abrir de verdade.
+
+Verificado depois da correção: `tsc` limpo, `next build` limpo (51 rotas),
+`npm test` 265/265, e testado ao vivo no navegador (extensão Chrome
+conectou nesta máquina) — login com `demo@tino.local`, painel renderiza
+certo no claro (fundo quase-branco, botão preto, setas cinza em vez de
+verde/vermelho no saldo) e no escuro (toggle clicado de verdade, classe
+`dark` aplicada, botão vira branco sobre preto, mesma paleta acromática
+nos dois). Alternador testado por clique de mouse simulado direto no
+elemento (o clique por coordenada de tela não estava acertando o botão
+por causa da barra do dev overlay sobrepondo a viewport pequena do
+navegador automatizado — não é bug do app).
+
+Também precisou subir o Postgres local desta máquina do zero
+(`npm run db:start`, primeira vez aqui, demorou pela inicialização) —
+ambiente, não código.

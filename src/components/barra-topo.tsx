@@ -171,9 +171,11 @@ export function BarraTopo({
 
         {/* Alternador de tema claro/escuro — único lugar com lógica nova
             desta rodada de skin, pedido explicitamente por Davi ("opção
-            white e black" de verdade). `ThemeToggle` já existia
-            (`next-themes`, já era dependência do projeto) sem estar montado
-            em nenhuma tela; este é o lugar visível de sempre. */}
+            white e black" de verdade). `ThemeToggle` já existia sem estar
+            montado em nenhuma tela; este é o lugar visível de sempre.
+            `useTheme`/`ThemeProvider` viraram implementação própria (ver
+            theme-provider.tsx) — o `next-themes` injetava um <script> que
+            este Next recusa em dev e derrubava a página. */}
         <ThemeToggle />
 
         <Link
