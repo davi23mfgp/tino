@@ -269,6 +269,102 @@ curl não mostra conteúdo de telas client-side pós-hidratação (ex.:
 disso confirmando o build, o tsc, e o PATCH/DELETE reais batendo
 exatamente com o formato que cada componente novo envia.
 
+## Remodelação com componentes 21st.dev — 07/09/2026, tarde/noite
+
+Davi mandou uma lista de 14 componentes do 21st.dev (URLs de demo) mais o
+site de demonstração **fincash.demos.tailgrids.com** como referência visual,
+e pediu para remodelar o Tino com tudo isso — mapeando cada componente para
+um lugar real do app, sem inventar tela nova e sem trocar a paleta.
+
+**Como o código foi obtido.** `npx shadcn@latest add "https://21st.dev/r/..."`
+devolveu `401 Authentication required` para todos — o registry do 21st.dev
+exige credencial que este projeto não tem configurada (nada em `.env`).
+`mcp__21st__*` e `mcp__claude-in-chrome__*` não apareceram disponíveis nesta
+sessão (ver aviso no prompt original). Caí no plano B documentado: `WebFetch`
+na página de demo de cada componente. Na prática o `WebFetch` devolveu só
+descrição de estrutura/props (o código-fonte de verdade fica atrás de uma
+aba "Code" renderizada em JS, que o fetch-para-markdown não alcança) — não o
+arquivo `.tsx` exato. Cada componente abaixo foi então **reconstruído** a
+partir dessa descrição e do meu conhecimento dos padrões shadcn/ui/originui,
+não copiado literalmente. Mesma coisa para o fincash: a raiz do site não
+rendeu conteúdo por `WebFetch` (SPA), mas `tailgrids.com/templates/fincash`
+(a página de produto do mesmo template) descreveu a estrutura: site de
+marketing com Home/Features/Pricing/App-workflow/Testemunhos/FAQ sob uma nav
+fixa — não um dashboard interno com sidebar. É essa estrutura que foi
+absorvida (ver item 4 abaixo), não uma paleta (que continua travada) nem os
+depoimentos fabricados (a vitrine do Tino já registra por que não inventa
+caso de sucesso).
+
+### Os 14, um a um
+
+| # | Componente (autor) | Onde entrou | Arquivo novo/tocado |
+|---|---|---|---|
+| 1 | `banner` (fuma-nama) | Faixa dispensável no topo do app para o alerta CRÍTICO mais grave (vigia) | `ui/banner.tsx`, `aviso-critico.tsx`, `(app)/layout.tsx` |
+| 2 | `filesystem-item` (builduilabs) | Zona de soltar/escolher arquivo em `/importar`, no lugar do `<input type=file>` cru | `ui/filesystem-item.tsx`, `(app)/importar/page.tsx` |
+| 3 | `dropdown-navigation` (ln-dev7) | Painel ao passar o mouse sobre uma pílula do topo com mais de uma tela (ex.: Planejar → Metas direto, sem passar pela primeira tela do grupo) | `components/navegacao.tsx` (`AbasPrincipais`) |
+| 4 | `navbar1` (shadcnblocks) | Nav fixa no topo da vitrine (`/`), que não tinha nenhuma | `components/site-navbar.tsx`, `(site)/page.tsx` |
+| 5 | `breadcrumb` (originui) | Trilha "Administração / \<aba\>" em `/admin/*` (que não tinha NENHUMA indicação de aba ativa) e "Loja / \<página\>" em `/loja/estoque`, `/loja/fiado`, `/loja/contas` (complementando as pílulas de `SubAbas`, não substituindo) | `ui/breadcrumb.tsx`, `admin/breadcrumb.tsx`, `components/trilha-loja.tsx` |
+| 6 | `use-image-upload` (originui) | Foto de perfil em `/configuracoes` — `Usuario.avatarUrl` já existia no schema sem tela nenhuma gravar nele, e `ui/avatar.tsx` (shadcn) já existia sem tela nenhuma usar | `hooks/use-image-upload.ts`, `components/foto-de-perfil.tsx`, `api/usuario/route.ts` |
+| 7 | `dialog` (originui) | Dois formulários que empurravam o resto do cartão para baixo viraram modal: "nova regra" em `/regras` e "nova meta" em `nova-meta.tsx` | `app/(app)/regras/page.tsx`, `components/nova-meta.tsx` |
+| 8 | `select-native` (originui) | `<select>` padronizado (moldura + seta), substituindo estilo repetido à mão em `/importar`, `/transacoes` (2x), `/capturas`, `/configuracoes`, `/dividas`, `nova-meta.tsx` | `ui/select-native.tsx` |
+| 9 | `checkbox` (originui) | Caixinha custom sobre input nativo, substituindo `<input type=checkbox>` cru em `/importar`, `/transacoes`, `/regras` | `ui/checkbox.tsx` |
+| 10 | `use-pagination` (originui) | `/transacoes` pagina em memória a lista já buscada, 25 por página, com números e reticências | `ui/paginacao.tsx` |
+| 11 | `pricing-interaction` (ln-dev7) | Toggle mensal/anual de `/assinatura` virou pílula com indicador deslizante e selo de desconto (sem gradiente de marca nem framer-motion — cor `acao` já existente, transição em CSS) | `ui/pricing-toggle.tsx` |
+| 12 | `tags-selector` (ln-dev7) | Categoria como pastilhas clicáveis em vez de `<select>`: por lançamento pendente em `/capturas`, e no campo categoria de "nova regra" | `ui/tags-selector.tsx` |
+| 13 | `animated-loading-skeleton` (anurag-mishra22) | `<EsqueletoLinhas>` no lugar do texto solto "Carregando…" (ou do nada, em `/capturas`) em `/transacoes`, `/capturas`, `/regras`, `/assinatura` | `ui/skeleton.tsx` |
+| 14 | `dropdown-menu` (chetanverma16) | Ações da linha em `/regras` (ligar/desligar, remover) consolidadas num menu "⋯" — mesmo primitivo Radix que já existia e já era usado no menu de perfil do trilho lateral, agora com um segundo uso genuíno | `app/(app)/regras/page.tsx` |
+
+Todos os 14 entraram — nenhum foi descartado. Onde um componente batia
+melhor num lugar diferente do exemplo que Davi deu entre parênteses no
+pedido original (`dialog` → ele não deu exemplo; `breadcrumb` → ele citou
+`loja/contas`, que recebeu a trilha, mas o gap mais real estava em
+`/admin/*`, que também recebeu), os dois lugares foram atendidos em vez de
+escolher só um.
+
+### Cor
+
+Nenhum token de cor novo. Todo componente usa `acao`/`positivo`/`negativo`/
+`atencao` que o Tino já tinha — o toggle de preço (`pricing-interaction`)
+seria gradiente de marca no original e virou só `acao` sólido com transição;
+o banner crítico usa `negativo`, não uma cor de alerta importada do 21st.dev.
+`acao` continua azul `#297cef`, decisão pendente do Davi não mexida.
+
+### O que NÃO foi feito, e por quê
+
+- **Nenhum componente foi genuinamente descartado** — os 14 tinham lugar.
+- **Landing page não ganhou depoimento/prova social** mesmo o fincash tendo
+  uma seção de Testemunhos: a própria vitrine do Tino já documenta por que
+  isso não entra (`(site)/page.tsx`, comentário no topo) — inventar
+  depoimento seria fabricar dado, proibido independente do pedido.
+- **`filesystem-item` não virou uma "lista de comprovantes anexados"
+  genérica**: o app não tem conceito de anexo/comprovante em lugar nenhum
+  (nem schema, nem tela) além do arquivo único de `/importar`. Construir
+  upload múltiplo de comprovante por transação seria funcionalidade nova,
+  fora do que foi pedido ("mapear para um lugar REAL", não inventar um).
+  Usado no único lugar real que já lida com arquivo.
+- **`dropdown-navigation` não trocou `<SubAbas>`**: o painel de hover é
+  aditivo (desktop com mouse de verdade, via `(hover:hover)`), não
+  substitui a sub-navegação por clique que já existia e que continua sendo
+  o único caminho em touch.
+
+### Verificação
+
+Sem navegador nesta máquina (extensão Chrome não conecta) — mesma limitação
+já registrada nas sessões anteriores. Verificado por, a cada lote de
+commits: `tsc --noEmit` limpo, `npm test` (265/265, suíte que já existia —
+nenhum teste novo destas mudanças de UI pura, sem lógica nova para testar
+com `node --test`), `npx next build` sem erro, e `npm run test:fumaca`
+(63/63 rotas de pé) contra o servidor local com sessão `demo@tino.local`.
+Testado também manualmente por `curl` com cookie de sessão: `GET`/`PATCH`
+`/api/usuario` (avatar) ida e volta, e `/`, `/painel`, `/dividas`,
+`/transacoes`, `/importar`, `/capturas`, `/regras`, `/configuracoes`,
+`/assinatura`, `/metas`, `/loja/contas` todos 200 — restaurando o
+`avatarUrl` do usuário de demonstração para `null` ao final, sem sujar o
+banco de demonstração.
+
+Commits (nesta ordem, cada um pushado depois de verde):
+`e505136`, `dd81760`, `1bf4828`, `cb9d02b`.
+
 ## Pendências que dependem do Davi
 
 - **Cancelamento de assinatura sem "Desfazer"**: ver seção acima
