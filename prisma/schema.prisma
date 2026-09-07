@@ -257,6 +257,7 @@ model Lar {
   importacoes     Importacao[]
   conexoes        ConexaoOpenFinance[]
   alertas         Alerta[]
+  vigiaConfigs    VigiaConfig[]
   conversas       Conversa[]
   meiPerfil       MeiPerfil?
   meiCompetencias MeiCompetencia[]
@@ -801,6 +802,21 @@ model Alerta {
 
   @@unique([larId, chave])
   @@index([larId, lido])
+}
+
+/// Liga/desliga por TIPO de alerta — os "vigias" do redesign de 07/09/2026.
+/// Ausência de linha = ligado (o padrão é vigiar tudo); só existe registro
+/// pra quem desligou algum. Isso poupa criar 6 linhas em branco por lar novo.
+model VigiaConfig {
+  id     String @id @default(cuid())
+  larId  String
+  lar    Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+  /// Mesmo valor de Alerta.tipo — não é enum porque um vigia novo não pode
+  /// pedir migration pra existir, só uma linha na lista do motor.
+  tipo   String
+  ativo  Boolean @default(true)
+
+  @@unique([larId, tipo])
 }
 
 model Conversa {

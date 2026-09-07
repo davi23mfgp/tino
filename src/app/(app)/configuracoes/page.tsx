@@ -10,6 +10,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Vazio } from "@/components/ui/painel"
 import { RelatarProblema } from "@/components/relatar-problema"
+import { VigiasConfig } from "@/components/vigias-config"
 
 interface Conta {
   id: string
@@ -300,6 +301,8 @@ export default function Configuracoes() {
 
         {mensagem && <p className="mt-3 text-sm text-muted-fg">{mensagem}</p>}
       </Cartao>
+
+      <VigiasConfig />
 
       {/* Regras e Assinatura saíram da navegação principal em 07/09/2026:
           são manutenção, não uso do dia a dia — ninguém abre o app de manhã

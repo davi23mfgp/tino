@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma"
 import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
+import { diasEntre, formatarData } from "@/lib/datas"
 
 export interface AlertaGerado {
   tipo: string
@@ -23,7 +24,51 @@ export interface AlertaGerado {
   dados?: Record<string, unknown>
 }
 
-export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
+/**
+ * O catálogo dos vigias — pedido do redesign de 07/09/2026: cada TIPO de
+ * alerta que o motor pode gerar, com nome curto e a frase de "o que faz",
+ * pra tela de Configurações listar e o usuário ligar/desligar por tipo.
+ *
+ * Nem todo `tipo` que `gerarAlertas` produz está aqui — os de MEI só fazem
+ * sentido pra quem é MEI, e entrar na lista geral confundiria quem não é.
+ * Os seis daqui são os que o brief pediu nominalmente.
+ */
+export const VIGIAS = [
+  {
+    tipo: "orcamento_estourado",
+    nome: "Estouro de categoria",
+    frase: "Avisa quando uma categoria do orçamento passa de 80% do limite.",
+  },
+  {
+    tipo: "fatura_acima_limite",
+    nome: "Fatura acima do limite",
+    frase: "Avisa quando a fatura de um cartão já passou do limite cadastrado.",
+  },
+  {
+    tipo: "vencimento_proximo",
+    nome: "Vencimento próximo",
+    frase: "Avisa quando uma conta fixa vence nos próximos 3 dias.",
+  },
+  {
+    tipo: "caixa_negativo",
+    nome: "Caixa negativo à frente",
+    frase: "Avisa quando a projeção mostra o saldo virando negativo.",
+  },
+  {
+    tipo: "juros_abusivo",
+    nome: "Dívida cara parada",
+    frase: "Avisa quando alguma dívida cobra juro alto (10% ao mês ou mais).",
+  },
+  {
+    tipo: "sem_categoria",
+    nome: "Categoria fora do padrão",
+    frase: "Avisa quando 5 ou mais lançamentos do mês ainda não têm categoria.",
+  },
+] as const
+
+export type TipoVigia = (typeof VIGIAS)[number]["tipo"]
+
+export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string> = new Set()): AlertaGerado[] {
   const alertas: AlertaGerado[] = []
   const mes = panorama.competencia
 
@@ -138,6 +183,46 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
     })
   }
 
+  // ── Cartão ────────────────────────────────────────────────
+  // Fatura acima do limite é diferente de orçamento estourado: orçamento é
+  // meta que o próprio usuário definiu por categoria; aqui é o teto que o
+  // BANCO deu, e passar dele tem juro rotativo de verdade te esperando.
+  for (const conta of panorama.saldoPorConta) {
+    if (conta.tipo !== "CARTAO_CREDITO" || conta.limiteCentavos === null) continue
+    const usado = Math.abs(Math.min(0, conta.saldoCentavos))
+    if (usado <= conta.limiteCentavos) continue
+    alertas.push({
+      tipo: "fatura_acima_limite",
+      severidade: "CRITICO",
+      titulo: `Fatura do ${conta.nome} passou do limite`,
+      texto: `Limite de ${formatarMoeda(conta.limiteCentavos)}, fatura em ${formatarMoeda(usado)} — ${formatarMoeda(usado - conta.limiteCentavos)} acima. O excedente costuma virar rotativo, o juro mais caro depois do cheque especial.`,
+      acaoRota: "/cartoes",
+      chave: `fatura_acima_limite:${mes}:${conta.id}`,
+    })
+  }
+
+  // ── Contas fixas ──────────────────────────────────────────
+  const JANELA_VENCIMENTO_DIAS = 3
+  const proximaDespesa = panorama.recorrenciasProximas.find((r) => r.tipo === "DESPESA")
+  if (proximaDespesa) {
+    const dias = diasEntre(new Date(), proximaDespesa.proximaData)
+    if (dias >= 0 && dias <= JANELA_VENCIMENTO_DIAS) {
+      alertas.push({
+        tipo: "vencimento_proximo",
+        severidade: dias === 0 ? "ATENCAO" : "INFO",
+        titulo:
+          dias === 0
+            ? `${proximaDespesa.descricao} vence hoje`
+            : `${proximaDespesa.descricao} vence em ${dias} dia${dias === 1 ? "" : "s"}`,
+        texto: `${formatarMoeda(proximaDespesa.valorCentavos)}, em ${formatarData(proximaDespesa.proximaData)}.`,
+        acaoRota: "/recorrencias",
+        // A chave leva a data: a próxima ocorrência do MESMO fixo, mês que
+        // vem, é um vencimento diferente e merece avisar de novo.
+        chave: `vencimento_proximo:${proximaDespesa.id}:${formatarData(proximaDespesa.proximaData)}`,
+      })
+    }
+  }
+
   // ── Higiene dos dados ─────────────────────────────────────
   if (panorama.mes.naoCategorizadas >= 5) {
     alertas.push({
@@ -197,7 +282,7 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
     }
   }
 
-  return alertas
+  return desativados.size > 0 ? alertas.filter((a) => !desativados.has(a.tipo)) : alertas
 }
 
 /**
@@ -207,8 +292,11 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
  * pode rodar a cada abertura do app sem multiplicar avisos.
  */
 export async function atualizarAlertas(larId: string) {
-  const panorama = await montarPanorama(larId)
-  const gerados = gerarAlertas(panorama)
+  const [panorama, desligados] = await Promise.all([
+    montarPanorama(larId),
+    prisma.vigiaConfig.findMany({ where: { larId, ativo: false }, select: { tipo: true } }),
+  ])
+  const gerados = gerarAlertas(panorama, new Set(desligados.map((v) => v.tipo)))
 
   if (gerados.length > 0) {
     await prisma.alerta.createMany({
