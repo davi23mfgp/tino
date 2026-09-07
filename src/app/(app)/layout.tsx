@@ -6,6 +6,7 @@ import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { Navegacao, SubAbas } from "@/components/navegacao"
 import { TinoDock } from "@/components/tino-dock"
 import { BarraTopo } from "@/components/barra-topo"
+import { Toaster } from "@/components/ui/toast"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
@@ -51,6 +52,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
       </div>
 
       <TinoDock />
+      <Toaster />
     </div>
   )
 }

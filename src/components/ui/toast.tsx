@@ -5,16 +5,42 @@ import { Check, AlertTriangle, Info, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type ToastVariant = "success" | "error" | "info"
-interface ToastItem { id: number; title: string; description?: string; variant: ToastVariant }
+interface ToastAction { label: string; onClick: () => void }
+interface ToastItem {
+  id: number
+  title: string
+  description?: string
+  variant: ToastVariant
+  action?: ToastAction
+  duration: number
+}
 
 // Emitter em nível de módulo — qualquer código pode chamar showToast().
 type Listener = (t: ToastItem) => void
 const listeners = new Set<Listener>()
 let seq = 0
 
-export function showToast(title: string, opts?: { description?: string; variant?: ToastVariant }) {
-  const t: ToastItem = { id: ++seq, title, description: opts?.description, variant: opts?.variant ?? "info" }
+/**
+ * `action` é o que transforma isto em "Desfazer em vez de confirmar" (item
+ * 4 do redesign de 07/09/2026): em vez de perguntar "tem certeza?" antes
+ * de agir, a ação já roda, e a saída fica disponível por alguns segundos.
+ * `duration` sobe de 3s pra 5s quando há ação — precisa de tempo pra ler
+ * E decidir, não só ler.
+ */
+export function showToast(
+  title: string,
+  opts?: { description?: string; variant?: ToastVariant; action?: ToastAction; duration?: number },
+) {
+  const t: ToastItem = {
+    id: ++seq,
+    title,
+    description: opts?.description,
+    variant: opts?.variant ?? "info",
+    action: opts?.action,
+    duration: opts?.duration ?? (opts?.action ? 5000 : 3000),
+  }
   listeners.forEach(l => l(t))
+  return t.id
 }
 
 const ICON = { success: Check, error: AlertTriangle, info: Info }
@@ -26,7 +52,7 @@ const ACCENT: Record<ToastVariant, string> = {
 
 /**
  * Toaster — container global. Montar uma vez no layout.
- * Aparece no topo-centro, bg papel-1 + pauta, rounded-[14px], 3s.
+ * Aparece no topo-centro, bg papel-1 + pauta, rounded-[14px].
  */
 export function Toaster() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -34,7 +60,7 @@ export function Toaster() {
   useEffect(() => {
     const onToast = (t: ToastItem) => {
       setToasts(prev => [...prev, t])
-      setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), 3000)
+      setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), t.duration)
     }
     listeners.add(onToast)
     return () => { listeners.delete(onToast) }
@@ -58,6 +84,17 @@ export function Toaster() {
               <p className="text-[14px] font-medium text-foreground leading-snug">{t.title}</p>
               {t.description && <p className="text-[13px] text-muted-fg mt-0.5">{t.description}</p>}
             </div>
+            {t.action && (
+              <button
+                onClick={() => {
+                  t.action?.onClick()
+                  setToasts(prev => prev.filter(x => x.id !== t.id))
+                }}
+                className="shrink-0 text-[13px] font-semibold text-acao hover:underline"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))}
               className="text-muted-fg hover:text-foreground flex-shrink-0 -mr-1">
               <X className="w-3.5 h-3.5" />
