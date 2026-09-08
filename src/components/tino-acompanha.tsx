@@ -1,11 +1,11 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 
 import { buscar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
+import { estadoPorAlertas, TinoMascote } from "@/components/tino-mascote"
 
 /**
  * O Tino acompanhando as contas.
@@ -134,17 +134,10 @@ export function TinoAcompanha() {
       onFocusCapture={() => setPausado(true)}
       onBlurCapture={() => setPausado(false)}
     >
-      {/* `next/image` e não `<img>`: o arquivo de origem tem 816px e 604 KB, e
-          aqui ele aparece a 96px. Servir o original mandaria meio mega para o
-          celular de quem só queria ver o saldo. */}
-      <Image
-        src="/tino-mascote.png"
-        alt=""
-        width={96}
-        height={96}
-        priority
-        className="h-24 w-24 shrink-0 object-contain"
-      />
+      {/* Desenho vetorial, nao mais o PNG de 604 KB: alem de nao mandar meio
+          mega para o celular, o SVG mostra a EXPRESSAO do estado das contas,
+          que o arquivo estatico nunca conseguiu. */}
+      <TinoMascote estado={estadoPorAlertas(alertas ?? [])} className="h-24 w-24 shrink-0" />
 
       <div className="min-w-0 flex-1">
         {principal ? (

@@ -10,7 +10,7 @@ import { LogOut, Menu, PanelLeftOpen, Settings, User, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { enviar } from "@/lib/cliente"
-import { TinoMascote } from "@/components/tino-mascote"
+import { TinoMarca, TinoMascote } from "@/components/tino-mascote"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { FabAdicionar } from "@/components/fab-adicionar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -308,7 +308,9 @@ function TrilhoLateral({
         aria-label="Início"
         className="mb-2 grid size-11 place-items-center"
       >
-        <Image src="/tino-mascote.png" alt="" width={30} height={30} className="size-[30px] object-contain" />
+        {/* Marca vetorial, nao mais o PNG do robo (08/09/2026): o mascote
+            virou porquinho e o SVG acompanha cor e tamanho sem servir 604 KB. */}
+        <TinoMarca className="size-[30px]" />
       </Link>
 
       {itensDoTrilho.map((item) => (
