@@ -85,7 +85,10 @@ export function Banner({
       <button
         onClick={dispensar}
         aria-label="Dispensar aviso"
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 opacity-80 transition hover:bg-white/15 hover:opacity-100"
+        // Alvo de 44px, o mínimo de área tocável do spec (PARTE 2). O
+        // ícone continua com 14px: quem cresceu foi a área clicável, não o
+        // desenho — em 26px o X era um alvo que só acerta com mouse.
+        className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full opacity-80 transition hover:bg-white/15 hover:opacity-100"
       >
         <X className="size-3.5" />
       </button>

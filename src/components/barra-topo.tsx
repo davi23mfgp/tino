@@ -224,7 +224,7 @@ export function BarraTopo({
           <button
             ref={botaoAlertaRef}
             onClick={() => setAberto((atual) => !atual)}
-            className="relative rounded-full border border-pauta p-2.5 transition hover:border-acao/40"
+            className="relative grid size-11 place-items-center rounded-full border border-pauta transition hover:border-acao/40"
             aria-label="Alertas"
           >
             <Bell className="h-4 w-4" />
@@ -271,7 +271,16 @@ export function BarraTopo({
                 />
                 <div
                   className="vidro-menu fixed z-50 flex w-[min(420px,92vw)] flex-col overflow-hidden rounded-[var(--raio-cartao)] p-0"
-                  style={{ top: posicaoPainel.top, right: posicaoPainel.right }}
+                  // A altura máxima é o que SOBRA da janela abaixo do sino,
+                  // menos 12px de respiro. Sem isso, em janela baixa o painel
+                  // desenhava os 360px da lista mais cabeçalho, abas e rodapé
+                  // para fora da tela, onde não há como rolar: quem rolaria
+                  // seria a página, e página não move painel `fixed`.
+                  style={{
+                    top: posicaoPainel.top,
+                    right: posicaoPainel.right,
+                    maxHeight: `calc(100vh - ${posicaoPainel.top + 12}px)`,
+                  }}
                 >
                   <div className="flex items-center justify-between px-4 pb-1 pt-3.5">
                     <h2 className="text-[15px] font-semibold">Notificações</h2>
@@ -290,7 +299,9 @@ export function BarraTopo({
                     </TabsList>
                   </Tabs>
 
-                  <div className="max-h-[360px] space-y-0.5 overflow-y-auto px-2 py-2">
+                  {/* `min-h-0 flex-1` para a lista encolher dentro do teto de
+                      altura do painel; `max-h` sozinho ignorava o teto. */}
+                  <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 py-2 [max-height:360px]">
                     {listaExibida.length === 0 && (
                       <p className="px-3 py-8 text-center text-sm text-muted-fg">
                         {aba === "nao-lidas" ? "Tudo em dia por aqui." : "Nada por aqui ainda."}
@@ -381,7 +392,7 @@ export function BarraTopo({
         {admin && (
           <Link
             href="/admin"
-            className="rounded-full border border-pauta p-2.5 transition hover:border-acao/40"
+            className="grid size-11 place-items-center rounded-full border border-pauta transition hover:border-acao/40"
             aria-label="Administração"
           >
             <ShieldCheck className="h-4 w-4" />
@@ -399,7 +410,7 @@ export function BarraTopo({
 
         <Link
           href="/configuracoes"
-          className="rounded-full border border-pauta p-2.5 transition hover:border-acao/40"
+          className="grid size-11 place-items-center rounded-full border border-pauta transition hover:border-acao/40"
           aria-label="Configurações"
         >
           <Settings className="h-4 w-4" />
@@ -407,7 +418,7 @@ export function BarraTopo({
 
         <button
           onClick={sair}
-          className="rounded-full border border-pauta p-2.5 transition hover:border-negativo/40"
+          className="grid size-11 place-items-center rounded-full border border-pauta transition hover:border-negativo/40"
           aria-label="Sair"
         >
           <LogOut className="h-4 w-4" />

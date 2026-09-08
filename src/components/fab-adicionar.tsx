@@ -104,8 +104,16 @@ export function FabAdicionar({ ancorado = false }: { ancorado?: boolean }) {
         {menuAberto && (
           <div
             className={cn(
-              "vidro-menu absolute bottom-16 w-56 space-y-0.5 rounded-[var(--raio-cartao)] p-1.5",
-              ancorado ? "left-1/2 z-50 -translate-x-1/2" : "right-0",
+              "vidro-menu w-56 space-y-0.5 rounded-[var(--raio-cartao)] p-1.5",
+              // Ancorado na barra do polegar, o menu vai por PORTAL e em
+              // `fixed`: a barra é `.ios-card`, que tem `overflow: hidden`
+              // para cortar o vidro no raio da borda, e isso cortaria
+              // qualquer filho `absolute` mais alto que ela — o mesmo motivo
+              // que já obrigou o painel de notificações e o menu "Mais" a
+              // usar portal (ver `barra-topo.tsx` e `navegacao.tsx`).
+              ancorado
+                ? "fixed bottom-[92px] left-1/2 z-50 -translate-x-1/2"
+                : "absolute bottom-16 right-0",
             )}
           >
             <button
@@ -141,11 +149,15 @@ export function FabAdicionar({ ancorado = false }: { ancorado?: boolean }) {
           </div>
         )}
 
+        {/* Capa para fechar ao tocar fora. Com o menu ancorado ela precisa
+            ficar ACIMA da barra (z-40, logo abaixo do menu em z-50): em
+            `-z-10` ela ficava atrás da própria barra, e tocar na barra não
+            fechava o menu. */}
         {menuAberto && (
           <button
             aria-label="Fechar"
             onClick={() => setMenuAberto(false)}
-            className="fixed inset-0 -z-10 cursor-default"
+            className={cn("fixed inset-0 cursor-default", ancorado ? "z-40" : "-z-10")}
           />
         )}
 
@@ -155,7 +167,10 @@ export function FabAdicionar({ ancorado = false }: { ancorado?: boolean }) {
           aria-expanded={menuAberto}
           className={cn(
             "ios-tap grid place-items-center rounded-full bg-primary text-primary-foreground shadow-alta",
-            ancorado ? "size-12" : "size-14",
+            // `relative z-50` para o próprio "+" continuar acima da capa que
+            // fecha o menu — senão o segundo toque (para fechar) caía na capa
+            // e o botão parecia travado.
+            ancorado ? "relative z-50 size-12" : "size-14",
           )}
         >
           <Plus className={cn("size-6 transition-transform duration-200", menuAberto && "rotate-45")} />

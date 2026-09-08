@@ -41,7 +41,12 @@ export function AvisoCritico() {
       tom="critico"
       acao={
         alerta.acaoRota && (
-          <Link href={alerta.acaoRota} className="shrink-0 underline underline-offset-2">
+          <Link
+            href={alerta.acaoRota}
+            // Mesmo motivo do X ao lado: 19x19px é alvo de mouse, não de
+            // dedo. O sublinhado continua no texto, a área é que cresceu.
+            className="inline-flex h-11 shrink-0 items-center px-2 underline underline-offset-2"
+          >
             Ver
           </Link>
         )

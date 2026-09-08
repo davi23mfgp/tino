@@ -92,7 +92,12 @@ export default async function Painel() {
         <Cartao
           titulo="Esperando você"
           acao={
-            <Link href="/capturas" className="text-[13px] text-acao hover:underline">
+            <Link
+              href="/capturas"
+              // Alvo de 44px: o link tinha 18px de altura, que acerta com
+              // mouse e erra com dedo (PARTE 2 do spec).
+              className="-my-2 inline-flex h-11 items-center px-1 text-[13px] text-acao hover:underline"
+            >
               ver tudo
             </Link>
           }

@@ -163,7 +163,11 @@ function useBuscaPaginas() {
  *   referência — mesmo diálogo/atalho do Provider, só um gatilho maior pra
  *   quem tem espaço horizontal sobrando (`BarraTopo`, desktop).
  */
-export function GatilhoBuscaPaginas({ variant = "icone" }: { variant?: "icone" | "barra" }) {
+export function GatilhoBuscaPaginas({
+  variant = "icone",
+}: {
+  variant?: "icone" | "barra" | "trilho"
+}) {
   const { abrir } = useBuscaPaginas()
 
   if (variant === "barra") {
@@ -171,7 +175,7 @@ export function GatilhoBuscaPaginas({ variant = "icone" }: { variant?: "icone" |
       <button
         onClick={abrir}
         aria-label="Buscar uma tela"
-        className="flex w-full max-w-[220px] items-center gap-2 rounded-[var(--raio-pilula)] border border-pauta bg-papel-2 px-3 py-2 text-left text-[13px] text-muted-fg transition hover:border-acao/40 hover:text-foreground"
+        className="flex h-11 w-full max-w-[220px] items-center gap-2 rounded-[var(--raio-pilula)] border border-pauta bg-papel-2 px-4 text-left text-[13px] text-muted-fg transition hover:border-acao/40 hover:text-foreground"
       >
         <Search className="size-[15px] shrink-0" />
         <span className="flex-1 truncate">Buscar...</span>
@@ -184,12 +188,29 @@ export function GatilhoBuscaPaginas({ variant = "icone" }: { variant?: "icone" |
     )
   }
 
+  // No trilho ele é um item de navegação como os outros: ícone E rótulo de
+  // 12px (PARTE 4.2 do spec). Antes o botão não tinha tamanho nenhum e
+  // media 18x18px — alvo de mouse, não de dedo, e o único item do trilho
+  // sem nome escrito.
+  if (variant === "trilho") {
+    return (
+      <button
+        onClick={abrir}
+        aria-label="Buscar uma tela"
+        className="toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
+      >
+        <Search className="size-[18px]" />
+        <span className="text-[12px] font-medium leading-none">Buscar</span>
+      </button>
+    )
+  }
+
   return (
     <button
       onClick={abrir}
       aria-label="Buscar uma tela"
       title="Buscar (Ctrl+K)"
-      className="toque grid place-items-center rounded-2xl text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
+      className="toque grid size-11 place-items-center rounded-2xl text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
     >
       <Search className="size-[18px]" />
     </button>

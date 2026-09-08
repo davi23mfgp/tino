@@ -66,7 +66,7 @@ export function FaixaConectar({ conectado }: { conectado: boolean }) {
 
       <Link
         href="/conectar"
-        className="ios-tap inline-flex min-h-[38px] shrink-0 items-center rounded-[var(--raio-pilula)] bg-primary px-4 text-[13px] font-semibold text-primary-foreground"
+        className="ios-tap inline-flex min-h-[44px] shrink-0 items-center rounded-[var(--raio-pilula)] bg-primary px-5 text-[14px] font-semibold text-primary-foreground"
       >
         Conectar
       </Link>
@@ -75,7 +75,7 @@ export function FaixaConectar({ conectado }: { conectado: boolean }) {
         type="button"
         onClick={adiar}
         aria-label="Fechar por enquanto"
-        className="ios-tap grid size-8 shrink-0 place-items-center rounded-full text-[color:var(--texto-3)] hover:bg-foreground/[0.06]"
+        className="ios-tap grid size-11 shrink-0 place-items-center rounded-full text-[color:var(--texto-3)] hover:bg-foreground/[0.06]"
       >
         <X className="size-4" strokeWidth={2} />
       </button>

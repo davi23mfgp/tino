@@ -56,7 +56,7 @@ function Pilula({ item, ativo }: { item: ItemNav; ativo: boolean }) {
       href={item.rota}
       aria-current={ativo ? "page" : undefined}
       className={cn(
-        "flex shrink-0 items-center gap-2 rounded-[var(--raio-pilula)] px-4 py-2 text-[14px] font-medium transition-colors",
+        "flex min-h-[44px] shrink-0 items-center gap-2 rounded-[var(--raio-pilula)] px-4 text-[14px] font-medium transition-colors",
         ativo
           ? "bg-accent text-accent-foreground"
           : "text-[color:var(--texto-2)] hover:bg-foreground/[0.05] hover:text-foreground",
@@ -190,7 +190,15 @@ function MenuMais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: string }) 
     function atualizar() {
       const rect = botaoRef.current?.getBoundingClientRect()
       if (!rect) return
-      setPosicao({ top: rect.top, left: rect.right + 8 })
+      // O menu abre ALINHADO ao botão, mas nunca passando do rodapé da
+      // janela. O botão "Mais" mora no fim do trilho, então em tela baixa
+      // (medido: janela de 611px) o painel abria em `top: 475` com 489px de
+      // altura e 353px dele ficavam fora da tela — sem rolagem possível,
+      // porque quem rolava era a página, não o painel. O teto de altura é o
+      // mesmo do `max-h` da classe, para os dois números não divergirem.
+      const alturaMaxima = Math.min(560, innerHeight * 0.8)
+      const topo = Math.max(12, Math.min(rect.top, innerHeight - alturaMaxima - 12))
+      setPosicao({ top: topo, left: rect.right + 8 })
     }
     atualizar()
     window.addEventListener("resize", atualizar)
@@ -262,7 +270,7 @@ function TrilhoLateral({ nome, avatarUrl, mei }: { nome: string; avatarUrl: stri
     // "Movimento", o nome mais longo do núcleo — em 84px ele virava
     // "Movime…", que é o mesmo problema do ícone sem nome.
     <aside className="ios-card fixed inset-y-3 left-3 z-30 hidden w-[96px] flex-col items-center gap-1 px-2 py-4 lg:flex">
-      <Link href="/painel" title="Tino" className="mb-2 grid place-items-center">
+      <Link href="/painel" title="Tino" aria-label="Início" className="mb-2 grid size-11 place-items-center">
         <Image src="/tino-mascote.png" alt="" width={30} height={30} className="size-[30px] object-contain" />
       </Link>
 
@@ -278,9 +286,9 @@ function TrilhoLateral({ nome, avatarUrl, mei }: { nome: string; avatarUrl: stri
           />
         )
       })}
-      <GatilhoBuscaPaginas />
+      <GatilhoBuscaPaginas variant="trilho" />
 
-      <div className="mt-auto flex flex-col items-center gap-2">
+      <div className="mt-auto flex w-full flex-col items-center gap-1">
         <MenuMais grupos={grupos} caminho={caminho} />
 
         <DropdownMenu>
