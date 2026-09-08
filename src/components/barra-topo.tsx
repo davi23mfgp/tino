@@ -183,10 +183,15 @@ export function BarraTopo({
   return (
     // Painel flutuando (`.ios-card`), não mais faixa full-bleed: cantos
     // arredondados nos quatro lados e fundo visível ao redor, como o resto
-    // da skin. Continua grudando no topo (`sticky`, com respiro de 12px):
-    // numa tela longa como a Visão geral, a saudação e o resumo do mês somem
-    // na rolagem, e é justamente onde a pessoa confere em que mês está.
-    <header className="ios-card sticky top-3 z-20 mb-4 flex items-start justify-between gap-4 px-4 py-5 sm:px-6">
+    // da skin.
+    //
+    // NÃO gruda mais no topo (era `sticky top-3 z-20`, tirado em 08/09/2026
+    // a pedido do Davi: "fica fixo na tela, não quero ele rolando junto,
+    // atrapalha"). A barra tem 116px de altura — grudada, ela comia a
+    // primeira dobra em toda tela longa. O mês, que era o argumento pra
+    // mantê-la fixa, continua visível ao voltar ao topo, e o trilho lateral
+    // (esse sim fixo) já dá a orientação constante de onde a pessoa está.
+    <header className="ios-card mb-4 flex items-start justify-between gap-4 px-4 py-5 sm:px-6">
       <div>
         <p className="text-[11px] uppercase tracking-[0.08em] text-[color:var(--texto-3)]">Tino</p>
         {/* 22px com tracking de -0,025em, medido no protótipo. Estava em 26px
