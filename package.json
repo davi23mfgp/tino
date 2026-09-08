@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && prisma migrate deploy && node scripts/semear-se-pedido.mjs && next build",
     "start": "next start",
     "tipos": "tsc --noEmit",
     "prisma:generate": "prisma generate",
