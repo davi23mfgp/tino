@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 import { Paginacao, usePaginacao } from "@/components/ui/paginacao"
 import { cn } from "@/lib/utils"
+import { iconeDaCategoria } from "@/lib/icone-categoria"
 
 interface Transacao {
   id: string
@@ -21,7 +22,9 @@ interface Transacao {
   valorCentavos: number
   tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
   categoriaId: string | null
-  categoria: { nome: string; cor: string } | null
+  // `grupo` vem da API desde sempre (`include: { categoria: true }`), só não
+  // era declarado aqui — é o que escolhe o ícone da linha.
+  categoria: { nome: string; cor: string; grupo?: string | null } | null
   conta: { nome: string }
 }
 
@@ -161,8 +164,25 @@ export default function Transacoes() {
           {itensDaPagina.map((transacao) => (
             <div
               key={transacao.id}
-              className="-mx-2 flex min-h-[52px] flex-wrap items-center gap-3 rounded-[var(--raio-campo)] px-2 py-2 transition-colors hover:bg-papel-2"
+              className="-mx-2 flex min-h-[52px] flex-wrap items-center gap-3 rounded-[var(--raio-campo)] px-2 py-2 transition-colors hover:bg-papel-2 sm:flex-nowrap"
             >
+              {/* Círculo de 40/44px com ícone de 18px — PARTE 4.3 do spec.
+                  O ícone sai da categoria (ver `lib/icone-categoria.ts`), e
+                  quando não há categoria ele cai no tipo: nunca fica um
+                  buraco, que estragaria justamente o ritmo que ele existe
+                  para criar. */}
+              {(() => {
+                const Icone = iconeDaCategoria(transacao.categoria, transacao.tipo)
+                return (
+                  <span
+                    aria-hidden
+                    className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground/[0.07] text-[color:var(--texto-2)] sm:size-11"
+                  >
+                    <Icone className="size-[18px]" />
+                  </span>
+                )
+              })()}
+
               <div className="min-w-0 flex-1">
                 <EditavelTexto
                   valor={transacao.descricao}
@@ -184,12 +204,18 @@ export default function Transacoes() {
                   entre contas
                 </span>
               ) : (
+                // A caixa de 190px é do ENVOLTÓRIO, não do `select`:
+                // `SelectNative` desenha um `<div class="w-full">` em volta,
+                // e era ELE que esticava — medido ao vivo, a linha ficava com
+                // 877px de select, 0px de descrição e 3 alturas de texto.
+                // Limitar só o `<select>` por dentro não resolvia nada.
+                <div className="w-[190px] shrink-0">
                 <SelectNative
                   tamanho="pilula"
                   value={transacao.categoriaId ?? ""}
                   onChange={(evento) => recategorizar(transacao.id, evento.target.value)}
                   className={cn(
-                    "w-auto text-[12px]",
+                    "w-full truncate text-[12px]",
                     transacao.categoriaId
                       ? "border-transparent bg-foreground/[0.06] text-[color:var(--texto-2)] hover:bg-foreground/[0.1]"
                       : "border-transparent bg-atencao/12 text-atencao",
@@ -202,6 +228,7 @@ export default function Transacoes() {
                     </option>
                   ))}
                 </SelectNative>
+                </div>
               )}
 
               {/* O SINAL SÓ APARECE EM DINHEIRO QUE ENTRA OU SAI DO LAR.

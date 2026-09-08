@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Building2,
   CreditCard,
   Flag,
   LineChart,
@@ -75,6 +76,10 @@ export const NUCLEO: GrupoNav[] = [
     pergunta: "Para onde foi meu dinheiro?",
     itens: [
       { rota: "/transacoes", rotulo: "Transações", Icone: Receipt },
+      // Conectar banco vem antes de Anotar e Importar por ser o caminho em
+      // que o Tino se enche sozinho — a mesma ordem de automação-primeiro
+      // que o "+" do celular já usa.
+      { rota: "/conectar", rotulo: "Conectar banco", Icone: Building2 },
       { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
       { rota: "/importar", rotulo: "Importar", Icone: Upload },
     ],

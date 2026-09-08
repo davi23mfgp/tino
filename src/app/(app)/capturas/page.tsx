@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Check, Copy, Plus, Send, Share2, Smartphone, X } from "lucide-react"
+import { Check, Copy, Plus, Receipt, Send, Share2, Smartphone, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
@@ -245,8 +245,18 @@ export default function Capturas() {
                   captura.confianca >= 70 ? "border-pauta" : "border-atencao/40 bg-atencao/5",
                 )}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  {/* Círculo de ícone, igual às outras listas (PARTE 4.3). A
+                      captura ainda não tem categoria — é justamente o que
+                      falta confirmar — então o ícone vem do tipo. */}
+                  <span
+                    aria-hidden
+                    className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground/[0.07] text-[color:var(--texto-2)]"
+                  >
+                    <Receipt className="size-[18px]" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
                     <p className="text-[11px] text-muted-fg">
                       {captura.instituicao ?? captura.origem.toLowerCase()}

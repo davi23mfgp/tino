@@ -305,19 +305,29 @@ export async function atualizarAlertas(larId: string) {
   ])
   const gerados = gerarAlertas(panorama, new Set(desligados.map((v) => v.tipo)))
 
-  if (gerados.length > 0) {
-    await prisma.alerta.createMany({
-      data: gerados.map((alerta) => ({
-        larId,
-        tipo: alerta.tipo,
-        severidade: alerta.severidade,
-        titulo: alerta.titulo,
-        texto: alerta.texto,
-        acaoRota: alerta.acaoRota,
-        chave: alerta.chave,
-        dados: (alerta.dados ?? {}) as object,
-      })),
-      skipDuplicates: true,
+  // `upsert` por (larId, chave), não `createMany({ skipDuplicates })`.
+  //
+  // O comportamento antigo congelava o TEXTO do aviso na primeira vez que
+  // ele nascia: reescrever a frase (é o que a PARTE 3 do spec manda fazer)
+  // não chegava em ninguém que já tivesse o aviso aberto, porque a linha
+  // existente era pulada. A chave continua sendo o que impede repetir o
+  // mesmo aviso todo dia — só o conteúdo passa a acompanhar.
+  //
+  // `lido` fica de fora do `update` de propósito: quem já leu o aviso não
+  // volta a ver o ponto vermelho só porque a frase mudou.
+  for (const alerta of gerados) {
+    const conteudo = {
+      tipo: alerta.tipo,
+      severidade: alerta.severidade,
+      titulo: alerta.titulo,
+      texto: alerta.texto,
+      acaoRota: alerta.acaoRota,
+      dados: (alerta.dados ?? {}) as object,
+    }
+    await prisma.alerta.upsert({
+      where: { larId_chave: { larId, chave: alerta.chave } },
+      create: { larId, chave: alerta.chave, ...conteudo },
+      update: conteudo,
     })
   }
 
