@@ -1241,3 +1241,49 @@ Chrome injeta no `<body>`.
 - Reescrita de copy nas telas de dentro (`/dividas`, `/metas`,
   `/orcamento`): a PARTE 3 lista as frases da primeira dobra, que são as
   que foram trocadas.
+
+## 08/09/2026 — merge com main (funcionário da loja entra no redesign)
+
+`main` estava 13 commits à frente (NCM real, Focus NFe, DRE da loja,
+login por papel `FUNCIONARIO_LOJA`, nota fiscal) e 88 atrás de
+`skin/acromatico-ios`. Mesclado direto em `main`, com merge de verdade
+(`--no-ff`), não sobrescrita — pedido explícito do Davi. Topo `25dbf91`.
+
+**Conflito real, não mecânico:** `navegacao.tsx` de `main` era uma
+implementação inteira separada (528 linhas, sem usar
+`lib/navegacao-grupos.ts`), com um papel `apenasLoja` que a linhagem do
+redesign nunca tinha visto — nasceu numa branch em paralelo. Resolvido
+mantendo a navegação nova (Calen) como base e adicionando `apenasLoja` a
+ela, em vez de reconstruir os dois sistemas:
+
+- Núcleo pessoal (Início/Movimento/Cartões/Perfil) trocado pelas 4 telas
+  do balcão (`GRUPO_LOJA_FUNCIONARIO`, novo em `navegacao-grupos.ts`) —
+  filtrado por `rotaPermitida()` de `lib/acesso.ts`, não por lista solta
+  duplicada, seguindo o próprio aviso que já estava no arquivo ("dois
+  lugares decidindo a mesma coisa é a receita pra um ficar desatualizado").
+- Sem "Mais" (não há nível 2 pro funcionário), sem busca global (acharia
+  tela que a URL recusaria), sem "+" de lançamento pessoal.
+- **Achado no caminho, corrigido:** `BarraTopo` chamava `/api/tino/alertas`
+  (bloqueado por `acesso.ts` pra esse papel) e linkava `/configuracoes`
+  (também bloqueado) sem checar `apenasLoja` — silencioso mas errado.
+  `AvisoCritico`/`TinoDock`/`FaixaConectar` (dado pessoal do lar) também
+  ganharam a guarda.
+- `GRUPO_LOJA` recuperou "Finanças da loja" (`/loja/financas`, fase 8 de
+  `main`), que nunca tinha entrado nessa lista por ter sido construída
+  depois que esta linhagem se separou.
+
+**Não decidido sozinho, registrado pro Davi confirmar:** `main` tinha um
+alternador "Pessoal ↔ Empresa" (botão que troca a navegação inteira pro
+dono de loja) — a navegação nova não tem equivalente; Loja vive dentro de
+"Mais" como mais um grupo. A parte de SEGURANÇA foi preservada
+(funcionário nunca vê nada pessoal), a UX do alternador em si não foi
+reconstruída. Se fizer falta, é pra decidir com ele, não inventar.
+
+`prisma generate` precisou rodar de novo depois do merge (schema.prisma
+mesclou sem conflito, mas o client gerado ainda era só da linhagem do
+redesign — `ncm`, `cnpj`, `notaFiscalVenda` etc não existiam até
+regenerar). 12 migrations no total, nenhuma pendente contra o Postgres
+local nem contra o Neon de produção.
+
+Verificado: tsc limpo, next build limpo (55 rotas), npm test 298/298
+(265 do redesign + 33 de `main`).
