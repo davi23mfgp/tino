@@ -1140,3 +1140,104 @@ navegador automatizado — não é bug do app).
 Também precisou subir o Postgres local desta máquina do zero
 (`npm run db:start`, primeira vez aqui, demorou pela inicialização) —
 ambiente, não código.
+
+## 08/09/2026 — o spec do Calen sai do papel (ligação das peças)
+
+A sessão anterior (commit `5363689`, "update") construiu as peças do
+`docs/SPEC-CALEN-PRECISO.md` e parou antes de ligá-las. Verificado por
+busca antes de escrever qualquer linha: `Heroi`, `LinhaLista`,
+`RoscaCategorias`, `FaixaConectar` e toda a camada de Open Finance
+existiam com **zero consumidores**. Esta rodada liga.
+
+### Início (`/painel`) — PARTE 4.1
+
+Ordem nova, de cima para baixo: herói (rótulo 11px / número 36px / apoio
+de no máximo 8 palavras / um botão de 44px), fila automática com círculo
+de ícone, quatro números do mês (2×2 no celular, 4×1 no desktop), rosca
+de categorias, gráfico de evolução, e um "Ver mais detalhes" no fim.
+
+Saíram da primeira tela: patrimônio líquido detalhado, "descontando o que
+você deve", parcelamentos, próximos meses comprometidos, reserva, mapa de
+calor, categorias comparadas, gráfico de parcelas e a lista numerada "o
+que o Tino faria agora". **Nada foi apagado** — `/analise` já desenhava
+todas essas peças antes desta mudança, e é para lá que o link aponta.
+
+### Navegação — PARTE 4.2
+
+- Trilho do desktop: ícone **e** rótulo de 12px sempre visível (era ícone
+  puro, com o nome só no `title`). Largura de 64px → 96px, e o
+  deslocamento da área de conteúdo (`.area-do-app`) de 108px → 140px.
+  84px foi testado antes e cortava "Movimento" em "Movime…".
+- Barra do polegar: o "+" saiu do canto flutuante para o **meio** dos
+  quatro itens, e "Mais" saiu da barra — o nível 2 continua a um toque
+  pelo hambúrguer do cabeçalho móvel, e cinco alvos deixavam cada um
+  estreito demais. Rótulos subiram de 10px para 12px.
+- `FabAdicionar` ganhou o modo `ancorado`; o menu e o formulário de
+  lançamento manual são os mesmos, nenhuma lógica mudou.
+
+### Texto — PARTE 3
+
+- "Seu caixa fica negativo antes do previsto" + duas frases →
+  "Falta dinheiro pela frente" / "No ritmo de hoje, falta dinheiro em
+  MÊS." O valor e o plano de corte continuam em `/projecao`.
+- "Você gastou mais do que recebeu neste mês" + saldo com sinal →
+  "Você gastou mais do que recebeu" / "Faltou R$ X. O maior gasto foi Y."
+- A linha de apoio do herói corta o nome da conta no travessão: contas
+  cadastradas como "Conta corrente — cheque especial" traziam o jargão de
+  volta pela porta dos fundos. O dado no banco não é tocado.
+
+**Defeito de plataforma achado no caminho:** os alertas eram gravados com
+`createMany({ skipDuplicates: true })` sobre a chave estável, o que
+congelava o TEXTO do aviso na primeira vez que ele nascia. Reescrever a
+frase não chegava em ninguém que já tivesse o aviso aberto. Virou `upsert`
+por `(larId, chave)`, com `lido` fora do `update` — quem já leu não volta
+a ver o ponto vermelho só porque a frase mudou.
+
+### Listas — PARTE 4.3
+
+Círculo de 40/44px com ícone de 18px em `/transacoes`, `/capturas` e na
+fila do Início. O ícone vem do **grupo** da categoria
+(`src/lib/icone-categoria.ts`), que é enum do banco, com o nome usado só
+para separar irmãs do mesmo grupo (farmácia × academia). Sem categoria,
+cai no tipo do lançamento — nunca sobra círculo vazio.
+
+**Defeito real, medido no navegador e não no olho:** em `/transacoes` o
+envoltório `w-full` do `SelectNative` esticava até 877px numa linha de
+1095px (o `<select>` mede pela opção mais longa da lista, "Aplicativos de
+transporte"). A descrição ficava com **0px** e a linha quebrava em três
+alturas — 146px em vez de 60px, em 6 das 10 linhas visíveis. Limitar o
+`<select>` por dentro não resolvia; a caixa de 190px teve de ir no
+envoltório. Depois: 10 linhas, 0 quebradas, 60-61px cada.
+
+### Open Finance — PARTE 5
+
+`FaixaConectar` montada no layout, com o estado do banco vindo do
+servidor (`temBancoConectado`) para a primeira pintura já sair certa.
+`/conectar` entrou no menu **Movimento**, antes de Anotar e Importar
+(automação primeiro). `README` e `.env.example` passaram a dizer onde
+colar `PLUGGY_CLIENT_ID`/`PLUGGY_CLIENT_SECRET`. Criar conta na Pluggy,
+aceitar termos e gerar chave **não foi feito e não deve ser feito pelo
+agente** — é ação de conta e de dinheiro.
+
+### Verificação
+
+`tsc` limpo, `next build` limpo (51 rotas), `npm test` 265/265, servidor
+real de pé com o Postgres local e sessão `demo@tino.local`. Telas abertas
+no navegador de verdade: `/painel`, `/conectar`, `/transacoes`. Geometria
+conferida por medição no DOM (altura de linha, largura de cada filho),
+não por impressão de screenshot — a captura desta máquina sai com escala
+de 1,42 e engana a olho. Console sem erro de aplicação: o único é
+incompatibilidade de hidratação causada por atributo que uma extensão do
+Chrome injeta no `<body>`.
+
+### Não feito nesta rodada, registrado
+
+- Comparação lado a lado com as 36 telas do Calen (PARTE 6): a pasta de
+  referência é de sessão anterior, em `%TEMP%`, e pode não existir mais
+  nesta máquina.
+- Verificação real em 390px: a ferramenta de resize desta máquina não
+  muda o viewport de verdade (mesmo defeito registrado em rodadas
+  anteriores).
+- Reescrita de copy nas telas de dentro (`/dividas`, `/metas`,
+  `/orcamento`): a PARTE 3 lista as frases da primeira dobra, que são as
+  que foram trocadas.
