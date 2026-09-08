@@ -5,19 +5,28 @@
 /* ============================================================
    Tino — identidade visual
    ------------------------------------------------------------
-   TERCEIRA reversão de direção em pouco tempo — registrada em
-   docs/REDESIGN-EM-CURSO.md para não virar "conserto" acidental:
+   QUARTA reversão de direção — registrada em docs/REDESIGN-EM-CURSO.md
+   para não virar "conserto" acidental:
 
      1. Linguagem iOS clara, azul de ação (04/09).
      2. Casca preta + vidro líquido colorido (commit a134eb0, 07/09).
-     3. ESTA — skin acromática estilo iOS, CLARA por padrão, escuro só
-        opcional via `.dark`. Decisão do Davi em 07/09/2026, tarde.
-        Chroma ZERO em todo `oklch(...)` do app: nenhum matiz, em
-        botão, ícone de navegação, cabeçalho, gráfico ou moldura.
-        Onde antes um valor "dizia" cor (saldo positivo em azul,
-        dívida em vermelho), agora diz por LUMINOSIDADE + ícone/rótulo
-        (seta ArrowUpRight/ArrowDownRight, texto em maiúscula) — nunca
-        por matiz. Ver seção "Cor" logo abaixo.
+     3. Skin acromática estilo iOS, CLARA por padrão, escuro opcional
+        via `.dark`, chroma ZERO em tudo (07/09, tarde).
+     4. ESTA — direção "Calen" (07/09, noite): Davi pediu pra ficar "o
+        mais parecido possível" com o app concorrente Calen — ESCURO
+        por padrão agora (não mais opcional via `.dark`; o claro é que
+        virou opcional, via `.light`), acento com matiz de verdade
+        (verde/teal — Davi pediu explicitamente TROCAR o roxo/violeta
+        do Calen de verdade por verde, é a única diferença deliberada
+        da referência) e números com sinal + gráficos voltam a ter cor
+        real (verde/vermelho/azul). Chroma zero CONTINUA em botão de
+        navegação neutro, badge de status não-numérico, moldura de
+        cartão — a regra não morreu, só passou a ter DUAS exceções
+        explícitas (acento de ação, dado financeiro), registradas aqui
+        pra não confundir com "resolvido, não mexer" de sessões
+        anteriores. Ver docs/REDESIGN-EM-CURSO.md pro contraste
+        calculado (mesmo método OKLab→sRGB linear→WCAG de sempre) e
+        pra tabela completa de valores.
    ============================================================ */
 
 @layer base {
@@ -27,147 +36,9 @@
     --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI",
       system-ui, sans-serif;
 
-    /* --- casca clara, acromática --- */
-    --background: oklch(0.975 0 0);
-    --foreground: oklch(0.14 0 0);
-
-    /* Vidro em três espessuras — agora branco OPACO crescente sobre um fundo
-       CLARO (antes era branco translúcido sobre preto). `papel-1` é o cartão
-       comum (`.ficha`/`.ios-card`, ~78% opaco — o "material fino" do spec:
-       `color-mix(in oklab, var(--card) 78%, transparent)` simplifica pra
-       `oklch(1 0 0 / 78%)` porque `--card` já é branco puro), `papel-2` é
-       hover/campo recuado, `papel-3` é diálogo/menu/gaveta/dock — "material
-       grosso", mais opaco = superfície mais sólida. */
-    --papel-1: oklch(1 0 0 / 78%);
-    --papel-2: oklch(1 0 0 / 88%);
-    --papel-3: oklch(1 0 0 / 94%);
-
-    /* Borda do vidro: preto a 10% (= `--border` do spec), não branco — sobre
-       fundo claro é o traço escuro que separa o cartão que faz sentido. */
-    --pauta: oklch(0 0 0 / 10%);
-    /* Realce de luz no topo do vidro (Apple: a luz "pega" a borda de cima).
-       Só decorativo, dobrado dentro de `--sombra-ios` abaixo (não é mais um
-       segundo `inset` somado no box-shadow do `.ficha` — o spec já embute o
-       highlight dentro da própria sombra). */
-    --vidro-realce: oklch(1 0 0 / 70%);
-
-    --muted-fg: oklch(0.5 0 0);
-
-    /* --- texto em três níveis --- */
-    /* Contraste recalculado do zero pro par claro (método abaixo, "Contraste
-       calculado"): texto-2 (secundário, lido inteiro) e texto-3 (rótulo de
-       11px em caixa alta) picam luminosidade suficiente pra passar 4,5:1 até
-       contra a superfície mais clara do app (`papel-3` ~branco quase puro,
-       ou o próprio `card` branco — pior caso, ver tabela). */
-    --texto-2: oklch(0.42 0 0);
-    --texto-3: oklch(0.5 0 0);
-
-    /* --- espaço e forma --- */
-    --raio-cartao: 1.125rem; /* 18px — `--radius` do spec, cartão soma +8px em `.ios-card` */
-    --raio-campo: 12px;
-    --raio-pilula: 999px;
-    --largura-conteudo: 1560px; /* `max-w-[1560px]` do shell de painéis flutuando */
-    --curva: cubic-bezier(0.32, 0.72, 0, 1);
-    --tempo: 200ms;
-
-    /* --- superfície --- */
-    /* Véu de TOQUE (hover/wash) sobre uma superfície já existente. Em fundo
-       claro o véu é PRETO a baixa opacidade (escurece de leve), não branco
-       (que sobre um fundo já quase branco não apareceria). */
-    --vidro: oklch(0 0 0 / 5%);
-    --vidro-forte: oklch(0 0 0 / 9%);
-    --desfoque: 28px; /* `blur(28px)` do `.ios-card` do spec */
-    --desfoque-forte: 40px; /* material grosso: diálogo, gaveta, dock */
-    /* Sombra curta e macia — profundidade discreta sobre fundo claro, não a
-       sombra funda que fazia sentido sobre preto. Vem direto do spec:
-       primeira camada é o highlight de 1px no topo do vidro (inset),
-       segunda é a sombra projetada de verdade. */
-    --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -24px oklch(0 0 0 / 28%);
-    --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
-
-    /* --- os tokens que informam --- */
-    /* CHROMA ZERO EM TODOS. Cor sozinha nunca é acessível (~8% dos homens
-       não distinguem vermelho de verde) — e agora nem é permitida: o que
-       diferencia positivo/negativo/atenção é a LUMINOSIDADE (tons de cinza
-       diferentes entre si) + o rótulo em maiúscula acima do valor (ENTROU,
-       SAIU) + o ícone de seta (`ArrowUpRight`/`ArrowDownRight` em
-       `ui/painel.tsx`, `Valor`). Nenhum dos três pode ser removido sozinho —
-       juntos é que carregam o significado sem depender de matiz.
-
-       Valores medidos pra passar >=4,5:1 (AA, texto normal) contra a pior
-       superfície onde cada um aparece como texto (branco puro/`card`, ou a
-       própria pastilha tingida a 10-12%) — números completos na tabela de
-       docs/REDESIGN-EM-CURSO.md. */
-    --lch-acao: 0.16 0 0;
-    --lch-positivo: 0.2 0 0;
-    --lch-negativo: 0.32 0 0;
-    --lch-atencao: 0.4 0 0;
-    --lch-alerta: 0.46 0 0;
-    --lch-destaque: 0.26 0 0;
-    --lch-dado: 0.52 0 0;
-
-    /* Variante "sólida": mesmo tom (já é escuro o bastante — a diferença
-       clara/escura que existia quando essas cores tinham matiz não faz mais
-       falta: uma vez em cinza, o mesmo valor já passa >=4,5:1 tanto como
-       TEXTO sobre fundo claro quanto como PREENCHIMENTO sob texto branco
-       (`text-primary-foreground`, que já inverte sozinho em `.dark` — ver
-       `banner.tsx`/`checkbox.tsx`/`pricing-toggle.tsx`, que trocaram
-       `text-white` fixo por esse token pra não quebrar no escuro). */
-    --lch-acao-solido: 0.16 0 0;
-    --lch-negativo-solido: 0.32 0 0;
-    --lch-positivo-solido: 0.2 0 0;
-
-    /* --- shadcn --- */
-    /* Trio "L C H" (chroma sempre 0), interpolado via `oklch(var(--x) /
-       <alpha-value>)` no tailwind.config — é o que permite `bg-primary/90`
-       continuar funcionando depois da troca de `hsl()` pra `oklch()`. */
-    --card: 1 0 0;
-    --card-foreground: 0.14 0 0;
-    --popover: 1 0 0;
-    --popover-foreground: 0.14 0 0;
-    --primary: 0.16 0 0;
-    --primary-foreground: 1 0 0;
-    --secondary: 0.94 0 0;
-    --secondary-foreground: 0.18 0 0;
-    --muted: 0.945 0 0;
-    --muted-foreground: 0.5 0 0;
-    --accent: 0.92 0 0;
-    --accent-foreground: 0.16 0 0;
-    --destructive: 0.34 0 0;
-    --destructive-foreground: 1 0 0;
-    /* Borda/campo já nascem com alfa embutido — não passam por `<alpha-value>`. */
-    --border: oklch(0 0 0 / 10%);
-    --input: oklch(0 0 0 / 12%);
-    --ring: 0.16 0 0;
-
-    --chart-1: oklch(0.18 0 0);
-    --chart-2: oklch(0.42 0 0);
-    --chart-3: oklch(0.6 0 0);
-    --chart-4: oklch(0.75 0 0);
-    --chart-5: oklch(0.87 0 0);
-
-    --sidebar: oklch(1 0 0);
-    --sidebar-accent: oklch(0.94 0 0);
-    --sidebar-border: oklch(0 0 0 / 8%);
-
-    --glass: oklch(0 0 0 / 4%);
-    --glass-strong: oklch(0 0 0 / 7%);
-    --gradient-blue: linear-gradient(135deg, oklch(0.32 0 0), oklch(0.1 0 0));
-    --gradient-steel: linear-gradient(135deg, oklch(0.45 0 0), oklch(0.2 0 0));
-    --gradient-mint: linear-gradient(135deg, oklch(0.55 0 0), oklch(0.28 0 0));
-    --gradient-sun: linear-gradient(135deg, oklch(0.62 0 0), oklch(0.36 0 0));
-    --gradient-plum: linear-gradient(135deg, oklch(0.5 0 0), oklch(0.22 0 0));
-
-    --radius: 12px;
-
-    --sombra-ficha: var(--sombra-ios);
-    --sombra-alta: var(--sombra-flutuante);
-  }
-
-  /* Escuro OPCIONAL — ligado só via classe `.dark` (não mais o padrão do
-     app). Mesmo matiz zero, luminosidade invertida, preto nunca absoluto
-     (`0.11`, não `0`, pra não voltar ao vidro-sobre-preto anterior). */
-  .dark {
+    /* --- casca ESCURA por padrão (era `.dark` antes desta rodada) ---
+       Preto nunca absoluto (`0.11`, não `0`) — herdado da skin anterior,
+       continua valendo. */
     --background: oklch(0.11 0 0);
     --foreground: oklch(0.985 0 0);
 
@@ -181,6 +52,19 @@
     --texto-2: oklch(0.72 0 0);
     --texto-3: oklch(0.68 0 0);
 
+    /* --- espaço e forma --- */
+    /* Cantos mais generosos que a skin anterior (18px→20px, + 8px em
+       `.ios-card` = 28px) — "cards com cantos bem generosos" do pedido
+       Calen. Pequeno de propósito: o resto do layout (grade, respiro)
+       já batia com a referência, não precisou mudar. */
+    --raio-cartao: 1.25rem; /* 20px — cartão soma +8px em `.ios-card` */
+    --raio-campo: 14px;
+    --raio-pilula: 999px;
+    --largura-conteudo: 1560px; /* `max-w-[1560px]` do shell de painéis flutuando */
+    --curva: cubic-bezier(0.32, 0.72, 0, 1);
+    --tempo: 200ms;
+
+    /* --- superfície --- */
     --vidro: oklch(1 0 0 / 6%);
     --vidro-forte: oklch(1 0 0 / 10%);
     --desfoque: 28px;
@@ -188,50 +72,70 @@
     --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -22px oklch(0 0 0 / 80%);
     --sombra-flutuante: 0 24px 60px -28px oklch(0 0 0 / 90%);
 
-    /* Tons semânticos invertidos: agora precisam ser CLAROS o bastante pra
-       passar >=4,5:1 contra a superfície mais clara do escuro (`card`,
-       L0.175) — ver tabela em docs/REDESIGN-EM-CURSO.md. */
-    --lch-acao: 0.985 0 0;
-    --lch-positivo: 0.9 0 0;
-    --lch-negativo: 0.78 0 0;
+    /* --- os tokens que informam ---
+       Chroma de VERDADE nestes quatro (acao/positivo/negativo/dado) —
+       decisão desta rodada (ver bloco de comentário no topo do arquivo).
+       `atencao`/`alerta`/`destaque` CONTINUAM chroma zero: são pastilha
+       de status não-numérico (categoria fora do padrão, aviso genérico),
+       fora do "números e gráficos" que Davi pediu pra colorir.
+
+       `acao` é TEAL/verde-azulado (hue 170) — deliberadamente diferente
+       do `positivo` (verde-grama, hue 145), pra não confundir "isto é
+       uma ação/link" com "isto é receita/saldo bom" quando os dois
+       aparecem perto (ex.: botão dentro de um cartão de saldo positivo).
+       Valores calculados OKLab→sRGB linear→WCAG contra `--background`
+       E `--card` (a superfície mais clara onde o texto aparece) — os
+       dois precisam passar >=4,5:1, não só o pior caso. Números e script
+       completos em docs/REDESIGN-EM-CURSO.md. */
+    --lch-acao: 0.65 0.15 170; /* #00ab81 — contraste 7,06:1 (bg) / 6,30:1 (card) */
+    --lch-positivo: 0.65 0.17 145; /* #3ba946 — 6,84:1 / 6,10:1 */
+    --lch-negativo: 0.65 0.18 25; /* #e85854 — 5,88:1 / 5,25:1 */
     --lch-atencao: 0.7 0 0;
     --lch-alerta: 0.64 0 0;
     --lch-destaque: 0.85 0 0;
-    --lch-dado: 0.6 0 0;
+    --lch-dado: 0.65 0.15 230; /* #009ed8 — 6,76:1 / 6,03:1 */
 
-    /* Estas três NÃO invertem com o tema, ao contrário de tudo mais neste
-       bloco `.dark` — de propósito. Elas só existem para hospedar texto/ícone
-       BRANCO em cima (faixa crítica do banner, indicador do toggle de preço,
-       ✓ do checkbox, pico do mapa de calor) e ficam pareadas com esse branco
-       fixo, não com um token "-foreground" que inverteria sozinho. Se
-       invertessem (como no rascunho anterior: 0.985/0.78/0.9, quase branco),
-       o texto branco em cima virava branco sobre branco no escuro — achado
-       nesta rodada de skin, não escondido. */
-    --lch-acao-solido: 0.16 0 0;
-    --lch-negativo-solido: 0.32 0 0;
-    --lch-positivo-solido: 0.2 0 0;
+    /* Variante "sólida" — fundo de botão/preenchimento com texto BRANCO
+       em cima (`--primary`, faixa crítica do banner, ✓ do checkbox,
+       indicador do toggle de preço). NÃO inverte com o tema (mesmo
+       princípio de antes: hospeda branco fixo, então precisa ficar
+       escura o bastante nos dois temas — só recalculada pro matiz novo,
+       não pro "-solido" virar claro). */
+    --lch-acao-solido: 0.43 0.15 170; /* #006743 — branco em cima: 6,91:1 */
+    --lch-negativo-solido: 0.46 0.18 25; /* #a50d1c — branco em cima: 7,84:1 */
+    --lch-positivo-solido: 0.43 0.17 145; /* #006500 — branco em cima: 7,33:1 */
 
+    /* --- shadcn ---
+       `--primary`/`--ring`/`--accent-foreground` usam o acento (antes
+       eram preto/branco puro, "botão iOS"; agora o botão principal e o
+       item ativo da navegação carregam o teal — pedido explícito:
+       "acento roxo/violeta do Calen", trocado por verde). `--accent`
+       (fundo da pastilha ativa) é o mesmo teal bem diluído sobre o
+       fundo escuro, não o preenchimento sólido. */
     --card: 0.175 0 0;
     --card-foreground: 0.985 0 0;
     --popover: 0.175 0 0;
     --popover-foreground: 0.985 0 0;
-    --primary: 0.985 0 0;
-    --primary-foreground: 0.14 0 0;
+    --primary: var(--lch-acao-solido);
+    --primary-foreground: 1 0 0;
     --secondary: 0.25 0 0;
     --secondary-foreground: 0.985 0 0;
     --muted: 0.24 0 0;
     --muted-foreground: 0.68 0 0;
-    --accent: 0.28 0 0;
-    --accent-foreground: 0.985 0 0;
-    --destructive: 0.75 0 0;
-    --destructive-foreground: 0.14 0 0;
+    --accent: 0.24 0.025 170;
+    --accent-foreground: var(--lch-acao);
+    --destructive: var(--lch-negativo-solido);
+    --destructive-foreground: 1 0 0;
     --border: oklch(1 0 0 / 12%);
     --input: oklch(1 0 0 / 15%);
-    --ring: 0.985 0 0;
+    --ring: var(--lch-acao);
 
-    --chart-1: oklch(0.98 0 0);
-    --chart-2: oklch(0.78 0 0);
-    --chart-3: oklch(0.6 0 0);
+    /* Gráficos: só a série principal e duas semânticas ganham matiz
+       (2-3 tons no máximo, "nunca uma cor por item" — pedido do Davi).
+       Séries a mais (4/5) continuam em cinza, de propósito. */
+    --chart-1: oklch(var(--lch-acao));
+    --chart-2: oklch(var(--lch-positivo));
+    --chart-3: oklch(var(--lch-negativo));
     --chart-4: oklch(0.44 0 0);
     --chart-5: oklch(0.3 0 0);
 
@@ -246,6 +150,87 @@
     --gradient-mint: linear-gradient(135deg, oklch(0.92 0 0), oklch(0.7 0 0));
     --gradient-sun: linear-gradient(135deg, oklch(0.8 0 0), oklch(0.5 0 0));
     --gradient-plum: linear-gradient(135deg, oklch(0.85 0 0), oklch(0.55 0 0));
+
+    --radius: 12px;
+
+    --sombra-ficha: var(--sombra-ios);
+    --sombra-alta: var(--sombra-flutuante);
+  }
+
+  /* Claro OPCIONAL agora (era o padrão antes desta rodada) — ligado via
+     `.light`. `ThemeProvider` (`theme-provider.tsx`) aplica essa classe
+     quando `theme === "light"`; sem classe nenhuma (padrão) cai no
+     `:root` escuro acima. Mesmos quatro tokens com matiz (acao/positivo/
+     negativo/dado), recalculados pro par claro — luminosidade mais baixa
+     pra continuar passando >=4,5:1 contra fundo/card claros. */
+  .light {
+    --background: oklch(0.975 0 0);
+    --foreground: oklch(0.14 0 0);
+
+    --papel-1: oklch(1 0 0 / 78%);
+    --papel-2: oklch(1 0 0 / 88%);
+    --papel-3: oklch(1 0 0 / 94%);
+    --pauta: oklch(0 0 0 / 10%);
+    --vidro-realce: oklch(1 0 0 / 70%);
+    --muted-fg: oklch(0.5 0 0);
+
+    --texto-2: oklch(0.42 0 0);
+    --texto-3: oklch(0.5 0 0);
+
+    --vidro: oklch(0 0 0 / 5%);
+    --vidro-forte: oklch(0 0 0 / 9%);
+    --desfoque: 28px;
+    --desfoque-forte: 40px;
+    --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -24px oklch(0 0 0 / 28%);
+    --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
+
+    --lch-acao: 0.45 0.15 170; /* #006d48 — 5,92:1 (bg) / 6,37:1 (card) */
+    --lch-positivo: 0.45 0.17 145; /* #006b00 — 6,29:1 / 6,76:1 */
+    --lch-negativo: 0.55 0.18 25; /* #c53637 — 4,95:1 / 5,32:1 */
+    --lch-atencao: 0.4 0 0;
+    --lch-alerta: 0.46 0 0;
+    --lch-destaque: 0.26 0 0;
+    --lch-dado: 0.51 0.15 230; /* #0072aa — 4,89:1 / 5,26:1 */
+
+    --lch-acao-solido: 0.43 0.15 170;
+    --lch-negativo-solido: 0.46 0.18 25;
+    --lch-positivo-solido: 0.43 0.17 145;
+
+    --card: 1 0 0;
+    --card-foreground: 0.14 0 0;
+    --popover: 1 0 0;
+    --popover-foreground: 0.14 0 0;
+    --primary: var(--lch-acao-solido);
+    --primary-foreground: 1 0 0;
+    --secondary: 0.94 0 0;
+    --secondary-foreground: 0.18 0 0;
+    --muted: 0.945 0 0;
+    --muted-foreground: 0.5 0 0;
+    --accent: 0.94 0.025 170;
+    --accent-foreground: var(--lch-acao);
+    --destructive: var(--lch-negativo-solido);
+    --destructive-foreground: 1 0 0;
+    --border: oklch(0 0 0 / 10%);
+    --input: oklch(0 0 0 / 12%);
+    --ring: var(--lch-acao);
+
+    --chart-1: oklch(var(--lch-acao));
+    --chart-2: oklch(var(--lch-positivo));
+    --chart-3: oklch(var(--lch-negativo));
+    --chart-4: oklch(0.75 0 0);
+    --chart-5: oklch(0.87 0 0);
+
+    --sidebar: oklch(1 0 0);
+    --sidebar-accent: oklch(0.94 0 0);
+    --sidebar-border: oklch(0 0 0 / 8%);
+
+    --glass: oklch(0 0 0 / 4%);
+    --glass-strong: oklch(0 0 0 / 7%);
+    --gradient-blue: linear-gradient(135deg, oklch(0.32 0 0), oklch(0.1 0 0));
+    --gradient-steel: linear-gradient(135deg, oklch(0.45 0 0), oklch(0.2 0 0));
+    --gradient-mint: linear-gradient(135deg, oklch(0.55 0 0), oklch(0.28 0 0));
+    --gradient-sun: linear-gradient(135deg, oklch(0.62 0 0), oklch(0.36 0 0));
+    --gradient-plum: linear-gradient(135deg, oklch(0.5 0 0), oklch(0.22 0 0));
 
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);
@@ -264,17 +249,19 @@
     font-variant-numeric: tabular-nums;
     /* Fundo "flutuando": dois halos radiais bem discretos, fixos no viewport
        (não rolam com o conteúdo) — é o que faz sidebar/topbar/cartão
-       parecerem painéis soltos sobre uma superfície, não um shell contínuo. */
-    background-image:
-      radial-gradient(900px 520px at 12% -8%, oklch(0 0 0 / 7%), transparent 62%),
-      radial-gradient(760px 480px at 92% 0%, oklch(0 0 0 / 5%), transparent 62%);
-    background-attachment: fixed;
-  }
-
-  .dark body {
+       parecerem painéis soltos sobre uma superfície, não um shell contínuo.
+       Halo BRANCO por padrão agora (fundo escuro é o padrão); `.light`
+       troca pro halo preto de antes. */
     background-image:
       radial-gradient(900px 520px at 12% -8%, oklch(1 0 0 / 8%), transparent 62%),
       radial-gradient(760px 480px at 92% 0%, oklch(1 0 0 / 5%), transparent 62%);
+    background-attachment: fixed;
+  }
+
+  .light body {
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(0 0 0 / 7%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(0 0 0 / 5%), transparent 62%);
   }
 
   .numero,

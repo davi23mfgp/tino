@@ -56,12 +56,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className="min-h-screen bg-background antialiased"
       >
-        {/* Claro é a casca do app por padrão; escuro é opcional via `.dark`
-            (decisão do Davi, 07/09/2026, tarde — substitui o preto forçado
-            da sessão anterior do mesmo dia, ver docs/REDESIGN-EM-CURSO.md).
-            Sem `forcedTheme`: o alternador em `theme-toggle.tsx` volta a
-            fazer sentido, e quem não mexeu em nada cai no claro. */}
-        <ThemeProvider attribute="class" defaultTheme="light">
+        {/* Escuro é a casca do app por padrão agora (direção "Calen",
+            07/09/2026, noite — substitui o claro-por-padrão da sessão
+            anterior do mesmo dia, ver docs/REDESIGN-EM-CURSO.md). Claro
+            virou o opcional, ligado via `.light`. Sem `forcedTheme`: o
+            alternador em `theme-toggle.tsx` continua funcionando. */}
+        <ThemeProvider attribute="class" defaultTheme="dark">
           {children}
         </ThemeProvider>
       </body>

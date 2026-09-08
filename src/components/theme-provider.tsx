@@ -13,9 +13,14 @@ import * as React from "react";
  * couldn't load"). Não é bug de versão da lib (testado com a mais recente,
  * 0.4.6, mesmo erro) — é a forma como qualquer versão do next-themes injeta
  * o script que colide com este Next. Solução: tema aplicado só depois de
- * montar, sem script de SSR. Custo aceito: quem já escolheu escuro pode ver
- * um piscar rápido de claro no primeiro carregamento — melhor que a página
+ * montar, sem script de SSR. Custo aceito: quem já escolheu um tema pode ver
+ * um piscar rápido do padrão no primeiro carregamento — melhor que a página
  * não abrir.
+ *
+ * Padrão virou ESCURO em 07/09/2026, noite (direção "Calen" — ver
+ * `globals.css`): `:root` já carrega os tokens escuros, então "sem classe
+ * nenhuma" já É o escuro. O claro virou o opcional, ligado via `.light`
+ * (não mais `.dark` pra ligar o escuro).
  */
 
 type Tema = "light" | "dark";
@@ -28,10 +33,10 @@ const CHAVE_ARMAZENAMENTO = "theme";
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
+  defaultTheme = "dark",
 }: {
   children: React.ReactNode;
-  /** Mantido por compatibilidade com o `<ThemeProvider attribute="class" ...>` do layout — sempre usa classe `.dark`, não há outro modo. */
+  /** Mantido por compatibilidade com o `<ThemeProvider attribute="class" ...>` do layout — sempre usa classe, não há outro modo. */
   attribute?: "class";
   defaultTheme?: Tema;
 }) {
@@ -48,7 +53,7 @@ export function ThemeProvider({
   }, []);
 
   React.useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.classList.toggle("light", theme === "light");
   }, [theme]);
 
   const setTheme = React.useCallback((tema: Tema) => {

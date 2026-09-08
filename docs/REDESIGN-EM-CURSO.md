@@ -3,6 +3,102 @@
 Ponto de retomada. Quem abrir isto numa sessão nova consegue continuar sem
 perguntar nada ao Davi.
 
+## Redesign "direção Calen" — Etapa 2: visual (07/09/2026, noite)
+
+Continuação da Etapa 1 (navegação, seção acima). Davi corrigiu o pedido de
+cor duas vezes ao longo desta etapa — registrado na ordem real, pra quem
+ler depois não achar que foi indecisão da IA:
+
+1. Primeiro pedido: acento roxo/violeta, igual ao Calen de verdade.
+2. Correção: **"acento é VERDE, não roxo/violeta"** — a única diferença
+   deliberada da referência (o Calen real é roxo; o Tino usa verde no
+   lugar). Pedido explícito: diferenciar do verde de "receita" pra não
+   ficar ambíguo.
+
+**Decisão de cor final** (contraste calculado — método OKLab→sRGB
+linear→WCAG de sempre, script descartável, valores na tabela abaixo):
+
+- **`acao`** (ação/link/botão primário/nav ativo): TEAL, hue 170 — visual
+  e semanticamente diferente do `positivo` (verde-grama, hue 145), pra
+  "isto é uma ação" nunca ser confundido com "isto é receita/saldo bom"
+  quando os dois aparecem perto (ex.: botão "Resolver agora" dentro de um
+  cartão de saldo positivo).
+- **`positivo`/`negativo`/`dado`** (número com sinal E gráfico — a MESMA
+  regra vale pros dois, porque `graficos.tsx` já lia esses tokens em
+  runtime antes desta rodada): verde/vermelho/azul de verdade.
+- **`atencao`/`alerta`/`destaque`** CONTINUAM chroma zero — são pastilha
+  de status NÃO-numérico (categoria fora do padrão, aviso genérico), o
+  que ficou de fora do pedido "números e gráficos" mesmo depois da
+  escalada pro Calen completo.
+- Botão primário (`--primary`, shadcn), anel de foco (`--ring`), item
+  ativo da navegação (`--accent-foreground`) e botão destrutivo
+  (`--destructive`) passaram a usar esses tokens — antes eram
+  preto/branco puro ("botão estilo iOS"), decisão de sessão anterior que
+  a direção Calen substitui de propósito (o próprio pedido dizia "isso
+  substitui a ressalva 'não é reskin de cor'").
+
+| Token | Hex (escuro) | Hex (claro) | Contraste (bg/card, escuro) |
+|---|---|---|---|
+| `acao` (teal) | `#00ab81` | `#006d48` | 7,06:1 / 6,30:1 |
+| `acao-solido` (fundo de botão) | `#006743` | igual (não inverte) | branco em cima: 6,91:1 |
+| `positivo` (verde) | `#3ba946` | `#006b00` | 6,84:1 / 6,10:1 |
+| `negativo` (vermelho) | `#e85854` | `#c53637` | 5,88:1 / 5,25:1 |
+| `dado` (azul) | `#009ed8` | `#0072aa` | 6,76:1 / 6,03:1 |
+
+**Tema ESCURO por padrão** — segunda parte do pedido Calen. Antes desta
+rodada `:root` era claro e `.dark` era o opcional; virou o oposto:
+`:root` agora carrega os valores que eram do `.dark` (mesma geometria,
+opacidade e sombra já calibradas — não foram remedidas do zero, só
+herdadas), e o CLARO virou `.light`, a classe que o alternador liga.
+`theme-provider.tsx`/`layout.tsx` (`defaultTheme`) e o `body`/halo de
+fundo trocaram junto — conferido que não sobrou nenhum seletor `.dark`
+solto no CSS (`grep` limpo).
+
+**Cantos mais generosos**: `--raio-cartao` 18px→20px (24px→28px somado em
+`.ios-card`) — "cards com cantos bem generosos" do pedido. Não trocou a
+fonte (`--font-ios`, pilha do sistema): a base já tinha revertido de uma
+fonte custom pra fonte de sistema numa sessão anterior por peso/
+performance, e reintroduzir uma fonte "arredondada" estilo Calen seria
+desfazer essa decisão de novo sem pedido explícito — registrado como gap
+consciente, não escondido.
+
+**Gráficos**: `graficos.tsx` já lia `--lch-acao/positivo/negativo/dado/
+atencao/alerta/destaque` em runtime (`getComputedStyle`) desde antes —
+não precisou mudar UMA linha desse arquivo pros gráficos saírem
+coloridos, só os tokens em `globals.css`. `--chart-1/2/3` (shadcn,
+tecnicamente não lidos por `graficos.tsx`, mas mantidos consistentes)
+também ganharam acao/positivo/negativo; `--chart-4/5` continuam cinza —
+"2-3 tons no máximo, nunca uma cor por item".
+
+**Verificado ao vivo no Chrome** (tema padrão limpo, sem `localStorage`):
+saldo/sobra positivos em verde com seta, saída/negativo em vermelho,
+botões primários ("Ver plano de pagamento", "Resolver agora") em teal,
+nav ativa em teal, "RISCOS"/"PONTOS FORTES" em vermelho/verde em
+`/analise`, barra de categoria em teal, mapa de calor com pico em
+vermelho — tudo consistente nos dois temas. `tsc`/`next build`/
+`npm test` (265)/`test:fumaca` (63) limpos depois da troca.
+
+### MEI está no mesmo redesign, não à parte
+
+Loja/Estoque/Fiado/Contas a pagar/MEI e DAS usam os MESMOS componentes
+compartilhados (`Cartao`, `Metrica`, `Valor`, botões, badges) que o resto
+do app — a troca de tokens em `globals.css` cascateia pra lá sozinha, sem
+precisar tocar em nenhuma tela de loja/MEI. Estrutural: `GRUPO_LOJA` já
+está dentro do menu "Mais" (nível 2) desde a Etapa 1, igual documentado
+lá. Não foi tratado como trilha separada nem deixado pra depois.
+
+### Falta desta etapa (registrado, não escondido)
+
+- **Mobile ~390px, testado de verdade**: em andamento nesta mesma sessão,
+  ver próxima seção.
+- **FAB "+" de adicionar transação**: em andamento nesta mesma sessão.
+- **Fonte "grande e arredondada" literal do Calen**: não entrou (ver
+  acima — decisão consciente, não gap escondido).
+- **Push/e-mail de verdade, revisão de copy tela a tela, "um conceito por
+  card" em `/regras`/`/configuracoes`**: continuam de fora, mesmo motivo
+  da Etapa 1 (escopo de infraestrutura/redesenho de tela por tela, não
+  CSS).
+
 ## Redesign "direção Calen" (07/09/2026, noite) — EM ANDAMENTO
 
 Davi confirmou querer o Tino "o mais parecido possível" com o app
