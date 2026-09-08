@@ -33,20 +33,21 @@ export function Cartao({
   return (
     <section
       className={cn(
-        "ficha p-6",
+        // Recheio 16px no celular / 20px no desktop — número do spec
+        // (PARTE 2), medido nas telas do Calen. Antes era 24px em toda largura,
+        // o que somado ao respiro entre cards comia a primeira dobra do mobile.
+        "ficha p-4 sm:p-5",
         !estatico &&
           "transition-[transform,border-color] duration-200 ease-[var(--curva)] hover:-translate-y-px hover:border-foreground/[0.14]",
         className,
       )}
     >
       {(titulo || acao) && (
-        <header className="mb-5 flex items-center justify-between gap-3">
-          {/* 13px, peso normal, cor secundária — medido no protótipo. O título
-              do cartão nomeia, não compete: quem manda no cartão é o número
-              embaixo dele. Antes era 15px seminegrito, e disputava. */}
-          {titulo && (
-            <h2 className="text-[13px] tracking-[-0.013em] text-[color:var(--texto-2)]">{titulo}</h2>
-          )}
+        <header className="mb-4 flex items-center justify-between gap-3">
+          {/* 15px seminegrito — número do spec (PARTE 2, "título de card").
+              No Calen o título do card É lido: ele diz de que assunto é o
+              bloco, e o número embaixo responde. Em 13px cinza ele sumia. */}
+          {titulo && <h2 className="text-[15px] font-semibold tracking-tight">{titulo}</h2>}
           {acao && <div className="shrink-0 text-[13px] text-acao">{acao}</div>}
         </header>
       )}
@@ -74,7 +75,17 @@ export const TOM: Record<Tom, string> = {
  */
 export function Rotulo({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <p className={cn("text-[11px] uppercase tracking-[0.06em] text-[color:var(--texto-3)]", className)}>{children}</p>
+    <p
+      className={cn(
+        // 11px / peso 600 / tracking 0.14em — número do spec (PARTE 2). O
+        // espaçamento largo é o que faz a caixa alta virar rótulo em vez de
+        // grito: em 0.06em ele ainda lia como texto normal em maiúscula.
+        "text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]",
+        className,
+      )}
+    >
+      {children}
+    </p>
   )
 }
 
@@ -100,16 +111,19 @@ export function Valor({
   // e tracking de -0,03em. Em corpo grande o espaçamento normal abre demais e
   // o número perde o bloco — por isso ele fecha, na mesma proporção nos três.
   //
-  //   heroi   44px  o saldo, um por tela
+  //   heroi   36px (30px no celular)  o número da tela, um por tela
   //   cartao  28px  o número que dá nome a um cartão
-  //   medio   24px  a métrica dentro de um cartão, em grade de quatro
+  //   medio   30px  a métrica dentro de um cartão, em grade de quatro
   //
-  // A diferença entre 28 e 24 parece pequena escrita, mas é o que separa "este
-  // cartão é sobre este número" de "estes quatro números são irmãos".
+  // Os degraus vêm da PARTE 2 do spec, medidos nas telas do Calen. O `heroi`
+  // ENCOLHEU de 44 para 36: 44 era grande sem ser hierarquia, porque o texto
+  // ao redor era 22px e os dois brigavam. O `medio` CRESCEU de 24 para 30
+  // pelo motivo inverso — a grade de quatro números do mês é o segundo lugar
+  // onde o olho para, e em 24px ela lia como legenda.
   const escala = {
-    heroi: "text-[44px] leading-[1.05] tracking-[-0.03em]",
+    heroi: "text-[30px] leading-none tracking-tight sm:text-[36px]",
     cartao: "text-[28px] leading-[1.1] tracking-[-0.03em]",
-    medio: "text-[24px] leading-[1.1] tracking-[-0.03em]",
+    medio: "text-[30px] leading-none tracking-tight",
     linha: "text-[15px] leading-snug tracking-[-0.01em]",
   }[tamanho]
 
@@ -150,11 +164,12 @@ export function Metrica({
   variacao?: { texto: string; sentido: "sobe" | "desce" | "igual" }
   icone?: React.ComponentType<{ className?: string }>
 }) {
-  // Raio 28px, recheio 16px e uma borda de 1px — medido no protótipo. O tile
-  // usa o MESMO raio do cartão que o contém, não um menor: é o que faz os
-  // quatro números lerem como um bloco só dentro do cartão.
+  // Recheio 16px, raio de cartão, SEM borda — "sem borda extra, só card"
+  // (spec, PARTE 4.1 item 4). A borda existia pra separar os quatro tiles
+  // entre si, mas o `gap-4` já faz isso; somada à borda do cartão que os
+  // contém ela virava listra dupla, que é o que dava aspecto técnico.
   return (
-    <div className="ios-tap relative overflow-hidden rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
+    <div className="ios-tap relative overflow-hidden rounded-[var(--raio-cartao)] bg-papel-2 p-4">
       {Icone && (
         // Círculo sólido — bg-card (não papel translúcido, pra destacar do
         // fundo do tile) + borda de 1px, ícone em foreground. Chroma zero:
@@ -184,6 +199,108 @@ export function Metrica({
       )}
       {detalhe && <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">{detalhe}</p>}
     </div>
+  )
+}
+
+/**
+ * O herói da tela: rótulo pequeno em caixa alta, número grande, uma linha de
+ * apoio curta. Nada mais.
+ *
+ * É a anatomia da PARTE 4.1 do spec, copiada da referência: no Calen a
+ * primeira coisa da tela é `SALDO TOTAL` / `R$ 9.663,80` — três palavras e um
+ * número. O Tino fazia o contrário (duas frases de 30 palavras em 22px, e o
+ * número escondido numa caixinha de 20px embaixo), e era esse inverso que o
+ * Davi leu como "muita parte técnica".
+ *
+ * `apoio` tem teto de 8 palavras por contrato do spec, não por estilo: o que
+ * não cabe em 8 palavras não é apoio, é outra tela.
+ */
+export function Heroi({
+  rotulo,
+  valor,
+  tom = "neutro",
+  apoio,
+  acao,
+}: {
+  rotulo: string
+  valor: string
+  tom?: Tom
+  apoio?: string
+  acao?: React.ReactNode
+}) {
+  return (
+    <section className="px-1 pb-1 pt-2">
+      <Rotulo>{rotulo}</Rotulo>
+      <Valor tom={tom} className="mt-2">
+        {valor}
+      </Valor>
+      {apoio && <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">{apoio}</p>}
+      {acao && <div className="mt-4">{acao}</div>}
+    </section>
+  )
+}
+
+/**
+ * Uma linha de lista, do jeito do Calen: círculo de ícone à esquerda, nome em
+ * cima, subtexto embaixo, valor à direita.
+ *
+ * Existe porque as listas do Tino eram texto puro alinhado em duas colunas
+ * ("Centauro … R$ 89,90"), e uma pilha dessas não tem ritmo — o olho precisa
+ * LER cada linha pra saber onde uma acaba e a outra começa. O círculo dá o
+ * ponto de ancoragem que deixa escanear sem ler, e é por isso que toda linha
+ * de toda tela do Calen tem um.
+ *
+ * 40px no celular / 44px no desktop com ícone de 18px, números do spec
+ * (PARTE 2). O 44 não é arredondamento: é o mínimo de área tocável, e a linha
+ * inteira costuma ser o alvo do toque.
+ */
+export function LinhaLista({
+  icone: Icone,
+  nome,
+  detalhe,
+  valor,
+  tomValor = "neutro",
+  href,
+}: {
+  icone?: React.ComponentType<{ className?: string }>
+  nome: string
+  detalhe?: string
+  valor?: string
+  tomValor?: Tom
+  href?: string
+}) {
+  const Raiz = href ? "a" : "div"
+
+  return (
+    <Raiz
+      {...(href ? { href } : {})}
+      className={cn(
+        "flex min-h-[44px] items-center gap-3 rounded-[var(--raio-campo)] py-1.5",
+        href && "ios-tap -mx-2 px-2 hover:bg-foreground/[0.04]",
+      )}
+    >
+      {Icone ? (
+        <span
+          aria-hidden
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground/[0.07] text-[color:var(--texto-2)] sm:size-11"
+        >
+          <Icone className="size-[18px]" />
+        </span>
+      ) : (
+        <span aria-hidden className="size-10 shrink-0 rounded-full bg-foreground/[0.07] sm:size-11" />
+      )}
+
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[14px] font-medium">{nome}</span>
+        {detalhe && (
+          <span className="block truncate text-[12px] text-[color:var(--texto-2)]">{detalhe}</span>
+        )}
+      </span>
+
+      {valor && (
+        <span className={cn("numero shrink-0 text-[14px] font-semibold", TOM[tomValor])}>{valor}</span>
+      )}
+    </Raiz>
   )
 }
 

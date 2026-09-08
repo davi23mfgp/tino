@@ -228,8 +228,11 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     alertas.push({
       tipo: "sem_categoria",
       severidade: "INFO",
-      titulo: `${panorama.mes.naoCategorizadas} lançamentos sem categoria`,
-      texto: "Categorizar deixa a projeção e o orçamento corretos. Cada correção vira uma regra: da próxima vez o Tino acerta sozinho.",
+      // Sem "lançamento" e sem "categorizar" no rótulo — palavras de contador
+      // (SPEC-CALEN-PRECISO, PARTE 3). "Gasto" é a mesma coisa dita como a
+      // pessoa fala, e "o Tino aprende" diz o benefício em vez do mecanismo.
+      titulo: `${panorama.mes.naoCategorizadas} gastos sem categoria`,
+      texto: "Ajuste uma vez e o Tino aprende. Da próxima ele acerta sozinho.",
       acaoRota: "/transacoes?filtro=sem-categoria",
       chave: `sem_categoria:${mes}`,
     })

@@ -20,10 +20,12 @@ let tokenCache: { valor: string; expiraEm: number } | null = null
 async function apiKey(): Promise<string> {
   if (tokenCache && tokenCache.expiraEm > Date.now() + 5 * 60_000) return tokenCache.valor
 
-  const clientId = process.env.OPEN_FINANCE_CLIENT_ID
-  const clientSecret = process.env.OPEN_FINANCE_CLIENT_SECRET
+  // Dois nomes aceitos: PLUGGY_* (o que está no `.env.example` e no README) e
+  // OPEN_FINANCE_* (que já existia). Assim um `.env` antigo continua valendo.
+  const clientId = process.env.PLUGGY_CLIENT_ID || process.env.OPEN_FINANCE_CLIENT_ID
+  const clientSecret = process.env.PLUGGY_CLIENT_SECRET || process.env.OPEN_FINANCE_CLIENT_SECRET
   if (!clientId || !clientSecret) {
-    throw new Error("Open Finance: OPEN_FINANCE_CLIENT_ID e OPEN_FINANCE_CLIENT_SECRET não configurados.")
+    throw new Error("Open Finance: PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET não configurados.")
   }
 
   const resposta = await fetch(`${BASE}/auth`, {

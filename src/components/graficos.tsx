@@ -276,6 +276,90 @@ export function GraficoCategorias({
   )
 }
 
+/**
+ * A rosca do Início, no formato do Calen.
+ *
+ * Diferença para `GraficoCategorias` acima (que continua servindo a Análise):
+ * ali a legenda é uma TABELA — nome, percentual e valor em colunas — porque
+ * quem abre a Análise foi comparar proporção. Aqui não: o total vai para o
+ * buraco do meio, a legenda vira linha simples, e o percentual sai da tela.
+ * Percentual na primeira dobra é justamente o que o spec manda tirar
+ * (PARTE 3): quem abre o Início quer saber ONDE o dinheiro foi, não em que
+ * fração — a fração já está desenhada no tamanho da fatia.
+ *
+ * Substitui a `BarrasCategorias` aqui (PARTE 1.6). A barra fina não estava
+ * errada, mas ela conta "esta categoria contra a maior", e o que o Início
+ * precisa contar é "o mês inteiro, repartido" — que é o que uma rosca faz e
+ * uma pilha de barras não faz.
+ */
+export function RoscaCategorias({
+  dados,
+  altura = 200,
+}: {
+  dados: { nome: string; totalCentavos: number }[]
+  altura?: number
+}) {
+  const cores = useCores()
+  const paleta = ORDEM_DA_PALETA.map((nome) => cores[nome])
+
+  const principais = dados.slice(0, 5)
+  const resto = dados.slice(5).reduce((soma, linha) => soma + linha.totalCentavos, 0)
+  const serie = [...principais, ...(resto > 0 ? [{ nome: "Outras", totalCentavos: resto }] : [])].map(
+    (linha) => ({ name: linha.nome, value: linha.totalCentavos }),
+  )
+  const total = serie.reduce((soma, linha) => soma + linha.value, 0)
+
+  return (
+    <div className="flex flex-col items-center gap-5 sm:flex-row sm:gap-6">
+      <div className="relative w-full max-w-[200px] shrink-0" style={{ height: altura }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={serie}
+              dataKey="value"
+              nameKey="name"
+              innerRadius="70%"
+              outerRadius="98%"
+              paddingAngle={2}
+              stroke="none"
+            >
+              {serie.map((_, indice) => (
+                <Cell key={indice} fill={paleta[indice % paleta.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<Dica />} />
+          </PieChart>
+        </ResponsiveContainer>
+
+        {/* Total no buraco do meio. `pointer-events-none` porque a rosca por
+            baixo continua sendo o alvo do toque de cada fatia. */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="numero text-[20px] font-semibold leading-none tracking-tight">
+            {formatarMoeda(total)}
+          </span>
+          <span className="mt-1.5 text-[11px] text-[color:var(--texto-2)]">gasto até hoje</span>
+        </div>
+      </div>
+
+      <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
+        {serie.map((linha, indice) => (
+          <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[13px] sm:w-full">
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-full"
+              style={{ background: paleta[indice % paleta.length] }}
+            />
+            <span className="min-w-0 truncate sm:flex-1">{linha.name}</span>
+            <span className="numero shrink-0 text-[13px] font-medium sm:text-right">
+              {formatarMoeda(linha.value)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // ============================================================
 // FLUXO DE CAIXA PROJETADO
 // ============================================================

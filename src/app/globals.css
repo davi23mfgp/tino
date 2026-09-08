@@ -45,6 +45,12 @@
     --papel-1: oklch(1 0 0 / 8%);
     --papel-2: oklch(1 0 0 / 12%);
     --papel-3: oklch(1 0 0 / 16%);
+    /* Superfície OPACA de cartão e de barra fixa. Existe por um defeito visto
+       ao vivo (SPEC-CALEN-PRECISO, PARTE 1.3): `--papel-1` é translúcido, e o
+       conteúdo da página passava POR TRÁS do cabeçalho fixo, continuando
+       legível através dele ao rolar. O Calen não usa vidro em lugar nenhum —
+       superfície é sólida, e é isso que faz não parecer quebrado. */
+    --papel-solido: oklch(0.175 0 0);
     --pauta: oklch(1 0 0 / 12%);
     --vidro-realce: oklch(1 0 0 / 6%);
     --muted-fg: oklch(0.68 0 0);
@@ -170,6 +176,7 @@
     --papel-1: oklch(1 0 0 / 78%);
     --papel-2: oklch(1 0 0 / 88%);
     --papel-3: oklch(1 0 0 / 94%);
+    --papel-solido: oklch(1 0 0);
     --pauta: oklch(0 0 0 / 10%);
     --vidro-realce: oklch(1 0 0 / 70%);
     --muted-fg: oklch(0.5 0 0);
@@ -290,22 +297,23 @@
 
 @layer components {
   /* A ficha (`.ficha`/`.ios-card`, mesma classe — nomes convivem pra não
-     quebrar os dois vocabulários já espalhados pelo app): vidro branco
-     opaco crescente sobre o fundo claro, com blur de verdade por trás e o
-     highlight de 1px já embutido em `--sombra-ios` (não é mais um segundo
-     `inset` somado à parte).
+     quebrar os dois vocabulários já espalhados pelo app).
 
-     SÓ `backdrop-filter`, sem `-webkit-backdrop-filter` na linha seguinte —
-     instrução explícita do Davi: o dedupe do build (dois valores da MESMA
-     propriedade em sequência) quebra o efeito no Chrome. */
+     OPACA desde 08/09/2026 (SPEC-CALEN-PRECISO, PARTE 1.3). Antes era vidro
+     translúcido com `backdrop-filter`; o cabeçalho fixo usa esta mesma classe,
+     e o efeito deixava o texto da página vazar por trás dele ao rolar — vi
+     "R$ 16.586,00" legível ATRAVÉS da barra. Sozinho isso já fazia a tela
+     parecer quebrada. O Calen não tem vidro em canto nenhum.
+
+     Raio 20px (`--raio-cartao` puro, sem os +8px de antes): é o número do
+     spec, medido nas 36 telas de referência. */
   .ficha,
   .ios-card {
     position: relative;
-    background: var(--papel-1);
+    background: var(--papel-solido);
     border: 1px solid var(--pauta);
-    border-radius: calc(var(--raio-cartao) + 8px);
+    border-radius: var(--raio-cartao);
     box-shadow: var(--sombra-ios);
-    backdrop-filter: blur(var(--desfoque)) saturate(1.8);
     overflow: hidden;
   }
 
