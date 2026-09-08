@@ -59,6 +59,7 @@ export function BarraTopo({
   admin,
   avatarUrl,
   competencia,
+  apenasLoja,
 }: {
   nome: string
   admin?: boolean
@@ -67,6 +68,11 @@ export function BarraTopo({
       usaria o relógio do navegador, e na virada do mês a barra diria um mês e
       o painel outro. */
   competencia?: string
+  /** Papel FUNCIONARIO_LOJA — corta busca global, sino de alertas e
+      Configurações, que `lib/acesso.ts` bloqueia por API/URL pra esse
+      papel. Sem isso o sino chamava `/api/tino/alertas` (403 silencioso,
+      capturado, mas inútil) e "Configurações" levava a um redirect. */
+  apenasLoja?: boolean
 }) {
   const router = useRouter()
   const [alertas, setAlertas] = useState<Alerta[]>([])
@@ -109,6 +115,7 @@ export function BarraTopo({
   }, [aberto])
 
   useEffect(() => {
+    if (apenasLoja) return
     // Falha ao carregar alerta não pode quebrar a barra inteira: o resto da tela
     // continua útil mesmo sem eles.
     buscar<Alerta[]>("/api/tino/alertas")
@@ -216,10 +223,13 @@ export function BarraTopo({
             visíveis, como a referência. Escondido abaixo de `lg` pra não
             duplicar o ícone que a barra do celular já mostra ao lado do
             hambúrguer. */}
-        <div className="hidden lg:block">
-          <GatilhoBuscaPaginas variant="barra" />
-        </div>
+        {!apenasLoja && (
+          <div className="hidden lg:block">
+            <GatilhoBuscaPaginas variant="barra" />
+          </div>
+        )}
 
+        {!apenasLoja && (
         <div className="relative">
           <button
             ref={botaoAlertaRef}
@@ -388,8 +398,9 @@ export function BarraTopo({
               document.body,
             )}
         </div>
+        )}
 
-        {admin && (
+        {admin && !apenasLoja && (
           <Link
             href="/admin"
             className="grid size-11 place-items-center rounded-full border border-pauta transition hover:border-acao/40"
@@ -408,13 +419,17 @@ export function BarraTopo({
             este Next recusa em dev e derrubava a página. */}
         <ThemeToggle />
 
-        <Link
-          href="/configuracoes"
-          className="grid size-11 place-items-center rounded-full border border-pauta transition hover:border-acao/40"
-          aria-label="Configurações"
-        >
-          <Settings className="h-4 w-4" />
-        </Link>
+        {/* Configurações é tela pessoal, fora do que `lib/acesso.ts` libera
+            pro funcionário — sem essa guarda o botão levaria a um redirect. */}
+        {!apenasLoja && (
+          <Link
+            href="/configuracoes"
+            className="grid size-11 place-items-center rounded-full border border-pauta transition hover:border-acao/40"
+            aria-label="Configurações"
+          >
+            <Settings className="h-4 w-4" />
+          </Link>
+        )}
 
         <button
           onClick={sair}

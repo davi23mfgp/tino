@@ -54,7 +54,13 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // duplicado que existia antes dele.
     <BuscaPaginasProvider mei={Boolean(lar.meiPerfil) && !apenasLoja}>
       <div className="area-do-app min-h-screen">
-        <AvisoCritico />
+        {/* `AvisoCritico`, `TinoDock` (chat do Tino) e `FaixaConectar`
+            (convite de Open Finance) buscam dado PESSOAL do lar — alerta
+            financeiro, panorama, conexão bancária. `lib/acesso.ts` bloqueia
+            essas rotas por API para o funcionário (só libera `/loja`,
+            `/api/loja`, `/login`, `/api/auth/logout`); sem esta guarda os
+            três ficariam pedindo endpoint que a própria API recusa. */}
+        {!apenasLoja && <AvisoCritico />}
         <div className="mx-auto w-full max-w-6xl px-4 pb-28 md:pb-10">
           {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
               por isso moram no mesmo container de largura da página) — ver
@@ -77,15 +83,16 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             admin={usuario?.admin ?? false}
             avatarUrl={usuario?.avatarUrl ?? null}
             competencia={rotuloCompetencia(competenciaAtual())}
+            apenasLoja={apenasLoja}
           />
-          <SubAbas mei={Boolean(lar.meiPerfil)} />
-          <FaixaConectar conectado={bancoConectado} />
+          <SubAbas mei={Boolean(lar.meiPerfil)} apenasLoja={apenasLoja} />
+          {!apenasLoja && <FaixaConectar conectado={bancoConectado} />}
           <main className="animate-page-enter">{children}</main>
         </div>
 
         {/* O "+" agora mora no meio da barra do polegar (`navegacao.tsx`),
             não mais flutuando sobre o canto — PARTE 4.2 do spec. */}
-        <TinoDock />
+        {!apenasLoja && <TinoDock />}
         <Toaster />
       </div>
     </BuscaPaginasProvider>
