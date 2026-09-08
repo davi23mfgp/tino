@@ -71,13 +71,28 @@ não é fundo em finanças e cansa quem só quer checar rápido.
    direito) abre direto um menu de 4-5 ações (Transferência/Receita/
    Despesa/Despesa cartão/Calen IA) sem navegar pra outra tela primeiro.
 
+## ATUALIZAÇÃO (mesma noite, mais tarde): Davi quer parecido de verdade
+
+Davi confirmou: **"quero que seja o mais parecido possível com o Calan,
+tudo bem fácil de navegar e intuitivo"** — isso substitui a ressalva
+"não é reskin de cor" abaixo. Não é só estrutura/copy: é visual também,
+inclusive tema escuro por padrão e o acento roxo/violeta do Calen (mesma
+disciplina de sempre — contraste calculado de verdade, não hex copiado
+no olho; ver método OKLab já usado nesta branch pro azul/preto/acromático
+de hoje). Os números coloridos (verde/vermelho/azul) já decididos hoje
+continuam. Mantenha a identidade só onde o Calen não define nada
+(nome, logo, mascote) — o resto (cor de fundo, cor de ação, tipografia
+grande e arredondada, cards com cantos bem generosos, escala de
+tamanho de fonte) mira o Calen de propósito.
+
 ## Tradução pro Tino — o que pedir ao agente de execução
 
-**Não é reskin de cor** (isso já foi feito hoje, três vezes). É
-reestruturação de **hierarquia de informação e navegação**, com ajuste de
-copy. Puxe estrutura e padrão de interação do Calen; NÃO copie negócio
-(Calen e Tino são concorrentes diretos, então a maioria dos conceitos já
-mapeia 1:1 — mas onde não mapear, não invente).
+Reestruturação de **hierarquia de informação e navegação** (prioridade 1,
+é o que resolve "difícil de navegar") + **visual o mais próximo possível
+do Calen** dentro do que já existe de arquitetura (shadcn/Tailwind) +
+ajuste de copy. Puxe estrutura, interação E visual do Calen; NÃO copie
+negócio (Calen e Tino são concorrentes diretos, então a maioria dos
+conceitos já mapeia 1:1 — mas onde não mapear, não invente).
 
 1. **Navegação em duas camadas.**
    - Nível 1 (sempre visível, poucos itens): equivalente a Início/
@@ -126,9 +141,6 @@ mapeia 1:1 — mas onde não mapear, não invente).
 
 ## O que NÃO fazer
 
-- Não trocar o roxo do Calen pelo tema do Tino — o Tino já tem identidade
-  de cor decidida hoje (números/gráficos coloridos, resto neutro). Isso
-  aqui é sobre estrutura e copy, não sobre repetir a paleta do concorrente.
 - Não inventar canal de notificação push/e-mail do zero sem checar o que
   já existe — é trabalho de infraestrutura real, não CSS.
 - Não remover funcionalidade avançada — ela muda de LUGAR (fica atrás de
