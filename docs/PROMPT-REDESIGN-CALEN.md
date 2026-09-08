@@ -136,6 +136,13 @@ O que fazer nesta rodada, dentro do redesign de navegação:
    feito) mas nunca é a primeira ação sugerida onde já existir alternativa
    automática (import/captura/recorrência).
 
+**Cobrir o MEI também** (mensagem seguinte do Davi): a área MEI (`/mei` e
+o que for específico de perfil MEI — loja, estoque, fiado, etc., ver
+`lib/navegacao-grupos.ts` pra achar tudo que é exclusivo desse perfil)
+entra no mesmo redesign — mesma navegação em duas camadas, mesmo visual
+verde/escuro, mesmo princípio de automação-primeiro. Não é uma trilha
+separada esquecida pra depois.
+
 **A partir daqui é autônomo até o fim** (Davi foi dormir, confirmado
 duas vezes): não parar pra perguntar nada que não seja genuinamente
 decisão dele. Terminar a missão inteira antes de considerar concluído.
