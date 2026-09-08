@@ -1,0 +1,534 @@
+/* ============================================================
+   A vitrine — estilo próprio, escopado em `.vitrine`.
+
+   Escopado de propósito: o app inteiro roda na skin acromática
+   (`globals.css`), e nada aqui pode vazar para lá. Toda regra abaixo
+   nasce dentro de `.vitrine`, sem exceção.
+
+   A direção veio da referência que o Davi mandou (lp.pierre.finance):
+   fundo quase preto, título grande de peso baixo, narrativa longa em
+   rolagem. O que NÃO veio de lá, e é onde esta página tem opinião
+   própria:
+
+   1. COR SEMÂNTICA. O Pierre usa rosa, amarelo e azul pastel como
+      enfeite rotativo. Aqui existem duas cores e as duas significam:
+      verde é dinheiro que entra, vermelho é dinheiro que sai. Elas só
+      tocam número e marca de dado — nunca botão, nunca moldura.
+   2. BOTÃO BRANCO. O CTA é giz sobre tinta, sem cor. O contrário do
+      costume (CTA colorido, dado cinza) — porque neste produto quem
+      grita é o número, não o botão.
+   3. TIPO LARGO. `Archivo` no eixo `wdth` 112 com tracking apertado, no
+      lugar do Geist estreito e neutro da referência.
+   ============================================================ */
+
+.vitrine {
+  --tinta: oklch(0.13 0.004 250);
+  --tinta-2: oklch(0.175 0.005 250);
+  --giz: oklch(0.96 0.006 90);
+  --areia: oklch(0.72 0.012 80);
+  --risco: oklch(1 0 0 / 12%);
+  --entra: oklch(0.72 0.15 165);
+  --sai: oklch(0.68 0.17 25);
+
+  background: var(--tinta);
+  color: var(--giz);
+  font-family: var(--fonte-corpo), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.vitrine ::selection {
+  background: var(--entra);
+  color: var(--tinta);
+}
+
+.vitrine :focus-visible {
+  outline: 2px solid var(--entra);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* --- tipo ------------------------------------------------- */
+
+.vitrine .display {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-weight: 600;
+  letter-spacing: -0.032em;
+  line-height: 1.03;
+  text-wrap: balance;
+}
+
+.vitrine .h-hero {
+  font-size: clamp(2.5rem, 7.2vw, 5.25rem);
+}
+
+.vitrine .h-secao {
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+}
+
+.vitrine .sobrancelha {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--areia);
+}
+
+.vitrine .apoio {
+  color: var(--areia);
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  max-width: 46ch;
+}
+
+.vitrine .numero {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* --- esqueleto -------------------------------------------- */
+
+.vitrine .faixa {
+  padding-block: clamp(4.5rem, 11vw, 8.5rem);
+}
+
+.vitrine .cerca {
+  margin-inline: auto;
+  width: min(100% - 2.5rem, 68rem);
+}
+
+.vitrine .linha-fina {
+  border-top: 1px solid var(--risco);
+}
+
+/* --- ações ------------------------------------------------ */
+
+.vitrine .botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 52px;
+  padding-inline: 1.6rem;
+  border-radius: 999px;
+  background: var(--giz);
+  color: var(--tinta);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  transition: transform 0.16s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.16s ease;
+}
+
+.vitrine .botao:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.vitrine .botao--fantasma {
+  background: transparent;
+  color: var(--areia);
+  border: 1px solid var(--risco);
+}
+
+.vitrine .botao--fantasma:hover {
+  background: oklch(1 0 0 / 5%);
+  color: var(--giz);
+}
+
+/* --- a fita do tempo (assinatura) ------------------------- */
+
+.vitrine .fita {
+  margin: 0;
+  border: 1px solid var(--risco);
+  border-radius: 20px;
+  background: linear-gradient(180deg, oklch(1 0 0 / 4%), transparent 60%), var(--tinta-2);
+  padding: clamp(1.1rem, 3vw, 1.9rem);
+}
+
+.vitrine .fita-cabeca {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.vitrine .fita-rotulo {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--areia);
+}
+
+.vitrine .fita-conta {
+  font-size: 0.6875rem;
+  color: var(--areia);
+  opacity: 0.75;
+}
+
+.vitrine .fita-grade {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: clamp(0.35rem, 1.4vw, 0.9rem);
+  height: clamp(150px, 26vw, 230px);
+}
+
+.vitrine .fita-zero {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--risco);
+}
+
+.vitrine .fita-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.vitrine .fita-trilho {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* A barra cresce a partir da linha do zero: para cima quando entra, para
+   baixo quando sai. É a mesma leitura de um extrato virado de lado. */
+.vitrine .fita-barra {
+  display: block;
+  border-radius: 5px;
+  transition: height 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.vitrine .fita-barra--entra {
+  align-self: stretch;
+  margin-top: auto;
+  background: linear-gradient(180deg, var(--entra), oklch(0.72 0.15 165 / 35%));
+}
+
+.vitrine .fita-barra--sai {
+  align-self: stretch;
+  margin-bottom: auto;
+  background: linear-gradient(0deg, var(--sai), oklch(0.68 0.17 25 / 35%));
+}
+
+.vitrine .fita-coluna[data-virada] .fita-trilho::after {
+  content: "";
+  position: absolute;
+  inset: -6px -4px;
+  border: 1px dashed oklch(0.68 0.17 25 / 55%);
+  border-radius: 10px;
+}
+
+.vitrine .fita-mes {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--areia);
+}
+
+.vitrine .fita-coluna[data-virada] .fita-mes {
+  color: var(--sai);
+  font-weight: 600;
+}
+
+.vitrine .fita-legenda {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--risco);
+  font-size: 0.875rem;
+  color: var(--areia);
+}
+
+.vitrine .fita-marca {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sai);
+  transform: translateY(-1px);
+}
+
+.vitrine .fita-legenda strong {
+  color: var(--giz);
+  font-weight: 600;
+}
+
+.vitrine .fita-valor {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-variant-numeric: tabular-nums;
+  color: var(--sai);
+  font-weight: 600;
+}
+
+/* --- perguntas -------------------------------------------- */
+
+.vitrine .perguntas {
+  display: grid;
+  gap: 1px;
+  background: var(--risco);
+  border-block: 1px solid var(--risco);
+}
+
+@media (min-width: 800px) {
+  .vitrine .perguntas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.vitrine .pergunta {
+  background: var(--tinta);
+  padding: clamp(1.6rem, 3.5vw, 2.6rem);
+}
+
+.vitrine .pergunta-titulo {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.vitrine .pergunta-resposta {
+  margin-top: 0.7rem;
+  font-size: 0.9375rem;
+  color: var(--areia);
+}
+
+/* A resposta em forma de dado: é o que o app devolveria de verdade. */
+.vitrine .pergunta-dado {
+  margin-top: 1.3rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.vitrine .pergunta-dado small {
+  font-family: var(--fonte-corpo), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--areia);
+  letter-spacing: 0;
+}
+
+.vitrine .dado-entra {
+  color: var(--entra);
+}
+.vitrine .dado-sai {
+  color: var(--sai);
+}
+
+/* --- a virada para o papel (seção da loja) ---------------- */
+
+/* O risco desta página: no meio do preto, uma seção em papel claro. Ela
+   marca a troca de quem está sendo falado — sai a pessoa em casa olhando o
+   mês, entra o dono atrás do balcão, sob luz do dia. É a única inversão da
+   página, e é por isso que ela funciona. */
+.vitrine .papel {
+  background: oklch(0.95 0.008 85);
+  color: oklch(0.2 0.01 60);
+}
+
+.vitrine .papel .apoio,
+.vitrine .papel .sobrancelha,
+.vitrine .papel .balcao-texto {
+  color: oklch(0.42 0.012 60);
+}
+
+.vitrine .papel .botao {
+  background: oklch(0.2 0.01 60);
+  color: oklch(0.96 0.006 90);
+}
+
+.vitrine .balcao {
+  margin-top: 2.8rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 720px) {
+  .vitrine .balcao {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.vitrine .balcao-item {
+  border-top: 2px solid oklch(0.2 0.01 60);
+  padding-top: 1rem;
+}
+
+.vitrine .balcao-titulo {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+}
+
+.vitrine .balcao-texto {
+  margin-top: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+/* A régua do dinheiro que ainda não caiu: bruto hoje, líquido em D+30. */
+.vitrine .regua {
+  margin-top: 3rem;
+  border: 1px solid oklch(0.2 0.01 60 / 18%);
+  border-radius: 18px;
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  background: oklch(0.98 0.006 85);
+}
+
+.vitrine .regua-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.vitrine .regua-trilho {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: oklch(0.2 0.01 60 / 12%);
+  overflow: hidden;
+}
+
+.vitrine .regua-preenche {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: 999px;
+  background: oklch(0.2 0.01 60);
+}
+
+/* --- planos ----------------------------------------------- */
+
+.vitrine .planos {
+  margin-top: 3rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 860px) {
+  .vitrine .planos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.vitrine .plano {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--risco);
+  border-radius: 20px;
+  background: var(--tinta-2);
+  padding: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.vitrine .plano-preco {
+  margin-top: 1.4rem;
+  font-size: 2.75rem;
+  line-height: 1;
+}
+
+.vitrine .plano-lista {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.6rem;
+  font-size: 0.9375rem;
+}
+
+.vitrine .plano-lista li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+}
+
+.vitrine .plano-fora {
+  color: var(--areia);
+}
+
+/* --- perguntas frequentes --------------------------------- */
+
+.vitrine .faq {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--risco);
+}
+
+.vitrine .faq details {
+  border-bottom: 1px solid var(--risco);
+}
+
+.vitrine .faq summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1.35rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: 1.0625rem;
+}
+
+.vitrine .faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.vitrine .faq summary::after {
+  content: "+";
+  color: var(--areia);
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.vitrine .faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.vitrine .faq p {
+  padding-bottom: 1.4rem;
+  color: var(--areia);
+  font-size: 0.9375rem;
+  max-width: 62ch;
+}
+
+/* --- rodapé ----------------------------------------------- */
+
+.vitrine .rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-block: 2.5rem;
+  border-top: 1px solid var(--risco);
+  font-size: 0.8125rem;
+  color: var(--areia);
+}
+
+.vitrine .rodape a:hover {
+  color: var(--giz);
+}

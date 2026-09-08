@@ -6,7 +6,7 @@ import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { descontoAnualBps } from "@/lib/planos"
 import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
 import { TinoMascote } from "@/components/tino-mascote"
-import { SiteNavbar } from "@/components/site-navbar"
+import { FitaDoTempo } from "./fita-do-tempo"
 
 export const metadata: Metadata = {
   title: "Tino, o contador que olha suas contas todo dia",
@@ -19,32 +19,65 @@ export const metadata: Metadata = {
  *
  * O produto não é uma planilha bonita: é alguém olhando os números e dizendo o
  * que fazer. Por isso a primeira coisa da página não é um número grande com
- * gradiente — é o Tino apontando um problema de verdade, com valor e mês, do
- * jeito que ele aparece dentro do app.
+ * gradiente — é a FITA DO TEMPO, a saída de verdade da tela `/projecao`, com o
+ * mês em que o caixa vira marcado. Um número grande não tem data; uma fita de
+ * meses tem, e a data é o que o produto vende.
  *
  * Os números do exemplo são de uma conta de demonstração e a página diz isso.
  * Inventar um caso de sucesso seria a mesma mentira que o app inteiro existe
- * para não contar.
+ * para não contar — por isso também não há depoimento nem logo de imprensa.
  */
 
+/**
+ * As perguntas que a planilha não responde — cada uma com a RESPOSTA no
+ * formato em que o app devolveria. Uma pergunta sem resposta concreta é
+ * marketing; com o número do lado, é demonstração.
+ */
 const PERGUNTAS = [
   {
-    pergunta: "Quanto sobra de verdade este mês?",
+    pergunta: "Quanto sobra de verdade?",
     resposta:
-      "Somando o que entra, o que já foi comprometido em parcela e o que a fatura vai cobrar. Não é o saldo da conta.",
+      "Depois da fatura que ainda vai fechar e da parcela que já está comprada. Não é o saldo que o banco mostra.",
+    dado: "R$ 1.284,00",
+    unidade: "sobra real deste mês",
+    tom: "entra" as const,
   },
   {
     pergunta: "Qual dívida eu pago primeiro?",
     resposta:
-      "A ordem de ataque sai pronta, com a comparação entre pagar a mais cara e pagar a menor primeiro — e quanto cada caminho custa em juros.",
-  },
-  {
-    pergunta: "Quando eu saio do vermelho?",
-    resposta: "A projeção mostra o mês em que o caixa vira, e quanto precisa cortar para isso não acontecer.",
+      "A ordem sai pronta, com a conta de quanto cada caminho custa em juros até o fim — a mais cara ou a menor primeiro.",
+    dado: "R$ 2.847,00",
+    unidade: "de juros economizados na ordem certa",
+    tom: "entra" as const,
   },
   {
     pergunta: "Cortar R$ 200 por mês muda alguma coisa?",
-    resposta: "Duas linhas no gráfico: a de hoje e a com o corte. E o que esses R$ 200 viram em vinte anos.",
+    resposta: "Duas linhas no mesmo gráfico: o ritmo de hoje e o ritmo com o corte. E o que sobra em vinte anos.",
+    dado: "R$ 96.400,00",
+    unidade: "em 20 anos, a 0,8% ao mês",
+    tom: "entra" as const,
+  },
+]
+
+const FREQUENTES = [
+  {
+    pergunta: "Preciso conectar meu banco?",
+    resposta:
+      "Não. Dá para importar o extrato em arquivo (OFX, CSV ou PDF da fatura) ou escrever “uber 18” que o Tino entende. Conectar pelo Open Finance é o caminho que enche o app sozinho, mas é escolha sua.",
+  },
+  {
+    pergunta: "O Tino investe por mim?",
+    resposta:
+      "Não, e não recomenda ativo, corretora nem aplicação específica — isso é atividade regulada. Ele mostra o que o seu dinheiro faz em cada cenário e deixa a decisão com você.",
+  },
+  {
+    pergunta: "Serve para quem tem CNPJ?",
+    resposta:
+      "Serve para MEI. Venda no balcão, prateleira com custo e margem, fiado e o faturamento caindo sozinho na competência — com o limite anual e o DAS acompanhando. Empresa fora do MEI ainda não.",
+  },
+  {
+    pergunta: "Posso cancelar quando quiser?",
+    resposta: "Pode, pela própria tela de assinatura. O que você já lançou continua seu, e a exportação não é bloqueada.",
   },
 ]
 
@@ -64,179 +97,214 @@ export default async function Vitrine() {
 
   return (
     <>
-      <SiteNavbar />
+      {/* Nav fina, sem fundo e sem grudar: numa página que se lê rolando, a
+          barra fixa rouba altura em toda dobra. O CTA volta no fim. */}
+      <header className="cerca flex items-center justify-between gap-4 py-6">
+        <Link href="/" className="flex items-center gap-2.5">
+          <TinoMascote estado="tranquilo" animado={false} className="size-8" />
+          <span className="display text-[17px]">Tino</span>
+        </Link>
+
+        <nav className="flex items-center gap-2">
+          <Link href="/login" className="botao botao--fantasma">
+            Entrar
+          </Link>
+          <Link href="/cadastro" className="botao">
+            Testar {DIAS_DE_TESTE} dias
+          </Link>
+        </nav>
+      </header>
+
       <main>
-      {/* ── O que o produto faz, mostrado em vez de prometido ── */}
-      <section className="mx-auto max-w-5xl px-5 pb-16 pt-16 sm:pt-24">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-muted-fg">Tino</p>
+        {/* ── Herói: a tese, e a fita logo abaixo dela ── */}
+        <section className="cerca faixa">
+          <p className="sobrancelha">Contador pessoal · pessoa física e MEI</p>
 
-        <h1 className="font-display mt-3 max-w-2xl text-[34px] font-bold leading-[1.08] tracking-tight sm:text-[52px]">
-          Um contador que olha suas contas todo dia e diz o que fazer.
-        </h1>
+          <h1 className="display h-hero mt-6 max-w-[15ch]">Seu dinheiro tem uma data de virada.</h1>
 
-        <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-muted-fg">
-          A planilha guarda o passado. O Tino olha para frente: aponta o mês em que o caixa vira, qual dívida atacar
-          primeiro e o que o corte de hoje faz com o seu dinheiro daqui a vinte anos.
-        </p>
-
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Link
-            href="/cadastro"
-            className="flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-[14px] font-medium text-primary-foreground"
-          >
-            Testar {DIAS_DE_TESTE} dias de graça <ArrowRight className="size-4" />
-          </Link>
-          <Link href="/login" className="px-2 text-[14px] text-muted-fg hover:text-foreground">
-            já tenho conta
-          </Link>
-        </div>
-
-        <p className="mt-3 text-[12px] text-muted-fg">Sem cartão para começar.</p>
-
-        {/* O aviso do app, do jeito que ele aparece dentro do produto. */}
-        <div className="ficha mt-12 flex items-start gap-4 p-5 sm:p-6">
-          <TinoMascote estado="critico" className="size-14 shrink-0 sm:size-16" />
-          <div className="min-w-0">
-            <p className="font-display text-[15px] font-semibold sm:text-[17px]">Precisa de decisão agora.</p>
-            <p className="mt-1 text-[14px] font-medium">Seu caixa fica negativo antes do previsto</p>
-            <p className="mt-1 text-[13px] leading-relaxed text-muted-fg">
-              Mantendo o ritmo atual, o saldo fica negativo em janeiro de 2027{" "}
-              <span className="numero">(−R$ 3.192,32)</span>. Dá para evitar cortando{" "}
-              <span className="numero">R$ 3.192,32</span> ao longo dos próximos meses.
-            </p>
-            <p className="mt-3 text-[11px] uppercase tracking-widest text-muted-fg">
-              exemplo de uma conta de demonstração
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── As perguntas que ele responde ── */}
-      <section id="perguntas" className="border-y border-pauta bg-papel-2/60">
-        <div className="mx-auto max-w-5xl px-5 py-16">
-          <h2 className="font-display text-[24px] font-bold tracking-tight sm:text-[30px]">
-            Quatro perguntas que a planilha não responde
-          </h2>
-
-          <div className="mt-8 grid gap-x-10 gap-y-7 sm:grid-cols-2">
-            {PERGUNTAS.map((item) => (
-              <div key={item.pergunta}>
-                <p className="text-[15px] font-medium">{item.pergunta}</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-muted-fg">{item.resposta}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── A loja ── */}
-      <section id="loja" className="mx-auto max-w-5xl px-5 py-16">
-        <p className="text-[11px] uppercase tracking-[0.24em] text-muted-fg">Para quem tem loja</p>
-        <h2 className="font-display mt-2 max-w-2xl text-[24px] font-bold tracking-tight sm:text-[30px]">
-          A maquininha mostra o bruto. O extrato mostra o líquido três semanas depois.
-        </h2>
-
-        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-fg">
-          No meio disso, o dono planeja com um dinheiro que não existe. O Tino registra a venda no balcão já com a taxa
-          e o prazo da sua maquininha, e diz quanto cai na conta e em que dia.
-        </p>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {[
-            { titulo: "Balcão", texto: "Venda em poucos toques, com dinheiro, Pix, cartão ou fiado. Caixa que fecha." },
-            { titulo: "Prateleira", texto: "Saldo, custo médio e margem por produto. Sem custo, o app diz que falta." },
-            { titulo: "Fiado", texto: "Quem deve, há quanto tempo, e o texto de cobrança pronto para você mandar." },
-          ].map((bloco) => (
-            <div key={bloco.titulo} className="ficha p-5">
-              <p className="font-display text-[15px] font-semibold">{bloco.titulo}</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-muted-fg">{bloco.texto}</p>
-            </div>
-          ))}
-        </div>
-
-        <p className="mt-6 text-[13px] leading-relaxed text-muted-fg">
-          E o faturamento entra sozinho na competência do MEI — o limite anual e o DAS param de depender de você
-          lembrar de redigitar tudo no fim do mês.
-        </p>
-      </section>
-
-      {/* ── Preço ── */}
-      <section id="planos" className="border-t border-pauta bg-papel-2/60">
-        <div className="mx-auto max-w-5xl px-5 py-16">
-          <h2 className="font-display text-[24px] font-bold tracking-tight sm:text-[30px]">Quanto custa</h2>
-          <p className="mt-2 text-[14px] text-muted-fg">
-            {DIAS_DE_TESTE} dias para testar, sem cartão. Cancela quando quiser.
+          <p className="apoio mt-6">
+            A planilha guarda o passado. O Tino olha para frente: diz o mês em que o caixa vira, qual dívida atacar
+            primeiro e o que o corte de hoje faz com o seu dinheiro daqui a vinte anos.
           </p>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <Link href="/cadastro" className="botao">
+              Testar {DIAS_DE_TESTE} dias de graça <ArrowRight className="size-4" />
+            </Link>
+            <span className="text-[13px] text-[color:var(--areia)]">Sem cartão para começar.</span>
+          </div>
+
+          <div className="mt-14">
+            <FitaDoTempo />
+          </div>
+        </section>
+
+        {/* ── Três perguntas, com a resposta em forma de número ── */}
+        <section className="perguntas">
+          {PERGUNTAS.map((item) => (
+            <article key={item.pergunta} className="pergunta">
+              <h2 className="pergunta-titulo">{item.pergunta}</h2>
+              <p className="pergunta-resposta">{item.resposta}</p>
+              <p className="pergunta-dado">
+                <span className={`numero ${item.tom === "entra" ? "dado-entra" : "dado-sai"}`}>{item.dado}</span>
+                <small>{item.unidade}</small>
+              </p>
+            </article>
+          ))}
+        </section>
+
+        {/* ── A virada para o papel: agora falando com quem atende o balcão ── */}
+        <section className="papel">
+          <div className="cerca faixa">
+            <p className="sobrancelha">Para quem tem loja</p>
+
+            <h2 className="display h-secao mt-5 max-w-[18ch]">
+              A maquininha mostra o bruto. O extrato mostra o líquido três semanas depois.
+            </h2>
+
+            <p className="apoio mt-6">
+              No meio disso, o dono planeja com um dinheiro que não existe. O Tino registra a venda já com a taxa e o
+              prazo da sua maquininha, e diz quanto cai na conta e em que dia.
+            </p>
+
+            <div className="regua" aria-label="Exemplo: venda de R$ 100,00 no crédito em uma maquininha comum">
+              <div className="regua-linha">
+                <span className="numero" style={{ minWidth: "6.5rem" }}>
+                  R$ 100,00
+                </span>
+                <span className="regua-trilho">
+                  <span className="regua-preenche" style={{ width: "100%" }} />
+                </span>
+                <span style={{ minWidth: "7.5rem" }}>bruto, hoje</span>
+              </div>
+              <div className="regua-linha mt-3">
+                <span className="numero" style={{ minWidth: "6.5rem" }}>
+                  R$ 95,80
+                </span>
+                <span className="regua-trilho">
+                  <span className="regua-preenche" style={{ width: "95.8%" }} />
+                </span>
+                <span style={{ minWidth: "7.5rem" }}>na conta, em 30 dias</span>
+              </div>
+            </div>
+
+            <div className="balcao">
+              {[
+                {
+                  titulo: "Balcão",
+                  texto: "Venda em poucos toques, com dinheiro, Pix, cartão ou fiado. Caixa que fecha no fim do dia.",
+                },
+                {
+                  titulo: "Prateleira",
+                  texto: "Saldo, custo médio e margem por produto. Sem o custo, o app avisa que falta — não inventa.",
+                },
+                {
+                  titulo: "Fiado",
+                  texto: "Quem deve, há quanto tempo, e o texto de cobrança pronto para você mandar no WhatsApp.",
+                },
+              ].map((bloco) => (
+                <div key={bloco.titulo} className="balcao-item">
+                  <h3 className="balcao-titulo">{bloco.titulo}</h3>
+                  <p className="balcao-texto">{bloco.texto}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="balcao-texto mt-8 max-w-[60ch]">
+              E o faturamento entra sozinho na competência do MEI — o limite anual e o DAS param de depender de você
+              lembrar de redigitar tudo no fim do mês.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Preço ── */}
+        <section id="planos" className="cerca faixa">
+          <p className="sobrancelha">Quanto custa</p>
+          <h2 className="display h-secao mt-5">{DIAS_DE_TESTE} dias para testar, sem cartão.</h2>
+
+          <div className="planos">
             {PLANOS.map((linha) => {
               const desconto = descontoAnualBps(linha)
 
               return (
-                <div key={linha.codigo} className="ficha flex flex-col p-6">
-                  <p className="font-display text-[17px] font-semibold">{linha.nome}</p>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-muted-fg">{linha.chamada}</p>
+                <article key={linha.codigo} className="plano">
+                  <h3 className="display text-[19px]">{linha.nome}</h3>
+                  <p className="mt-1.5 text-[14px] text-[color:var(--areia)]">{linha.chamada}</p>
 
-                  <p className="numero mt-5 text-[34px] font-bold leading-none">
+                  <p className="numero plano-preco">
                     {formatarMoeda(linha.mensalCentavos)}
-                    <span className="ml-1.5 font-sans text-[13px] font-normal text-muted-fg">por mês</span>
+                    <span className="ml-2 font-[family-name:var(--fonte-corpo)] text-[13px] font-normal tracking-normal text-[color:var(--areia)]">
+                      por mês
+                    </span>
                   </p>
-                  <p className="mt-1.5 text-[12px] text-muted-fg">
-                    ou <span className="numero">{formatarMoeda(linha.anualCentavos)}</span> por ano —{" "}
-                    {formatarPercentual(desconto, 0)} de desconto
+                  <p className="mt-2 text-[13px] text-[color:var(--areia)]">
+                    ou {formatarMoeda(linha.anualCentavos)} por ano — {formatarPercentual(desconto, 0)} de desconto
                   </p>
 
-                  <ul className="mt-5 space-y-2">
+                  <ul className="plano-lista">
                     {linha.inclui.map((item) => (
-                      <li key={item} className="flex gap-2.5 text-[13px]">
-                        <Check className="mt-0.5 size-4 shrink-0 text-positivo" />
+                      <li key={item}>
+                        <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--entra)]" />
                         {item}
                       </li>
                     ))}
-                  </ul>
-
-                  <p className="mt-5 text-[11px] uppercase tracking-widest text-muted-fg">Não faz</p>
-                  <ul className="mt-2 space-y-1.5">
                     {linha.naoInclui.map((item) => (
-                      <li key={item} className="flex gap-2.5 text-[13px] text-muted-fg">
+                      <li key={item} className="plano-fora">
                         <Minus className="mt-0.5 size-4 shrink-0" />
                         {item}
                       </li>
                     ))}
                   </ul>
 
-                  <Link
-                    href="/cadastro"
-                    className="mt-6 rounded-full bg-primary px-5 py-3 text-center text-[14px] font-medium text-primary-foreground"
-                  >
+                  <Link href="/cadastro" className="botao mt-7 self-start">
                     Começar o teste
                   </Link>
-                </div>
+                </article>
               )
             })}
           </div>
 
-          <p className="mt-6 max-w-2xl text-[12px] leading-relaxed text-muted-fg">
-            O Tino não é consultor de investimentos nem substitui contador para obrigação fiscal. Ele organiza,
-            projeta e mostra a conta com os seus números.
+          <p className="mt-8 max-w-[64ch] text-[13px] text-[color:var(--areia)]">
+            O Tino não é consultor de investimentos nem substitui contador para obrigação fiscal. Ele organiza, projeta
+            e mostra a conta com os seus números.
           </p>
-        </div>
-      </section>
+        </section>
 
-      <footer className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-5 py-10 text-[12px] text-muted-fg">
-        <div className="flex items-center gap-2.5">
-          <TinoMascote estado="tranquilo" animado={false} className="size-7" />
-          <span>Tino</span>
-        </div>
-        <div className="flex gap-5">
-          <Link href="/login" className="hover:text-foreground">
-            Entrar
-          </Link>
-          <Link href="/cadastro" className="hover:text-foreground">
-            Criar conta
-          </Link>
-        </div>
-      </footer>
+        {/* ── Dúvidas ── */}
+        <section className="cerca faixa linha-fina">
+          <h2 className="display h-secao">Antes de você perguntar</h2>
+
+          <div className="faq">
+            {FREQUENTES.map((item) => (
+              <details key={item.pergunta}>
+                <summary>{item.pergunta}</summary>
+                <p>{item.resposta}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Fecho ── */}
+        <section className="cerca faixa linha-fina text-center">
+          <TinoMascote estado="comemorando" className="mx-auto size-20" />
+          <h2 className="display h-secao mx-auto mt-6 max-w-[16ch]">Descubra sua data antes que ela chegue.</h2>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/cadastro" className="botao">
+              Testar {DIAS_DE_TESTE} dias de graça <ArrowRight className="size-4" />
+            </Link>
+            <Link href="/login" className="botao botao--fantasma">
+              Já tenho conta
+            </Link>
+          </div>
+        </section>
+
+        <footer className="cerca rodape">
+          <span>Tino · contador pessoal</span>
+          <div className="flex gap-5">
+            <Link href="/login">Entrar</Link>
+            <Link href="/cadastro">Criar conta</Link>
+          </div>
+        </footer>
       </main>
     </>
   )
