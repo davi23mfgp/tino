@@ -8,6 +8,7 @@ import { TinoDock } from "@/components/tino-dock"
 import { BarraTopo } from "@/components/barra-topo"
 import { AvisoCritico } from "@/components/aviso-critico"
 import { Toaster } from "@/components/ui/toast"
+import { BuscaPaginasProvider } from "@/components/buscar-paginas"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
@@ -34,29 +35,35 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   if (!lar.onboardingEm) redirect("/bem-vindo")
 
   return (
-    <div className="area-do-app min-h-screen">
-      <AvisoCritico />
-      <div className="mx-auto w-full max-w-6xl px-4 pb-28 md:pb-10">
-        {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
-            por isso moram no mesmo container de largura da página) — ver
-            `components/navegacao.tsx`. */}
-        <Navegacao mei={Boolean(lar.meiPerfil)} nome={sessao.nome} avatarUrl={usuario?.avatarUrl ?? null} />
+    // O diálogo de busca (Ctrl+K) e o gatilho compacto do trilho/cabeçalho
+    // móvel, além do campo "Buscar..." da BarraTopo, dividem UM Provider —
+    // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
+    // duplicado que existia antes dele.
+    <BuscaPaginasProvider mei={Boolean(lar.meiPerfil)}>
+      <div className="area-do-app min-h-screen">
+        <AvisoCritico />
+        <div className="mx-auto w-full max-w-6xl px-4 pb-28 md:pb-10">
+          {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
+              por isso moram no mesmo container de largura da página) — ver
+              `components/navegacao.tsx`. */}
+          <Navegacao mei={Boolean(lar.meiPerfil)} nome={sessao.nome} avatarUrl={usuario?.avatarUrl ?? null} />
 
-        {/* A competência vem daqui, do servidor, e não de dentro da barra: no
-            cliente ela sairia do relógio do navegador, e na virada do mês a
-            barra diria um mês e o painel outro. */}
-        <BarraTopo
-          nome={sessao.nome}
-          admin={usuario?.admin ?? false}
-          avatarUrl={usuario?.avatarUrl ?? null}
-          competencia={rotuloCompetencia(competenciaAtual())}
-        />
-        <SubAbas mei={Boolean(lar.meiPerfil)} />
-        <main className="animate-page-enter">{children}</main>
+          {/* A competência vem daqui, do servidor, e não de dentro da barra: no
+              cliente ela sairia do relógio do navegador, e na virada do mês a
+              barra diria um mês e o painel outro. */}
+          <BarraTopo
+            nome={sessao.nome}
+            admin={usuario?.admin ?? false}
+            avatarUrl={usuario?.avatarUrl ?? null}
+            competencia={rotuloCompetencia(competenciaAtual())}
+          />
+          <SubAbas mei={Boolean(lar.meiPerfil)} />
+          <main className="animate-page-enter">{children}</main>
+        </div>
+
+        <TinoDock />
+        <Toaster />
       </div>
-
-      <TinoDock />
-      <Toaster />
-    </div>
+    </BuscaPaginasProvider>
   )
 }

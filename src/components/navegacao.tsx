@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils"
 import { enviar } from "@/lib/cliente"
 import { TinoMascote } from "@/components/tino-mascote"
-import { BuscarPaginas } from "@/components/buscar-paginas"
+import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -214,7 +214,7 @@ function IconeTrilho({
 }
 
 /** Trilho fixo, do tablet para cima: os quatro ícones que não mudam de tela pra tela. */
-function TrilhoLateral({ mei, nome, avatarUrl }: { mei: boolean; nome: string; avatarUrl: string | null }) {
+function TrilhoLateral({ nome, avatarUrl }: { nome: string; avatarUrl: string | null }) {
   const caminho = usePathname()
   const router = useRouter()
 
@@ -235,7 +235,7 @@ function TrilhoLateral({ mei, nome, avatarUrl }: { mei: boolean; nome: string; a
       </Link>
 
       <IconeTrilho href="/painel" rotulo="Hoje" Icone={Home} ativo={estaAtivo(caminho, "/painel")} />
-      <BuscarPaginas mei={mei} />
+      <GatilhoBuscaPaginas />
 
       <div className="mt-auto flex flex-col items-center gap-2">
         <IconeTrilho href="/configuracoes" rotulo="Configurações" Icone={Settings} ativo={estaAtivo(caminho, "/configuracoes")} />
@@ -364,7 +364,7 @@ export function Navegacao({
 
   return (
     <>
-      <TrilhoLateral mei={Boolean(mei)} nome={nome} avatarUrl={avatarUrl ?? null} />
+      <TrilhoLateral nome={nome} avatarUrl={avatarUrl ?? null} />
 
       {/* ── Cabeçalho móvel: hambúrguer + marca, só até o tablet ── */}
       <div className="flex items-center gap-2 pb-2 pt-1 lg:hidden">
@@ -375,7 +375,7 @@ export function Navegacao({
         >
           <PanelLeftOpen className="size-[18px]" />
         </button>
-        <BuscarPaginas mei={Boolean(mei)} />
+        <GatilhoBuscaPaginas />
       </div>
 
       {/* As seis abas — em qualquer tamanho de tela. No celular rolam na

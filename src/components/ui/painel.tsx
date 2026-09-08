@@ -137,26 +137,35 @@ export function Metrica({
   tom = "neutro",
   /** Comparação com o período anterior. Percentual sem referência não informa. */
   variacao,
+  /** Ícone dentro de um círculo sólido, como a referência que Davi mandou —
+      substitui o halo borrado que tinha antes (gradiente colorido atrás do
+      ícone). Opcional: nenhuma tela é obrigada a escolher um ícone por
+      métrica, e a maioria das ~20 telas com `<Metrica>` continua sem ele. */
+  icone: Icone,
 }: {
   rotulo: string
   valor: string
   detalhe?: string
   tom?: Tom
   variacao?: { texto: string; sentido: "sobe" | "desce" | "igual" }
+  icone?: React.ComponentType<{ className?: string }>
 }) {
   // Raio 28px, recheio 16px e uma borda de 1px — medido no protótipo. O tile
   // usa o MESMO raio do cartão que o contém, não um menor: é o que faz os
   // quatro números lerem como um bloco só dentro do cartão.
   return (
     <div className="ios-tap relative overflow-hidden rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
-      {/* Halo borrado no canto — mesma profundidade discreta dos cartões de
-          KPI do spec, só decorativo (nasce e morre em CSS, não muda o que a
-          tela informa). */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-8 -top-10 size-24 rounded-full opacity-[0.14] blur-2xl"
-        style={{ backgroundImage: "var(--gradient-steel)" }}
-      />
+      {Icone && (
+        // Círculo sólido — bg-card (não papel translúcido, pra destacar do
+        // fundo do tile) + borda de 1px, ícone em foreground. Chroma zero:
+        // nada de gradiente colorido atrás, como a referência mostrava.
+        <span
+          aria-hidden
+          className="mb-3 grid size-9 place-items-center rounded-full border border-pauta bg-card text-foreground"
+        >
+          <Icone className="size-4" />
+        </span>
+      )}
       <Rotulo>{rotulo}</Rotulo>
       <Valor tom={tom} tamanho="medio" className="mt-2">
         {valor}

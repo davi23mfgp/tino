@@ -2,13 +2,26 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { AlertTriangle, Bell, LogOut, Settings, ShieldCheck } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  Check,
+  Info,
+  LogOut,
+  Settings,
+  ShieldCheck,
+} from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
+import { formatarData } from "@/lib/datas"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 
 interface Alerta {
   id: string
@@ -16,13 +29,26 @@ interface Alerta {
   texto: string
   severidade: "INFO" | "ATENCAO" | "CRITICO"
   acaoRota: string | null
+  /** Persistido de verdade (`Alerta.lido` no banco, desde a migration
+      inicial) — não é estado local. `PATCH /api/tino/alertas` já existia
+      sem nenhuma tela chamar. */
+  lido: boolean
+  criadoEm: string
 }
 
-const COR: Record<Alerta["severidade"], string> = {
-  CRITICO: "border-negativo/40 bg-negativo/10 text-negativo",
-  ATENCAO: "border-atencao/40 bg-atencao/10 text-atencao",
-  INFO: "border-pauta bg-papel-2 text-foreground",
+/**
+ * Ícone por SEVERIDADE, não por cor — chroma continua zero (decisão
+ * registrada em `docs/REDESIGN-EM-CURSO.md`: a referência usa cor para
+ * distinguir estado, o Tino usa ícone/peso/tom de cinza).
+ */
+const ICONE_SEVERIDADE: Record<Alerta["severidade"], typeof AlertTriangle> = {
+  CRITICO: AlertTriangle,
+  ATENCAO: AlertCircle,
+  INFO: Info,
 }
+
+/** Chave do "Limpar tudo" local — ver comentário completo perto do uso. */
+const CHAVE_DISPENSADOS = "tino:alertas-dispensados"
 
 /**
  * `admin` chega do layout, que já leu o banco. Ele controla só o atalho: a
@@ -46,6 +72,41 @@ export function BarraTopo({
   const [alertas, setAlertas] = useState<Alerta[]>([])
   const [carregado, setCarregado] = useState(false)
   const [aberto, setAberto] = useState(false)
+  const [aba, setAba] = useState<"todas" | "nao-lidas">("todas")
+  // "Limpar tudo" não tem rota de exclusão (e esta rodada não cria uma —
+  // fora de escopo pra uma skin). Isto é só "sumir da lista NESTE
+  // navegador": guardado em localStorage pra sobreviver a um F5, mas nunca
+  // sincroniza entre aparelhos e nunca apaga nada do banco. O real "lido"
+  // (abaixo) é persistido de verdade.
+  const [dispensados, setDispensados] = useState<Set<string>>(new Set())
+
+  // O painel precisa ir por PORTAL (`createPortal` pro `<body>`), não como
+  // filho posicionado dentro do próprio `<header>`. Achado verificando ao
+  // vivo no navegador: `.ios-card` (a classe do `<header>`) tem
+  // `overflow: hidden` — necessário pra cortar o blur/vidro no raio da
+  // borda — e isso CORTA qualquer painel `position: absolute` que
+  // ultrapasse a altura do próprio cabeçalho. O dropdown antigo (menor)
+  // possivelmente já sofria disso; o painel novo, mais alto (abas + lista +
+  // rodapé), ficava com só o título "Notificações" visível e o resto
+  // invisível — bug real, não captura de tela pela metade.
+  const botaoAlertaRef = useRef<HTMLButtonElement>(null)
+  const [posicaoPainel, setPosicaoPainel] = useState<{ top: number; right: number } | null>(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    function atualizarPosicao() {
+      const rect = botaoAlertaRef.current?.getBoundingClientRect()
+      if (!rect) return
+      setPosicaoPainel({ top: rect.bottom + 8, right: window.innerWidth - rect.right })
+    }
+    atualizarPosicao()
+    window.addEventListener("resize", atualizarPosicao)
+    window.addEventListener("scroll", atualizarPosicao, true)
+    return () => {
+      window.removeEventListener("resize", atualizarPosicao)
+      window.removeEventListener("scroll", atualizarPosicao, true)
+    }
+  }, [aberto])
 
   useEffect(() => {
     // Falha ao carregar alerta não pode quebrar a barra inteira: o resto da tela
@@ -54,9 +115,57 @@ export function BarraTopo({
       .then(setAlertas)
       .catch(() => setAlertas([]))
       .finally(() => setCarregado(true))
+
+    try {
+      const salvos = localStorage.getItem(CHAVE_DISPENSADOS)
+      if (salvos) setDispensados(new Set(JSON.parse(salvos) as string[]))
+    } catch {
+      // Privado/bloqueado: segue sem "lembrar" o que foi limpo antes.
+    }
   }, [])
 
-  const criticos = alertas.filter((alerta) => alerta.severidade === "CRITICO").length
+  function persistirDispensados(novo: Set<string>) {
+    setDispensados(novo)
+    try {
+      localStorage.setItem(CHAVE_DISPENSADOS, JSON.stringify([...novo]))
+    } catch {
+      // Mesma tolerância acima — perder a lembrança não pode quebrar a tela.
+    }
+  }
+
+  async function marcarLido(id: string) {
+    setAlertas((atual) => atual.map((a) => (a.id === id ? { ...a, lido: true } : a)))
+    try {
+      await enviar("/api/tino/alertas", { ids: [id] }, "PATCH")
+    } catch {
+      setAlertas((atual) => atual.map((a) => (a.id === id ? { ...a, lido: false } : a)))
+    }
+  }
+
+  async function marcarTodasLidas() {
+    const idsAntes = alertas.filter((a) => !a.lido).map((a) => a.id)
+    if (idsAntes.length === 0) return
+    setAlertas((atual) => atual.map((a) => ({ ...a, lido: true })))
+    try {
+      // Sem `ids`: a rota marca todo mundo do lar como lido.
+      await enviar("/api/tino/alertas", {}, "PATCH")
+    } catch {
+      setAlertas((atual) => atual.map((a) => (idsAntes.includes(a.id) ? { ...a, lido: false } : a)))
+    }
+  }
+
+  function limparTudo() {
+    // Marca como lido de verdade (persiste) e some da lista neste navegador
+    // (local). Se a condição do alerta continuar valendo, ele pode voltar a
+    // aparecer na próxima checagem do Tino — isso é correto, não é bug.
+    void marcarTodasLidas()
+    persistirDispensados(new Set([...dispensados, ...alertas.map((a) => a.id)]))
+  }
+
+  const visiveis = alertas.filter((alerta) => !dispensados.has(alerta.id))
+  const naoLidos = visiveis.filter((alerta) => !alerta.lido)
+  const listaExibida = aba === "nao-lidas" ? naoLidos : visiveis
+  const criticos = naoLidos.filter((alerta) => alerta.severidade === "CRITICO").length
 
   async function sair() {
     await enviar("/api/auth/logout", {})
@@ -93,7 +202,7 @@ export function BarraTopo({
               ? criticos === 1
                 ? "1 decisão esperando você"
                 : `${criticos} decisões esperando você`
-              : alertas.length > 0
+              : naoLidos.length > 0
                 ? "tem coisa para olhar"
                 : "contas em ordem"}
           </p>
@@ -101,8 +210,19 @@ export function BarraTopo({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Pista visual de busca — o gatilho compacto (ícone só) já existe
+            no trilho lateral e no cabeçalho móvel (`navegacao.tsx`); este é
+            o mesmo diálogo/atalho, só com o campo "Buscar..." + "Ctrl K"
+            visíveis, como a referência. Escondido abaixo de `lg` pra não
+            duplicar o ícone que a barra do celular já mostra ao lado do
+            hambúrguer. */}
+        <div className="hidden lg:block">
+          <GatilhoBuscaPaginas variant="barra" />
+        </div>
+
         <div className="relative">
           <button
+            ref={botaoAlertaRef}
             onClick={() => setAberto((atual) => !atual)}
             className="relative rounded-full border border-pauta p-2.5 transition hover:border-acao/40"
             aria-label="Alertas"
@@ -113,7 +233,7 @@ export function BarraTopo({
                 qualquer jeito. O que o ponto precisa dizer é "tem coisa
                 aqui", e a cor dele diz se é urgente. A contagem continua
                 anunciada para leitor de tela, onde ela é a única pista. */}
-            {alertas.length > 0 && (
+            {naoLidos.length > 0 && (
               <>
                 <span
                   aria-hidden
@@ -123,40 +243,139 @@ export function BarraTopo({
                   )}
                 />
                 <span className="sr-only">
-                  {alertas.length} {alertas.length === 1 ? "aviso" : "avisos"}
+                  {naoLidos.length} {naoLidos.length === 1 ? "aviso não lido" : "avisos não lidos"}
                 </span>
               </>
             )}
           </button>
 
-          {aberto && (
-            <div className="vidro-menu absolute right-0 top-12 z-50 w-[min(380px,90vw)] space-y-2 rounded-[var(--raio-cartao)] p-3">
-              {alertas.length === 0 && (
-                <p className="px-2 py-6 text-center text-sm text-muted-fg">
-                  Nada urgente por aqui. Continue assim.
-                </p>
-              )}
+          {/* Painel de notificações — antes era um dropdown pequeno sem aba,
+              sem "lido" e sem "limpar". Redesenhado pra chegar perto da
+              referência que Davi mandou (painel maior, abas Todas/Não
+              lidas, ícone circular por item, check pra marcar lido, rodapé
+              com ações em massa) só que ancorado no sino, sem virar modal
+              full-screen — não pedido, e o app não tem esse padrão em
+              nenhum outro lugar. */}
+          {aberto &&
+            posicaoPainel &&
+            createPortal(
+              <>
+                {/* Catch-all invisível pra fechar ao clicar fora — mesmo
+                    princípio da `Gaveta` do celular (`navegacao.tsx`), só
+                    que sem escurecer a tela (isto é um painel de leitura
+                    rápida, não uma gaveta full-screen). */}
+                <button
+                  aria-label="Fechar notificações"
+                  onClick={() => setAberto(false)}
+                  className="fixed inset-0 z-40 cursor-default"
+                />
+                <div
+                  className="vidro-menu fixed z-50 flex w-[min(420px,92vw)] flex-col overflow-hidden rounded-[var(--raio-cartao)] p-0"
+                  style={{ top: posicaoPainel.top, right: posicaoPainel.right }}
+                >
+                  <div className="flex items-center justify-between px-4 pb-1 pt-3.5">
+                    <h2 className="text-[15px] font-semibold">Notificações</h2>
+                  </div>
 
-              {alertas.map((alerta) => (
-                <div key={alerta.id} className={cn("rounded-xl border p-3", COR[alerta.severidade])}>
-                  <p className="flex items-center gap-2 text-sm font-medium">
-                    {alerta.severidade === "CRITICO" && <AlertTriangle className="h-3.5 w-3.5" />}
-                    {alerta.titulo}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed opacity-90">{alerta.texto}</p>
-                  {alerta.acaoRota && (
-                    <Link
-                      href={alerta.acaoRota}
-                      onClick={() => setAberto(false)}
-                      className="mt-2 inline-block text-xs underline underline-offset-4"
+                  <Tabs
+                    value={aba}
+                    onValueChange={(valor) => setAba(valor === "nao-lidas" ? "nao-lidas" : "todas")}
+                    className="px-3 pt-2"
+                  >
+                    <TabsList className="grid w-full grid-cols-2 bg-papel-2">
+                      <TabsTrigger value="todas">Todas</TabsTrigger>
+                      <TabsTrigger value="nao-lidas">
+                        Não lidas{naoLidos.length > 0 && ` · ${naoLidos.length}`}
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <div className="max-h-[360px] space-y-0.5 overflow-y-auto px-2 py-2">
+                    {listaExibida.length === 0 && (
+                      <p className="px-3 py-8 text-center text-sm text-muted-fg">
+                        {aba === "nao-lidas" ? "Tudo em dia por aqui." : "Nada por aqui ainda."}
+                      </p>
+                    )}
+
+                    {listaExibida.map((alerta) => {
+                      const Icone = ICONE_SEVERIDADE[alerta.severidade]
+                      return (
+                        <div
+                          key={alerta.id}
+                          className="flex items-start gap-3 rounded-xl px-2 py-2.5 transition hover:bg-foreground/[0.04]"
+                        >
+                          <span
+                            aria-hidden
+                            className="grid size-8 shrink-0 place-items-center rounded-full border border-pauta bg-papel-2 text-[color:var(--texto-2)]"
+                          >
+                            <Icone className="size-4" />
+                          </span>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p
+                                className={cn(
+                                  "text-[13px] leading-snug",
+                                  alerta.lido
+                                    ? "font-medium text-[color:var(--texto-2)]"
+                                    : "font-semibold text-foreground",
+                                )}
+                              >
+                                {alerta.titulo}
+                              </p>
+                              <span className="shrink-0 text-[11px] text-muted-fg">
+                                {formatarData(new Date(alerta.criadoEm))}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-[12px] leading-relaxed text-[color:var(--texto-2)]">
+                              {alerta.texto}
+                            </p>
+                            {alerta.acaoRota && (
+                              <Link
+                                href={alerta.acaoRota}
+                                onClick={() => setAberto(false)}
+                                className="mt-1.5 inline-block text-[12px] underline underline-offset-4"
+                              >
+                                Ver
+                              </Link>
+                            )}
+                          </div>
+
+                          {!alerta.lido && (
+                            <button
+                              onClick={() => marcarLido(alerta.id)}
+                              aria-label={`Marcar "${alerta.titulo}" como lida`}
+                              title="Marcar como lida"
+                              className="grid size-6 shrink-0 place-items-center rounded-full border border-pauta text-muted-fg transition hover:border-acao/40 hover:text-foreground"
+                            >
+                              <Check className="size-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <footer className="flex items-center justify-between gap-2 border-t border-pauta px-3 py-2.5">
+                    <button
+                      onClick={() => void marcarTodasLidas()}
+                      disabled={naoLidos.length === 0}
+                      className="text-[12px] font-medium text-[color:var(--texto-2)] transition hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                     >
-                      Ver
-                    </Link>
-                  )}
+                      Marcar todas lidas
+                    </button>
+                    <button
+                      onClick={limparTudo}
+                      disabled={visiveis.length === 0}
+                      className="text-[12px] font-medium text-[color:var(--texto-2)] transition hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+                    >
+                      Limpar tudo
+                    </button>
+                  </footer>
                 </div>
-              ))}
-            </div>
-          )}
+              </>,
+              document.body,
+            )}
         </div>
 
         {admin && (

@@ -3,6 +3,128 @@
 Ponto de retomada. Quem abrir isto numa sessão nova consegue continuar sem
 perguntar nada ao Davi.
 
+## Rodada "comparação com Controllares" (07/09/2026, noite) — KPI, busca, notificações, sticky
+
+Davi mandou 3 imagens comparando o Tino a um dashboard CRM de referência
+("Controllares", versão escura) e pediu ajustes pontuais + "notificações
+quero que mude também". Verificado ao vivo no navegador (extensão Chrome
+conectou nesta sessão), claro e escuro, com Postgres local de verdade.
+
+**1) Cartão de KPI (`ui/painel.tsx`, `Metrica`)** — o halo borrado com
+gradiente atrás do ícone (`--gradient-steel`, `blur-2xl`) saiu. No lugar,
+`Metrica` ganhou uma prop opcional `icone` (componente de ícone): quando
+passado, renderiza um círculo sólido (`bg-card`, borda de 1px, ícone em
+`text-foreground`) acima do rótulo — igual à referência, sem gradiente
+colorido. É opcional de propósito: das ~20 telas que usam `<Metrica>`, só
+os três KPIs do topo de `/painel` (Saldo/Wallet, Sobra do
+mês/PiggyBank, Próxima conta/CalendarClock) ganharam ícone nesta rodada —
+as outras ~19 continuam sem, por escolha (não inventar ícone pra métrica
+que não tem um óbvio). `ui/metric-card.tsx` (`MetricCard`) não foi tocado:
+continua sem uso em nenhuma tela, confirmado por grep antes de mexer.
+
+**2) Sidebar/trilho lateral** — conferido ao vivo: o trilho (`TrilhoLateral`
+em `navegacao.tsx`) já é um controle fixo de 64px, sem estado
+colapsado/expandido (a constante `CHAVE_RECOLHIDO` existia solta, sem
+nenhum toggle usando — código morto de um plano anterior que não foi
+concluído). Não foi adicionado um botão de recolher: o trilho já É a
+versão "recolhida" permanente por decisão de sessões anteriores (redesign
+de navegação de 07/09/2026, trilho de 4 ícones + abas em pílula), e
+inventar um estado expandido que muda a largura de toda a área de
+conteúdo (`.area-do-app`) seria uma mudança estrutural, não uma "skin" —
+ver a rodada seguinte abaixo, onde a pílula de navegação PASSA a entrar
+no trilho por pedido explícito e novo do Davi. Grupos com rótulo uppercase
+pequeno: já existiam assim na `Gaveta` (menu do celular), confirmado.
+
+**3) Busca (`buscar-paginas.tsx`)** — a referência mostra "Buscar..." com
+"Ctrl K" visível dentro do campo. O Tino já tinha o atalho de teclado
+(`Ctrl/Cmd+K`) funcionando, só faltava a pista visual — nenhum atalho novo
+foi implementado, só a UI. `BuscarPaginas` virou dois componentes:
+`BuscaPaginasProvider` (estado + diálogo, montado UMA vez no
+`(app)/layout.tsx`) e `GatilhoBuscaPaginas` (o botão, em dois formatos —
+`variant="icone"` pro trilho/cabeçalho móvel, `variant="barra"` pro campo
+"Buscar... Ctrl K" novo, usado na `BarraTopo`).
+
+Esse refactor não foi cosmético: achei ao vivo que o código ANTERIOR já
+tinha dois `<BuscarPaginas>` montados ao mesmo tempo (`TrilhoLateral`,
+`lg:flex`, e o cabeçalho móvel, `lg:hidden` — os dois ficam no DOM o tempo
+todo, só escondidos por CSS, nenhum desmonta). Cada um tinha seu PRÓPRIO
+listener de `Ctrl+K` e seu próprio `<Dialog>`: apertar Ctrl+K já abria
+dois diálogos sobrepostos antes de eu tocar em nada. Ao acrescentar um
+TERCEIRO gatilho (a barra da `BarraTopo`), isso ia virar três. Corrigido
+juntando estado/diálogo num Provider único — bug real, achado e corrigido
+nesta rodada, não introduzido por ela.
+
+**4) Notificações (`barra-topo.tsx`) — o pedido explícito do Davi.** O
+dropdown pequeno (sem aba, sem "lido", sem "limpar") virou um painel:
+título "Notificações", abas "Todas"/"Não lidas · N" (shadcn `Tabs`, já no
+projeto), item com ícone circular por severidade (`AlertTriangle`/
+`AlertCircle`/`Info` — cinza, sem cor por severidade, ver decisão de cor
+abaixo), título, data (`formatarData`), texto, link "Ver", botão circular
+de check pra marcar como lida; rodapé "Marcar todas lidas"/"Limpar tudo".
+
+**Achado que muda a decisão do brief original:** o brief presumia que
+"lido" não existe persistido no banco e mandava implementar como estado
+local. Falso — `Alerta.lido` (booleano) e `Alerta.criadoEm` já existem no
+schema desde a migration inicial (`20260823223045_inicial`), e
+`PATCH /api/tino/alertas` (marca lido, com ou sem lista de `ids`) já
+existia, sem nenhuma tela chamar. Usar o que já existe é melhor que
+inventar estado local que não sincroniza — então:
+- **"Marcar como lida" (por item) e "Marcar todas lidas"**: chamam o
+  `PATCH` real, persistido de verdade. `atualizarAlertas` (`lib/tino/
+  alertas.ts`) mudou de `where: { lido: false }` pra `where: { larId }`
+  (com `orderBy` não-lido primeiro), porque a aba "Todas" precisa ver os
+  já lidos também — sem essa mudança o `GET` nunca devolvia o que a pessoa
+  já tinha marcado como lido.
+- **"Limpar tudo"**: SEM rota de exclusão (nenhuma foi criada — fora de
+  escopo pra uma skin, e o brief pedia explicitamente não criar rota
+  nova). Marca tudo como lido (via o mesmo `PATCH`) e depois esconde os
+  ids da lista **só neste navegador** (`Set<string>` em `localStorage`,
+  chave `tino:alertas-dispensados`) — comentado no código que isso NÃO
+  sincroniza entre aparelhos e não apaga nada do banco. Se a condição do
+  alerta continuar valendo, ele pode reaparecer numa próxima checagem —
+  comportamento correto, não bug.
+
+**Bug real achado testando ao vivo, não estava no brief:** o painel de
+notificações, do jeito que foi desenhado (mais alto que o dropdown antigo:
+abas + lista + rodapé), ficava com SÓ o título "Notificações" visível — o
+resto invisível, cortado. Causa: `<header>` usa a classe `.ios-card`
+(`globals.css`), que tem `overflow: hidden` (necessário pra cortar o
+blur/vidro no raio da borda). Qualquer painel `position: absolute` dentro
+do header que ultrapasse a altura dele mesmo é cortado por esse
+`overflow: hidden` — o dropdown ANTIGO (menor) provavelmente já sofria
+disso em menor grau, mascarado por ser pequeno. Corrigido com
+`createPortal` (`react-dom`, já uma dependência, nenhuma lib nova): o
+painel agora renderiza direto em `document.body`, posicionado via
+`getBoundingClientRect()` do botão do sino (recalculado em scroll/resize
+enquanto aberto), fora da cadeia de `overflow: hidden` do header. Ganhou
+de brinde um catch-all invisível de "clicar fora fecha" (mesmo princípio
+da `Gaveta` do celular), que o dropdown antigo não tinha.
+
+**5) Sticky do cabeçalho** — testado ao vivo (scroll real em `/painel`,
+claro e escuro): `BarraTopo` gruda certo no topo, sem regressão. A
+suspeita registrada antes (cache de dev server do lado do Davi) segue
+como explicação mais provável do screenshot dele mostrando o header
+"vindo junto" — não reproduzido aqui em nenhuma página testada.
+
+**Decisão de cor, registrada por pedir de novo depois de fechada:** nesta
+rodada os ícones da referência (setas de sentido do gráfico de pipeline,
+check verde de notificação, "limpar tudo" vermelho) foram **ignorados** —
+manteve-se chroma zero em tudo que não é número financeiro (ícone de
+severidade em cinza, "Ver"/"Limpar tudo" sem cor). Isso foi
+**revertido logo em seguida** na mesma sessão — ver seção mais abaixo
+("cor em números e gráficos, 07/09/2026") onde Davi pediu explicitamente
+cor de volta em números com sinal e em gráficos.
+
+**Verificado ao vivo, não só por grep/tsc:** `npm run tipos` limpo,
+`npx next build` sem erro (51 rotas), `npm test` 265/265, `npm run
+test:fumaca` 63/63 rotas de pé (Postgres local, `demo@tino.local`).
+Testado no navegador de verdade (extensão Chrome conectada): KPI com
+ícone em círculo sólido claro/escuro, busca com "Ctrl K" visível, painel
+de notificações completo (abas, ícones, check, "Ver", rodapé) claro e
+escuro, marcar-como-lida persistindo entre reloads, "Limpar tudo"
+esvaziando a lista e continuando vazia após F5 (localStorage), header
+sticky mantendo posição durante scroll real.
+
 ## RESOLVIDO em 07/09/2026, à noite: casca preta + vidro líquido
 
 Davi decidiu, de forma explícita e definitiva: **"quero o site black e com

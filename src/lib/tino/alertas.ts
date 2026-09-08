@@ -314,9 +314,14 @@ export async function atualizarAlertas(larId: string) {
     })
   }
 
+  // Antes só trazia os não lidos — o painel de notificações do topo
+  // (`barra-topo.tsx`) agora tem aba "Todas", que precisa ver os já lidos
+  // também. Não lido primeiro (é o que importa agora), depois mais recente;
+  // `lido` já existe no schema desde a migration inicial, só não era lido
+  // por nenhuma tela até esta rodada.
   return prisma.alerta.findMany({
-    where: { larId, lido: false },
-    orderBy: [{ severidade: "desc" }, { criadoEm: "desc" }],
-    take: 20,
+    where: { larId },
+    orderBy: [{ lido: "asc" }, { severidade: "desc" }, { criadoEm: "desc" }],
+    take: 30,
   })
 }

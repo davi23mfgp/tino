@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, CalendarClock, PiggyBank, Wallet } from "lucide-react"
 
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
@@ -147,17 +147,23 @@ export default async function Painel() {
         </Cartao>
       )}
 
-      {/* 5) Três números — saldo, sobra do mês, próxima conta a vencer. */}
+      {/* 5) Três números — saldo, sobra do mês, próxima conta a vencer.
+          Ícone em círculo sólido (referência do redesign de 07/09/2026) —
+          só aqui, os quatro KPIs do topo; o resto das ~20 telas com
+          `<Metrica>` continua sem ícone, por escolha (ver
+          `docs/REDESIGN-EM-CURSO.md`). */}
       <div className="grid grid-cols-3 gap-3">
         <Metrica
           rotulo="Saldo"
           valor={formatarMoeda(panorama.saldoTotalCentavos)}
           tom={panorama.saldoTotalCentavos < 0 ? "negativo" : "neutro"}
+          icone={Wallet}
         />
         <Metrica
           rotulo="Sobra do mês"
           valor={formatarMoeda(panorama.mes.sobraCentavos)}
           tom={panorama.mes.sobraCentavos >= 0 ? "positivo" : "negativo"}
+          icone={PiggyBank}
         />
         <Metrica
           rotulo="Próxima conta"
@@ -167,6 +173,7 @@ export default async function Painel() {
               : "nenhuma"
           }
           tom="neutro"
+          icone={CalendarClock}
         />
       </div>
 
