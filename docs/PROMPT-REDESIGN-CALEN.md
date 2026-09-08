@@ -76,14 +76,35 @@ não é fundo em finanças e cansa quem só quer checar rápido.
 Davi confirmou: **"quero que seja o mais parecido possível com o Calan,
 tudo bem fácil de navegar e intuitivo"** — isso substitui a ressalva
 "não é reskin de cor" abaixo. Não é só estrutura/copy: é visual também,
-inclusive tema escuro por padrão e o acento roxo/violeta do Calen (mesma
-disciplina de sempre — contraste calculado de verdade, não hex copiado
-no olho; ver método OKLab já usado nesta branch pro azul/preto/acromático
-de hoje). Os números coloridos (verde/vermelho/azul) já decididos hoje
-continuam. Mantenha a identidade só onde o Calen não define nada
-(nome, logo, mascote) — o resto (cor de fundo, cor de ação, tipografia
-grande e arredondada, cards com cantos bem generosos, escala de
-tamanho de fonte) mira o Calen de propósito.
+inclusive tema escuro por padrão. Mantenha a identidade só onde o Calen
+não define nada (nome, logo, mascote) — o resto (cor de fundo, cor de
+ação, tipografia grande e arredondada, cards com cantos bem generosos,
+escala de tamanho de fonte) mira o Calen de propósito.
+
+**Correção de cor (mensagem seguinte do Davi, ainda mais tarde):** o
+Calen de verdade usa roxo/violeta como acento (ver evidência acima, item
+6 e 7) — o Tino usa **verde** no lugar disso, não roxo. É a única
+diferença de cor deliberada em relação à referência; tudo o resto do
+visual mira o Calen o mais próximo possível. Calcule o verde por
+contraste de verdade (mesmo método OKLab já usado nesta branch), não
+copie um verde qualquer no olho. Os números coloridos (receita=verde,
+despesa=vermelho, saldo=azul) já decididos hoje continuam — cuidado pra
+não colidir o verde de marca com o verde de "receita" a ponto de ficar
+ambíguo qual é qual; se precisar, diferencie por tom/saturação.
+
+**Mobile é escopo igual, não secundário** (mensagem seguinte do Davi):
+"quero que fique o mais parecido possível com o Calen, e o mobile
+também". As 36 imagens de referência SÃO de um app mobile (Android) —
+usar isso a favor: o padrão de navegação em duas camadas, o botão + fixo
+de ação rápida, a folha inferior (bottom sheet) pra formulário de
+transação, tudo isso é literalmente o design mobile do Calen, replicar
+de verdade no breakpoint mobile do Tino (não só adaptar o desktop pra
+caber). Testar em largura de ~390px é obrigatório antes de fechar,
+igual já foi feito na rodada de skin anterior.
+
+**A partir daqui é autônomo até o fim** (mensagem seguinte do Davi, foi
+dormir): não parar pra perguntar nada que não seja genuinamente decisão
+dele. Terminar a missão inteira antes de considerar concluído.
 
 ## Tradução pro Tino — o que pedir ao agente de execução
 
