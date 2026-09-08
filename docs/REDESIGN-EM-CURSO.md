@@ -3,6 +3,107 @@
 Ponto de retomada. Quem abrir isto numa sessão nova consegue continuar sem
 perguntar nada ao Davi.
 
+## Redesign "direção Calen" (07/09/2026, noite) — EM ANDAMENTO
+
+Davi confirmou querer o Tino "o mais parecido possível" com o app
+concorrente **Calen** (36 screenshots de referência analisadas), depois de
+dizer "ainda muito carregado... quero que a pessoa tenha o mínimo de
+esforço possível". Prompt completo em `docs/PROMPT-REDESIGN-CALEN.md`.
+Prioridade 1 do próprio Davi: reestruturar a NAVEGAÇÃO primeiro (resolve
+"difícil de navegar"), visual por cima depois. Trabalho em fatias, cada
+uma commitada e verificada — clonar um produto concorrente inteiro não
+cabe numa passada só, registrado sem esconder o que ainda falta no fim
+desta seção.
+
+### Etapa 1 — navegação em duas camadas (`lib/navegacao-grupos.ts`, `navegacao.tsx`, `buscar-paginas.tsx`)
+
+**Antes:** trilho de 4 ícones fixos + seis abas em pílula
+(Hoje/Movimento/Planejar/Dívidas/Futuro/Parecer) sempre visíveis no topo —
+essa era, inclusive, a pílula que Davi já tinha pedido pra mover pro
+sidebar antes do pedido "Calen" chegar; a reestruturação abaixo absorve
+esse pedido junto, como o próprio Davi min pediu ("decidir junto, não em
+separado, pra não fazer duas passadas na mesma navegação").
+
+**Agora**, igual à estrutura do Calen (Início/Calendário/Contas/Perfil +
+hambúrguer agrupado por intenção):
+
+- **`NUCLEO`** (nível 1, sempre visível — trilho no desktop, barra do
+  polegar no celular): **Início** (`/painel`), **Movimento**
+  (`/transacoes`, com Anotar/`capturas` e Importar como irmãos via
+  `<SubAbas>`), **Cartões** (`/cartoes`), **Perfil** (`/configuracoes`).
+  Decidido a partir do que já existia em `lib/navegacao-grupos.ts` — nenhum
+  desses é rota nova.
+- **`GRUPOS_NAV`** (nível 2, atrás do botão **"Mais"**, um clique a mais):
+  **Planejar** (Orçamento/Contas fixas/Parcelamentos/Metas), **Dívidas**
+  (Dívidas/Plano de pagamento/Empréstimo), **Analisar**
+  (Análise/Projeção/Simulador/Longo prazo), **Ajustes** (Configurações —
+  Regras/Assinatura já viraram cards dentro de Configurações numa sessão
+  anterior, não precisam de entrada própria aqui). **Loja** entra como
+  quinta seção só pra quem é MEI, igual antes.
+- `todosOsGrupos(mei)` = núcleo + nível 2, usado por `<SubAbas>` (agora
+  procura irmãos em QUALQUER grupo, não só nível 2 — Movimento também tem
+  irmãos) e pela busca de telas (Ctrl+K), que agora cobre 100% das rotas
+  de novo.
+
+**Onde cada camada mora:**
+- Desktop (trilho, `TrilhoLateral`): logo, Início/Movimento/Cartões
+  (ícone), Buscar, depois **"Mais"** (abre painel com os grupos do nível
+  2 — mesmo mecanismo de `createPortal` do painel de notificações, ver
+  seção anterior: o trilho é `.ios-card`/`overflow:hidden`, um painel
+  `position:absolute` mais alto que ele seria cortado do mesmo jeito),
+  Perfil (dropdown com Configurações + Sair, como já era).
+- Celular (barra do polegar): os 4 núcleos + **"Mais"** (abre a `Gaveta`,
+  que agora mostra SÓ o nível 2 — o núcleo já está sempre visível embaixo,
+  não precisa duplicar). Cabeçalho móvel (hambúrguer + busca) também abre
+  a mesma `Gaveta`.
+- `AbasPrincipais` (a faixa horizontal de 6 pílulas) foi REMOVIDA — nada
+  ocupa esse lugar agora, o núcleo + "Mais" cobrem a mesma função.
+
+**Logout continua alcançável em qualquer camada** sem precisar de tela
+nova: o botão "Sair" já existe solto na `BarraTopo` (todas as telas,
+desktop e celular) e continua no dropdown de Perfil do trilho — não
+precisou entrar em `/configuracoes` nem na gaveta.
+
+**Simplificação registrada, não escondida:** a barra do polegar antiga
+trocava de item pra MEI (Balcão/Prateleira no lugar de Cartões/Parecer).
+Isso saiu — agora o núcleo é sempre Início/Movimento/Cartões/Perfil pra
+todo mundo, MEI ou não (igual ao Calen, que não troca os 4 tabs por
+perfil de usuário); Loja continua inteira, só que sempre atrás de "Mais"
+mesmo pra quem é MEI, em vez de ocupar 2 dos 4 slots do polegar.
+
+**Verificado ao vivo:** `tsc`/`next build`/`npm test` (265/265)/`test:fumaca`
+(63/63) limpos. No Chrome: trilho mostra os 6 botões certos (Tino/Início/
+Movimento/Cartões/Buscar/Mais/Perfil, confirmado via DOM), "Mais" abre o
+painel com Planejar/Dívidas/Analisar/Ajustes sem cortar (confirmado via
+`getBoundingClientRect` — filho direto de `<body>`, o portal evitou o
+mesmo bug de clipping do painel de notificações), barra do polegar e
+gaveta do celular confirmadas via DOM (mostram núcleo+Mais e nível 2,
+respectivamente) — viewport realmente estreito não coube nesta janela do
+Chrome automatizado (o `resize_window` não conseguiu passar de ~1080px de
+largura física nesta máquina), então a checagem mobile foi por inspeção de
+DOM/classe, não por screenshot visual estreito.
+
+### Falta desta rodada "Calen" (registrado, não escondido)
+
+- **Etapa 2 (visual: escuro por padrão + acento roxo/violeta + tipografia
+  grande/arredondada)** — ver progresso abaixo, se já começou nesta mesma
+  sessão.
+- **Avisos proativos por push/e-mail de verdade** — o motor de vigias
+  (`lib/tino/alertas.ts`) já produz a frase-com-número; transformar isso
+  em notificação de push/e-mail real (não só texto na tela) é trabalho de
+  infraestrutura (provedor de push/e-mail, permissão do navegador,
+  fila/job), não CSS. Checagem rápida: não achei integração de
+  push/e-mail existente em `lib/` — precisaria ser construída do zero, o
+  que o próprio prompt pede pra NÃO fazer sem confirmação. Fica pendente,
+  registrado como decisão do Davi.
+- **FAB de adicionar transação (padrão "+" do Calen)** — o prompt já
+  marca isso como opcional/avaliar, não obrigatório. Não entrou nesta
+  rodada; `/painel` já tem "Anotar em segundos" embutido na tela (mesmo
+  papel, formato diferente).
+- **Revisão de copy tela a tela** e **"um conceito por card" em
+  `/regras`/`/configuracoes`** — não entraram nesta rodada (escopo grande,
+  pediria abrir e reescrever texto/estrutura de várias telas uma a uma).
+
 ## Rodada "comparação com Controllares" (07/09/2026, noite) — KPI, busca, notificações, sticky
 
 Davi mandou 3 imagens comparando o Tino a um dashboard CRM de referência

@@ -1,23 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { usePathname } from "next/navigation"
-import {
-  CreditCard,
-  Home,
-  LogOut,
-  Package,
-  PanelLeftOpen,
-  PieChart,
-  Settings,
-  ShoppingBag,
-  User,
-  X,
-  Zap,
-} from "lucide-react"
+import { LogOut, Menu, PanelLeftOpen, Settings, User, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { enviar } from "@/lib/cliente"
@@ -36,29 +25,28 @@ import {
   estaAtivo,
   grupoDoCaminho,
   gruposPara,
+  NUCLEO,
+  todosOsGrupos,
   type GrupoNav,
   type ItemNav,
 } from "@/lib/navegacao-grupos"
 
 /**
- * Navegação do app, redesenhada em 07/09/2026.
+ * Navegação do app, reestruturada em 07/09/2026 na direção "Calen" (ver
+ * `docs/PROMPT-REDESIGN-CALEN.md`).
  *
- * ANTES: uma coluna com dezoito telas em três grupos. Achar "Dívidas" ou
- * "Plano de pagamento" pedia saber a diferença entre os dois — divisão que
- * fazia sentido pra quem construiu, não pra quem usa.
+ * ANTES desta rodada: um trilho de 4 ícones fixos (Hoje/Buscar/Config/
+ * Perfil) + seis abas em pílula, de peso igual, sempre visíveis no topo.
+ * Resolvia "dezoito telas soltas", mas ainda pedia decidir entre seis
+ * opções olhando pro topo da tela toda vez.
  *
- * AGORA: um trilho fino com quatro ícones (Hoje, Buscar, Configurações,
- * Perfil — sempre visível, sempre no mesmo lugar) e seis abas em pílula no
- * topo, uma por PERGUNTA que o usuário faz. Nenhuma tela foi removida — a
- * lista completa de rotas mora em `lib/navegacao-grupos.ts`, e o menu do
- * celular (gaveta e barra do polegar) continua alcançando todas elas.
- *
- * A cor de "item ativo" continua o azul de ação de hoje — ver o registro em
- * `docs/REDESIGN-EM-CURSO.md` sobre por que a casca não virou neutra nesta
- * rodada.
+ * AGORA: duas camadas. NÍVEL 1 (`NUCLEO`, sempre visível — Início/
+ * Movimento/Cartões/Perfil) cobre "ver que tá tudo bem" sem abrir nada
+ * mais. NÍVEL 2 (`GRUPOS_NAV`, atrás do botão "Mais") junta o resto por
+ * INTENÇÃO — Planejar/Dívidas/Analisar/Ajustes, e Loja pra quem é MEI.
+ * Nenhuma tela foi removida — a lista completa continua em
+ * `lib/navegacao-grupos.ts`.
  */
-
-const CHAVE_RECOLHIDO = "tino:menu-recolhido"
 
 function Pilula({ item, ativo }: { item: ItemNav; ativo: boolean }) {
   const { Icone } = item
@@ -80,97 +68,15 @@ function Pilula({ item, ativo }: { item: ItemNav; ativo: boolean }) {
 }
 
 /**
- * As seis (ou sete, com loja) abas do topo. Cada uma navega para a PRIMEIRA
- * tela do grupo — a sub-navegação entre as telas do mesmo grupo aparece
- * dentro do conteúdo, pela `<SubAbas>`.
- *
- * Do tablet para cima, um grupo com mais de uma tela também abre um painel
- * ao passar o mouse — mapeamento do `dropdown-navigation` do ln-dev7
- * (21st.dev). Antes, ir direto para "Metas" a partir de qualquer outra
- * seção exigia dois cliques: a pílula "Planejar" sempre abre a primeira
- * tela do grupo (Orçamento), e só depois a sub-navegação aparecia para
- * escolher Metas. Não troca o clique (que continua indo para a primeira
- * tela — é o que a pessoa espera de um link) nem some com `<SubAbas>` no
- * celular, onde não existe "passar o mouse".
- */
-function AbasPrincipais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: string }) {
-  return (
-    <nav
-      aria-label="Seções do app"
-      className="scrollbar-none -mx-4 flex gap-1 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0"
-    >
-      {grupos.map((grupo) => {
-        const ativo = grupo.itens.some((item) => estaAtivo(caminho, item.rota))
-        const primeiro = grupo.itens[0]
-        const pilula = (
-          <Link
-            href={primeiro.rota}
-            title={grupo.pergunta}
-            aria-current={ativo ? "page" : undefined}
-            className={cn(
-              "shrink-0 rounded-[var(--raio-pilula)] px-4 py-2 text-[14px] font-medium transition-colors",
-              ativo
-                ? "bg-accent text-accent-foreground"
-                : "text-[color:var(--texto-2)] hover:bg-foreground/[0.05] hover:text-foreground",
-            )}
-          >
-            {grupo.titulo}
-          </Link>
-        )
-
-        if (grupo.itens.length < 2) return <div key={grupo.chave}>{pilula}</div>
-
-        return (
-          <div key={grupo.chave} className="group/nav relative shrink-0">
-            {pilula}
-            {/* O painel some por padrão e só entra em aparelho com mouse de
-                verdade — `(hover:hover)` evita a "armadilha do hover" em
-                tela touch, onde o primeiro toque só acionaria o :hover em
-                vez de seguir o link. Em touch a navegação continua igual a
-                antes: clique na pílula + `<SubAbas>` abaixo do conteúdo. */}
-            <div
-              role="menu"
-              aria-label={grupo.titulo}
-              className="vidro-menu invisible absolute left-0 top-full z-30 hidden w-56 -translate-y-1 rounded-[var(--raio-cartao)] p-1.5 opacity-0 transition-[opacity,transform] duration-150 [@media(hover:hover)]:block [@media(hover:hover)]:group-hover/nav:visible [@media(hover:hover)]:group-hover/nav:translate-y-1 [@media(hover:hover)]:group-hover/nav:opacity-100"
-            >
-              <p className="px-2.5 pb-1.5 pt-1 text-[11px] text-muted-fg">{grupo.pergunta}</p>
-              {grupo.itens.map((item) => {
-                const { Icone } = item
-                const itemAtivo = estaAtivo(caminho, item.rota)
-                return (
-                  <Link
-                    key={item.rota}
-                    href={item.rota}
-                    role="menuitem"
-                    aria-current={itemAtivo ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] transition-colors",
-                      itemAtivo
-                        ? "bg-accent font-medium text-accent-foreground"
-                        : "text-foreground hover:bg-foreground/[0.05]",
-                    )}
-                  >
-                    <Icone className="size-4 shrink-0 text-muted-fg" />
-                    {item.rotulo}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })}
-    </nav>
-  )
-}
-
-/**
- * Sub-navegação de um grupo com mais de uma tela (ex.: Dívidas absorve
- * Dívidas + Plano de pagamento + Empréstimo). Some sozinha em grupo de
- * tela única, como Parecer/Hoje quando não há nada a escolher.
+ * Sub-navegação de um grupo com mais de uma tela (ex.: Movimento absorve
+ * Transações + Anotar + Importar; Dívidas absorve Dívidas + Plano de
+ * pagamento + Empréstimo). Some sozinha em grupo de tela única. Procura em
+ * TODOS os grupos (núcleo + nível 2), porque agora um item do núcleo
+ * (Movimento) também tem irmãos.
  */
 export function SubAbas({ mei }: { mei?: boolean }) {
   const caminho = usePathname()
-  const grupos = gruposPara(Boolean(mei))
+  const grupos = todosOsGrupos(Boolean(mei))
   const grupo = grupoDoCaminho(grupos, caminho)
   if (!grupo || grupo.itens.length < 2) return null
 
@@ -183,7 +89,6 @@ export function SubAbas({ mei }: { mei?: boolean }) {
   )
 }
 
-/** Ícone-âncora "Hoje": sempre leva pra /painel, de qualquer aba em que a pessoa esteja. */
 function IconeTrilho({
   href,
   rotulo,
@@ -192,7 +97,7 @@ function IconeTrilho({
 }: {
   href: string
   rotulo: string
-  Icone: typeof Zap
+  Icone: typeof Menu
   ativo?: boolean
 }) {
   return (
@@ -213,10 +118,130 @@ function IconeTrilho({
   )
 }
 
-/** Trilho fixo, do tablet para cima: os quatro ícones que não mudam de tela pra tela. */
-function TrilhoLateral({ nome, avatarUrl }: { nome: string; avatarUrl: string | null }) {
+/**
+ * Conteúdo do nível 2 (Planejar/Dívidas/Analisar/Ajustes/Loja) — usado
+ * tanto no painel do desktop (`MenuMais`) quanto na gaveta do celular, pra
+ * não ter duas listas escritas à mão.
+ */
+function ListaDeGrupos({
+  grupos,
+  caminho,
+  aoNavegar,
+}: {
+  grupos: GrupoNav[]
+  caminho: string
+  aoNavegar: () => void
+}) {
+  return (
+    <>
+      {grupos.map((grupo) => (
+        <div key={grupo.chave}>
+          <p className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-fg">
+            {grupo.titulo}
+          </p>
+          <div className="space-y-0.5">
+            {grupo.itens.map((item) => {
+              const ativo = estaAtivo(caminho, item.rota)
+              const { Icone } = item
+              return (
+                <Link
+                  key={item.rota}
+                  href={item.rota}
+                  onClick={aoNavegar}
+                  aria-current={ativo ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-[16px] px-3 py-2.5 text-[14px] transition-colors",
+                    ativo
+                      ? "bg-accent font-medium text-accent-foreground"
+                      : "text-[color:var(--texto-2)] hover:bg-foreground/[0.04] hover:text-foreground",
+                  )}
+                >
+                  <Icone className="size-4 shrink-0" />
+                  <span className="truncate">{item.rotulo}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
+/**
+ * "Mais" do desktop: painel ancorado no botão do trilho, mesmo mecanismo
+ * de portal que o painel de notificações (`barra-topo.tsx`) — necessário
+ * pelo mesmo motivo: `.ios-card` (o trilho) tem `overflow: hidden`, que
+ * cortaria qualquer painel `position: absolute` mais alto que o próprio
+ * trilho.
+ */
+function MenuMais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: string }) {
+  const [aberto, setAberto] = useState(false)
+  const botaoRef = useRef<HTMLButtonElement>(null)
+  const [posicao, setPosicao] = useState<{ top: number; left: number } | null>(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    function atualizar() {
+      const rect = botaoRef.current?.getBoundingClientRect()
+      if (!rect) return
+      setPosicao({ top: rect.top, left: rect.right + 8 })
+    }
+    atualizar()
+    window.addEventListener("resize", atualizar)
+    window.addEventListener("scroll", atualizar, true)
+    return () => {
+      window.removeEventListener("resize", atualizar)
+      window.removeEventListener("scroll", atualizar, true)
+    }
+  }, [aberto])
+
+  return (
+    <div className="relative">
+      <button
+        ref={botaoRef}
+        onClick={() => setAberto((atual) => !atual)}
+        aria-label="Mais"
+        title="Mais"
+        aria-expanded={aberto}
+        className={cn(
+          "toque grid place-items-center rounded-2xl transition-colors",
+          aberto
+            ? "bg-accent text-accent-foreground"
+            : "text-[color:var(--texto-2)] hover:bg-foreground/[0.06] hover:text-foreground",
+        )}
+      >
+        <Menu className="size-[18px]" />
+      </button>
+
+      {aberto &&
+        posicao &&
+        createPortal(
+          <>
+            <button
+              aria-label="Fechar menu"
+              onClick={() => setAberto(false)}
+              className="fixed inset-0 z-40 cursor-default"
+            />
+            <div
+              className="vidro-menu fixed z-50 max-h-[min(560px,80vh)] w-64 space-y-4 overflow-y-auto rounded-[var(--raio-cartao)] p-3"
+              style={{ top: posicao.top, left: posicao.left }}
+            >
+              <ListaDeGrupos grupos={grupos} caminho={caminho} aoNavegar={() => setAberto(false)} />
+            </div>
+          </>,
+          document.body,
+        )}
+    </div>
+  )
+}
+
+/** Trilho fixo, do tablet pra cima: núcleo (Início/Movimento/Cartões),
+    Buscar, Mais (nível 2) e Perfil — nessa ordem, de cima pra baixo. */
+function TrilhoLateral({ nome, avatarUrl, mei }: { nome: string; avatarUrl: string | null; mei: boolean }) {
   const caminho = usePathname()
   const router = useRouter()
+  const grupos = gruposPara(mei)
 
   async function sair() {
     await enviar("/api/auth/logout", {})
@@ -225,20 +250,30 @@ function TrilhoLateral({ nome, avatarUrl }: { nome: string; avatarUrl: string | 
   }
 
   return (
-    // Trilho FLUTUANDO, não mais colado na borda: mesma margem de 12px que a
-    // barra do polegar do celular já usa (`inset-x-3 bottom-3`), agora nas
-    // quatro bordas do próprio trilho. `.ios-card` já traz o raio de 26px, o
-    // vidro e a sombra — não precisa repetir aqui.
+    // Trilho FLUTUANDO: mesma margem de 12px que a barra do polegar do
+    // celular já usa (`inset-x-3 bottom-3`), agora nas quatro bordas do
+    // próprio trilho. `.ios-card` já traz o raio, o vidro e a sombra.
     <aside className="ios-card fixed inset-y-3 left-3 z-30 hidden w-[64px] flex-col items-center gap-2 py-4 lg:flex">
       <Link href="/painel" title="Tino" className="mb-2 grid place-items-center">
         <Image src="/tino-mascote.png" alt="" width={30} height={30} className="size-[30px] object-contain" />
       </Link>
 
-      <IconeTrilho href="/painel" rotulo="Hoje" Icone={Home} ativo={estaAtivo(caminho, "/painel")} />
+      {NUCLEO.slice(0, 3).map((grupo) => {
+        const primeiro = grupo.itens[0]
+        return (
+          <IconeTrilho
+            key={grupo.chave}
+            href={primeiro.rota}
+            rotulo={grupo.titulo}
+            Icone={primeiro.Icone}
+            ativo={grupo.itens.some((item) => estaAtivo(caminho, item.rota))}
+          />
+        )
+      })}
       <GatilhoBuscaPaginas />
 
       <div className="mt-auto flex flex-col items-center gap-2">
-        <IconeTrilho href="/configuracoes" rotulo="Configurações" Icone={Settings} ativo={estaAtivo(caminho, "/configuracoes")} />
+        <MenuMais grupos={grupos} caminho={caminho} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -279,7 +314,9 @@ function TrilhoLateral({ nome, avatarUrl }: { nome: string; avatarUrl: string | 
   )
 }
 
-/** Gaveta do celular: mesma IA de seis grupos, listada inteira porque cabe rolando. */
+/** Gaveta do celular: agora só o NÍVEL 2 (Planejar/Dívidas/Analisar/
+    Ajustes/Loja) — o núcleo já está sempre visível na barra do polegar,
+    não precisa duplicar aqui. */
 function Gaveta({ grupos, caminho, aoFechar }: { grupos: GrupoNav[]; caminho: string; aoFechar: () => void }) {
   return (
     <>
@@ -291,59 +328,18 @@ function Gaveta({ grupos, caminho, aoFechar }: { grupos: GrupoNav[]; caminho: st
       <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-3 backdrop-blur-vidro-forte backdrop-saturate-[1.7] lg:hidden">
         <header className="flex h-14 items-center gap-2 border-b border-pauta px-3">
           <TinoMascote estado="tranquilo" animado={false} className="size-7" />
-          <span className="font-display text-[15px] font-semibold">Tino</span>
+          <span className="font-display text-[15px] font-semibold">Mais</span>
           <button onClick={aoFechar} aria-label="Fechar menu" className="toque ml-auto text-muted-fg">
             <X className="size-4" />
           </button>
         </header>
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-          {grupos.map((grupo) => (
-            <div key={grupo.chave}>
-              <p className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-fg">{grupo.titulo}</p>
-              <div className="space-y-0.5">
-                {grupo.itens.map((item) => {
-                  const ativo = estaAtivo(caminho, item.rota)
-                  const { Icone } = item
-                  return (
-                    <Link
-                      key={item.rota}
-                      href={item.rota}
-                      onClick={aoFechar}
-                      aria-current={ativo ? "page" : undefined}
-                      className={cn(
-                        "flex items-center gap-2.5 rounded-[22px] px-3 py-2.5 text-[14px] transition-colors",
-                        ativo
-                          ? "bg-accent font-medium text-accent-foreground"
-                          : "text-[color:var(--texto-2)] hover:bg-foreground/[0.04] hover:text-foreground",
-                      )}
-                    >
-                      <Icone className="size-4 shrink-0" />
-                      <span className="truncate">{item.rotulo}</span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+          <ListaDeGrupos grupos={grupos} caminho={caminho} aoNavegar={aoFechar} />
         </nav>
       </aside>
     </>
   )
 }
-
-const NO_POLEGAR_BASE: ItemNav[] = [
-  { rota: "/painel", rotulo: "Início", Icone: Home },
-  { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
-  { rota: "/analise", rotulo: "Parecer", Icone: PieChart },
-  { rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard },
-]
-
-const NO_POLEGAR_LOJA: ItemNav[] = [
-  { rota: "/painel", rotulo: "Início", Icone: Home },
-  { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
-  { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
-  { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
-]
 
 export function Navegacao({
   mei,
@@ -364,9 +360,9 @@ export function Navegacao({
 
   return (
     <>
-      <TrilhoLateral nome={nome} avatarUrl={avatarUrl ?? null} />
+      <TrilhoLateral nome={nome} avatarUrl={avatarUrl ?? null} mei={Boolean(mei)} />
 
-      {/* ── Cabeçalho móvel: hambúrguer + marca, só até o tablet ── */}
+      {/* ── Cabeçalho móvel: hambúrguer (abre o nível 2) + busca, só até o tablet ── */}
       <div className="flex items-center gap-2 pb-2 pt-1 lg:hidden">
         <button
           onClick={() => setGaveta(true)}
@@ -378,31 +374,29 @@ export function Navegacao({
         <GatilhoBuscaPaginas />
       </div>
 
-      {/* As seis abas — em qualquer tamanho de tela. No celular rolam na
-          horizontal; é mais rápido que abrir a gaveta pra trocar de seção
-          do dia a dia. */}
-      <AbasPrincipais grupos={grupos} caminho={caminho} />
-
       {gaveta && <Gaveta grupos={grupos} caminho={caminho} aoFechar={() => setGaveta(false)} />}
 
-      {/* ── Barra do polegar: agora painel flutuando (`.ios-card`) com respiro
-          de 12px nas três bordas, em vez de colada full-bleed no rodapé. */}
+      {/* ── Barra do polegar: o NÚCLEO (Início/Movimento/Cartões/Perfil) —
+          mesmos 4 itens sempre visíveis do trilho do desktop — mais "Mais",
+          que abre a gaveta com o nível 2. Painel flutuando (`.ios-card`)
+          com respiro de 12px nas três bordas. */}
       <nav className="ios-card safe-bottom fixed inset-x-3 bottom-3 z-40 lg:hidden">
         <div className="flex items-stretch justify-around">
-          {(mei ? NO_POLEGAR_LOJA : NO_POLEGAR_BASE).map((item) => {
-            const ativo = estaAtivo(caminho, item.rota)
-            const { Icone } = item
+          {NUCLEO.map((grupo) => {
+            const primeiro = grupo.itens[0]
+            const ativo = grupo.itens.some((item) => estaAtivo(caminho, item.rota))
+            const { Icone } = primeiro
             return (
               <Link
-                key={item.rota}
-                href={item.rota}
+                key={grupo.chave}
+                href={primeiro.rota}
                 className={cn(
                   "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
                   ativo ? "text-acao" : "text-muted-fg",
                 )}
               >
                 <Icone className="size-5" />
-                {item.rotulo}
+                {grupo.titulo}
               </Link>
             )
           })}
@@ -411,8 +405,8 @@ export function Navegacao({
             aria-label="Abrir menu"
             className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] text-muted-fg"
           >
-            <PanelLeftOpen className="size-5" />
-            Tudo
+            <Menu className="size-5" />
+            Mais
           </button>
         </div>
       </nav>

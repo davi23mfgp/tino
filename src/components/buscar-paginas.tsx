@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { GRUPO_LOJA, GRUPOS_NAV, type ItemNav } from "@/lib/navegacao-grupos"
+import { todosOsGrupos, type ItemNav } from "@/lib/navegacao-grupos"
 import {
   Dialog,
   DialogContent,
@@ -30,10 +30,9 @@ import {
  * e cada lugar só planta um botão que chama `abrir()`.
  */
 
-const TODAS: (ItemNav & { grupo: string })[] = [
-  ...GRUPOS_NAV.flatMap((g) => g.itens.map((item) => ({ ...item, grupo: g.titulo }))),
-  ...GRUPO_LOJA.itens.map((item) => ({ ...item, grupo: GRUPO_LOJA.titulo })),
-]
+function todasAsTelas(mei: boolean): (ItemNav & { grupo: string })[] {
+  return todosOsGrupos(mei).flatMap((g) => g.itens.map((item) => ({ ...item, grupo: g.titulo })))
+}
 
 function achatar(s: string) {
   return s
@@ -52,7 +51,7 @@ export function BuscaPaginasProvider({ mei, children }: { mei: boolean; children
   const campo = useRef<HTMLInputElement>(null)
 
   const opcoes = useMemo(() => {
-    const base = mei ? TODAS : TODAS.filter((item) => item.grupo !== "Loja")
+    const base = todasAsTelas(mei)
     const q = achatar(termo.trim())
     if (!q) return base
     return base.filter((item) => achatar(item.rotulo).includes(q) || achatar(item.grupo).includes(q))
