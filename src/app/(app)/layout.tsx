@@ -9,13 +9,14 @@ import { BarraTopo } from "@/components/barra-topo"
 import { AvisoCritico } from "@/components/aviso-critico"
 import { Toaster } from "@/components/ui/toast"
 import { BuscaPaginasProvider } from "@/components/buscar-paginas"
-import { FabAdicionar } from "@/components/fab-adicionar"
+import { FaixaConectar } from "@/components/faixa-conectar"
+import { temBancoConectado } from "@/lib/open-finance/provedor"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
   if (!sessao) redirect("/login")
 
-  const [lar, usuario] = await Promise.all([
+  const [lar, usuario, bancoConectado] = await Promise.all([
     prisma.lar.findUnique({
       where: { id: sessao.larId },
       select: { onboardingEm: true, meiPerfil: { select: { id: true } } },
@@ -24,6 +25,10 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // de alguém precisa valer no próximo clique. `avatarUrl` pela mesma razão:
     // trocar a foto não deveria esperar o token vencer para aparecer.
     prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true } }),
+    // Quem já ligou o banco não precisa mais do convite. A consulta é do
+    // servidor porque a faixa aparece no primeiro paint: decidir isso no
+    // cliente faria a página inteira pular para baixo depois de montada.
+    temBancoConectado(sessao.larId),
   ])
 
   // Lar apagado com token ainda válido: manda para o login em vez de estourar.
@@ -59,10 +64,12 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             competencia={rotuloCompetencia(competenciaAtual())}
           />
           <SubAbas mei={Boolean(lar.meiPerfil)} />
+          <FaixaConectar conectado={bancoConectado} />
           <main className="animate-page-enter">{children}</main>
         </div>
 
-        <FabAdicionar />
+        {/* O "+" agora mora no meio da barra do polegar (`navegacao.tsx`),
+            não mais flutuando sobre o canto — PARTE 4.2 do spec. */}
         <TinoDock />
         <Toaster />
       </div>

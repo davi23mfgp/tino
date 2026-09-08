@@ -78,8 +78,12 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     alertas.push({
       tipo: "caixa_negativo",
       severidade: "CRITICO",
-      titulo: "Seu caixa fica negativo antes do previsto",
-      texto: `Mantendo o ritmo atual, o saldo fica negativo em ${rotuloCompetencia(primeiroNegativo.competencia)} (${formatarMoeda(primeiroNegativo.saldoAcumuladoCentavos)}). Dá para evitar cortando ${formatarMoeda(Math.abs(primeiroNegativo.saldoAcumuladoCentavos))} ao longo dos próximos meses.`,
+      // Frase da PARTE 3 do spec, palavra por palavra: nenhuma frase de
+      // interface passa de 12 palavras, e "caixa"/"projeção" são jargão de
+      // contador. O valor e o plano de corte continuam existindo — em
+      // `/projecao`, que é onde eles decidem alguma coisa.
+      titulo: "Falta dinheiro pela frente",
+      texto: `No ritmo de hoje, falta dinheiro em ${rotuloCompetencia(primeiroNegativo.competencia)}.`,
       acaoRota: "/projecao",
       chave: `caixa_negativo:${primeiroNegativo.competencia}`,
       dados: { competencia: primeiroNegativo.competencia },
@@ -90,8 +94,8 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     alertas.push({
       tipo: "mes_no_vermelho",
       severidade: "ATENCAO",
-      titulo: "Você gastou mais do que recebeu neste mês",
-      texto: `Saldo do mês: ${formatarMoeda(panorama.mes.sobraCentavos)}. A maior despesa foi ${panorama.mes.despesasPorCategoria[0]?.nome ?? "sem categoria"} (${formatarMoeda(panorama.mes.despesasPorCategoria[0]?.totalCentavos ?? 0)}).`,
+      titulo: "Você gastou mais do que recebeu",
+      texto: `Faltou ${formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}. O maior gasto foi ${panorama.mes.despesasPorCategoria[0]?.nome ?? "sem categoria"}.`,
       acaoRota: "/transacoes",
       chave: `mes_no_vermelho:${mes}`,
     })

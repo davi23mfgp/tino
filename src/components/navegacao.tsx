@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import Image from "next/image"
 import Link from "next/link"
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import { enviar } from "@/lib/cliente"
 import { TinoMascote } from "@/components/tino-mascote"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
+import { FabAdicionar } from "@/components/fab-adicionar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -101,19 +102,23 @@ function IconeTrilho({
   ativo?: boolean
 }) {
   return (
+    // Ícone COM rótulo de 12px, sempre visível (SPEC-CALEN-PRECISO, PARTE
+    // 4.2). Antes era só o ícone, com o nome escondido no `title` — e ícone
+    // sozinho não é intuitivo para quem o Davi quer atender: a referência
+    // mostra "Início/Calendário/Contas/Perfil" escrito em todo item.
     <Link
       href={href}
-      title={rotulo}
       aria-label={rotulo}
       aria-current={ativo ? "page" : undefined}
       className={cn(
-        "toque grid place-items-center rounded-2xl transition-colors",
+        "toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 transition-colors",
         ativo
           ? "bg-accent text-accent-foreground"
           : "text-[color:var(--texto-2)] hover:bg-foreground/[0.06] hover:text-foreground",
       )}
     >
       <Icone className="size-[18px]" />
+      <span className="w-full truncate text-center text-[12px] font-medium leading-none">{rotulo}</span>
     </Link>
   )
 }
@@ -202,16 +207,16 @@ function MenuMais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: string }) 
         ref={botaoRef}
         onClick={() => setAberto((atual) => !atual)}
         aria-label="Mais"
-        title="Mais"
         aria-expanded={aberto}
         className={cn(
-          "toque grid place-items-center rounded-2xl transition-colors",
+          "toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 transition-colors",
           aberto
             ? "bg-accent text-accent-foreground"
             : "text-[color:var(--texto-2)] hover:bg-foreground/[0.06] hover:text-foreground",
         )}
       >
         <Menu className="size-[18px]" />
+        <span className="text-[12px] font-medium leading-none">Mais</span>
       </button>
 
       {aberto &&
@@ -253,7 +258,10 @@ function TrilhoLateral({ nome, avatarUrl, mei }: { nome: string; avatarUrl: stri
     // Trilho FLUTUANDO: mesma margem de 12px que a barra do polegar do
     // celular já usa (`inset-x-3 bottom-3`), agora nas quatro bordas do
     // próprio trilho. `.ios-card` já traz o raio, o vidro e a sombra.
-    <aside className="ios-card fixed inset-y-3 left-3 z-30 hidden w-[64px] flex-col items-center gap-2 py-4 lg:flex">
+    // 96px (era 64px): o rótulo de 12px precisa caber inteiro sem cortar
+    // "Movimento", o nome mais longo do núcleo — em 84px ele virava
+    // "Movime…", que é o mesmo problema do ícone sem nome.
+    <aside className="ios-card fixed inset-y-3 left-3 z-30 hidden w-[96px] flex-col items-center gap-1 px-2 py-4 lg:flex">
       <Link href="/painel" title="Tino" className="mb-2 grid place-items-center">
         <Image src="/tino-mascote.png" alt="" width={30} height={30} className="size-[30px] object-contain" />
       </Link>
@@ -279,8 +287,7 @@ function TrilhoLateral({ nome, avatarUrl, mei }: { nome: string; avatarUrl: stri
           <DropdownMenuTrigger asChild>
             <button
               aria-label="Perfil"
-              title="Perfil"
-              className="toque grid place-items-center rounded-2xl text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
+              className="toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
             >
               {avatarUrl ? (
                 <Avatar className="size-6">
@@ -292,6 +299,7 @@ function TrilhoLateral({ nome, avatarUrl, mei }: { nome: string; avatarUrl: stri
               ) : (
                 <User className="size-[18px]" />
               )}
+              <span className="text-[12px] font-medium leading-none">Perfil</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-48">
@@ -376,38 +384,43 @@ export function Navegacao({
 
       {gaveta && <Gaveta grupos={grupos} caminho={caminho} aoFechar={() => setGaveta(false)} />}
 
-      {/* ── Barra do polegar: o NÚCLEO (Início/Movimento/Cartões/Perfil) —
-          mesmos 4 itens sempre visíveis do trilho do desktop — mais "Mais",
-          que abre a gaveta com o nível 2. Painel flutuando (`.ios-card`)
-          com respiro de 12px nas três bordas. */}
+      {/* ── Barra do polegar: os 4 itens do NÚCLEO com ícone E rótulo, e o
+          "+" no MEIO deles — anatomia da PARTE 4.2 do spec, copiada da
+          referência. Duas mudanças desta rodada: o "+" saiu de botão
+          flutuante no canto (onde tapava conteúdo e não lia como navegação)
+          para o centro da barra, e "Mais" saiu daqui — o nível 2 continua a
+          um toque pelo hambúrguer do cabeçalho móvel logo acima, e cinco
+          alvos numa barra de 44px deixavam cada um estreito demais.
+
+          Rótulo em 12px (era 10px): é o número do spec, e 10px em barra de
+          navegação é o tamanho em que o rótulo existe sem ser lido. */}
       <nav className="ios-card safe-bottom fixed inset-x-3 bottom-3 z-40 lg:hidden">
         <div className="flex items-stretch justify-around">
-          {NUCLEO.map((grupo) => {
+          {NUCLEO.map((grupo, indice) => {
             const primeiro = grupo.itens[0]
             const ativo = grupo.itens.some((item) => estaAtivo(caminho, item.rota))
             const { Icone } = primeiro
             return (
-              <Link
-                key={grupo.chave}
-                href={primeiro.rota}
-                className={cn(
-                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
-                  ativo ? "text-acao" : "text-muted-fg",
+              <Fragment key={grupo.chave}>
+                {indice === 2 && (
+                  <div className="flex w-16 shrink-0 items-center justify-center">
+                    <FabAdicionar ancorado />
+                  </div>
                 )}
-              >
-                <Icone className="size-5" />
-                {grupo.titulo}
-              </Link>
+                <Link
+                  href={primeiro.rota}
+                  aria-current={ativo ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 py-2 text-[12px] font-medium transition-colors",
+                    ativo ? "text-acao" : "text-muted-fg",
+                  )}
+                >
+                  <Icone className="size-5" />
+                  <span className="w-full truncate px-0.5 text-center leading-none">{grupo.titulo}</span>
+                </Link>
+              </Fragment>
             )
           })}
-          <button
-            onClick={() => setGaveta(true)}
-            aria-label="Abrir menu"
-            className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] text-muted-fg"
-          >
-            <Menu className="size-5" />
-            Mais
-          </button>
         </div>
       </nav>
     </>

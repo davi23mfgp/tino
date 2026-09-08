@@ -367,13 +367,15 @@
 }
 
 /* A área de conteúdo desloca pela largura do trilho lateral flutuando:
-   64px de trilho + 12px de margem de cada lado (`inset-y-3 left-3` em
-   `navegacao.tsx`) + um respiro de 20px antes do conteúdo. Breakpoint em
+   96px de trilho + 12px de margem de cada lado (`inset-y-3 left-3` em
+   `navegacao.tsx`) + um respiro de 20px antes do conteúdo. O trilho passou
+   de 64px para 96px quando os rótulos de 12px viraram visíveis
+   (SPEC-CALEN-PRECISO, PARTE 4.2), e este número acompanha. Breakpoint em
    1024px (`lg`), não mais 768px (`md`) — o trilho e a barra do polegar
    trocam de lugar juntos no mesmo ponto agora (ver `navegacao.tsx`). */
 @media (min-width: 1024px) {
   .area-do-app {
-    padding-left: 108px;
+    padding-left: 140px;
   }
 }
 

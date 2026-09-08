@@ -38,7 +38,7 @@ interface Conta {
 
 const HOJE_ISO = () => new Date().toISOString().slice(0, 10)
 
-export function FabAdicionar() {
+export function FabAdicionar({ ancorado = false }: { ancorado?: boolean }) {
   const router = useRouter()
   const [menuAberto, setMenuAberto] = useState(false)
   const [formAberto, setFormAberto] = useState(false)
@@ -90,9 +90,24 @@ export function FabAdicionar() {
 
   return (
     <>
-      <div className="fixed bottom-24 right-4 z-40 lg:hidden">
+      {/* `ancorado`: o "+" mora DENTRO da barra do polegar, no meio dos quatro
+          itens — é a anatomia da PARTE 4.2 do spec, copiada da referência.
+          Antes ele flutuava sobre o canto direito, e ali ele tapava conteúdo
+          e não lia como parte da navegação. O modo flutuante continua
+          existindo porque o botão também é montado fora da barra em tela
+          cheia de diálogo. */}
+      <div
+        className={cn(
+          ancorado ? "relative flex items-center justify-center" : "fixed bottom-24 right-4 z-40 lg:hidden",
+        )}
+      >
         {menuAberto && (
-          <div className="vidro-menu absolute bottom-16 right-0 w-56 space-y-0.5 rounded-[var(--raio-cartao)] p-1.5">
+          <div
+            className={cn(
+              "vidro-menu absolute bottom-16 w-56 space-y-0.5 rounded-[var(--raio-cartao)] p-1.5",
+              ancorado ? "left-1/2 z-50 -translate-x-1/2" : "right-0",
+            )}
+          >
             <button
               onClick={() => {
                 setMenuAberto(false)
@@ -138,7 +153,10 @@ export function FabAdicionar() {
           onClick={() => setMenuAberto((atual) => !atual)}
           aria-label="Adicionar"
           aria-expanded={menuAberto}
-          className="ios-tap grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-alta"
+          className={cn(
+            "ios-tap grid place-items-center rounded-full bg-primary text-primary-foreground shadow-alta",
+            ancorado ? "size-12" : "size-14",
+          )}
         >
           <Plus className={cn("size-6 transition-transform duration-200", menuAberto && "rotate-45")} />
         </button>
