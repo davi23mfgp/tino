@@ -9,6 +9,7 @@ import { BarraTopo } from "@/components/barra-topo"
 import { AvisoCritico } from "@/components/aviso-critico"
 import { Toaster } from "@/components/ui/toast"
 import { BuscaPaginasProvider } from "@/components/buscar-paginas"
+import { FabAdicionar } from "@/components/fab-adicionar"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
@@ -61,6 +62,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           <main className="animate-page-enter">{children}</main>
         </div>
 
+        <FabAdicionar />
         <TinoDock />
         <Toaster />
       </div>

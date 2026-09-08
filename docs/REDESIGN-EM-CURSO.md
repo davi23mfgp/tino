@@ -3,6 +3,87 @@
 Ponto de retomada. Quem abrir isto numa sessão nova consegue continuar sem
 perguntar nada ao Davi.
 
+## Redesign "direção Calen" — Etapa 3: FAB mobile + automação primeiro (07/09/2026, noite)
+
+Fecha a lista de pedidos desta rodada (estrutura + visual, seções acima).
+
+### FAB "+" fixo (`components/fab-adicionar.tsx`, novo)
+
+Pedido explícito: "botão + fixo... replique de verdade" o padrão mobile do
+Calen. Só no celular (`lg:hidden` — desktop já tem os mesmos destinos no
+trilho/menu "Mais", um FAB ali seria redundante). Menu com 3 opções, na
+ORDEM que a automação-primeiro pede:
+
+1. **Anotar** → `/capturas` (fila automática por linguagem natural).
+2. **Importar extrato** → `/importar` (banco preenche sozinho).
+3. **Nova transação manual** — a única peça de infraestrutura nova de
+   verdade nesta rodada inteira. `POST /api/transacoes` já existia e já
+   aceitava lançamento manual desde sempre, mas **nenhuma tela tinha
+   formulário pra isso** — só existia por linguagem natural ou import.
+   Formulário mínimo (tipo, conta, descrição, valor, data); categoria
+   fica de fora de propósito, a própria rota já sugere pela regra do lar
+   quando não vem categoria.
+
+**Testado de ponta a ponta** (não só visual): preenchido e enviado via
+DOM real, confirmado com `GET /api/transacoes` que o lançamento
+persistiu (`origem: "MANUAL"`), depois apagado com `DELETE` pra não
+sujar o lar de demonstração.
+
+### Início mostra fila automática ANTES do formulário manual
+
+Pedido do Davi (investigação prévia dele, registrada por ele: "o Tino já
+tem quase tudo isso — importar com categorização automática, regras de
+categorização permanente, recorrências, capturas por voz/WhatsApp — não é
+feature nova, é dar destaque"). Em `(app)/painel/page.tsx`, os blocos 3
+("Anotar em segundos", manual) e 4 ("N esperando você", fila automática de
+capturas) trocaram de ordem — a fila automática vem primeiro agora, o
+formulário manual depois, como fallback.
+
+**Simulador/Metas já estavam separados** do "ver como está" antes mesmo
+deste pedido chegar: a Etapa 1 (navegação em duas camadas, seção acima)
+já colocou os dois atrás do menu "Mais" (nível 2 — Planejar/Analisar),
+fora do núcleo sempre visível. Não precisou de mudança adicional aqui,
+só registrar que o pedido já estava coberto.
+
+**Não construído, de propósito**: integração bancária ao vivo (Open
+Finance) — Davi pediu explicitamente pra NÃO tratar como infraestrutura
+nova nesta rodada. O Tino já tem Open Finance documentado em `docs/`
+(conexão existente, fora do escopo desta sessão de CSS/estrutura) —
+registrado como gap conhecido pra ele decidir depois, não inventado nem
+tocado.
+
+### Mobile ~390px — limitação de ferramenta, não pulado
+
+Davi pediu verificação real no breakpoint mobile. `resize_window` (a
+ferramenta de automação de navegador disponível nesta máquina) não
+alterou o viewport real da aba em nenhuma tentativa desta sessão —
+confirmado via `window.innerWidth` depois de pedir 420×850, 1600×1300 e
+outros tamanhos: sempre voltava a ~1350-1568px, o tamanho físico da tela
+desta máquina. Um `<iframe>` apontando pra própria rota também não
+serviu (a página recusa renderizar dentro de iframe, cabeçalho de
+segurança de app autenticado).
+
+**Verificação que deu pra fazer**: forçado via `style.display` no DOM
+(sem mudar nenhum arquivo do app) o layout mobile — trilho lateral
+escondido, cabeçalho móvel e barra do polegar visíveis — confirmando que
+o CONTEÚDO certo renderiza nesses elementos (barra do polegar com
+Início/Movimento/Cartões/Perfil/Mais, gaveta com os grupos do nível 2,
+FAB com as 3 opções na ordem certa). O MECANISMO responsivo em si
+(`lg:hidden`/`lg:flex`, breakpoint 1024px) não mudou nesta rodada — é o
+mesmo de sessões anteriores, já testado em navegador de verdade antes
+("Skin acromática aplicada no app inteiro", seção mais abaixo neste
+arquivo). O que não foi possível: ver o RESULTADO VISUAL num viewport de
+390px de verdade (espaçamento, quebra de linha, se algo transborda) —
+fica como verificação pendente pra quando alguém abrir num
+celular/emulador real.
+
+### Verificado nesta etapa
+
+`tsc`/`next build`/`npm test` (265)/`test:fumaca` (63) limpos depois de
+cada mudança. FAB testado ponta a ponta contra o Postgres local
+(criar + confirmar + apagar transação real). Reordenação do painel
+confirmada ao vivo no Chrome.
+
 ## Redesign "direção Calen" — Etapa 2: visual (07/09/2026, noite)
 
 Continuação da Etapa 1 (navegação, seção acima). Davi corrigiu o pedido de

@@ -114,15 +114,11 @@ export default async function Painel() {
         )}
       </div>
 
-      {/* 3) Anotar em uma linha. */}
-      <Cartao titulo="Anotar em segundos" estatico>
-        <AnotarRapidoHoje />
-        <p className="mt-2 text-[12px] text-muted-fg">
-          Escreva como você falaria: <b>uber 18</b>, <b>farmácia 38,90</b>, <b>almoço 45</b>.
-        </p>
-      </Cartao>
-
-      {/* 4) O que está esperando confirmação. */}
+      {/* 3) O que está esperando confirmação — vem ANTES do formulário
+          manual de propósito (pedido do Davi, direção "automação em
+          primeiro lugar": a maior parte do tempo a pessoa só confere e usa
+          ferramenta específica, o lançamento manual é saída de emergência,
+          nunca a ação sugerida primeiro onde já existe fila automática). */}
       {totalPendentesCount > 0 && (
         <Cartao
           titulo={`${totalPendentesCount} esperando você`}
@@ -146,6 +142,15 @@ export default async function Painel() {
           </div>
         </Cartao>
       )}
+
+      {/* 4) Anotar em uma linha — fallback manual, depois da fila
+          automática acima (não antes dela). */}
+      <Cartao titulo="Anotar em segundos" estatico>
+        <AnotarRapidoHoje />
+        <p className="mt-2 text-[12px] text-muted-fg">
+          Escreva como você falaria: <b>uber 18</b>, <b>farmácia 38,90</b>, <b>almoço 45</b>.
+        </p>
+      </Cartao>
 
       {/* 5) Três números — saldo, sobra do mês, próxima conta a vencer.
           Ícone em círculo sólido (referência do redesign de 07/09/2026) —
