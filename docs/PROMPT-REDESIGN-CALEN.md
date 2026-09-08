@@ -102,9 +102,43 @@ de verdade no breakpoint mobile do Tino (não só adaptar o desktop pra
 caber). Testar em largura de ~390px é obrigatório antes de fechar,
 igual já foi feito na rodada de skin anterior.
 
-**A partir daqui é autônomo até o fim** (mensagem seguinte do Davi, foi
-dormir): não parar pra perguntar nada que não seja genuinamente decisão
-dele. Terminar a missão inteira antes de considerar concluído.
+**Automação como diferencial — não é feature nova, é dar destaque ao que
+já existe** (mensagem seguinte do Davi): ele quer que o cliente NÃO
+precise ficar cadastrando coisa o tempo todo — que na maior parte das
+vezes só entre pra conferir como está e usar ferramentas específicas
+(simulador, metas), e o resto (cartão, gastos) seja o mais automático
+possível. **Confirmado por investigação: o Tino já tem quase tudo disso
+pronto, só não está em destaque:**
+- `importar` — extrato OFX/CSV/PDF com categorização automática sugerida
+  (campo `confianca`), detecção de duplicata.
+- `regras` — categorização automática permanente (Tino aprende).
+- `recorrencias` — contas/receitas fixas, não precisa relançar todo mês.
+- `capturas` — fila rápida por voz/WhatsApp/compartilhamento do celular,
+  literalmente pensada pra "não digitar nada", já documentada no próprio
+  código como "o que o usuário abre todo dia".
+Isso já é muito parecido com a filosofia do Calen ("conecte e some
+sozinho") — só falta a integração bancária ao vivo (Open Finance) que o
+Calen tem e o Tino não tem (é importação de arquivo, não sincronização
+automática contínua). **Não construa Open Finance agora** — é escopo de
+infraestrutura real (compliance, parceiro bancário), não cabe nesta
+rodada de redesign; registre como gap real e deixe para decisão do Davi.
+
+O que fazer nesta rodada, dentro do redesign de navegação:
+1. A tela "check status" (Início/painel) é o loop principal — deve
+   mostrar primeiro o que já foi automatizado/está pendente de um toque
+   (fila de `capturas`, sugestões de `regras`/recorrência a confirmar,
+   igual ao "aceite as sugestões que fazem sentido" do Calen) — não um
+   formulário de lançar transação em destaque.
+2. Simulador, Metas e ferramentas específicas são claramente **separadas**
+   do loop diário — o usuário abre de propósito, não aparecem misturadas
+   no meio do "ver como está".
+3. Lançamento manual continua existindo (é caminho de fallback, bem
+   feito) mas nunca é a primeira ação sugerida onde já existir alternativa
+   automática (import/captura/recorrência).
+
+**A partir daqui é autônomo até o fim** (Davi foi dormir, confirmado
+duas vezes): não parar pra perguntar nada que não seja genuinamente
+decisão dele. Terminar a missão inteira antes de considerar concluído.
 
 ## Tradução pro Tino — o que pedir ao agente de execução
 
