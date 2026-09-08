@@ -766,6 +766,11 @@
 }
 
 .vitrine .cel-barra-trilho {
+  /* É um <span>: sem `display: block` aqui, `height` e `overflow` não valem
+     nada em elemento inline — o trilho colapsava para a altura da LINHA DE
+     TEXTO (~11px) e a barra de preenchimento vazava por cima do nome da
+     categoria seguinte, exatamente o que aparece no print. */
+  display: block;
   height: 5px;
   border-radius: 999px;
   background: oklch(1 0 0 / 8%);
