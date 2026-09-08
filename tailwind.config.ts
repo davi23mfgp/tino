@@ -15,30 +15,71 @@ const config: Config = {
   theme: {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
+      // Uma família só, a do sistema. Os três nomes continuam apontando para
+      // ela para não quebrar as classes já escritas nas telas: `font-numero`
+      // ainda existe, só que hoje o algarismo tabular vem de
+      // `font-variant-numeric`, não da troca de fonte.
       fontFamily: {
-        sans: ["var(--font-corpo)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-corpo)", "sans-serif"],
-        numero: ["var(--font-numero)", "ui-monospace", "monospace"],
+        sans: ["var(--font-ios)"],
+        display: ["var(--font-ios)"],
+        numero: ["var(--font-ios)"],
       },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
-        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
-        destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
-        muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
-        accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
-        popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
-        card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+        // `border`/`input` já guardam alfa embutido (`oklch(0 0 0 / 10%)`), por
+        // isso ficam em `var()` cru — não precisam (nem podem) de <alpha-value>.
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "oklch(var(--ring) / <alpha-value>)",
+        /* `color-mix` e não `var()` cru.
+           Estes tokens guardam a cor INTEIRA (um `oklch(...)` completo), e
+           `var()` cru não deixa o Tailwind injetar opacidade: `bg-foreground/[0.09]`
+           virava cor inválida, que o navegador desenha como transparente.
+           Eram 24 usos assim, e o sintoma era discreto — trilha de barra de
+           progresso invisível, realce de hover que não aparecia, fundo que
+           sumia. Nada quebrava; as coisas só não apareciam. */
+        background: "color-mix(in oklab, var(--background) calc(<alpha-value> * 100%), transparent)",
+        foreground: "color-mix(in oklab, var(--foreground) calc(<alpha-value> * 100%), transparent)",
+        // Trio "L C H" (chroma sempre 0) interpolado com `oklch(var(--x) /
+        // <alpha-value>)` — mesmo padrão de `acao`/`positivo` abaixo. Trocou de
+        // `hsl()` pra `oklch()` na skin acromática de 07/09/2026: o valor
+        // guardado em `--primary` etc. virou trio oklch, não mais HSL.
+        primary: {
+          DEFAULT: "oklch(var(--primary) / <alpha-value>)",
+          foreground: "oklch(var(--primary-foreground) / <alpha-value>)",
+        },
+        secondary: {
+          DEFAULT: "oklch(var(--secondary) / <alpha-value>)",
+          foreground: "oklch(var(--secondary-foreground) / <alpha-value>)",
+        },
+        destructive: {
+          DEFAULT: "oklch(var(--destructive) / <alpha-value>)",
+          foreground: "oklch(var(--destructive-foreground) / <alpha-value>)",
+        },
+        muted: {
+          DEFAULT: "oklch(var(--muted) / <alpha-value>)",
+          foreground: "oklch(var(--muted-foreground) / <alpha-value>)",
+        },
+        accent: {
+          DEFAULT: "oklch(var(--accent) / <alpha-value>)",
+          foreground: "oklch(var(--accent-foreground) / <alpha-value>)",
+        },
+        popover: {
+          DEFAULT: "oklch(var(--popover) / <alpha-value>)",
+          foreground: "oklch(var(--popover-foreground) / <alpha-value>)",
+        },
+        card: {
+          DEFAULT: "oklch(var(--card) / <alpha-value>)",
+          foreground: "oklch(var(--card-foreground) / <alpha-value>)",
+        },
 
-        /* Papel, do mais próximo do olho ao mais fundo. */
-        "papel-1": "var(--papel-1)",
-        "papel-2": "var(--papel-2)",
-        "papel-3": "var(--papel-3)",
-        /* A linha do livro-caixa. */
+        /* Papel, do mais próximo do olho ao mais fundo. Pelo mesmo motivo do
+           par acima, passam por `color-mix` para aceitar opacidade. */
+        "papel-1": "color-mix(in oklab, var(--papel-1) calc(<alpha-value> * 100%), transparent)",
+        "papel-2": "color-mix(in oklab, var(--papel-2) calc(<alpha-value> * 100%), transparent)",
+        "papel-3": "color-mix(in oklab, var(--papel-3) calc(<alpha-value> * 100%), transparent)",
+        /* A linha do livro-caixa. Esta já nasce com alfa embutido no próprio
+           token, então fica como está: aplicar opacidade sobre opacidade daria
+           uma linha ainda mais fraca que a pretendida. */
         pauta: "var(--pauta)",
         "muted-fg": "var(--muted-fg)",
 
@@ -52,6 +93,20 @@ const config: Config = {
         alerta: "oklch(var(--lch-alerta) / <alpha-value>)",
         destaque: "oklch(var(--lch-destaque) / <alpha-value>)",
         dado: "oklch(var(--lch-dado) / <alpha-value>)",
+
+        /* Variante ESCURA das três cores que também preenchem SUPERFÍCIE
+           SÓLIDA com texto branco em cima (botão primário, botão destrutivo,
+           faixa crítica, indicador do toggle de preço, mapa de calor no pico).
+           A cor "cheia" de cima (`acao`, `negativo`, `positivo`) é clara demais
+           para hospedar texto branco em cima — medido: branco sobre `acao`
+           cheio dá 2.91:1, bem abaixo do 4.5:1 que WCAG AA pede. Esta variante
+           é o mesmo matiz um degrau mais escuro, calculada para dar >=5:1 com
+           texto branco (contraste real, não visual — ver docs/REDESIGN-EM-CURSO.md).
+           A `acao`/`negativo`/`positivo` claras continuam sendo a cor de
+           TEXTO, ícone, anel de foco e pastilha translúcida — não mudam. */
+        "acao-solido": "oklch(var(--lch-acao-solido) / <alpha-value>)",
+        "negativo-solido": "oklch(var(--lch-negativo-solido) / <alpha-value>)",
+        "positivo-solido": "oklch(var(--lch-positivo-solido) / <alpha-value>)",
       },
       borderRadius: {
         sm: "8px",
@@ -64,6 +119,15 @@ const config: Config = {
       boxShadow: {
         ficha: "var(--sombra-ficha)",
         alta: "var(--sombra-alta)",
+      },
+      backdropBlur: {
+        vidro: "var(--desfoque)",
+        "vidro-forte": "var(--desfoque-forte)",
+      },
+      // `ease-apple` já era escrito em `input.tsx` sem existir — classe morta.
+      // Isto a torna real, na mesma curva usada no resto do app (`--curva`).
+      transitionTimingFunction: {
+        apple: "var(--curva)",
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },

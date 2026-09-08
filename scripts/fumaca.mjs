@@ -41,6 +41,7 @@ const PAGINAS = [
   "/simulador",
   "/transacoes",
   "/investir",
+  "/assinatura",
   "/loja",
   "/loja/estoque",
   "/loja/fiado",
@@ -48,7 +49,17 @@ const PAGINAS = [
   "/bem-vindo",
 ]
 
-const PAGINAS_PUBLICAS = ["/login", "/cadastro"]
+const PAGINAS_PUBLICAS = ["/", "/login", "/cadastro"]
+
+/**
+ * Rotas do painel de administração.
+ *
+ * Visitadas com a sessão da conta de demonstração, que **não** é admin: todas
+ * têm de devolver 404. É a checagem que prova que o painel não vaza para quem
+ * apenas tem login — e 404, não 403, porque 403 já confirmaria que o endereço
+ * existe.
+ */
+const ADMIN = ["/admin", "/admin/contas", "/admin/pagamentos", "/admin/suporte", "/admin/configuracoes"]
 
 /**
  * Rotas visitadas com GET.
@@ -83,6 +94,8 @@ const APIS = [
   "/api/regras",
   "/api/simulador",
   "/api/transacoes",
+  "/api/assinatura",
+  "/api/suporte",
 ]
 
 const falhas = []
@@ -235,6 +248,10 @@ async function principal() {
   await visitar("/api/panorama", null, { esperado: 401 })
   await visitar("/painel", null, { esperado: 307 })
 
+  console.log("\nPainel do admin fechado para quem não é admin")
+  for (const rota of ADMIN) await visitar(rota, cookie, { esperado: 404 })
+  await visitar("/api/admin/parametros", cookie, { esperado: 404 })
+
   console.log("\nCoerência entre tela e fonte única")
   await saldoBateComPanorama(cookie)
 
@@ -245,7 +262,7 @@ async function principal() {
     process.exit(1)
   }
 
-  const total = PAGINAS.length + PAGINAS_PUBLICAS.length + APIS.length + 3
+  const total = PAGINAS.length + PAGINAS_PUBLICAS.length + APIS.length + ADMIN.length + 4
   console.log(verde(`${total} rotas de pé.`))
 }
 

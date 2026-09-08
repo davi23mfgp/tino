@@ -3,6 +3,7 @@ import { comSessao, corpo, ok } from "@/lib/api"
 import { competenciaAtual, competenciaMaisMeses } from "@/lib/datas"
 import { criarParcelamento } from "@/lib/parcelamentos"
 import { reservaIdeal } from "@/lib/financeiro"
+import { valorVigente } from "@/lib/parametros"
 
 interface Entrada {
   rendaMensalCentavos?: number
@@ -60,6 +61,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const competencia = competenciaAtual()
   const cartoesCriados: string[] = []
 
+  // Lido antes da transação: consulta a mais dentro dela seguraria o lock por
+  // mais tempo sem nenhuma vantagem, e o valor não muda no meio da gravação.
+  const chequeEspecialPadraoBps = await valorVigente("juros.chequeEspecialBps")
+
   await prisma.$transaction(async (tx) => {
     if (dados.rendaMensalCentavos !== undefined && sessao.membroId) {
       await tx.membro.update({
@@ -103,7 +108,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
             // A taxa informada pelo usuário vence. Sem ela, o teto legal de 8%
             // ao mês: superestimar avisa demais, subestimar esconde a dívida
             // mais cara que a pessoa tem.
-            jurosMensalBps: conta.jurosChequeEspecialBps ?? 800,
+            jurosMensalBps: conta.jurosChequeEspecialBps ?? chequeEspecialPadraoBps,
             observacao: conta.jurosChequeEspecialBps
               ? null
               : "Juros no teto legal de 8% a.m. — informe a taxa do seu contrato para a projeção ficar exata.",

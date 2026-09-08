@@ -91,6 +91,12 @@ describe("lerNotificacao — compras", () => {
 describe("lerNotificacao — o que não é gasto", () => {
   const casos: [string, string][] = [
     ["compra negada", "Compra NEGADA no cartao final 4213: R$ 890,00 em LOJA XPTO"],
+    // As duas formas de recusa que os bancos escrevem, com e sem acento. Cada
+    // uma difere da compra aprovada por uma palavra só, então cada uma precisa
+    // do próprio caso: foi "nao aprovada" que passou batido e virou gasto.
+    ["compra negada", "Compra nao aprovada de R$ 89,90 no POSTO IPIRANGA"],
+    ["compra negada", "Compra não aprovada de R$ 89,90 no POSTO IPIRANGA"],
+    ["compra negada", "Compra não autorizada de R$ 89,90 no POSTO IPIRANGA"],
     ["estorno ou cancelamento", "Estorno de R$ 52,30 referente a compra em ASSAI"],
     ["aviso de fatura, não é compra", "Sua fatura de setembro fechou: R$ 1.040,51"],
     ["entrada de dinheiro", "Você recebeu um Pix de R$ 200,00"],

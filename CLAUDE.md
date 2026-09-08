@@ -42,7 +42,7 @@ ajude a organizar dívidas, juntar para metas, projetar e decidir empréstimo.
 ## Antes de mexer em cálculo
 
 ```bash
-npm test          # 138 testes, meio segundo
+npm test          # 251 testes, cerca de um segundo e meio
 ```
 
 Se mudar regra de cálculo, o teste correspondente tem de mudar junto — e
@@ -66,9 +66,27 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
 - Prefere que você teste de verdade (curl, navegador) em vez de afirmar que
   funciona.
 - Escreve mensagens curtas e com pressa; leia a intenção, não a ortografia.
-- Já disse: **não vai usar Open Finance**. O código fica, mas fora do menu.
-- Já disse: por enquanto, esqueça Telegram, PDF de fatura e integração com
-  modelo de linguagem. O foco é cálculo e análise.
+- Já disse (registro antigo): **não vai usar Open Finance**. O código fica,
+  mas fora do menu. **Superado em 07/09/2026**: pediu Open Finance de
+  verdade ("control c control v, do nosso jeito") — ver
+  `docs/SPEC-CALEN-PRECISO.md` PARTE 5 e `docs/PESQUISA-OPEN-FINANCE.md`.
+  Linha antiga mantida aqui por registro, não por valer ainda.
+- Já disse (registro antigo): por enquanto, esqueça Telegram, PDF de fatura
+  e integração com modelo de linguagem. **Também superado**: as três coisas
+  foram pedidas e construídas depois (Telegram e assistente Tino, ver
+  README; PDF de fatura em `/importar`).
+
+## Autonomia e trabalho visual (pedido em 2026-09-04)
+
+- Trabalhar de forma autônoma: usar as skills disponíveis para decidir a
+  abordagem sem parar para perguntar o óbvio, e trocar de modelo (ex.: um
+  modelo mais forte para desenho de arquitetura/decisão complexa, o padrão
+  da sessão para execução mecânica) quando a tarefa pedir.
+- Parte visual: usar os componentes de shadcn/ui
+  (https://ui.shadcn.com/docs/components) como base, a skill `frontend-design`
+  para direção visual, e `find-skills` quando faltar skill para o caso.
+- Registrar aqui qualquer instrução nova de escopo permanente, para não
+  precisar repetir a cada sessão.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

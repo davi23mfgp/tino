@@ -6,6 +6,8 @@ import { Plus, Trash2 } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { SelectNative } from "@/components/ui/select-native"
+import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
 
 /**
@@ -63,7 +65,7 @@ const TIPOS = [
   { valor: "OUTRO", rotulo: "Outro" },
 ]
 
-const campo = "rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", parcela: "", parcelasTotal: "", pagas: "0", dia: "10" }
 
@@ -73,6 +75,7 @@ export default function Dividas() {
   const [nova, setNova] = useState(VAZIO)
   const [abrirForm, setAbrirForm] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  const [frase, setFrase] = useState("")
 
   const carregar = useCallback(async () => {
     const centavos = extra ? paraCentavos(extra) : 0
@@ -108,6 +111,32 @@ export default function Dividas() {
     }
   }
 
+  /**
+   * Linguagem natural para dívidas — item 3 do redesign de experiência
+   * (07/09/2026). Em vez de obrigar quem cadastra a preencher oito campos
+   * separados, escreve como falaria e o Tino tenta preencher o formulário.
+   * Não cadastra sozinho: preenche e deixa a pessoa conferir e completar o
+   * que não deu para entender antes de "Adicionar dívida" — dívida errada
+   * no plano de ataque é pior do que oito campos vazios.
+   */
+  function interpretarFrase() {
+    if (!frase.trim()) return
+    const lida = lerDivida(frase)
+    setNova((atual) => ({
+      ...atual,
+      credor: lida.credor ?? atual.credor,
+      tipo: lida.tipo ?? atual.tipo,
+      saldo: lida.saldoDevedorCentavos !== null ? String(lida.saldoDevedorCentavos / 100).replace(".", ",") : atual.saldo,
+      juros: lida.jurosMensalBps !== null ? String(lida.jurosMensalBps / 100).replace(".", ",") : atual.juros,
+      parcela: lida.parcelaCentavos !== null ? String(lida.parcelaCentavos / 100).replace(".", ",") : atual.parcela,
+      parcelasTotal: lida.parcelasTotal !== null ? String(lida.parcelasTotal) : atual.parcelasTotal,
+      pagas: lida.parcelasPagas !== null ? String(lida.parcelasPagas) : atual.pagas,
+      dia: lida.diaVencimento !== null ? String(lida.diaVencimento) : atual.dia,
+    }))
+    setAbrirForm(true)
+    setFrase("")
+  }
+
   const abertas = dados?.dividas.filter((divida) => !divida.quitada) ?? []
   const quitadas = dados?.dividas.filter((divida) => divida.quitada) ?? []
   const comparativo = dados?.comparativo
@@ -122,7 +151,7 @@ export default function Dividas() {
           </button>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Total devido" valor={formatarMoeda(dados?.totalCentavos ?? 0)} tom="negativo" />
           <Metrica rotulo="Parcelas por mês" valor={formatarMoeda(dados?.parcelaMensalCentavos ?? 0)} />
           <Metrica
@@ -153,6 +182,28 @@ export default function Dividas() {
 
         {abrirForm && (
           <form onSubmit={criar} className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="flex gap-2 sm:col-span-3">
+              <input
+                value={frase}
+                onChange={(evento) => setFrase(evento.target.value)}
+                onKeyDown={(evento) => {
+                  if (evento.key === "Enter") {
+                    evento.preventDefault()
+                    interpretarFrase()
+                  }
+                }}
+                placeholder="ou escreva: Nubank 3200, juros 2,5% ao mês, parcela 350, vence dia 10"
+                className={cn(campo, "flex-1")}
+              />
+              <button
+                type="button"
+                onClick={interpretarFrase}
+                className="shrink-0 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[13px] text-acao"
+              >
+                Preencher
+              </button>
+            </div>
+
             <input
               value={nova.credor}
               onChange={(evento) => setNova({ ...nova, credor: evento.target.value })}
@@ -160,13 +211,13 @@ export default function Dividas() {
               required
               className={cn(campo, "sm:col-span-2")}
             />
-            <select value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })} className={campo}>
+            <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
               {TIPOS.map((tipo) => (
                 <option key={tipo.valor} value={tipo.valor}>
                   {tipo.rotulo}
                 </option>
               ))}
-            </select>
+            </SelectNative>
             <input
               value={nova.saldo}
               onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
@@ -212,7 +263,7 @@ export default function Dividas() {
             />
             <button
               disabled={ocupado}
-              className="rounded-2xl bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
+              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
             >
               Adicionar dívida
             </button>
@@ -224,15 +275,15 @@ export default function Dividas() {
         <Cartao titulo="Qual estratégia sai mais barata">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-acao/40 bg-acao/10 p-4">
-              <p className="text-[13px] font-medium text-acao">Avalanche — maior juro primeiro</p>
+              <p className="text-[13px] font-medium text-acao">Avalanche: paga primeiro o juro mais alto</p>
               <p className="mt-1.5 text-[20px] font-semibold">{comparativo.avalanche.meses} meses</p>
               <p className="text-[12px] text-muted-fg">
                 {formatarMoeda(comparativo.avalanche.totalJurosCentavos)} de juros
               </p>
             </div>
 
-            <div className="rounded-2xl border border-pauta p-4">
-              <p className="text-[13px] font-medium">Bola de neve — menor saldo primeiro</p>
+            <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
+              <p className="text-[13px] font-medium">Bola de neve: paga primeiro o menor saldo</p>
               <p className="mt-1.5 text-[20px] font-semibold">{comparativo.bolaDeNeve.meses} meses</p>
               <p className="text-[12px] text-muted-fg">
                 {formatarMoeda(comparativo.bolaDeNeve.totalJurosCentavos)} de juros
@@ -262,7 +313,7 @@ export default function Dividas() {
             {dados.ordem.map((divida, indice) => {
               const quitacao = dados.plano?.quitacoes.find((linha) => linha.id === divida.id)
               return (
-                <li key={divida.id} className="flex items-center gap-3 rounded-2xl border border-pauta p-3">
+                <li key={divida.id} className="flex items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
                     {indice + 1}
                   </span>
@@ -292,7 +343,7 @@ export default function Dividas() {
           {abertas.map((divida) => {
             const progresso = divida.parcelasTotal ? (divida.parcelasPagas / divida.parcelasTotal) * 100 : 0
             return (
-              <div key={divida.id} className="rounded-2xl border border-pauta p-3.5">
+              <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-[14px] font-medium">{divida.credor}</p>

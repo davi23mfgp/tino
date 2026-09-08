@@ -6,6 +6,7 @@ import { Check, Copy } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { TrilhaLoja } from "@/components/trilha-loja"
 import { textoDeCobranca } from "@/lib/loja/fiado"
 import type { ClienteDevedor } from "@/lib/loja/fiado"
 
@@ -73,8 +74,9 @@ export default function Fiado() {
 
   return (
     <div className="space-y-4">
+      <TrilhaLoja pagina="Fiado" />
       <Cartao titulo="Fiado">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica
             rotulo="Na rua"
             valor={formatarMoeda(dados?.resumo.totalCentavos ?? 0)}

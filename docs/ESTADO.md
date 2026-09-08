@@ -1,11 +1,11 @@
 # Onde o projeto está
 
-Última atualização: 26/08/2026.
+Última atualização: 03/09/2026.
 
 ## Resumo
 
-App funcionando de ponta a ponta, rodando local. 149 arquivos, 6 commits em
-`main`, 138 testes passando, build limpo. Ainda **não publicado** — roda no
+App funcionando de ponta a ponta, rodando local. 251 testes passando, 63
+rotas de pé no teste de fumaça, build limpo. Ainda **não publicado** — roda no
 computador do Davi e é acessado pelo celular na rede de casa.
 
 ## Telas prontas
@@ -32,8 +32,23 @@ computador do Davi e é acessado pelo celular na rede de casa.
 | Prateleira | `/loja/estoque` | saldo, custo médio e margem por produto (Tino.mei) |
 | Fiado | `/loja/fiado` | quem deve, há quanto tempo, texto de cobrança (Tino.mei) |
 | Longo prazo | `/investir` | efeito do corte no caixa, ARCA, divisão da renda, reserva |
-| Configurações | `/configuracoes` | contas, refazer conversa inicial |
+| Configurações | `/configuracoes` | contas, refazer conversa inicial, falar com o suporte |
+| Assinatura | `/assinatura` | plano, status de pagamento, próxima cobrança, trocar de plano, cancelar |
 | Conversa inicial | `/bem-vindo` | 7 perguntas, todas puláveis |
+
+## Telas do dono (admin)
+
+Só abrem para usuário com `admin = true`. Para qualquer outra sessão devolvem
+404 — não 403, que confirmaria a existência da rota. Como promover está em
+`docs/PAGAMENTO-E-ADMIN.md`.
+
+| Tela | Rota | O que faz |
+|---|---|---|
+| Visão geral | `/admin` | MRR, inadimplência, churn do mês, base de contas, o que precisa de ação |
+| Contas | `/admin/contas` | lista com busca por e-mail ou nome, status de assinatura de cada uma |
+| Pagamentos | `/admin/pagamentos` | histórico dos dois gateways na mesma tabela, recusas em bloco próprio |
+| Suporte | `/admin/suporte` | fila de chamados abertos, mais antigo primeiro, com marcar resolvido |
+| Configurações | `/admin/configuracoes` | preço dos planos, teto do cheque especial e dias de teste, editáveis sem deploy |
 
 ## O que falta
 
@@ -42,7 +57,12 @@ Em ordem de valor, na minha leitura:
 1. **Publicar.** O código já está pronto para isso: o `build` aplica as
    migrations, o schema tem `directUrl` para o pooler do Postgres gerenciado e
    `docs/PUBLICAR.md` tem o passo a passo. Falta o que só o Davi pode fazer —
-   criar as contas no Neon e na Vercel e colar as variáveis.
+   criar as contas no Neon e na Vercel e colar as variáveis. **Depende só do
+   Davi**, listado em `docs/PARA-O-DAVI.md`.
+1. **Ligar a cobrança.** Mercado Pago e Stripe estão implementados, com webhook
+   conferido e idempotente, e rodam sem chave nenhuma (botão desabilitado com o
+   motivo na tela). Falta criar as contas, gerar as chaves e colá-las na Vercel
+   — **depende só do Davi**, passo a passo em `docs/PAGAMENTO-E-ADMIN.md`.
 2. **Telas com teste raso.** `npm run test:fumaca` prova que as 40 checagens
    passam: toda página e toda rota de leitura respondem, rota protegida sem
    sessão continua fechada, e o saldo do painel bate com `/api/panorama`. O que
@@ -53,7 +73,8 @@ Em ordem de valor, na minha leitura:
    senha na tela Importar, mas ele ainda não informou. São 31 parcelamentos
    reais que continuam fora do sistema.
 4. **Taxa real do cheque especial dele.** O app assume o teto de 8% a.m.
-   quando não informada.
+   quando não informada. O teto deixou de ser constante no código: está em
+   `/admin/configuracoes`, e muda sem deploy.
 
 ## Contas no banco local
 
@@ -72,6 +93,27 @@ que de fato roda.
 Para ter ESLint de volta é preciso subir `eslint` e `eslint-config-next` (hoje
 em 14.2.3, contra Next 16) e criar um `eslint.config.mjs`. É mexer em
 dependência com o build funcionando, então fica para uma decisão sua.
+
+### Nada de visual foi conferido no olho ainda
+
+A linguagem visual do iOS que entrou em `1dea3a6` — fonte, cor de ação, raio,
+pauta mais fina — foi verificada por `tsc`, `next build`, os 251 testes e as 63
+rotas do teste de fumaça. **Nenhuma tela foi vista rodando.**
+
+Duas tentativas, as duas barradas por ambiente e não por configuração:
+
+- a extensão do Chrome do Claude não conecta nesta máquina;
+- o `agent-browser` foi instalado (05/09/2026) e o Chrome que ele baixa não
+  sobe aqui: sai com código 0 sem escrever `DevToolsActivePort`, e falha até
+  em `chrome.exe --version`, com erro de pipe do crashpad. O contorno que o
+  próprio CLI sugere (`--no-sandbox`) é barrado pelo classificador de
+  permissão da sessão.
+
+Quem retomar numa máquina com navegador: `npm run db:start`, `npm run dev`, e
+olhe antes de mexer em mais cor ou espaçamento. Contraste e token já foram
+conferidos no número; o que falta é o julgamento de tela — se o azul do botão
+briga com o azul do valor quando os dois aparecem juntos, se a pauta de 1px
+ainda se vê, se o raio de 16px na ficha ficou mole perto do 14px do resto.
 
 ## Decisões de interface
 

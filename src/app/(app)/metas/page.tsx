@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { formatarData } from "@/lib/datas"
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { projetarMeta } from "@/lib/financeiro"
-import { Barra, Cartao, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Valor, Vazio } from "@/components/ui/painel"
+import { NovaMeta } from "@/components/nova-meta"
 
 export const dynamic = "force-dynamic"
 
@@ -38,6 +39,8 @@ export default async function Metas() {
         {concluidas > 0 && (
           <p className="mt-2 text-xs text-positivo">{concluidas} meta(s) já concluída(s).</p>
         )}
+
+        <NovaMeta />
       </Cartao>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -58,7 +61,7 @@ export default async function Metas() {
                   <p className="text-[12px] text-muted-fg">{ROTULO_TIPO[meta.tipo] ?? "Meta"}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-semibold">{formatarMoeda(meta.saldoCentavos)}</p>
+                  <Valor tamanho="medio">{formatarMoeda(meta.saldoCentavos)}</Valor>
                   <p className="text-[12px] text-muted-fg">de {formatarMoeda(meta.alvoCentavos)}</p>
                 </div>
               </div>
@@ -78,14 +81,14 @@ export default async function Metas() {
               <div className="mt-3 space-y-1 text-xs">
                 <p className="text-muted-fg">
                   Aporte atual: {formatarMoeda(meta.aporteMensalCentavos)}/mês
-                  {meta.rendimentoAnualBps > 0 && ` · rendendo ${(meta.rendimentoAnualBps / 100).toFixed(1)}% a.a.`}
+                  {meta.rendimentoAnualBps > 0 && ` · rendendo ${formatarDecimal(meta.rendimentoAnualBps / 100, 1)}% a.a.`}
                 </p>
                 {meta.dataAlvo && (
                   <p className={projecao.noPrazo ? "text-positivo" : "text-atencao"}>
-                    Alvo: {formatarData(meta.dataAlvo)} —{" "}
+                    Alvo: {formatarData(meta.dataAlvo)}.{" "}
                     {projecao.noPrazo
-                      ? "está no prazo"
-                      : `precisaria de ${formatarMoeda(projecao.aporteNecessarioCentavos)}/mês`}
+                      ? "Está no prazo"
+                      : `Precisaria de ${formatarMoeda(projecao.aporteNecessarioCentavos)}/mês`}
                   </p>
                 )}
                 {projecao.dataPrevista && !meta.dataAlvo && (

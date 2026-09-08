@@ -3,11 +3,13 @@ import type { Metadata } from "next"
 import { ArrowRight, Check, Minus } from "lucide-react"
 
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
-import { DIAS_DE_TESTE, PLANOS, descontoAnualBps } from "@/lib/planos"
+import { descontoAnualBps } from "@/lib/planos"
+import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
 import { TinoMascote } from "@/components/tino-mascote"
+import { SiteNavbar } from "@/components/site-navbar"
 
 export const metadata: Metadata = {
-  title: "Tino — o contador que olha suas contas todo dia",
+  title: "Tino, o contador que olha suas contas todo dia",
   description:
     "Organize contas, dívidas e metas, e saiba o que fazer com o que sobra. Para pessoa física e para o MEI que atende no balcão.",
 }
@@ -46,9 +48,24 @@ const PERGUNTAS = [
   },
 ]
 
-export default function Vitrine() {
+/**
+ * Preço lido do banco a cada visita, e não congelado no build.
+ *
+ * O admin edita o preço sem deploy; se esta página guardasse o valor do build,
+ * a propaganda continuaria anunciando o preço velho até o próximo commit — e
+ * anunciar um valor e cobrar outro é a pior forma de começar uma relação
+ * comercial. Se o banco não responder, `planosVigentes` devolve o padrão do
+ * código e a página continua de pé.
+ */
+export const dynamic = "force-dynamic"
+
+export default async function Vitrine() {
+  const [PLANOS, DIAS_DE_TESTE] = await Promise.all([planosVigentes(), diasDeTesteVigentes()])
+
   return (
-    <main>
+    <>
+      <SiteNavbar />
+      <main>
       {/* ── O que o produto faz, mostrado em vez de prometido ── */}
       <section className="mx-auto max-w-5xl px-5 pb-16 pt-16 sm:pt-24">
         <p className="text-[11px] uppercase tracking-[0.3em] text-muted-fg">Tino</p>
@@ -95,7 +112,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── As perguntas que ele responde ── */}
-      <section className="border-y border-pauta bg-papel-2/60">
+      <section id="perguntas" className="border-y border-pauta bg-papel-2/60">
         <div className="mx-auto max-w-5xl px-5 py-16">
           <h2 className="font-display text-[24px] font-bold tracking-tight sm:text-[30px]">
             Quatro perguntas que a planilha não responde
@@ -113,7 +130,7 @@ export default function Vitrine() {
       </section>
 
       {/* ── A loja ── */}
-      <section className="mx-auto max-w-5xl px-5 py-16">
+      <section id="loja" className="mx-auto max-w-5xl px-5 py-16">
         <p className="text-[11px] uppercase tracking-[0.24em] text-muted-fg">Para quem tem loja</p>
         <h2 className="font-display mt-2 max-w-2xl text-[24px] font-bold tracking-tight sm:text-[30px]">
           A maquininha mostra o bruto. O extrato mostra o líquido três semanas depois.
@@ -220,6 +237,7 @@ export default function Vitrine() {
           </Link>
         </div>
       </footer>
-    </main>
+      </main>
+    </>
   )
 }

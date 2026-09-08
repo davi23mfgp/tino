@@ -4,6 +4,7 @@ import { competenciaAtual } from "@/lib/datas"
 import { montarPlanoPagamento, type AlvoPagamento } from "@/lib/tino/plano-pagamento"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { montarPanorama } from "@/lib/tino/panorama"
+import { valoresVigentes } from "@/lib/parametros"
 
 /**
  * Plano de "ir pagando".
@@ -12,24 +13,27 @@ import { montarPanorama } from "@/lib/tino/panorama"
  * futuras num roteiro único. Os juros do cheque especial e do rotativo entram
  * por padrão em patamares de mercado quando o usuário não informou o dele —
  * subestimar aqui esconde justamente a dívida mais cara.
+ *
+ * Os dois patamares são parâmetros do sistema, e não constantes: o teto do
+ * cheque especial muda por decisão do Banco Central, e esperar um deploy para
+ * refletir isso faria o app projetar com um juro que já não é o legal.
  */
-const JUROS_PADRAO = {
-  /// Cheque especial: teto de 8% ao mês definido pelo Banco Central.
-  chequeEspecial: 800,
-  /// Rotativo do cartão costuma passar de 14% ao mês.
-  rotativo: 1400,
-}
-
 export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
   const competencia = url.searchParams.get("competencia") ?? competenciaAtual()
 
-  const [panorama, dividas, compromissos, contas] = await Promise.all([
+  const [panorama, dividas, compromissos, contas, parametros] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
     prisma.divida.findMany({ where: { larId: sessao.larId, quitada: false } }),
     compromissosFuturos(sessao.larId, 36),
     prisma.conta.findMany({ where: { larId: sessao.larId, arquivada: false } }),
+    valoresVigentes(),
   ])
+
+  const JUROS_PADRAO = {
+    chequeEspecial: parametros["juros.chequeEspecialBps"],
+    rotativo: parametros["juros.rotativoBps"],
+  }
 
   const alvos: AlvoPagamento[] = []
 

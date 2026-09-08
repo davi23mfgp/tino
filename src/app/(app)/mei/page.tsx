@@ -7,7 +7,7 @@ import { Check, Plus } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 
 /**
  * MEI.
@@ -69,7 +69,7 @@ const AVISO_RISCO: Record<string, { texto: string; tom: string }> = {
   },
 }
 
-const campo = "rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 const VAZIO = { competencia: competenciaAtual(), comercio: "", servicos: "", dasPago: false, dasValor: "", observacao: "" }
 
@@ -169,7 +169,7 @@ export default function Mei() {
   return (
     <div className="space-y-4">
       <Cartao titulo={`Faturamento ${ano}`}>
-        <p className="numero text-4xl font-bold">{formatarMoeda(situacao?.faturamentoAnoCentavos ?? 0)}</p>
+        <Valor>{formatarMoeda(situacao?.faturamentoAnoCentavos ?? 0)}</Valor>
         <p className="mt-1 text-sm text-muted-fg">
           de {formatarMoeda(perfil?.limiteAnualEfetivoCentavos ?? 0)} de limite
           {perfil?.limiteProporcional && " (proporcional aos meses de atividade neste primeiro ano)"}
@@ -179,7 +179,7 @@ export default function Mei() {
           <Barra percentual={situacao?.percentualUsado ?? 0} />
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metrica rotulo="Usado" valor={`${situacao?.percentualUsado ?? 0}%`} />
           <Metrica rotulo="Ainda cabe" valor={formatarMoeda(situacao?.disponivelCentavos ?? 0)} tom="positivo" />
           <Metrica rotulo="Média mensal" valor={formatarMoeda(situacao?.mediaMensalCentavos ?? 0)} />
@@ -200,7 +200,7 @@ export default function Mei() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="DAS">
-          <p className="numero text-2xl font-semibold">{formatarMoeda(perfil?.dasMensalCentavos ?? 0)}</p>
+          <Valor tamanho="medio">{formatarMoeda(perfil?.dasMensalCentavos ?? 0)}</Valor>
           <p className="mt-1 text-sm text-muted-fg">
             por mês, vencendo todo dia {perfil?.diaVencimentoDas ?? "—"}.
           </p>
@@ -256,7 +256,7 @@ export default function Mei() {
         }
       >
         {abrirForm && (
-          <form onSubmit={salvar} className="mb-4 grid gap-3 rounded-2xl border border-pauta bg-papel-2 p-4 sm:grid-cols-2">
+          <form onSubmit={salvar} className="mb-4 grid gap-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4 sm:grid-cols-2">
             <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
               competência
               <input
@@ -326,7 +326,7 @@ export default function Mei() {
               <button
                 type="submit"
                 disabled={ocupado}
-                className="rounded-full bg-acao px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50"
+                className="rounded-full bg-acao px-4 py-2 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
               >
                 salvar
               </button>

@@ -158,9 +158,13 @@ export function montarPlanoPagamento(params: {
   }
 
   const maisCara = ordem[0]
+  // Frase de INTERFACE, não de relatório: teto de 12 palavras, sem taxa e sem
+  // jargão (SPEC-CALEN-PRECISO, PARTE 3). A taxa não sumiu do produto — ela
+  // continua em `ordem[]`, que é o que a tela /plano desenha item a item. O
+  // que ela deixou de fazer é abrir o Início, onde ninguém pediu por ela.
   const primeiroPasso = maisCara
-    ? `Ataque primeiro ${maisCara.nome}: é o juro mais alto da fila (${(maisCara.jurosMensalBps / 100).toFixed(2)}% ao mês). Cada real jogado aí rende mais que em qualquer outra dívida sua.`
-    : "Sem dívida aberta — a sobra do mês pode ir para a reserva de emergência."
+    ? `Pague ${maisCara.nome} primeiro. Rende mais que qualquer outra.`
+    : "Sem dívida aberta. A sobra pode ir para a reserva."
 
   return {
     passos,

@@ -15,14 +15,14 @@ interface MetricCardProps {
 }
 
 /**
- * MetricCard — padrão Control.Deal.
- * bg white/[0.05] translúcido, border white/10, rounded-3xl, blur.
- * Bolinha colorida no topo, label uppercase, número 26px bold.
- * SEM gradiente de fundo.
+ * MetricCard — vidro do Tino (`.ios-card`), não mais painel escuro fixo.
+ * Bolinha (cinza — os nomes de cor viraram token acromático) no topo, label
+ * uppercase, número 26px bold. Sem gradiente de fundo, sem cor fixa de tema
+ * escuro: segue o mesmo `.ios-card` do resto do app, que já inverte sozinho.
  */
 export function MetricCard({ label, value, dot = "blue", className }: MetricCardProps) {
   return (
-    <div className={cn("rounded-3xl border border-white/10 bg-white/[0.05] backdrop-blur-xl px-4 py-4", className)}>
+    <div className={cn("ios-card px-4 py-4", className)}>
       <div className={cn("h-2.5 w-2.5 rounded-full mb-3", DOT[dot])} />
       <p className="text-[10px] uppercase tracking-widest text-muted-fg mb-1">{label}</p>
       <p className="text-[26px] font-bold leading-none tracking-tight text-foreground">{value}</p>

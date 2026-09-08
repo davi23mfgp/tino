@@ -1,3 +1,5 @@
+import { ArrowDownRight, ArrowUpRight } from "lucide-react"
+
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -6,7 +8,7 @@ import { balancoMensal } from "@/lib/tino/balanco"
 import { montarDiagnostico, type Faixa } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { GraficoAnel, GraficoBalanco, GraficoCategorias, GraficoEvolucao } from "@/components/graficos"
+import { GraficoAnel, GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { cn } from "@/lib/utils"
@@ -102,7 +104,7 @@ export default async function Analise() {
       <Cartao titulo="Indicadores">
         <div className="grid gap-3 lg:grid-cols-2">
           {diagnostico.indicadores.map((indicador) => (
-            <div key={indicador.chave} className="rounded-2xl border border-pauta bg-papel-2 p-4">
+            <div key={indicador.chave} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-[13px] font-medium">{indicador.nome}</p>
                 <div className="text-right">
@@ -126,7 +128,7 @@ export default async function Analise() {
       <Cartao titulo="O que fazer, nesta ordem">
         <ol className="space-y-3">
           {diagnostico.prioridades.map((prioridade) => (
-            <li key={prioridade.ordem} className="flex gap-3 rounded-2xl border border-pauta p-3.5">
+            <li key={prioridade.ordem} className="flex gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
               <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
                 {prioridade.ordem}
               </span>
@@ -227,11 +229,15 @@ export default async function Analise() {
               <div className="mb-3 flex items-baseline justify-between gap-3">
                 <p className="text-[13px] font-medium">Como andou nos últimos meses</p>
                 <p
-                  className={`numero text-[13px] ${
+                  className={`numero inline-flex items-center gap-0.5 text-[13px] ${
                     mensal.variacaoCentavos >= 0 ? "text-positivo" : "text-negativo"
                   }`}
                 >
-                  {mensal.variacaoCentavos >= 0 ? "+" : ""}
+                  {mensal.variacaoCentavos >= 0 ? (
+                    <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                  ) : (
+                    <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                  )}
                   {formatarMoeda(mensal.variacaoCentavos)}
                 </p>
               </div>
@@ -288,8 +294,12 @@ export default async function Analise() {
           )}
         </Cartao>
 
-        <Cartao titulo="Entrou e saiu, mês a mês">
-          <GraficoEvolucao dados={panorama.historico} />
+        <Cartao titulo="Como cada mês fechou">
+          <GraficoDozeMeses dados={panorama.historico} competenciaDestacada={competencia} />
+          <p className="mt-3 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+            Barra para cima é mês que sobrou; para baixo, mês que faltou. O mês atual vai cheio e os anteriores em
+            meio-tom, porque ele ainda não terminou — comparar mês pela metade com mês fechado engana.
+          </p>
         </Cartao>
       </div>
 

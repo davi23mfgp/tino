@@ -27,7 +27,7 @@ const TIPOS = [
 ] as const
 
 const campo =
-  "w-full rounded-2xl border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-positivo/50"
+  "w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 backdrop-blur-vidro px-4 py-3 text-sm outline-none transition-colors focus:border-positivo/50 focus:bg-background"
 
 export default function Cadastro() {
   const router = useRouter()
@@ -101,7 +101,7 @@ export default function Cadastro() {
             Dá para mudar depois, em Configurações.
             <br />
             Já tem conta?{" "}
-            <Link href="/login" className="text-positivo hover:underline">
+            <Link href="/login" className="text-acao hover:underline">
               Entrar
             </Link>
           </p>
@@ -181,7 +181,7 @@ export default function Cadastro() {
           <button
             type="submit"
             disabled={criando}
-            className="w-full rounded-2xl bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            className="w-full rounded-[var(--raio-pilula)] bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
             {criando ? "Criando…" : "Criar conta"}
           </button>
@@ -189,7 +189,7 @@ export default function Cadastro() {
 
         <p className="mt-6 text-center text-sm text-muted-fg">
           Já tem conta?{" "}
-          <Link href="/login" className="text-positivo hover:underline">
+          <Link href="/login" className="text-acao hover:underline">
             Entrar
           </Link>
         </p>

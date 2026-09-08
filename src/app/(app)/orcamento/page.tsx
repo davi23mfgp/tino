@@ -148,7 +148,7 @@ export default function OrcamentoPagina() {
           </select>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metrica rotulo="Planejado" valor={formatarMoeda(limitePlanejado)} />
           <Metrica rotulo="Gasto" valor={formatarMoeda(gasto)} tom={gasto > limitePlanejado ? "negativo" : "neutro"} />
           <Metrica
@@ -216,7 +216,7 @@ export default function OrcamentoPagina() {
 
         <div className="space-y-2">
           {dados?.linhas.map((linha) => (
-            <div key={linha.categoriaId} className="rounded-2xl border border-pauta p-3">
+            <div key={linha.categoriaId} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="min-w-0 flex-1 truncate text-[14px]">{linha.categoria.nome}</span>
                 <span className={cn("text-[13px] tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
@@ -248,7 +248,7 @@ export default function OrcamentoPagina() {
               <p className="mt-1 text-[11px] text-muted-fg">
                 {linha.estourou
                   ? `Passou ${formatarMoeda(-linha.restanteCentavos)} do limite.`
-                  : `Restam ${formatarMoeda(linha.restanteCentavos)} — ${linha.percentual}% usado.`}
+                  : `Restam ${formatarMoeda(linha.restanteCentavos)}. ${linha.percentual}% usado.`}
               </p>
             </div>
           ))}

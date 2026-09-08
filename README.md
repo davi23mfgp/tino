@@ -201,7 +201,12 @@ O app já está pronto para os dois cenários:
 | `OPEN_FINANCE_PROVIDER` | Comportamento |
 |---|---|
 | `sandbox` (padrão) | Dados fictícios determinísticos, para desenvolver e testar o fluxo inteiro. Bloqueado em produção. |
-| `pluggy` | Integração real. Preencha `OPEN_FINANCE_CLIENT_ID` e `OPEN_FINANCE_CLIENT_SECRET`. |
+| `pluggy` | Integração real. Preencha `PLUGGY_CLIENT_ID` e `PLUGGY_CLIENT_SECRET` (os nomes antigos `OPEN_FINANCE_CLIENT_ID`/`_SECRET` continuam aceitos). |
+
+A tela é `/conectar`, também no menu **Movimento**. Sem as duas chaves ela não finge conexão nenhuma:
+diz que o Open Finance ainda não está configurado e leva para o import de arquivo, que já funciona.
+Criar a conta na Pluggy, aceitar os termos e gerar o par de chaves é ação de conta e de dinheiro —
+isso é feito por você, no painel deles, e o valor é colado no `.env`.
 
 Trocar de agregador é escrever um arquivo em `src/lib/open-finance/provedores/` implementando
 `ProvedorOpenFinance`. Nenhuma tela muda.

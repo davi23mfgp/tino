@@ -91,7 +91,16 @@ export function MapaDeCalor({
                             // Um só matiz, variando só a opacidade: cores
                             // diferentes por faixa dariam a impressão de
                             // categorias, e aqui a única variável é intensidade.
-                            backgroundColor: `oklch(var(--lch-negativo) / ${0.18 + intensidade * 0.72})`,
+                            //
+                            // `--lch-negativo-solido` (não o `--lch-negativo`
+                            // claro): no dia de maior gasto a opacidade chega
+                            // a 90%, quase cor cheia — com o matiz claro o
+                            // texto branco em cima cairia a ~3,2:1. A variante
+                            // "-solido" já foi calculada para >=5:1 com branco
+                            // mesmo em opacidade total (ver globals.css); em
+                            // opacidade baixa (mais preto aparecendo) o
+                            // contraste só melhora.
+                            backgroundColor: `oklch(var(--lch-negativo-solido) / ${0.18 + intensidade * 0.72})`,
                           }
                         : undefined
                     }

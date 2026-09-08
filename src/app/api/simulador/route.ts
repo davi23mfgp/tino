@@ -4,11 +4,9 @@ import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { comparar, type Ajuste, type CenarioBase } from "@/lib/tino/simulador"
+import { valorVigente } from "@/lib/parametros"
 
 export const dynamic = "force-dynamic"
-
-/// Sem taxa informada, o cheque especial entra no teto legal de 8% ao mês.
-const CHEQUE_ESPECIAL_PADRAO_BPS = 800
 
 /**
  * Monta o cenário atual do lar a partir do que está no banco.
@@ -18,10 +16,14 @@ const CHEQUE_ESPECIAL_PADRAO_BPS = 800
  * em telas diferentes.
  */
 async function montarBase(larId: string, competencia: string): Promise<{ base: CenarioBase; nomes: Record<string, string> }> {
-  const [panorama, dividas, compromissos] = await Promise.all([
+  const [panorama, dividas, compromissos, chequeEspecialPadraoBps] = await Promise.all([
     montarPanorama(larId, competencia),
     prisma.divida.findMany({ where: { larId, quitada: false } }),
     compromissosFuturos(larId, 36),
+    // Sem taxa informada, o cheque especial entra no teto legal. O número não
+    // fica mais em constante: é parâmetro do sistema, editável em
+    // /admin/configuracoes, porque muda por decisão do Banco Central.
+    valorVigente("juros.chequeEspecialBps"),
   ])
 
   const simuladas: CenarioBase["dividas"] = []
@@ -73,7 +75,7 @@ async function montarBase(larId: string, competencia: string): Promise<{ base: C
       custoDeVidaMensalCentavos: custoDeVida,
       parcelasPorCompetencia,
       dividas: simuladas,
-      jurosChequeEspecialBps: dividaChequeEspecial?.jurosMensalBps ?? CHEQUE_ESPECIAL_PADRAO_BPS,
+      jurosChequeEspecialBps: dividaChequeEspecial?.jurosMensalBps ?? chequeEspecialPadraoBps,
       aporteMetaMensalCentavos: panorama.metas.reduce((soma, meta) => soma + meta.aporteAtualCentavos, 0),
     },
     nomes: Object.fromEntries(simuladas.map((divida) => [divida.id, divida.nome])),

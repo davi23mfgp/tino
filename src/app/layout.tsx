@@ -1,46 +1,32 @@
 import type { Metadata, Viewport } from "next"
-import { Bricolage_Grotesque, IBM_Plex_Mono, Public_Sans } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 /**
- * Três fontes, três trabalhos.
+ * A tipografia agora é a do SISTEMA, declarada em `--font-ios` no globals.css.
  *
- * A display carrega a personalidade e aparece pouco: título e o número grande
- * do saldo. A de corpo é neutra de propósito, porque texto de app financeiro é
- * lido com pressa e não deve chamar atenção para si.
+ * Decisão do Davi em 05/09/2026, vinda do prompt da camada de vidro. No Mac e
+ * no iPhone isso resolve para a San Francisco de verdade, que nenhuma fonte
+ * auto-hospedada iguala — era justamente a San Francisco que a Onest tentava
+ * imitar. O custo, aceito por ele: no Windows vira Segoe UI e no Android vira
+ * Roboto, então o app não é idêntico nas três plataformas.
  *
- * A terceira existe por motivo funcional, não estético: dinheiro precisa de
- * algarismo tabular. Sem largura fixa por dígito, a coluna de valores dança
- * conforme o número e conferir extrato vira caça ao erro.
+ * Onest e IBM Plex Mono saíram do `next/font` junto. Não é só limpeza: cada
+ * uma baixava arquivos no build e os servia pelo próprio domínio, e agora não
+ * há nenhum byte de fonte para baixar nem servir.
+ *
+ * O algarismo tabular, que era o motivo funcional da monoespaçada, continua —
+ * vem de `font-variant-numeric` no `body`, não da família.
  */
-const display = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-})
-
-const corpo = Public_Sans({
-  subsets: ["latin"],
-  variable: "--font-corpo",
-  display: "swap",
-})
-
-const numero = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-numero",
-  display: "swap",
-})
 
 export const metadata: Metadata = {
-  title: "Tino — seu contador pessoal",
+  title: "Tino, seu contador pessoal",
   description:
     "Organize contas, dívidas e metas em um lugar só. Projeção de caixa, plano de pagamento e ajuda para decidir empréstimo. Para pessoa física e MEI.",
   manifest: "/manifest.webmanifest",
   // Instalado na tela inicial do celular, o app abre sem barra de navegador.
-  appleWebApp: { capable: true, title: "Tino", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Tino", statusBarStyle: "default" },
   icons: {
     icon: [{ url: "/icones/icone-192.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icones/icone-192.png", sizes: "192x192" }],
@@ -48,9 +34,13 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
+  // Skin acromática clara por padrão, escuro só opcional via `.dark`
+  // (decisão do Davi, 07/09/2026, tarde — ver docs/REDESIGN-EM-CURSO.md,
+  // que substitui a casca preta forçada da sessão anterior do mesmo dia).
+  // Cada entrada aponta pro `--background` do tema correspondente.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f5f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#1b1d24" },
+    { media: "(prefers-color-scheme: light)", color: "#f8f8f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1c1c" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -64,9 +54,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body
-        className={`${display.variable} ${corpo.variable} ${numero.variable} min-h-screen bg-background font-sans antialiased`}
+        className="min-h-screen bg-background antialiased"
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        {/* Escuro é a casca do app por padrão agora (direção "Calen",
+            07/09/2026, noite — substitui o claro-por-padrão da sessão
+            anterior do mesmo dia, ver docs/REDESIGN-EM-CURSO.md). Claro
+            virou o opcional, ligado via `.light`. Sem `forcedTheme`: o
+            alternador em `theme-toggle.tsx` continua funcionando. */}
+        <ThemeProvider attribute="class" defaultTheme="dark">
           {children}
         </ThemeProvider>
       </body>

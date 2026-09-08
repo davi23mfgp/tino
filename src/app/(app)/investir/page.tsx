@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { buscar } from "@/lib/cliente"
-import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
+import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 import { GraficoDaDivisao, GraficoDoCorte } from "@/components/graficos"
 import { corteViraPatrimonio, dividirPorArca } from "@/lib/tino/investir"
 import { TinoMascote } from "@/components/tino-mascote"
@@ -119,7 +119,7 @@ export default function Investir() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica
             rotulo="Sobra hoje"
             valor={formatarMoeda(dados?.sobraMensalCentavos ?? 0)}
@@ -170,7 +170,7 @@ export default function Investir() {
             </label>
           </div>
 
-          <p className="numero mt-4 text-4xl font-bold text-positivo">{formatarMoeda(futuro.patrimonioCentavos)}</p>
+          <Valor tom="positivo" className="mt-4">{formatarMoeda(futuro.patrimonioCentavos)}</Valor>
 
           <div className="mt-3 space-y-1 text-[13px]">
             <p className="flex justify-between">
@@ -257,10 +257,10 @@ export default function Investir() {
         <Cartao titulo="Reserva de emergência">
           {dados?.reserva ? (
             <>
-              <p className="numero text-3xl font-bold">{formatarMoeda(dados.reserva.atualCentavos)}</p>
+              <Valor tamanho="medio">{formatarMoeda(dados.reserva.atualCentavos)}</Valor>
               <p className="mt-1 text-sm text-muted-fg">
-                de {formatarMoeda(dados.reserva.idealCentavos)} — cobre {dados.reserva.mesesDeFolga.toFixed(1)} mês(es)
-                de custo
+                de {formatarMoeda(dados.reserva.idealCentavos)} — cobre {formatarDecimal(dados.reserva.mesesDeFolga)}{" "}
+                mês(es) de custo
               </p>
 
               <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">

@@ -70,7 +70,7 @@ const TIPOS_META = [
 ]
 
 const campo =
-  "w-full rounded-2xl border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
+  "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-sm outline-none focus:border-acao/50"
 
 export default function BemVindo() {
   const router = useRouter()
@@ -223,7 +223,7 @@ export default function BemVindo() {
       conteudo: (
         <div className="space-y-3">
           {contas.map((conta, indice) => (
-            <div key={indice} className="space-y-2 rounded-2xl border border-pauta p-3">
+            <div key={indice} className="space-y-2 rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div className="grid gap-2 sm:grid-cols-2">
                 <input
                   value={conta.nome}
@@ -281,7 +281,7 @@ export default function BemVindo() {
                     <input
                       value={conta.jurosChequeEspecial}
                       onChange={(e) => atualizar(setContas, indice, { jurosChequeEspecial: e.target.value })}
-                      placeholder="8,0 — está no seu extrato ou no app do banco"
+                      placeholder="8,0, veja no seu extrato ou no app do banco"
                       className={campo}
                       inputMode="decimal"
                     />
@@ -320,7 +320,7 @@ export default function BemVindo() {
       conteudo: (
         <div className="space-y-3">
           {cartoes.map((cartao, indice) => (
-            <div key={indice} className="space-y-2 rounded-2xl border border-pauta p-3">
+            <div key={indice} className="space-y-2 rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div className="grid gap-2 sm:grid-cols-2">
                 <input
                   value={cartao.nome}
@@ -386,7 +386,7 @@ export default function BemVindo() {
       conteudo: (
         <div className="space-y-3">
           {cartoes.length === 0 && (
-            <p className="rounded-2xl border border-pauta p-3 text-sm text-muted-fg">
+            <p className="rounded-[var(--raio-cartao)] border border-pauta p-3 text-sm text-muted-fg">
               Cadastre um cartão no passo anterior para lançar os parcelamentos dele.
             </p>
           )}
@@ -394,7 +394,7 @@ export default function BemVindo() {
           {cartoes.length > 0 && (
             <>
               {parcelamentos.map((parcelamento, indice) => (
-                <div key={indice} className="space-y-2 rounded-2xl border border-pauta p-3">
+                <div key={indice} className="space-y-2 rounded-[var(--raio-cartao)] border border-pauta p-3">
                   <input
                     value={parcelamento.descricao}
                     onChange={(e) => atualizar(setParcelamentos, indice, { descricao: e.target.value })}
@@ -485,7 +485,7 @@ export default function BemVindo() {
       conteudo: (
         <div className="space-y-3">
           {dividas.map((divida, indice) => (
-            <div key={indice} className="space-y-2 rounded-2xl border border-pauta p-3">
+            <div key={indice} className="space-y-2 rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div className="grid gap-2 sm:grid-cols-2">
                 <input
                   value={divida.credor}
@@ -595,7 +595,7 @@ export default function BemVindo() {
           </div>
 
           {custo && (
-            <p className="rounded-2xl border border-pauta p-3 text-[12px] text-muted-fg">
+            <p className="rounded-[var(--raio-cartao)] border border-pauta p-3 text-[12px] text-muted-fg">
               Pelo gasto que você informou, sua reserva de emergência ideal é{" "}
               {formatarMoeda(paraCentavos(custo) * 6)} (seis meses). Já deixei essa meta criada com esse alvo.
             </p>
@@ -609,7 +609,7 @@ export default function BemVindo() {
         "Se for, eu acompanho o faturamento contra o limite anual, aviso antes de estourar e cobro o DAS em dia.",
       conteudo: (
         <div className="space-y-3">
-          <label className="flex items-start gap-3 rounded-2xl border border-pauta px-4 py-3 text-sm">
+          <label className="flex items-start gap-3 rounded-[var(--raio-cartao)] border border-pauta px-4 py-3 text-sm">
             <input
               type="checkbox"
               checked={mei.ativo}

@@ -133,19 +133,25 @@ export function TinoDock() {
 
       <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {turnos.length === 0 && (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-fg">
+          <div>
+            <p className="text-[13px] text-[color:var(--texto-2)]">
               Trabalho com os seus números. Pergunte à vontade:
             </p>
-            {SUGESTOES.map((sugestao) => (
-              <button
-                key={sugestao}
-                onClick={() => perguntar(sugestao)}
-                className="block w-full rounded-2xl border border-pauta px-3 py-2 text-left text-sm transition hover:border-acao/40 hover:text-acao"
-              >
-                {sugestao}
-              </button>
-            ))}
+            {/* Pílulas que quebram linha, não botões de largura cheia
+                empilhados. Em bloco, quatro sugestões pareciam um menu de
+                quatro opções e escondiam o campo de escrever; em pílula elas
+                lêem como exemplo do que dá para perguntar, que é o que são. */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {SUGESTOES.map((sugestao) => (
+                <button
+                  key={sugestao}
+                  onClick={() => perguntar(sugestao)}
+                  className="ios-tap rounded-[var(--raio-pilula)] bg-foreground/[0.06] px-3.5 py-2 text-left text-[13px] leading-snug transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  {sugestao}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

@@ -1,13 +1,17 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Check, Copy, Plus, Send, Smartphone, X } from "lucide-react"
+import { Check, Copy, Plus, Receipt, Send, Share2, Smartphone, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
+import { SelectNative } from "@/components/ui/select-native"
+import { TagsSelector } from "@/components/ui/tags-selector"
+import { EsqueletoLinhas } from "@/components/ui/skeleton"
 
 /**
  * Captura rápida.
@@ -53,8 +57,6 @@ interface Categoria {
   nome: string
 }
 
-const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[13px] outline-none focus:border-acao/50"
-
 export default function Capturas() {
   const [capturas, setCapturas] = useState<Captura[]>([])
   const [chaves, setChaves] = useState<Chave[]>([])
@@ -64,13 +66,26 @@ export default function Capturas() {
   const [rapido, setRapido] = useState("")
   const [copiado, setCopiado] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  const [carregando, setCarregando] = useState(true)
   // O endereço só existe no navegador. Lê-lo direto no corpo do componente faz
   // o servidor renderizar vazio e o cliente renderizar a URL — o React acusa
   // divergência de hidratação e descarta a árvore inteira.
   const [endereco, setEndereco] = useState("")
+  // Como a pessoa chegou aqui: `/compartilhar` redireciona para cá com o
+  // resultado da captura na busca. Lido pelo `window` e não pelo
+  // `useSearchParams` porque este é o único uso, e o hook obrigaria a página
+  // inteira a entrar num limite de Suspense por causa da renderização estática.
+  const [compartilhado, setCompartilhado] = useState<string | null>(null)
 
   useEffect(() => {
     setEndereco(window.location.origin)
+
+    const veio = new URLSearchParams(window.location.search).get("compartilhado")
+    if (!veio) return
+    setCompartilhado(veio)
+    // Tira o parâmetro do endereço: recarregar a página não deve repetir o
+    // aviso de uma compra que já foi guardada.
+    window.history.replaceState(null, "", window.location.pathname)
   }, [])
 
   const carregar = useCallback(async () => {
@@ -83,6 +98,7 @@ export default function Capturas() {
     setChaves(fila.chaves)
     setContas(listaContas)
     setCategorias(listaCategorias)
+    setCarregando(false)
   }, [])
 
   useEffect(() => {
@@ -138,6 +154,31 @@ export default function Capturas() {
     await anotar(rapido)
   }
 
+  /**
+   * "Desfazer em vez de confirmar" — mesmo padrão de `/recorrencias`. A
+   * chave vira "revogada" na hora; o DELETE de verdade (que só desativa,
+   * não apaga a linha) sai depois de 5s sem ninguém desfazer.
+   */
+  function revogarChave(chave: Chave) {
+    setChaves((atual) => atual.map((c) => (c.id === chave.id ? { ...c, ativa: false } : c)))
+
+    let desfeito = false
+    showToast(`Chave "${chave.nome}" revogada`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setChaves((atual) => atual.map((c) => (c.id === chave.id ? { ...c, ativa: true } : c)))
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/capturas?chaveId=${chave.id}`, { method: "DELETE" })
+    }, 5000)
+  }
+
   async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM") {
     const nome = origem === "TELEGRAM" ? "Telegram" : "Meu celular"
     const resposta = await enviar<{ chave: string }>("/api/capturas", { nome, origem }, "PUT")
@@ -152,18 +193,20 @@ export default function Capturas() {
 
   return (
     <div className="space-y-4">
+      {compartilhado && <AvisoCompartilhado resultado={compartilhado} />}
+
       <Cartao titulo="Anotar em segundos">
         <form onSubmit={anotarRapido} className="flex gap-2">
           <input
             value={rapido}
             onChange={(evento) => setRapido(evento.target.value)}
             placeholder="mercado 52,30"
-            className="flex-1 rounded-2xl border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
+            className="flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
           />
           <button
             type="submit"
             disabled={ocupado || !rapido.trim()}
-            className="rounded-2xl bg-primary px-5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+            className="rounded-[var(--raio-pilula)] bg-primary px-5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
           >
             <Send className="size-4" />
           </button>
@@ -180,9 +223,15 @@ export default function Capturas() {
         </div>
       </Cartao>
 
-      {pendentes.length > 0 && (
+      {carregando && (
+        <Cartao titulo="Fila de conferência">
+          <EsqueletoLinhas linhas={3} />
+        </Cartao>
+      )}
+
+      {!carregando && pendentes.length > 0 && (
         <Cartao titulo={`${pendentes.length} esperando você`}>
-          <div className="mb-3 grid gap-3 sm:grid-cols-2">
+          <div className="mb-3 grid grid-cols-2 gap-3">
             <Metrica rotulo="A confirmar" valor={String(pendentes.length)} />
             <Metrica rotulo="Somam" valor={formatarMoeda(totalPendente)} tom="atencao" />
           </div>
@@ -196,8 +245,18 @@ export default function Capturas() {
                   captura.confianca >= 70 ? "border-pauta" : "border-atencao/40 bg-atencao/5",
                 )}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  {/* Círculo de ícone, igual às outras listas (PARTE 4.3). A
+                      captura ainda não tem categoria — é justamente o que
+                      falta confirmar — então o ícone vem do tipo. */}
+                  <span
+                    aria-hidden
+                    className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground/[0.07] text-[color:var(--texto-2)]"
+                  >
+                    <Receipt className="size-[18px]" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
                     <p className="text-[11px] text-muted-fg">
                       {captura.instituicao ?? captura.origem.toLowerCase()}
@@ -211,7 +270,8 @@ export default function Capturas() {
                 </div>
 
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <select
+                  <SelectNative
+                    tamanho="pilula"
                     value={captura.contaId ?? ""}
                     onChange={(evento) =>
                       setCapturas((atual) =>
@@ -220,33 +280,14 @@ export default function Capturas() {
                         ),
                       )
                     }
-                    className={campo}
+                    className="w-auto text-[13px]"
                   >
                     {contas.map((conta) => (
                       <option key={conta.id} value={conta.id}>
                         {conta.nome}
                       </option>
                     ))}
-                  </select>
-
-                  <select
-                    value={captura.categoriaId ?? ""}
-                    onChange={(evento) =>
-                      setCapturas((atual) =>
-                        atual.map((linha) =>
-                          linha.id === captura.id ? { ...linha, categoriaId: evento.target.value || null } : linha,
-                        ),
-                      )
-                    }
-                    className={cn(campo, !captura.categoriaId && "border-atencao/50 text-atencao")}
-                  >
-                    <option value="">sem categoria</option>
-                    {categorias.map((categoria) => (
-                      <option key={categoria.id} value={categoria.id}>
-                        {categoria.nome}
-                      </option>
-                    ))}
-                  </select>
+                  </SelectNative>
 
                   <div className="ml-auto flex gap-2">
                     <button
@@ -266,13 +307,27 @@ export default function Capturas() {
                     </button>
                   </div>
                 </div>
+
+                {/* Categoria como pastilhas — mapeamento do `tags-selector`
+                    do 21st.dev (ver docs/REDESIGN-EM-CURSO.md). Numa linha só
+                    dá para comparar as categorias sem abrir menu nenhum. */}
+                <TagsSelector
+                  className="mt-2"
+                  opcoes={categorias}
+                  valor={captura.categoriaId}
+                  aoEscolher={(id) =>
+                    setCapturas((atual) =>
+                      atual.map((linha) => (linha.id === captura.id ? { ...linha, categoriaId: id } : linha)),
+                    )
+                  }
+                />
               </div>
             ))}
           </div>
         </Cartao>
       )}
 
-      {pendentes.length === 0 && (
+      {!carregando && pendentes.length === 0 && (
         <Cartao titulo="Fila de conferência">
           <Vazio
             titulo="Nada esperando"
@@ -285,7 +340,7 @@ export default function Capturas() {
         <Cartao titulo="Não consegui ler">
           <div className="space-y-2">
             {naoEntendidas.map((captura) => (
-              <div key={captura.id} className="flex items-start justify-between gap-3 rounded-2xl border border-pauta p-3">
+              <div key={captura.id} className="flex items-start justify-between gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <p className="min-w-0 flex-1 text-[12px] text-muted-fg">{captura.textoBruto}</p>
                 <button
                   onClick={() => descartar(captura.id)}
@@ -327,7 +382,24 @@ export default function Capturas() {
         )}
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <div className="rounded-2xl border border-pauta p-4">
+          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
+            <p className="flex items-center gap-2 text-[14px] font-medium">
+              <Share2 className="size-4" /> Compartilhar do celular (Android)
+            </p>
+            <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
+              <li>1. Instale o Tino na tela de início pelo menu do navegador.</li>
+              <li>
+                2. Chegou o aviso de compra? Toque em <b>Compartilhar</b> e escolha o Tino.
+              </li>
+              <li>3. Pronto. A compra cai na fila acima esperando um toque.</li>
+            </ol>
+            <p className="mt-2 text-[12px] leading-relaxed text-muted-fg">
+              Não precisa de chave nem de programa nenhum. Cobra um toque por compra — o jeito abaixo
+              captura sozinho, mas só depois de você configurar.
+            </p>
+          </div>
+
+          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
               <Smartphone className="size-4" /> Notificações do banco (Android)
             </p>
@@ -351,7 +423,7 @@ export default function Capturas() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-pauta p-4">
+          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
               <Send className="size-4" /> Telegram (mandar faturas)
             </p>
@@ -379,7 +451,7 @@ export default function Capturas() {
         {chaves.length > 0 && (
           <div className="mt-4 space-y-2">
             {chaves.map((chave) => (
-              <div key={chave.id} className="flex items-center justify-between rounded-2xl border border-pauta p-3">
+              <div key={chave.id} className="flex items-center justify-between rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <div>
                   <p className="text-[13px]">
                     {chave.nome} <span className="text-muted-fg">···{chave.sufixo}</span>
@@ -391,10 +463,7 @@ export default function Capturas() {
                 </div>
                 {chave.ativa && (
                   <button
-                    onClick={async () => {
-                      await buscar(`/api/capturas?chaveId=${chave.id}`, { method: "DELETE" })
-                      carregar()
-                    }}
+                    onClick={() => revogarChave(chave)}
                     className="rounded-full border border-pauta px-3 py-1.5 text-[11px] text-muted-fg transition hover:border-negativo/40 hover:text-negativo"
                   >
                     revogar
@@ -405,6 +474,58 @@ export default function Capturas() {
           </div>
         )}
       </Cartao>
+    </div>
+  )
+}
+
+/**
+ * O que aconteceu com a compra que a pessoa acabou de compartilhar.
+ *
+ * Ela vem de fora do app, tocou uma vez e caiu aqui: precisa saber em uma
+ * linha se o gasto entrou, e o que fazer se não entrou. Cada caso diz o que
+ * houve e qual é o próximo passo — nenhum pede desculpa, e nenhum é vago.
+ *
+ * Só os dois casos que exigem ação da pessoa levam cor. Captura guardada é o
+ * caminho normal e não gasta token de cor: o que ela precisa ver a seguir é a
+ * fila, logo abaixo.
+ */
+function AvisoCompartilhado({ resultado }: { resultado: string }) {
+  const avisos: Record<string, { texto: string; atencao: boolean }> = {
+    pendente: {
+      texto: "Compra guardada. Confira na fila abaixo antes de virar lançamento.",
+      atencao: false,
+    },
+    confirmada: {
+      texto: "Compra guardada e já lançada — a leitura veio com confiança alta.",
+      atencao: false,
+    },
+    descartada: {
+      texto:
+        "Esse aviso não era gasto: compra negada, estorno ou pré-autorização de posto. Não lancei nada.",
+      atencao: false,
+    },
+    nao_entendida: {
+      texto: "Não achei um valor nesse texto. Guardei do jeito que chegou, na fila abaixo.",
+      atencao: true,
+    },
+    vazio: {
+      texto: "O compartilhamento chegou sem texto. Compartilhe o aviso do banco, não a imagem da tela.",
+      atencao: true,
+    },
+  }
+
+  const aviso = avisos[resultado]
+  if (!aviso) return null
+
+  return (
+    <div
+      role="status"
+      className={cn(
+        "rounded-2xl border p-3 text-[13px] leading-relaxed",
+        aviso.atencao ? "border-atencao/40 bg-atencao/10 text-atencao" : "border-pauta text-muted-fg",
+      )}
+    >
+      {aviso.texto}
     </div>
   )
 }

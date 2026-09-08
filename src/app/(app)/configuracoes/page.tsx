@@ -4,9 +4,16 @@ import { useEffect, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
+import Link from "next/link"
+
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
+import { RelatarProblema } from "@/components/relatar-problema"
+import { VigiasConfig } from "@/components/vigias-config"
+import { FotoDePerfil } from "@/components/foto-de-perfil"
+import { SelectNative } from "@/components/ui/select-native"
 
 interface Conta {
   id: string
@@ -147,6 +154,37 @@ export default function Configuracoes() {
     await recarregar()
   }
 
+  /**
+   * "Desfazer em vez de confirmar" — mesmo padrão de `/recorrencias`. A
+   * conexão some da lista na hora; o DELETE de verdade (que só revoga,
+   * sem apagar a conexão) sai depois de 5s sem ninguém desfazer.
+   */
+  function revogarConexao(conexao: Conexao) {
+    setOpenFinance((atual) =>
+      atual ? { ...atual, conexoes: atual.conexoes.filter((c) => c.id !== conexao.id) } : atual,
+    )
+
+    let desfeito = false
+    showToast(`Conexão com ${conexao.instituicao} revogada`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setOpenFinance((atual) =>
+            atual && !atual.conexoes.some((c) => c.id === conexao.id)
+              ? { ...atual, conexoes: [...atual.conexoes, conexao] }
+              : atual,
+          )
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/open-finance?conexaoId=${conexao.id}`, { method: "DELETE" })
+    }, 5000)
+  }
+
   async function refazerConversa() {
     await buscar("/api/onboarding", { method: "DELETE" })
     router.push("/bem-vindo")
@@ -154,6 +192,22 @@ export default function Configuracoes() {
 
   return (
     <div className="space-y-4">
+      <Cartao titulo="Sua foto">
+        <FotoDePerfil />
+      </Cartao>
+
+      <Cartao titulo="Assinatura">
+        <p className="text-[13px] leading-relaxed text-muted-fg">
+          Plano contratado, situação do pagamento, próxima cobrança e cancelamento ficam numa tela só.
+        </p>
+        <Link
+          href="/assinatura"
+          className="mt-3 inline-block rounded-full border border-pauta px-5 py-2.5 text-[13px] transition-colors hover:border-acao/40"
+        >
+          Ver minha assinatura
+        </Link>
+      </Cartao>
+
       <Cartao titulo="O que o Tino cuida">
         <p className="text-[13px] leading-relaxed text-muted-fg">
           {temLoja
@@ -277,30 +331,26 @@ export default function Configuracoes() {
             onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
             placeholder="nome da conta"
             required
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
-          <select
-            value={nova.tipo}
-            onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
-          >
+          <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
             {TIPOS_CONTA.map((tipo) => (
               <option key={tipo.valor} value={tipo.valor}>
                 {tipo.rotulo}
               </option>
             ))}
-          </select>
+          </SelectNative>
           <input
             value={nova.instituicao}
             onChange={(evento) => setNova({ ...nova, instituicao: evento.target.value })}
             placeholder="banco"
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
           <input
             value={nova.saldo}
             onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
             placeholder="saldo atual (ex.: -6.582,74)"
-            className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
           />
           {nova.tipo === "CARTAO_CREDITO" && (
             <>
@@ -308,17 +358,17 @@ export default function Configuracoes() {
                 value={nova.limite}
                 onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
                 placeholder="limite total"
-                className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+                className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
               />
               <input
                 value={nova.venc}
                 onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
                 placeholder="dia do vencimento"
-                className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
+                className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
               />
             </>
           )}
-          <button className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:col-span-3">
+          <button className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:col-span-3">
             Adicionar conta
           </button>
         </form>
@@ -340,7 +390,7 @@ export default function Configuracoes() {
 
         <div className="mt-4 space-y-2">
           {openFinance?.conexoes.map((conexao) => (
-            <div key={conexao.id} className="flex items-center justify-between rounded-2xl border border-pauta p-3">
+            <div key={conexao.id} className="flex items-center justify-between rounded-[var(--raio-cartao)] border border-pauta p-3">
               <div>
                 <p className="text-sm">{conexao.instituicao}</p>
                 <p className="text-[12px] text-muted-fg">
@@ -357,10 +407,7 @@ export default function Configuracoes() {
                   sincronizar
                 </button>
                 <button
-                  onClick={async () => {
-                    await buscar(`/api/open-finance?conexaoId=${conexao.id}`, { method: "DELETE" })
-                    recarregar()
-                  }}
+                  onClick={() => revogarConexao(conexao)}
                   className="rounded-full border border-pauta px-3 py-1.5 text-xs hover:border-negativo/40"
                 >
                   revogar
@@ -379,6 +426,35 @@ export default function Configuracoes() {
 
         {mensagem && <p className="mt-3 text-sm text-muted-fg">{mensagem}</p>}
       </Cartao>
+
+      <VigiasConfig />
+
+      {/* Regras e Assinatura saíram da navegação principal em 07/09/2026:
+          são manutenção, não uso do dia a dia — ninguém abre o app de manhã
+          para mexer em regra de categorização ou trocar de plano. Nenhuma
+          das duas telas foi removida, só o link mudou de lugar. */}
+      <Cartao titulo="Preferências">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Link
+            href="/regras"
+            className="rounded-[var(--raio-cartao)] border border-pauta p-4 text-sm transition hover:border-acao/40"
+          >
+            <p className="font-medium">Regras de categorização</p>
+            <p className="mt-1 text-[13px] text-muted-fg">
+              Como o Tino decide sozinho a categoria de um lançamento novo.
+            </p>
+          </Link>
+          <Link
+            href="/assinatura"
+            className="rounded-[var(--raio-cartao)] border border-pauta p-4 text-sm transition hover:border-acao/40"
+          >
+            <p className="font-medium">Assinatura do Tino</p>
+            <p className="mt-1 text-[13px] text-muted-fg">Seu plano, cobrança e cancelamento.</p>
+          </Link>
+        </div>
+      </Cartao>
+
+      <RelatarProblema />
     </div>
   )
 }

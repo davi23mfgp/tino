@@ -1,74 +1,19 @@
+import { ArrowDownRight, ArrowUpRight } from "lucide-react"
+
 import { sessaoDaPagina } from "@/lib/pagina"
-import { prisma } from "@/lib/prisma"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
-import { montarPanorama } from "@/lib/tino/panorama"
-import { compromissosFuturos } from "@/lib/parcelamentos"
-import { montarPlanoPagamento, type AlvoPagamento } from "@/lib/tino/plano-pagamento"
+import { montarPlanoDoLar } from "@/lib/tino/plano-do-lar"
+import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
-
-/// Mesmos patamares usados na rota /api/plano-pagamento.
-const JUROS_PADRAO = { chequeEspecial: 800, rotativo: 1400 }
 
 export default async function Plano() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
 
-  const [panorama, dividas, compromissos] = await Promise.all([
-    montarPanorama(sessao.larId, competencia),
-    prisma.divida.findMany({ where: { larId: sessao.larId, quitada: false } }),
-    compromissosFuturos(sessao.larId, 36),
-  ])
-
-  const alvos: AlvoPagamento[] = []
-
-  // Contas com dívida vinculada (cheque especial cadastrado) entram só uma vez:
-  // o saldo negativo da conta e a dívida são o mesmo dinheiro, e somar os dois
-  // dobraria o valor a pagar.
-  const contasComDivida = new Set(dividas.map((divida) => divida.contaId).filter(Boolean))
-
-  for (const saldo of panorama.saldoPorConta) {
-    if (saldo.saldoCentavos >= 0 || contasComDivida.has(saldo.id)) continue
-    const cartao = saldo.tipo === "CARTAO_CREDITO"
-    alvos.push({
-      id: saldo.id,
-      nome: cartao ? `Fatura ${saldo.nome}` : `${saldo.nome} (cheque especial)`,
-      tipo: cartao ? "FATURA" : "CHEQUE_ESPECIAL",
-      saldoCentavos: Math.abs(saldo.saldoCentavos),
-      // Fatura paga integral não cobra juro; o rotativo só nasce se ela não for
-      // paga, e aí vira uma dívida própria.
-      jurosMensalBps: cartao ? 0 : JUROS_PADRAO.chequeEspecial,
-      minimoMensalCentavos: 0,
-    })
-  }
-
-  for (const divida of dividas) {
-    alvos.push({
-      id: divida.id,
-      nome: divida.credor,
-      tipo: divida.tipo === "CARTAO_ROTATIVO" ? "ROTATIVO" : "EMPRESTIMO",
-      saldoCentavos: divida.saldoDevedorCentavos,
-      jurosMensalBps: divida.jurosMensalBps || (divida.tipo === "CARTAO_ROTATIVO" ? JUROS_PADRAO.rotativo : 0),
-      minimoMensalCentavos: divida.parcelaCentavos,
-    })
-  }
-
-  const parcelasPorCompetencia = Object.fromEntries(
-    compromissos.map((linha) => [linha.competencia, linha.totalCentavos]),
-  )
-
-  const renda = panorama.medias.receitaCentavos || panorama.mes.receitasCentavos
-  const custoDeVida = Math.max(0, panorama.medias.despesaCentavos - (parcelasPorCompetencia[competencia] ?? 0))
-
-  const plano = montarPlanoPagamento({
-    competenciaInicial: competencia,
-    alvos,
-    rendaMensalCentavos: renda,
-    custoDeVidaMensalCentavos: custoDeVida,
-    parcelasPorCompetencia,
-  })
+  const { alvos, plano, capacidadeMensalCentavos } = await montarPlanoDoLar(sessao.larId, competencia)
 
   const totalDivida = alvos.reduce((soma, alvo) => soma + alvo.saldoCentavos, 0)
 
@@ -84,7 +29,7 @@ export default async function Plano() {
           <>
             <p className="text-sm leading-relaxed">{plano.primeiroPasso}</p>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Metrica rotulo="Dívida total" valor={formatarMoeda(totalDivida)} tom="negativo" />
               <Metrica
                 rotulo="Livre em"
@@ -94,8 +39,8 @@ export default async function Plano() {
               <Metrica rotulo="Juros no caminho" valor={formatarMoeda(plano.totalJurosCentavos)} tom="atencao" />
               <Metrica
                 rotulo="Sobra estimada/mês"
-                valor={formatarMoeda(renda - custoDeVida)}
-                tom={renda - custoDeVida > 0 ? "positivo" : "negativo"}
+                valor={formatarMoeda(capacidadeMensalCentavos)}
+                tom={capacidadeMensalCentavos > 0 ? "positivo" : "negativo"}
               />
             </div>
 
@@ -136,10 +81,20 @@ export default async function Plano() {
           <Cartao titulo="Roteiro mês a mês">
             <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
               {plano.passos.map((passo) => (
-                <div key={passo.competencia} className="rounded-2xl border border-pauta p-3">
+                <div key={passo.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{rotuloCompetencia(passo.competencia)}</span>
-                    <span className={passo.sobraCentavos < 0 ? "text-negativo" : "text-positivo"}>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-0.5",
+                        passo.sobraCentavos < 0 ? "text-negativo" : "text-positivo",
+                      )}
+                    >
+                      {passo.sobraCentavos < 0 ? (
+                        <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                      ) : (
+                        <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                      )}
                       sobra {formatarMoeda(passo.sobraCentavos)}
                     </span>
                   </div>

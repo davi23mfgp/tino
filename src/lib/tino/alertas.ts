@@ -9,9 +9,10 @@
 import type { SeveridadeAlerta } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
+import { diasEntre, formatarData } from "@/lib/datas"
 
 export interface AlertaGerado {
   tipo: string
@@ -23,7 +24,51 @@ export interface AlertaGerado {
   dados?: Record<string, unknown>
 }
 
-export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
+/**
+ * O catálogo dos vigias — pedido do redesign de 07/09/2026: cada TIPO de
+ * alerta que o motor pode gerar, com nome curto e a frase de "o que faz",
+ * pra tela de Configurações listar e o usuário ligar/desligar por tipo.
+ *
+ * Nem todo `tipo` que `gerarAlertas` produz está aqui — os de MEI só fazem
+ * sentido pra quem é MEI, e entrar na lista geral confundiria quem não é.
+ * Os seis daqui são os que o brief pediu nominalmente.
+ */
+export const VIGIAS = [
+  {
+    tipo: "orcamento_estourado",
+    nome: "Estouro de categoria",
+    frase: "Avisa quando uma categoria do orçamento passa de 80% do limite.",
+  },
+  {
+    tipo: "fatura_acima_limite",
+    nome: "Fatura acima do limite",
+    frase: "Avisa quando a fatura de um cartão já passou do limite cadastrado.",
+  },
+  {
+    tipo: "vencimento_proximo",
+    nome: "Vencimento próximo",
+    frase: "Avisa quando uma conta fixa vence nos próximos 3 dias.",
+  },
+  {
+    tipo: "caixa_negativo",
+    nome: "Caixa negativo à frente",
+    frase: "Avisa quando a projeção mostra o saldo virando negativo.",
+  },
+  {
+    tipo: "juros_abusivo",
+    nome: "Dívida cara parada",
+    frase: "Avisa quando alguma dívida cobra juro alto (10% ao mês ou mais).",
+  },
+  {
+    tipo: "sem_categoria",
+    nome: "Categoria fora do padrão",
+    frase: "Avisa quando 5 ou mais lançamentos do mês ainda não têm categoria.",
+  },
+] as const
+
+export type TipoVigia = (typeof VIGIAS)[number]["tipo"]
+
+export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string> = new Set()): AlertaGerado[] {
   const alertas: AlertaGerado[] = []
   const mes = panorama.competencia
 
@@ -33,8 +78,12 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
     alertas.push({
       tipo: "caixa_negativo",
       severidade: "CRITICO",
-      titulo: "Seu caixa fica negativo antes do previsto",
-      texto: `Mantendo o ritmo atual, o saldo fica negativo em ${rotuloCompetencia(primeiroNegativo.competencia)} (${formatarMoeda(primeiroNegativo.saldoAcumuladoCentavos)}). Dá para evitar cortando ${formatarMoeda(Math.abs(primeiroNegativo.saldoAcumuladoCentavos))} ao longo dos próximos meses.`,
+      // Frase da PARTE 3 do spec, palavra por palavra: nenhuma frase de
+      // interface passa de 12 palavras, e "caixa"/"projeção" são jargão de
+      // contador. O valor e o plano de corte continuam existindo — em
+      // `/projecao`, que é onde eles decidem alguma coisa.
+      titulo: "Falta dinheiro pela frente",
+      texto: `No ritmo de hoje, falta dinheiro em ${rotuloCompetencia(primeiroNegativo.competencia)}.`,
       acaoRota: "/projecao",
       chave: `caixa_negativo:${primeiroNegativo.competencia}`,
       dados: { competencia: primeiroNegativo.competencia },
@@ -45,8 +94,8 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
     alertas.push({
       tipo: "mes_no_vermelho",
       severidade: "ATENCAO",
-      titulo: "Você gastou mais do que recebeu neste mês",
-      texto: `Saldo do mês: ${formatarMoeda(panorama.mes.sobraCentavos)}. A maior despesa foi ${panorama.mes.despesasPorCategoria[0]?.nome ?? "sem categoria"} (${formatarMoeda(panorama.mes.despesasPorCategoria[0]?.totalCentavos ?? 0)}).`,
+      titulo: "Você gastou mais do que recebeu",
+      texto: `Faltou ${formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}. O maior gasto foi ${panorama.mes.despesasPorCategoria[0]?.nome ?? "sem categoria"}.`,
       acaoRota: "/transacoes",
       chave: `mes_no_vermelho:${mes}`,
     })
@@ -107,7 +156,7 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
       tipo: "juros_abusivo",
       severidade: "CRITICO",
       titulo: `Juro muito alto em ${rotativo.credor}`,
-      texto: `Essa dívida cobra ${(rotativo.jurosMensalBps / 100).toFixed(2)}% ao mês. Trocá-la por um crédito mais barato (portabilidade ou consignado) costuma cortar boa parte do custo.`,
+      texto: `Essa dívida cobra ${formatarDecimal(rotativo.jurosMensalBps / 100, 2)}% ao mês. Trocá-la por um crédito mais barato (portabilidade ou consignado) costuma cortar boa parte do custo.`,
       acaoRota: "/emprestimos",
       chave: `juros_abusivo:${mes}:${rotativo.id}`,
     })
@@ -138,13 +187,56 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
     })
   }
 
+  // ── Cartão ────────────────────────────────────────────────
+  // Fatura acima do limite é diferente de orçamento estourado: orçamento é
+  // meta que o próprio usuário definiu por categoria; aqui é o teto que o
+  // BANCO deu, e passar dele tem juro rotativo de verdade te esperando.
+  for (const conta of panorama.saldoPorConta) {
+    if (conta.tipo !== "CARTAO_CREDITO" || conta.limiteCentavos === null) continue
+    const usado = Math.abs(Math.min(0, conta.saldoCentavos))
+    if (usado <= conta.limiteCentavos) continue
+    alertas.push({
+      tipo: "fatura_acima_limite",
+      severidade: "CRITICO",
+      titulo: `Fatura do ${conta.nome} passou do limite`,
+      texto: `Limite de ${formatarMoeda(conta.limiteCentavos)}, fatura em ${formatarMoeda(usado)} — ${formatarMoeda(usado - conta.limiteCentavos)} acima. O excedente costuma virar rotativo, o juro mais caro depois do cheque especial.`,
+      acaoRota: "/cartoes",
+      chave: `fatura_acima_limite:${mes}:${conta.id}`,
+    })
+  }
+
+  // ── Contas fixas ──────────────────────────────────────────
+  const JANELA_VENCIMENTO_DIAS = 3
+  const proximaDespesa = panorama.recorrenciasProximas.find((r) => r.tipo === "DESPESA")
+  if (proximaDespesa) {
+    const dias = diasEntre(new Date(), proximaDespesa.proximaData)
+    if (dias >= 0 && dias <= JANELA_VENCIMENTO_DIAS) {
+      alertas.push({
+        tipo: "vencimento_proximo",
+        severidade: dias === 0 ? "ATENCAO" : "INFO",
+        titulo:
+          dias === 0
+            ? `${proximaDespesa.descricao} vence hoje`
+            : `${proximaDespesa.descricao} vence em ${dias} dia${dias === 1 ? "" : "s"}`,
+        texto: `${formatarMoeda(proximaDespesa.valorCentavos)}, em ${formatarData(proximaDespesa.proximaData)}.`,
+        acaoRota: "/recorrencias",
+        // A chave leva a data: a próxima ocorrência do MESMO fixo, mês que
+        // vem, é um vencimento diferente e merece avisar de novo.
+        chave: `vencimento_proximo:${proximaDespesa.id}:${formatarData(proximaDespesa.proximaData)}`,
+      })
+    }
+  }
+
   // ── Higiene dos dados ─────────────────────────────────────
   if (panorama.mes.naoCategorizadas >= 5) {
     alertas.push({
       tipo: "sem_categoria",
       severidade: "INFO",
-      titulo: `${panorama.mes.naoCategorizadas} lançamentos sem categoria`,
-      texto: "Categorizar deixa a projeção e o orçamento corretos. Cada correção vira uma regra: da próxima vez o Tino acerta sozinho.",
+      // Sem "lançamento" e sem "categorizar" no rótulo — palavras de contador
+      // (SPEC-CALEN-PRECISO, PARTE 3). "Gasto" é a mesma coisa dita como a
+      // pessoa fala, e "o Tino aprende" diz o benefício em vez do mecanismo.
+      titulo: `${panorama.mes.naoCategorizadas} gastos sem categoria`,
+      texto: "Ajuste uma vez e o Tino aprende. Da próxima ele acerta sozinho.",
       acaoRota: "/transacoes?filtro=sem-categoria",
       chave: `sem_categoria:${mes}`,
     })
@@ -197,7 +289,7 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
     }
   }
 
-  return alertas
+  return desativados.size > 0 ? alertas.filter((a) => !desativados.has(a.tipo)) : alertas
 }
 
 /**
@@ -207,28 +299,46 @@ export function gerarAlertas(panorama: Panorama): AlertaGerado[] {
  * pode rodar a cada abertura do app sem multiplicar avisos.
  */
 export async function atualizarAlertas(larId: string) {
-  const panorama = await montarPanorama(larId)
-  const gerados = gerarAlertas(panorama)
+  const [panorama, desligados] = await Promise.all([
+    montarPanorama(larId),
+    prisma.vigiaConfig.findMany({ where: { larId, ativo: false }, select: { tipo: true } }),
+  ])
+  const gerados = gerarAlertas(panorama, new Set(desligados.map((v) => v.tipo)))
 
-  if (gerados.length > 0) {
-    await prisma.alerta.createMany({
-      data: gerados.map((alerta) => ({
-        larId,
-        tipo: alerta.tipo,
-        severidade: alerta.severidade,
-        titulo: alerta.titulo,
-        texto: alerta.texto,
-        acaoRota: alerta.acaoRota,
-        chave: alerta.chave,
-        dados: (alerta.dados ?? {}) as object,
-      })),
-      skipDuplicates: true,
+  // `upsert` por (larId, chave), não `createMany({ skipDuplicates })`.
+  //
+  // O comportamento antigo congelava o TEXTO do aviso na primeira vez que
+  // ele nascia: reescrever a frase (é o que a PARTE 3 do spec manda fazer)
+  // não chegava em ninguém que já tivesse o aviso aberto, porque a linha
+  // existente era pulada. A chave continua sendo o que impede repetir o
+  // mesmo aviso todo dia — só o conteúdo passa a acompanhar.
+  //
+  // `lido` fica de fora do `update` de propósito: quem já leu o aviso não
+  // volta a ver o ponto vermelho só porque a frase mudou.
+  for (const alerta of gerados) {
+    const conteudo = {
+      tipo: alerta.tipo,
+      severidade: alerta.severidade,
+      titulo: alerta.titulo,
+      texto: alerta.texto,
+      acaoRota: alerta.acaoRota,
+      dados: (alerta.dados ?? {}) as object,
+    }
+    await prisma.alerta.upsert({
+      where: { larId_chave: { larId, chave: alerta.chave } },
+      create: { larId, chave: alerta.chave, ...conteudo },
+      update: conteudo,
     })
   }
 
+  // Antes só trazia os não lidos — o painel de notificações do topo
+  // (`barra-topo.tsx`) agora tem aba "Todas", que precisa ver os já lidos
+  // também. Não lido primeiro (é o que importa agora), depois mais recente;
+  // `lido` já existe no schema desde a migration inicial, só não era lido
+  // por nenhuma tela até esta rodada.
   return prisma.alerta.findMany({
-    where: { larId, lido: false },
-    orderBy: [{ severidade: "desc" }, { criadoEm: "desc" }],
-    take: 20,
+    where: { larId },
+    orderBy: [{ lido: "asc" }, { severidade: "desc" }, { criadoEm: "desc" }],
+    take: 30,
   })
 }

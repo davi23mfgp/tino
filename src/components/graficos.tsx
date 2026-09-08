@@ -170,6 +170,62 @@ export function GraficoEvolucao({
 }
 
 // ============================================================
+// DOZE MESES, MÊS ATUAL DESTACADO
+// ============================================================
+
+/**
+ * Como cada mês fechou, nos últimos doze.
+ *
+ * A série é a SOBRA, e não entrou-e-saiu lado a lado: a pergunta que a pessoa
+ * traz para cá é "o mês fechou no azul ou no vermelho", e uma barra por mês
+ * responde isso de um relance. Entrou e saiu separados obrigam a fazer a
+ * subtração de cabeça, doze vezes.
+ *
+ * A barra desce abaixo da linha quando o mês fechou negativo, e por isso a
+ * linha do zero fica visível: sem ela, barra para baixo não significa nada.
+ *
+ * O mês atual vai cheio e os anteriores em meio-tom. Não é enfeite — o mês
+ * corrente ainda não terminou, e comparar um mês pela metade com onze meses
+ * fechados é a leitura errada mais fácil de fazer aqui.
+ */
+export function GraficoDozeMeses({
+  dados,
+  competenciaDestacada,
+  altura = 220,
+}: {
+  dados: { competencia: string; sobraCentavos: number }[]
+  competenciaDestacada: string
+  altura?: number
+}) {
+  const cores = useCores()
+  const serie = dados.map((linha) => ({
+    mes: rotuloCompetencia(linha.competencia, true),
+    competencia: linha.competencia,
+    Sobra: linha.sobraCentavos,
+  }))
+
+  return (
+    <ResponsiveContainer width="100%" height={altura}>
+      <BarChart data={serie} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
+        <XAxis dataKey="mes" tick={eixo} axisLine={false} tickLine={false} />
+        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => formatarMoedaCurta(Number(v))} />
+        <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.25} />
+        <Tooltip content={<Dica />} cursor={{ fill: "currentColor", fillOpacity: 0.04 }} />
+        <Bar dataKey="Sobra" radius={[4, 4, 0, 0]}>
+          {serie.map((linha) => (
+            <Cell
+              key={linha.competencia}
+              fill={linha.Sobra < 0 ? cores.negativo : cores.positivo}
+              fillOpacity={linha.competencia === competenciaDestacada ? 1 : 0.45}
+            />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
+// ============================================================
 // GASTOS POR CATEGORIA
 // ============================================================
 
@@ -213,6 +269,90 @@ export function GraficoCategorias({
             <span className="min-w-0 flex-1 truncate">{linha.name}</span>
             <span className="text-muted-fg">{total > 0 ? `${Math.round((linha.value / total) * 100)}%` : "0%"}</span>
             <span className="w-24 text-right">{formatarMoeda(linha.value)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/**
+ * A rosca do Início, no formato do Calen.
+ *
+ * Diferença para `GraficoCategorias` acima (que continua servindo a Análise):
+ * ali a legenda é uma TABELA — nome, percentual e valor em colunas — porque
+ * quem abre a Análise foi comparar proporção. Aqui não: o total vai para o
+ * buraco do meio, a legenda vira linha simples, e o percentual sai da tela.
+ * Percentual na primeira dobra é justamente o que o spec manda tirar
+ * (PARTE 3): quem abre o Início quer saber ONDE o dinheiro foi, não em que
+ * fração — a fração já está desenhada no tamanho da fatia.
+ *
+ * Substitui a `BarrasCategorias` aqui (PARTE 1.6). A barra fina não estava
+ * errada, mas ela conta "esta categoria contra a maior", e o que o Início
+ * precisa contar é "o mês inteiro, repartido" — que é o que uma rosca faz e
+ * uma pilha de barras não faz.
+ */
+export function RoscaCategorias({
+  dados,
+  altura = 200,
+}: {
+  dados: { nome: string; totalCentavos: number }[]
+  altura?: number
+}) {
+  const cores = useCores()
+  const paleta = ORDEM_DA_PALETA.map((nome) => cores[nome])
+
+  const principais = dados.slice(0, 5)
+  const resto = dados.slice(5).reduce((soma, linha) => soma + linha.totalCentavos, 0)
+  const serie = [...principais, ...(resto > 0 ? [{ nome: "Outras", totalCentavos: resto }] : [])].map(
+    (linha) => ({ name: linha.nome, value: linha.totalCentavos }),
+  )
+  const total = serie.reduce((soma, linha) => soma + linha.value, 0)
+
+  return (
+    <div className="flex flex-col items-center gap-5 sm:flex-row sm:gap-6">
+      <div className="relative w-full max-w-[200px] shrink-0" style={{ height: altura }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={serie}
+              dataKey="value"
+              nameKey="name"
+              innerRadius="70%"
+              outerRadius="98%"
+              paddingAngle={2}
+              stroke="none"
+            >
+              {serie.map((_, indice) => (
+                <Cell key={indice} fill={paleta[indice % paleta.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<Dica />} />
+          </PieChart>
+        </ResponsiveContainer>
+
+        {/* Total no buraco do meio. `pointer-events-none` porque a rosca por
+            baixo continua sendo o alvo do toque de cada fatia. */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="numero text-[20px] font-semibold leading-none tracking-tight">
+            {formatarMoeda(total)}
+          </span>
+          <span className="mt-1.5 text-[11px] text-[color:var(--texto-2)]">gasto até hoje</span>
+        </div>
+      </div>
+
+      <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
+        {serie.map((linha, indice) => (
+          <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[13px] sm:w-full">
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-full"
+              style={{ background: paleta[indice % paleta.length] }}
+            />
+            <span className="min-w-0 truncate sm:flex-1">{linha.name}</span>
+            <span className="numero shrink-0 text-[13px] font-medium sm:text-right">
+              {formatarMoeda(linha.value)}
+            </span>
           </li>
         ))}
       </ul>

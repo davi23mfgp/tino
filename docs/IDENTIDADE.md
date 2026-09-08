@@ -3,6 +3,106 @@
 Escrito para quem for mexer na tela sem ter participado da decisão. O que está
 aqui não é gosto: cada escolha responde a alguma coisa do produto.
 
+## Redesign em curso (aberto em 05/09/2026)
+
+Está rodando um redesign a partir de um brief do Davi
+(`prompt-tino-redesign-apple.md`): acabamento Apple, grade bento na Visão
+geral, primitivos novos (Card, Metric, Stat, Button, Pill, Table, EmptyState,
+Sidebar, PageHeader), e mascote refeito.
+
+**Três pontos do brief batiam com o que já estava decidido aqui. O Davi
+decidiu cada um em 05/09/2026, e a decisão dele é o que vale:**
+
+| Questão | O brief pedia | Decisão | Por quê |
+|---|---|---|---|
+| Cor de `positivo` | verde `#30D158` | **fica azul** | Verde continua proibido nesta base. Já foi rejeitado uma vez, e "estar no azul" é do português, não genérico de fintech |
+| Mascote | símbolo geométrico, sem boca, 2 cores | **realista, simpático e personalizável** | Pedido dele por escrito, depois do brief. A mensagem mais recente ganha do arquivo |
+| Fonte do valor | tirar a mono | **tirar a mono**, `tabular-nums` no sans | `tabular-nums` dá o dígito de largura fixa, que era a função da mono. A regra do doc continua honrada com uma família só |
+
+O resto do brief entra como escrito. Nada de neon, nada de roxo, nada de
+gradiente sem função.
+
+### Virada de 05/09/2026 (noite): escala de cinza pura
+
+O Davi trouxe mais dois prompts (`prompt-ios-vidro-flutuante.md` e
+`prompt-remodelagem-categorias.md`) que exigem **`oklch` com chroma 0 em toda
+a interface** — nada de azul, verde, vermelho ou âmbar. Isso contradiz o
+brief anterior, que definia positivo, atenção e negativo coloridos.
+
+**Ele escolheu o cinza puro, com o custo na frente.** Vale registrar qual é o
+custo, porque quem chegar depois vai achar que foi descuido:
+
+- "Entrou" e "Saiu" deixam de ser distinguíveis por matiz;
+- alerta crítico e aviso informativo perdem a diferença de cor;
+- a expressão do mascote, que vem do motor de alertas, perde a cor que a
+  comunicava;
+- o trocadilho que dava origem à paleta — "estar no azul", "estar no
+  vermelho" — deixa de existir.
+
+**Como isso foi compensado**, e o que precisa continuar valendo:
+
+1. Os quatro tokens continuam existindo e continuam com nome de FUNÇÃO. O que
+   mudou é que a função passou a ser dita por **luminosidade**, e eles estão
+   espalhados de propósito na escala para não colapsarem num cinza só.
+2. A ordem não é arbitrária: no tema claro, quanto mais escuro, mais pesa.
+   `negativo` é o mais pesado, `atencao` no meio, `positivo` o mais leve —
+   sobra boa não precisa gritar. No escuro a escala inverte.
+3. O reforço não-cromático é obrigatório: **seta, sinal, peso de fonte e
+   espessura de faixa lateral**. Onde só a cor separava dois estados, agora
+   precisa ter um segundo sinal.
+
+Efeito colateral bom: cor sozinha nunca foi acessível — cerca de 8% dos
+homens não distinguem vermelho de verde — e o reforço acima serve a essas
+pessoas desde sempre.
+
+### Tipografia: fonte do sistema
+
+Onest e IBM Plex Mono saíram. `--font-ios` é a pilha do sistema. No Mac e no
+iPhone isso é a San Francisco de verdade, que era justamente o que a Onest
+tentava imitar; o custo aceito é que no Windows vira Segoe UI e no Android
+vira Roboto, então o app não é idêntico nas três plataformas.
+
+O algarismo tabular continua, vindo de `font-variant-numeric` no `body`. Era
+o único motivo funcional da monoespaçada, e ele sobreviveu à saída dela.
+
+### Superfície: vidro flutuante
+
+`.ficha` deixou de ser papel opaco e virou vidro — `blur(28px) saturate(180%)`
+sobre um `body` com dois halos radiais fixos. Os halos não são enfeite: sem
+nada atrás para borrar, vidro é só um retângulo cinza.
+
+### Mascote: adiado, com referência escolhida (05/09/2026)
+
+O Davi mandou uma imagem de referência e disse: **"quero o Tino assim, mas
+foque mais na parte do site, deixe o mascote por último."** Então o mascote
+sai da frente da fila; o que está no código hoje (`tino-mascote.tsx`, commit
+`ec79221`) é um passo intermediário, não o alvo.
+
+A referência é um **robô 3D branco**, renderizado com luz de estúdio:
+
+- corpo branco brilhante, plástico, com reflexo suave — nada de traço chapado
+- cabeça oval grande com **viseira escura ocupando quase todo o rosto**; olhos
+  e sorriso são **luz ciano** desenhada dentro dessa viseira
+- braços e mãos arredondados, separados do corpo, num gesto de aceno
+- **emblema redondo com cifrão no peito**
+- fundo em gradiente claro para ciano, sombra suave embaixo
+
+**Isso contraria duas coisas escritas aqui, e a escolha dele ganha:** o
+documento dizia "não é um robô nem um porquinho", e o brief chamava o desenho
+antigo de "robô quadradinho que destoa". Ele quer robô — só que um robô com
+acabamento, não um ícone anguloso.
+
+Ponto a resolver quando chegar a vez: o ciano da referência não é nenhum
+token desta base. Ou ele entra como cor só do mascote, ou a luz da viseira
+usa `acao`. Não decidir isso e sair desenhando é como se inventa um sétimo
+azul na tela.
+
+**Consequência do primeiro item:** a tela tem dois azuis, `acao` e `positivo`.
+Isso só funciona porque eles nunca ocupam o mesmo papel — `acao` é link, botão,
+foco e item ativo; `positivo` é algarismo. Em 05/09/2026 sete pontos que
+usavam `positivo` em link foram corrigidos justamente por isso. Ao mexer:
+**clicável leva `acao`, valor leva `positivo`, sem exceção.**
+
 ## De onde vem
 
 A referência não é app de banco nem fintech: é **o livro-caixa e a bobina do
@@ -12,6 +112,15 @@ conferido peça por peça, e a tela devia parecer isso.
 O visual anterior era um tema Apple genérico herdado do ERP Controllares. Além
 de não dizer nada sobre o produto, era código de terceiro dentro de algo que
 vai ser vendido.
+
+**Isso não briga com a linguagem do iOS que entrou em 04/09/2026.** O que saiu
+do Controllares foi CSS de terceiro copiado inteiro, sem decisão por trás. O
+que entrou são convenções de plataforma escolhidas uma a uma e conferidas
+aqui: hierarquia por tamanho e peso em vez de troca de letra, azul cheio como
+"isto se toca", raio de canto maior, superfície lisa. Nenhum valor foi copiado
+— o azul da Apple, por exemplo, não passava no contraste no tamanho em que
+esta base o usa, e desceu um degrau. O papel, a pauta, a ficha e o mascote
+continuam sendo do Tino: a plataforma dá a gramática, não o assunto.
 
 ## As cores dizem o que informam
 
@@ -24,33 +133,53 @@ arquivos, e nenhuma tela fica dizendo "verde" depois que o verde saiu.
 | `positivo` | sobra, saldo bom, meta batida | **azul**, porque em português quem tem sobra está "no azul". Verde está proibido nesta base — é o que toda fintech faz e já foi rejeitado aqui uma vez |
 | `negativo` | buraco, dívida, estouro | vermelho de carimbo — "estar no vermelho" |
 | `atencao` | perto do limite, vencendo | âmbar de papel envelhecido |
-| `acao` | botão, link, o que se clica | a própria tinta, quase preta. Deixa a cor sobrar para o que informa, em vez de gastar em decoração |
+| `acao` | botão, link, foco, o que se clica | o azul de sistema do iOS, um degrau mais escuro que o `#007AFF` da Apple. Vem de fora, do sistema em que o app é usado: azul cheio é o que a pessoa já leu a vida inteira como "isto se toca". Escurece porque aqui a cor também vira texto de 12px, e o tom da Apple sobre branco dá só 3,6:1 |
 | `alerta`, `destaque`, `dado` | gráfico e caso raro | usados com parcimônia |
 
 Superfícies são `papel-1` (mais perto do olho), `papel-2` e `papel-3`. A borda
 é `pauta` — a linha do livro-caixa.
 
+**Dois azuis, e isso é de propósito.** `acao` e `positivo` convivem porque
+estão em pontos diferentes da escala — a ação é clara e saturada, o valor é
+fundo e contido — e porque nunca disputam o mesmo pedaço da tela: um é
+preenchimento de botão, o outro é algarismo. Foco e seleção usam `acao`, não
+`positivo`: campo em foco e valor no azul diziam coisas diferentes com a mesma
+cor.
+
 No tema escuro o fundo é **grafite azulado, não preto puro**: em tela OLED o
-preto absoluto faz cartão e fundo virarem a mesma coisa e a hierarquia some.
+preto absoluto faz cartão e fundo virarem a mesma coisa e a hierarquia some. O
+azul da ação clareia junto, como o iOS faz — o tom claro sobre grafite perde
+contraste e o botão afunda no fundo.
 
-## Três fontes, três trabalhos
+## Duas famílias, três trabalhos
 
-- **Bricolage Grotesque** (`font-display`) carrega a personalidade e aparece
-  pouco: título e o número grande.
-- **Public Sans** (`font-sans`) é neutra de propósito. Texto de app financeiro
-  é lido com pressa e não deve chamar atenção para si.
-- **IBM Plex Mono** (`font-numero`, classe `.numero`) existe por motivo
+- **Onest** (`--font-display` e `--font-corpo`) faz título e corpo. É uma
+  grotesca geométrica de terminais horizontais e caixa alta curta — o mesmo
+  lugar em que a San Francisco da Apple mora, e a mais próxima dela entre as
+  que dá para auto-hospedar. Uma família só nos dois papéis é escolha, não
+  economia: no iOS a hierarquia vem de tamanho e peso, não de trocar de letra
+  a cada nível.
+- **IBM Plex Mono** (`--font-numero`, classe `.numero`) existe por motivo
   funcional: dinheiro precisa de algarismo tabular. Sem largura fixa por
   dígito, a coluna de valores dança e conferir extrato vira caça ao erro.
+
+As duas vêm pelo `next/font`: o build baixa os arquivos e serve pelo próprio
+domínio, sem requisição a `fonts.gstatic.com` em tempo de execução.
 
 A interface inteira tem `font-variant-numeric: tabular-nums`. A classe
 `.numero` acrescenta a fonte mono, e vai só nos valores em destaque.
 
 ## A ficha
 
-`.ficha` é o cartão. Papel, borda de pauta, raio de 14px e **uma linha de
+`.ficha` é o cartão. Papel, borda de pauta, raio de 16px e **uma linha de
 pauta no topo** — o único enfeite do sistema, e o que dá à tela cara de papel
 pautado em vez de painel de aplicativo.
+
+A linha encolheu de 2px para 1px e perdeu metade da opacidade quando o resto
+foi para a linguagem do iOS: numa tela com seis fichas empilhadas, seis barras
+coloridas viram listra, e superfície de iOS é lisa. O traço fica porque é a
+assinatura da casa; fica fino porque parou de ser o que se vê primeiro. O
+`--radius` geral é 14px, o raio de cartão do iOS.
 
 ## O Tino
 

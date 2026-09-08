@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarData } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { showToast } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
 
 /**
@@ -45,7 +46,7 @@ const PERIODOS = [
   { valor: "ANUAL", rotulo: "uma vez por ano" },
 ]
 
-const campo = "w-full rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 const VAZIO = {
   descricao: "",
@@ -115,9 +116,37 @@ export default function Recorrencias() {
     }
   }
 
-  async function remover(id: string) {
-    await buscar(`/api/recorrencias?id=${id}`, { method: "DELETE" })
-    await carregar()
+  /**
+   * "Desfazer em vez de confirmar" — item 4 do redesign de 07/09/2026. Em
+   * vez de perguntar "tem certeza?" antes de remover, a linha já some da
+   * tela na hora, e o DELETE de verdade só sai do navegador depois de 5s
+   * sem ninguém desfazer. Clicou em "Desfazer": a linha volta, e a
+   * requisição de exclusão nem chega a ser feita.
+   */
+  function remover(recorrencia: Recorrencia) {
+    if (!dados) return
+    const idAlvo = recorrencia.id
+    setDados({ ...dados, recorrencias: dados.recorrencias.filter((r) => r.id !== idAlvo) })
+
+    let desfeito = false
+    showToast(`"${recorrencia.descricao}" removida`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          desfeito = true
+          setDados((atual) =>
+            atual && !atual.recorrencias.some((r) => r.id === idAlvo)
+              ? { ...atual, recorrencias: [...atual.recorrencias, recorrencia] }
+              : atual,
+          )
+        },
+      },
+    })
+
+    setTimeout(async () => {
+      if (desfeito) return
+      await buscar(`/api/recorrencias?id=${idAlvo}`, { method: "DELETE" })
+    }, 5000)
   }
 
   const ativas = dados?.recorrencias.filter((linha) => linha.ativa) ?? []
@@ -135,7 +164,7 @@ export default function Recorrencias() {
           </button>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica
             rotulo="Sai todo mês"
             valor={formatarMoeda(dados?.custoFixoMensalCentavos ?? 0)}
@@ -233,7 +262,7 @@ export default function Recorrencias() {
 
             <button
               disabled={ocupado}
-              className="rounded-2xl bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
+              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
             >
               Adicionar conta fixa
             </button>
@@ -286,7 +315,7 @@ export default function Recorrencias() {
                       <Check className="size-3.5" />
                     </button>
                     <button
-                      onClick={() => remover(recorrencia.id)}
+                      onClick={() => remover(recorrencia)}
                       className="text-muted-fg transition hover:text-negativo"
                     >
                       <Trash2 className="size-4" />

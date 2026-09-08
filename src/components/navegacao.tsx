@@ -1,526 +1,499 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
+import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import {
-  BarChart3,
-  ChevronDown,
-  CreditCard,
-  Flag,
-  LineChart,
-  ListOrdered,
-  NotebookPen,
-  Package,
-  PanelLeftClose,
-  PanelLeftOpen,
-  PieChart,
-  Receipt,
-  Repeat,
-  ShoppingBag,
-  Sprout,
-  Store,
-  Tags,
-  Target,
-  Upload,
-  Wallet,
-  Wand2,
-  X,
-  Zap,
-} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
+import { LogOut, Menu, PanelLeftOpen, Settings, User, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { enviar } from "@/lib/cliente"
 import { TinoMascote } from "@/components/tino-mascote"
+import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
+import { FabAdicionar } from "@/components/fab-adicionar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  estaAtivo,
+  grupoDoCaminho,
+  gruposPara,
+  GRUPO_LOJA_FUNCIONARIO,
+  NUCLEO,
+  todosOsGrupos,
+  type GrupoNav,
+  type ItemNav,
+} from "@/lib/navegacao-grupos"
 
 /**
- * Navegação lateral.
+ * Navegação do app, reestruturada em 07/09/2026 na direção "Calen" (ver
+ * `docs/PROMPT-REDESIGN-CALEN.md`).
  *
- * Quinze telas em pílulas viravam duas fileiras com rolagem horizontal, onde
- * nada era achado e um terço da tela ia embora antes do primeiro número. A
- * coluna resolve os dois: a lista inteira fica visível de uma vez, agrupada
- * pelo momento em que cada tela é aberta.
+ * ANTES desta rodada: um trilho de 4 ícones fixos (Hoje/Buscar/Config/
+ * Perfil) + seis abas em pílula, de peso igual, sempre visíveis no topo.
+ * Resolvia "dezoito telas soltas", mas ainda pedia decidir entre seis
+ * opções olhando pro topo da tela toda vez.
  *
- * No celular a coluna não cabe — ali vale a barra inferior, ao alcance do
- * polegar, com as cinco telas do dia a dia.
+ * AGORA: duas camadas. NÍVEL 1 (`NUCLEO`, sempre visível — Início/
+ * Movimento/Cartões/Perfil) cobre "ver que tá tudo bem" sem abrir nada
+ * mais. NÍVEL 2 (`GRUPOS_NAV`, atrás do botão "Mais") junta o resto por
+ * INTENÇÃO — Planejar/Dívidas/Analisar/Ajustes, e Loja pra quem é MEI.
+ * Nenhuma tela foi removida — a lista completa continua em
+ * `lib/navegacao-grupos.ts`.
+ *
+ * `apenasLoja` (papel FUNCIONARIO_LOJA, "fase 7" de `docs/TINO-MEI.md`)
+ * entrou no merge com `main` de 08/09/2026: essa linhagem do redesign nunca
+ * tinha visto esse papel, que nasceu numa branch separada em paralelo.
+ * Quem só opera o balcão troca as DUAS camadas pelas 4 telas de
+ * `GRUPO_LOJA_FUNCIONARIO` (já filtradas por `lib/acesso.ts`, a mesma regra
+ * que `middleware.ts` usa pra barrar por URL) — sem núcleo pessoal, sem
+ * "Mais", sem busca global (que acharia tela que a pessoa não pode abrir) e
+ * sem o "+" de lançamento pessoal. Ver `docs/REDESIGN-EM-CURSO.md` pela
+ * decisão registrada de deixar assim em vez de reconstruir o alternador
+ * Pessoal/Empresa que a implementação antiga de `main` tinha.
  */
 
-interface Item {
-  rota: string
-  rotulo: string
-  Icone: typeof BarChart3
-}
-
-interface Secao {
-  titulo: string
-  itens: Item[]
-}
-
-interface Grupo {
-  titulo: string
-  /// Lista simples. Para grupo com legendas internas (ver "Mais"), usa `secoes`
-  /// em vez disto — os dois nunca vêm preenchidos ao mesmo tempo.
-  itens: Item[]
-  secoes?: Secao[]
-}
-
-/** Itens de um grupo, venham eles soltos ou dentro de seções. */
-function itensDoGrupo(grupo: Grupo): Item[] {
-  return grupo.secoes ? grupo.secoes.flatMap((secao) => secao.itens) : grupo.itens
-}
-
-/**
- * O menu curto.
- *
- * Vinte telas de uma vez paralisam quem abriu o app para responder uma
- * pergunta simples. Ficam à mostra só as que se abre toda semana; o resto vive
- * atrás de "Mais ferramentas", que abre quando alguém procura.
- *
- * Nenhuma tela foi removida — sumir com endereço quebra link salvo e quebra
- * quem já aprendeu o caminho. Elas saíram da primeira vista, não do app.
- */
-const DIARIO: Item[] = [
-  { rota: "/painel", rotulo: "Visão geral", Icone: BarChart3 },
-  { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
-  { rota: "/transacoes", rotulo: "Transações", Icone: Receipt },
-  { rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard },
-  { rota: "/analise", rotulo: "Análise", Icone: PieChart },
-]
-
-/** As quatro decisões que o app existe para ajudar a tomar. */
-const PLANEJAMENTO: Item[] = [
-  { rota: "/orcamento", rotulo: "Orçamento", Icone: Target },
-  { rota: "/dividas", rotulo: "Dívidas", Icone: Flag },
-  { rota: "/metas", rotulo: "Metas", Icone: Target },
-  { rota: "/investir", rotulo: "Longo prazo", Icone: Sprout },
-]
-
-/** O que se usa de vez em quando, e não precisa ocupar espaço todo dia. */
-const FERRAMENTAS: Item[] = [
-  { rota: "/plano", rotulo: "Plano de pagamento", Icone: Flag },
-  { rota: "/parcelamentos", rotulo: "Parcelamentos", Icone: ListOrdered },
-  { rota: "/projecao", rotulo: "Projeção", Icone: LineChart },
-  { rota: "/simulador", rotulo: "Simulador", Icone: Wand2 },
-  { rota: "/emprestimos", rotulo: "Empréstimo", Icone: CreditCard },
-  { rota: "/recorrencias", rotulo: "Contas fixas", Icone: Repeat },
-  { rota: "/regras", rotulo: "Regras", Icone: Tags },
-  { rota: "/importar", rotulo: "Importar", Icone: Upload },
-]
-
-/**
- * "Decidir" e "Ferramentas" viraram um grupo só, com legenda interna em vez
- * de acordeão próprio.
- *
- * Três grupos de nível — Dia a dia, Decidir, Ferramentas — competindo por
- * atenção é justamente o "muita opção" que confunde quem não é do ramo
- * financeiro. Dois grupos (Dia a dia + Mais) deixa só uma escolha de nível
- * alto para quem chega, sem tirar nenhuma tela do lugar — as doze telas de
- * antes continuam todas aqui, só que atrás de um clique a menos de ruído.
- */
-const MAIS: Secao[] = [
-  { titulo: "Decidir", itens: PLANEJAMENTO },
-  { titulo: "Ferramentas", itens: FERRAMENTAS },
-]
-
-const LOJA: Item[] = [
-  { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
-  { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
-  { rota: "/loja/fiado", rotulo: "Fiado", Icone: NotebookPen },
-  { rota: "/loja/contas", rotulo: "Contas a pagar", Icone: Receipt },
-  { rota: "/loja/financas", rotulo: "Finanças da loja", Icone: Wallet },
-  { rota: "/mei", rotulo: "MEI e DAS", Icone: Store },
-]
-
-/**
- * Atalhos da barra inferior no celular.
- *
- * Quatro, mais o botão que abre o resto: é o que cabe com área de toque
- * confortável em tela de 375px.
- */
-const NO_POLEGAR: Item[] = [
-  { rota: "/painel", rotulo: "Início", Icone: BarChart3 },
-  { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
-  { rota: "/analise", rotulo: "Análise", Icone: PieChart },
-  { rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard },
-]
-
-/// Fora de quem só opera o balcão (funcionário) e fora da barra do polegar no
-/// modo empresa (ver abaixo): MEI/DAS (tributário do dono) e Finanças da loja
-/// (lucro/DRE) — mesmo corte de `src/lib/acesso.ts`, que é quem barra de
-/// verdade por URL. Aqui é só o menu não oferecer o que a URL já recusaria
-/// para o funcionário, e não gastar o espaço caro do polegar com o que se
-/// abre menos no dia a dia do balcão.
-const ROTAS_MENOS_FREQUENTES_DA_LOJA = ["/mei", "/loja/financas"]
-const LOJA_NO_DIA_A_DIA = LOJA.filter((item) => !ROTAS_MENOS_FREQUENTES_DA_LOJA.includes(item.rota))
-
-/// Funcionário não tem "Início" (é o painel pessoal do dono) nem "Anotar" (é
-/// captura de gasto pessoal) — as quatro telas de loja cabem certinho no lugar.
-/// O dono no modo empresa usa a mesma barra: é o mesmo recorte de "o que se
-/// abre toda hora no balcão", só que ele ainda chega no resto pelo "Tudo".
-const NO_POLEGAR_LOJA: Item[] = LOJA_NO_DIA_A_DIA
-
-const CHAVE_RECOLHIDO = "tino:menu-recolhido"
-
-/**
- * Marca no `<html>` se a coluna está recolhida.
- *
- * O conteúdo desloca por CSS a partir daí. A alternativa seria descer o estado
- * por props até o layout, o que faria toda tela do app depender de um detalhe
- * do menu.
- */
-function marcar(recolhido: boolean) {
-  document.documentElement.dataset.menu = recolhido ? "recolhido" : "aberto"
-}
-
-/** startsWith cobre subrota (/transacoes/123) sem marcar tudo em "/". */
-function estaAtivo(caminho: string, rota: string) {
-  if (rota === "/loja") return caminho === "/loja"
-  return caminho === rota || caminho.startsWith(`${rota}/`)
-}
-
-function Linha({
-  item,
-  caminho,
-  recolhido,
-  aoNavegar,
-}: {
-  item: Item
-  caminho: string
-  recolhido: boolean
-  aoNavegar?: () => void
-}) {
-  const ativo = estaAtivo(caminho, item.rota)
+function Pilula({ item, ativo }: { item: ItemNav; ativo: boolean }) {
   const { Icone } = item
-
   return (
     <Link
       href={item.rota}
-      onClick={aoNavegar}
-      title={recolhido ? item.rotulo : undefined}
       aria-current={ativo ? "page" : undefined}
       className={cn(
-        "flex items-center gap-2.5 rounded-lg py-2 text-[13px] transition-colors",
-        recolhido ? "justify-center px-0" : "px-2.5",
+        "flex min-h-[44px] shrink-0 items-center gap-2 rounded-[var(--raio-pilula)] px-4 text-[14px] font-medium transition-colors",
         ativo
-          ? "bg-foreground/[0.07] font-medium text-foreground ring-1 ring-inset ring-pauta"
-          : "text-muted-fg hover:bg-foreground/[0.04] hover:text-foreground",
+          ? "bg-accent text-accent-foreground"
+          : "text-[color:var(--texto-2)] hover:bg-foreground/[0.05] hover:text-foreground",
       )}
     >
-      <Icone className={cn("size-4 shrink-0", ativo && "text-positivo")} />
-      {!recolhido && <span className="truncate">{item.rotulo}</span>}
+      <Icone className="size-4 shrink-0" />
+      {item.rotulo}
     </Link>
   )
 }
 
 /**
- * Os grupos do menu, um aberto por vez.
+ * Sub-navegação de um grupo com mais de uma tela (ex.: Movimento absorve
+ * Transações + Anotar + Importar; Dívidas absorve Dívidas + Plano de
+ * pagamento + Empréstimo). Some sozinha em grupo de tela única. Procura em
+ * TODOS os grupos (núcleo + nível 2), porque agora um item do núcleo
+ * (Movimento) também tem irmãos.
  *
- * Vinte opções abertas ao mesmo tempo é o cardápio com trinta sabores de pizza:
- * a pessoa lê tudo, não escolhe nada e sai. Com um grupo aberto por vez ela
- * enxerga cinco opções, escolhe, e o resto continua a um toque de distância.
- *
- * O grupo da tela atual abre sozinho. Chegar por link e não achar onde está no
- * menu é o tipo de coisa que faz alguém achar que o app perdeu a página.
+ * `apenasLoja` usa só o grupo do funcionário — os outros nunca existem pra
+ * essa sessão.
  */
-function Grupos({
-  grupos,
-  caminho,
-  recolhido,
-  aoNavegar,
-}: {
-  grupos: Grupo[]
-  caminho: string
-  recolhido: boolean
-  aoNavegar?: () => void
-}) {
-  const grupoDaTela = grupos.find((grupo) => itensDoGrupo(grupo).some((item) => estaAtivo(caminho, item.rota)))
-  const [aberto, setAberto] = useState(() => grupoDaTela?.titulo ?? grupos[0]?.titulo ?? "")
-
-  useEffect(() => {
-    const atual = grupos.find((grupo) => itensDoGrupo(grupo).some((item) => estaAtivo(caminho, item.rota)))
-    if (atual) setAberto(atual.titulo)
-  }, [caminho, grupos])
-
-  // Recolhido só há ícones, e esconder metade deles atrás de um acordeão que
-  // não se vê seria pior que mostrar todos.
-  if (recolhido) {
-    return (
-      <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
-        {grupos.map((grupo) => (
-          <div key={grupo.titulo} className="space-y-0.5">
-            {itensDoGrupo(grupo).map((item) => (
-              <Linha key={item.rota} item={item} caminho={caminho} recolhido aoNavegar={aoNavegar} />
-            ))}
-          </div>
-        ))}
-      </nav>
-    )
-  }
+export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
+  const caminho = usePathname()
+  const grupos = apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei))
+  const grupo = grupoDoCaminho(grupos, caminho)
+  if (!grupo || grupo.itens.length < 2) return null
 
   return (
-    <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-      {grupos.map((grupo) => {
-        const estaAberto = aberto === grupo.titulo
-        const temAtivo = itensDoGrupo(grupo).some((item) => estaAtivo(caminho, item.rota))
-
-        return (
-          <div key={grupo.titulo}>
-            <button
-              onClick={() => setAberto(estaAberto ? "" : grupo.titulo)}
-              aria-expanded={estaAberto}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-[11px] uppercase tracking-[0.12em] transition-colors",
-                temAtivo ? "text-foreground" : "text-muted-fg hover:text-foreground",
-              )}
-            >
-              <ChevronDown className={cn("size-3.5 shrink-0 transition-transform", !estaAberto && "-rotate-90")} />
-              <span className="truncate">{grupo.titulo}</span>
-              {!estaAberto && temAtivo && <span className="ml-auto size-1.5 rounded-full bg-positivo" />}
-            </button>
-
-            {estaAberto && (
-              <div className="mb-2 space-y-2.5 pl-1.5">
-                {grupo.secoes
-                  ? grupo.secoes.map((secao) => (
-                      <div key={secao.titulo} className="space-y-0.5">
-                        <p className="px-2.5 text-[10px] uppercase tracking-[0.1em] text-muted-fg/70">
-                          {secao.titulo}
-                        </p>
-                        {secao.itens.map((item) => (
-                          <Linha key={item.rota} item={item} caminho={caminho} recolhido={false} aoNavegar={aoNavegar} />
-                        ))}
-                      </div>
-                    ))
-                  : grupo.itens.map((item) => (
-                      <Linha key={item.rota} item={item} caminho={caminho} recolhido={false} aoNavegar={aoNavegar} />
-                    ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </nav>
-  )
-}
-
-/** Pessoal ↔ Empresa. Só existe pra quem tem loja — sem loja não há o que trocar. */
-function AlternadorDeModo({ empresa, ir }: { empresa: boolean; ir: (destino: "pessoal" | "empresa") => void }) {
-  return (
-    <div className="flex rounded-full border border-pauta p-0.5 text-[11px]">
-      <button
-        onClick={() => ir("pessoal")}
-        className={cn(
-          "flex-1 rounded-full px-2.5 py-1 transition-colors",
-          !empresa ? "bg-foreground/[0.08] font-medium text-foreground" : "text-muted-fg hover:text-foreground",
-        )}
-      >
-        Pessoal
-      </button>
-      <button
-        onClick={() => ir("empresa")}
-        className={cn(
-          "flex-1 rounded-full px-2.5 py-1 transition-colors",
-          empresa ? "bg-foreground/[0.08] font-medium text-foreground" : "text-muted-fg hover:text-foreground",
-        )}
-      >
-        Empresa
-      </button>
+    <div className="-mt-1 mb-5 flex gap-1.5 overflow-x-auto">
+      {grupo.itens.map((item) => (
+        <Pilula key={item.rota} item={item} ativo={estaAtivo(caminho, item.rota)} />
+      ))}
     </div>
   )
 }
 
-export function Navegacao({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
+function IconeTrilho({
+  href,
+  rotulo,
+  Icone,
+  ativo,
+}: {
+  href: string
+  rotulo: string
+  Icone: typeof Menu
+  ativo?: boolean
+}) {
+  return (
+    // Ícone COM rótulo de 12px, sempre visível (SPEC-CALEN-PRECISO, PARTE
+    // 4.2). Antes era só o ícone, com o nome escondido no `title` — e ícone
+    // sozinho não é intuitivo para quem o Davi quer atender: a referência
+    // mostra "Início/Calendário/Contas/Perfil" escrito em todo item.
+    <Link
+      href={href}
+      aria-label={rotulo}
+      aria-current={ativo ? "page" : undefined}
+      className={cn(
+        "toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 transition-colors",
+        ativo
+          ? "bg-accent text-accent-foreground"
+          : "text-[color:var(--texto-2)] hover:bg-foreground/[0.06] hover:text-foreground",
+      )}
+    >
+      <Icone className="size-[18px]" />
+      <span className="w-full truncate text-center text-[12px] font-medium leading-none">{rotulo}</span>
+    </Link>
+  )
+}
+
+/**
+ * Conteúdo do nível 2 (Planejar/Dívidas/Analisar/Ajustes/Loja) — usado
+ * tanto no painel do desktop (`MenuMais`) quanto na gaveta do celular, pra
+ * não ter duas listas escritas à mão.
+ */
+function ListaDeGrupos({
+  grupos,
+  caminho,
+  aoNavegar,
+}: {
+  grupos: GrupoNav[]
+  caminho: string
+  aoNavegar: () => void
+}) {
+  return (
+    <>
+      {grupos.map((grupo) => (
+        <div key={grupo.chave}>
+          <p className="px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-fg">
+            {grupo.titulo}
+          </p>
+          <div className="space-y-0.5">
+            {grupo.itens.map((item) => {
+              const ativo = estaAtivo(caminho, item.rota)
+              const { Icone } = item
+              return (
+                <Link
+                  key={item.rota}
+                  href={item.rota}
+                  onClick={aoNavegar}
+                  aria-current={ativo ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-[16px] px-3 py-2.5 text-[14px] transition-colors",
+                    ativo
+                      ? "bg-accent font-medium text-accent-foreground"
+                      : "text-[color:var(--texto-2)] hover:bg-foreground/[0.04] hover:text-foreground",
+                  )}
+                >
+                  <Icone className="size-4 shrink-0" />
+                  <span className="truncate">{item.rotulo}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
+/**
+ * "Mais" do desktop: painel ancorado no botão do trilho, mesmo mecanismo
+ * de portal que o painel de notificações (`barra-topo.tsx`) — necessário
+ * pelo mesmo motivo: `.ios-card` (o trilho) tem `overflow: hidden`, que
+ * cortaria qualquer painel `position: absolute` mais alto que o próprio
+ * trilho.
+ */
+function MenuMais({ grupos, caminho }: { grupos: GrupoNav[]; caminho: string }) {
+  const [aberto, setAberto] = useState(false)
+  const botaoRef = useRef<HTMLButtonElement>(null)
+  const [posicao, setPosicao] = useState<{ top: number; left: number } | null>(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    function atualizar() {
+      const rect = botaoRef.current?.getBoundingClientRect()
+      if (!rect) return
+      // O menu abre ALINHADO ao botão, mas nunca passando do rodapé da
+      // janela. O botão "Mais" mora no fim do trilho, então em tela baixa
+      // (medido: janela de 611px) o painel abria em `top: 475` com 489px de
+      // altura e 353px dele ficavam fora da tela — sem rolagem possível,
+      // porque quem rolava era a página, não o painel. O teto de altura é o
+      // mesmo do `max-h` da classe, para os dois números não divergirem.
+      const alturaMaxima = Math.min(560, innerHeight * 0.8)
+      const topo = Math.max(12, Math.min(rect.top, innerHeight - alturaMaxima - 12))
+      setPosicao({ top: topo, left: rect.right + 8 })
+    }
+    atualizar()
+    window.addEventListener("resize", atualizar)
+    window.addEventListener("scroll", atualizar, true)
+    return () => {
+      window.removeEventListener("resize", atualizar)
+      window.removeEventListener("scroll", atualizar, true)
+    }
+  }, [aberto])
+
+  return (
+    <div className="relative">
+      <button
+        ref={botaoRef}
+        onClick={() => setAberto((atual) => !atual)}
+        aria-label="Mais"
+        aria-expanded={aberto}
+        className={cn(
+          "toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 transition-colors",
+          aberto
+            ? "bg-accent text-accent-foreground"
+            : "text-[color:var(--texto-2)] hover:bg-foreground/[0.06] hover:text-foreground",
+        )}
+      >
+        <Menu className="size-[18px]" />
+        <span className="text-[12px] font-medium leading-none">Mais</span>
+      </button>
+
+      {aberto &&
+        posicao &&
+        createPortal(
+          <>
+            <button
+              aria-label="Fechar menu"
+              onClick={() => setAberto(false)}
+              className="fixed inset-0 z-40 cursor-default"
+            />
+            <div
+              className="vidro-menu fixed z-50 max-h-[min(560px,80vh)] w-64 space-y-4 overflow-y-auto rounded-[var(--raio-cartao)] p-3"
+              style={{ top: posicao.top, left: posicao.left }}
+            >
+              <ListaDeGrupos grupos={grupos} caminho={caminho} aoNavegar={() => setAberto(false)} />
+            </div>
+          </>,
+          document.body,
+        )}
+    </div>
+  )
+}
+
+/** Trilho fixo, do tablet pra cima: núcleo (Início/Movimento/Cartões),
+    Buscar, Mais (nível 2) e Perfil — nessa ordem, de cima pra baixo.
+    `apenasLoja` troca o núcleo pelas telas do balcão e tira busca/Mais. */
+function TrilhoLateral({
+  nome,
+  avatarUrl,
+  mei,
+  apenasLoja,
+}: {
+  nome: string
+  avatarUrl: string | null
+  mei: boolean
+  apenasLoja: boolean
+}) {
   const caminho = usePathname()
   const router = useRouter()
-  const [recolhido, setRecolhido] = useState(false)
-  const [gaveta, setGaveta] = useState(false)
+  const grupos = gruposPara(mei)
 
-  /**
-   * Pessoal ou empresa — sem estado próprio, sem `localStorage`.
-   *
-   * Deriva direto da URL: chegar em `/loja` (ou `/mei`) por link, aba salva ou
-   * pelo botão abaixo dá o mesmo resultado. Guardar isso num estado à parte
-   * arriscaria o menu mostrar "Empresa" com a tela pessoal aberta atrás —
-   * dois lugares dizendo coisas diferentes sobre a mesma pergunta.
-   */
-  const modoEmpresa = Boolean(mei) && !apenasLoja && (caminho === "/mei" || caminho.startsWith("/loja"))
-
-  /**
-   * A escolha de recolher fica guardada.
-   *
-   * Quem trabalha em tela pequena recolhe uma vez e espera continuar assim;
-   * reabrir expandido a cada visita obriga a refazer o gesto todo dia.
-   */
-  useEffect(() => {
-    let guardado = false
-    try {
-      guardado = localStorage.getItem(CHAVE_RECOLHIDO) === "1"
-    } catch {
-      /* navegador sem storage: começa expandido */
-    }
-    setRecolhido(guardado)
-    marcar(guardado)
-  }, [])
-
-  function alternar() {
-    setRecolhido((atual) => {
-      const proximo = !atual
-      try {
-        localStorage.setItem(CHAVE_RECOLHIDO, proximo ? "1" : "0")
-      } catch {
-        /* sem storage, vale só nesta sessão */
-      }
-      marcar(proximo)
-      return proximo
-    })
+  async function sair() {
+    await enviar("/api/auth/logout", {})
+    router.push("/login")
+    router.refresh()
   }
 
-  // Fecha a gaveta ao trocar de tela: no celular ela cobre o conteúdo, e ficar
-  // aberta depois de navegar esconde justamente o que a pessoa foi ver.
+  // Sem `apenasLoja`: os 3 primeiros do núcleo pessoal (o 4º, Perfil, vira o
+  // botão dedicado lá embaixo, com avatar). Com `apenasLoja`: TODAS as telas
+  // do balcão — não existe "4º item redundante com o Perfil" aqui, e cortar
+  // uma delas pra caber em 3 esconderia tela de verdade do dia a dia.
+  const itensDoTrilho = apenasLoja ? GRUPO_LOJA_FUNCIONARIO.itens : NUCLEO.slice(0, 3).map((grupo) => grupo.itens[0])
+
+  return (
+    // Trilho FLUTUANDO: mesma margem de 12px que a barra do polegar do
+    // celular já usa (`inset-x-3 bottom-3`), agora nas quatro bordas do
+    // próprio trilho. `.ios-card` já traz o raio, o vidro e a sombra.
+    // 96px (era 64px): o rótulo de 12px precisa caber inteiro sem cortar
+    // "Movimento", o nome mais longo do núcleo — em 84px ele virava
+    // "Movime…", que é o mesmo problema do ícone sem nome.
+    <aside className="ios-card fixed inset-y-3 left-3 z-30 hidden w-[96px] flex-col items-center gap-1 px-2 py-4 lg:flex">
+      <Link
+        href={apenasLoja ? "/loja" : "/painel"}
+        title="Tino"
+        aria-label="Início"
+        className="mb-2 grid size-11 place-items-center"
+      >
+        <Image src="/tino-mascote.png" alt="" width={30} height={30} className="size-[30px] object-contain" />
+      </Link>
+
+      {itensDoTrilho.map((item) => (
+        <IconeTrilho
+          key={item.rota}
+          href={item.rota}
+          rotulo={item.rotulo}
+          Icone={item.Icone}
+          ativo={estaAtivo(caminho, item.rota)}
+        />
+      ))}
+
+      {/* Busca global soma TODOS os grupos (`todosOsGrupos`), inclusive
+          telas pessoais — oferecer isso ao funcionário do balcão contraria
+          o próprio princípio de `lib/acesso.ts` ("o menu nunca promete tela
+          que a URL recusaria"), então ela nem aparece nesse papel. */}
+      {!apenasLoja && <GatilhoBuscaPaginas variant="trilho" />}
+
+      <div className="mt-auto flex w-full flex-col items-center gap-1">
+        {/* "Mais" (nível 2) não existe pro funcionário: as 4 telas do balcão
+            já são a lista inteira dele, não há um "resto" atrás de um botão. */}
+        {!apenasLoja && <MenuMais grupos={grupos} caminho={caminho} />}
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              aria-label="Perfil"
+              className="toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
+            >
+              {avatarUrl ? (
+                <Avatar className="size-6">
+                  <AvatarImage src={avatarUrl} alt="" />
+                  <AvatarFallback className="bg-primary text-[10px] font-semibold text-primary-foreground">
+                    {nome.trim().charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <User className="size-[18px]" />
+              )}
+              <span className="text-[12px] font-medium leading-none">Perfil</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="end" className="w-48">
+            <DropdownMenuLabel className="truncate">{nome}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {/* Configurações também é tela pessoal — fora do escopo do
+                funcionário, que só tem Sair aqui. */}
+            {!apenasLoja && (
+              <DropdownMenuItem asChild>
+                <Link href="/configuracoes">
+                  <Settings className="mr-2 size-4" />
+                  Configurações
+                </Link>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={sair}>
+              <LogOut className="mr-2 size-4" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </aside>
+  )
+}
+
+/** Gaveta do celular: agora só o NÍVEL 2 (Planejar/Dívidas/Analisar/
+    Ajustes/Loja) — o núcleo já está sempre visível na barra do polegar,
+    não precisa duplicar aqui. */
+function Gaveta({ grupos, caminho, aoFechar }: { grupos: GrupoNav[]; caminho: string; aoFechar: () => void }) {
+  return (
+    <>
+      <button
+        aria-label="Fechar menu"
+        onClick={aoFechar}
+        className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm lg:hidden"
+      />
+      <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-3 backdrop-blur-vidro-forte backdrop-saturate-[1.7] lg:hidden">
+        <header className="flex h-14 items-center gap-2 border-b border-pauta px-3">
+          <TinoMascote estado="tranquilo" animado={false} className="size-7" />
+          <span className="font-display text-[15px] font-semibold">Mais</span>
+          <button onClick={aoFechar} aria-label="Fechar menu" className="toque ml-auto text-muted-fg">
+            <X className="size-4" />
+          </button>
+        </header>
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+          <ListaDeGrupos grupos={grupos} caminho={caminho} aoNavegar={aoFechar} />
+        </nav>
+      </aside>
+    </>
+  )
+}
+
+export function Navegacao({
+  mei,
+  apenasLoja,
+  nome,
+  avatarUrl,
+}: {
+  mei?: boolean
+  /** Papel FUNCIONARIO_LOJA (ver `layout.tsx`/`lib/acesso.ts`) — troca a
+      navegação inteira pelas 4 telas do balcão, sem núcleo pessoal. */
+  apenasLoja?: boolean
+  nome: string
+  avatarUrl?: string | null
+}) {
+  const caminho = usePathname()
+  const [gaveta, setGaveta] = useState(false)
+  const grupos = gruposPara(Boolean(mei))
+
   useEffect(() => {
     setGaveta(false)
   }, [caminho])
 
-  /**
-   * Os grupos do menu.
-   *
-   * Funcionário da loja não vê os outros grupos nem no menu — coerente com o
-   * que `src/proxy.ts` já barra por URL. Esconder só o que a URL também barra
-   * evita um menu que promete tela que a pessoa não consegue abrir.
-   *
-   * Dono com loja nunca vê pessoal e empresa juntos: no modo empresa é só
-   * "Tino PJ_MEI"; no pessoal, nem aparece que existe uma loja. É a mesma
-   * separação que o funcionário já tinha, só que reversível e para o próprio
-   * dono — dois assuntos diferentes, duas telas de cada vez, nunca as duas
-   * misturadas competindo por atenção no mesmo menu.
-   */
-  const grupos: Grupo[] = useMemo(() => {
-    if (apenasLoja) return [{ titulo: "Balcão", itens: LOJA_NO_DIA_A_DIA }]
-    if (modoEmpresa) return [{ titulo: "Tino PJ_MEI", itens: LOJA }]
-
-    return [
-      { titulo: "Dia a dia", itens: DIARIO },
-      { titulo: "Mais", itens: [], secoes: MAIS },
-    ]
-  }, [apenasLoja, modoEmpresa])
-
-  // Trocar de modo é navegar, não só marcar um estado — a rota de chegada é
-  // quem decide o modo (ver `modoEmpresa` acima). Empurra pra tela mais usada
-  // de cada lado: o balcão na empresa, a visão geral no pessoal.
-  function irPara(destino: "pessoal" | "empresa") {
-    router.push(destino === "empresa" ? "/loja" : "/painel")
-  }
-
-  const tituloDoApp = modoEmpresa ? "Tino PJ_MEI" : "Tino"
+  // `NUCLEO` guarda um item por grupo (o resto vive em `<SubAbas>`) — mapear
+  // direto preserva ordem e rótulo de grupo sem duplicar a lista aqui.
+  // `apenasLoja` usa as telas do balcão no mesmo formato.
+  const gruposDoPolegar = apenasLoja
+    ? GRUPO_LOJA_FUNCIONARIO.itens.map((item) => ({ chave: item.rota, titulo: item.rotulo, item }))
+    : NUCLEO.map((grupo) => ({ chave: grupo.chave, titulo: grupo.titulo, item: grupo.itens[0] }))
 
   return (
     <>
-      {/* ── Coluna fixa, do tablet para cima ── */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden shrink-0 flex-col border-r border-pauta bg-papel-1 transition-[width] duration-200 md:flex",
-          recolhido ? "w-[68px]" : "w-[248px]",
-        )}
-      >
-        <header
-          className={cn(
-            "flex h-14 items-center gap-2 border-b border-pauta",
-            recolhido ? "justify-center px-2" : "px-3",
-          )}
-        >
-          <TinoMascote estado="tranquilo" animado={false} className="size-7 shrink-0" />
-          {!recolhido && <span className="font-display text-[15px] font-semibold tracking-tight">{tituloDoApp}</span>}
-          <button
-            onClick={alternar}
-            aria-label={recolhido ? "Expandir menu" : "Recolher menu"}
-            className={cn("toque ml-auto text-muted-fg hover:text-foreground", recolhido && "hidden")}
-          >
-            <PanelLeftClose className="size-4" />
-          </button>
-        </header>
+      <TrilhoLateral nome={nome} avatarUrl={avatarUrl ?? null} mei={Boolean(mei)} apenasLoja={Boolean(apenasLoja)} />
 
-        {recolhido && (
-          <button
-            onClick={alternar}
-            aria-label="Expandir menu"
-            className="toque mx-auto mt-3 text-muted-fg hover:text-foreground"
-          >
-            <PanelLeftOpen className="size-4" />
-          </button>
-        )}
-
-        {mei && !apenasLoja && !recolhido && (
-          <div className="px-3 pt-3">
-            <AlternadorDeModo empresa={modoEmpresa} ir={irPara} />
-          </div>
-        )}
-
-        <Grupos grupos={grupos} caminho={caminho} recolhido={recolhido} />
-      </aside>
-
-      {/* ── Gaveta do celular ── */}
-      {gaveta && (
-        <>
-          <button
-            aria-label="Fechar menu"
-            onClick={() => setGaveta(false)}
-            className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm md:hidden"
-          />
-          <aside className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col border-r border-pauta bg-papel-1 md:hidden">
-            <header className="flex h-14 items-center gap-2 border-b border-pauta px-3">
-              <TinoMascote estado="tranquilo" animado={false} className="size-7" />
-              <span className="font-display text-[15px] font-semibold">{tituloDoApp}</span>
-              <button
-                onClick={() => setGaveta(false)}
-                aria-label="Fechar menu"
-                className="toque ml-auto text-muted-fg"
-              >
-                <X className="size-4" />
-              </button>
-            </header>
-            {mei && !apenasLoja && (
-              <div className="border-b border-pauta px-3 py-3">
-                <AlternadorDeModo
-                  empresa={modoEmpresa}
-                  ir={(destino) => {
-                    setGaveta(false)
-                    irPara(destino)
-                  }}
-                />
-              </div>
-            )}
-            <Grupos grupos={grupos} caminho={caminho} recolhido={false} aoNavegar={() => setGaveta(false)} />
-          </aside>
-        </>
-      )}
-
-      {/* ── Barra do polegar ── */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-pauta bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-        <div className="flex items-stretch justify-around">
-          {(apenasLoja || modoEmpresa ? NO_POLEGAR_LOJA : NO_POLEGAR).map((item) => {
-            const ativo = estaAtivo(caminho, item.rota)
-            const { Icone } = item
-            return (
-              <Link
-                key={item.rota}
-                href={item.rota}
-                className={cn(
-                  "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] transition-colors",
-                  ativo ? "text-positivo" : "text-muted-fg",
-                )}
-              >
-                <Icone className="size-5" />
-                {item.rotulo}
-              </Link>
-            )
-          })}
+      {/* ── Cabeçalho móvel: hambúrguer (abre o nível 2) + busca, só até o
+          tablet. Nenhum dos dois existe pro funcionário — mesmo motivo do
+          trilho: sem nível 2 e sem busca global nesse papel. */}
+      {!apenasLoja && (
+        <div className="flex items-center gap-2 pb-2 pt-1 lg:hidden">
           <button
             onClick={() => setGaveta(true)}
             aria-label="Abrir menu"
-            className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] text-muted-fg"
+            className="toque grid place-items-center rounded-2xl text-[color:var(--texto-2)]"
           >
-            <PanelLeftOpen className="size-5" />
-            Tudo
+            <PanelLeftOpen className="size-[18px]" />
           </button>
+          <GatilhoBuscaPaginas />
+        </div>
+      )}
+
+      {gaveta && !apenasLoja && <Gaveta grupos={grupos} caminho={caminho} aoFechar={() => setGaveta(false)} />}
+
+      {/* ── Barra do polegar: os itens do NÚCLEO (ou, pro funcionário, as
+          telas do balcão) com ícone E rótulo, e o "+" no MEIO — anatomia da
+          PARTE 4.2 do spec, copiada da referência. Duas mudanças desta
+          rodada: o "+" saiu de botão flutuante no canto (onde tapava
+          conteúdo e não lia como navegação) para o centro da barra, e
+          "Mais" saiu daqui — o nível 2 continua a um toque pelo hambúrguer
+          do cabeçalho móvel logo acima, e cinco alvos numa barra de 44px
+          deixavam cada um estreito demais.
+
+          O funcionário não ganha "+": não existe lançamento pessoal rápido
+          pra esse papel, e main (de onde `apenasLoja` veio) também nunca
+          teve um botão central nesse modo — decisão preservada, não
+          inventada aqui.
+
+          Rótulo em 12px (era 10px): é o número do spec, e 10px em barra de
+          navegação é o tamanho em que o rótulo existe sem ser lido. */}
+      <nav className="ios-card safe-bottom fixed inset-x-3 bottom-3 z-40 lg:hidden">
+        <div className="flex items-stretch justify-around">
+          {gruposDoPolegar.map((grupo, indice) => {
+            const ativo = estaAtivo(caminho, grupo.item.rota)
+            const { Icone } = grupo.item
+            return (
+              <Fragment key={grupo.chave}>
+                {!apenasLoja && indice === 2 && (
+                  <div className="flex w-16 shrink-0 items-center justify-center">
+                    <FabAdicionar ancorado />
+                  </div>
+                )}
+                <Link
+                  href={grupo.item.rota}
+                  aria-current={ativo ? "page" : undefined}
+                  className={cn(
+                    "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 py-2 text-[12px] font-medium transition-colors",
+                    ativo ? "text-acao" : "text-muted-fg",
+                  )}
+                >
+                  <Icone className="size-5" />
+                  <span className="w-full truncate px-0.5 text-center leading-none">{grupo.titulo}</span>
+                </Link>
+              </Fragment>
+            )
+          })}
         </div>
       </nav>
     </>

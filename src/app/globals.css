@@ -5,109 +5,242 @@
 /* ============================================================
    Tino — identidade visual
    ------------------------------------------------------------
-   A referência não é app de banco: é o livro-caixa e a bobina do
-   cupom. Papel, pauta, tinta e carimbo. O produto fala de dinheiro
-   miúdo, conferido peça por peça, e a tela devia parecer isso.
+   QUARTA reversão de direção — registrada em docs/REDESIGN-EM-CURSO.md
+   para não virar "conserto" acidental:
 
-   As cores usam o vocabulário que o brasileiro já fala: quem tem
-   sobra está "no azul", quem tem buraco está "no vermelho". Por
-   isso positivo é azul e não verde — e porque verde de fintech já
-   é o que todo mundo faz.
-
-   A ação (botão, link) é a própria tinta: quase preta. Deixa a cor
-   sobrar para o que informa, em vez de gastar em decoração.
+     1. Linguagem iOS clara, azul de ação (04/09).
+     2. Casca preta + vidro líquido colorido (commit a134eb0, 07/09).
+     3. Skin acromática estilo iOS, CLARA por padrão, escuro opcional
+        via `.dark`, chroma ZERO em tudo (07/09, tarde).
+     4. ESTA — direção "Calen" (07/09, noite): Davi pediu pra ficar "o
+        mais parecido possível" com o app concorrente Calen — ESCURO
+        por padrão agora (não mais opcional via `.dark`; o claro é que
+        virou opcional, via `.light`), acento com matiz de verdade
+        (verde/teal — Davi pediu explicitamente TROCAR o roxo/violeta
+        do Calen de verdade por verde, é a única diferença deliberada
+        da referência) e números com sinal + gráficos voltam a ter cor
+        real (verde/vermelho/azul). Chroma zero CONTINUA em botão de
+        navegação neutro, badge de status não-numérico, moldura de
+        cartão — a regra não morreu, só passou a ter DUAS exceções
+        explícitas (acento de ação, dado financeiro), registradas aqui
+        pra não confundir com "resolvido, não mexer" de sessões
+        anteriores. Ver docs/REDESIGN-EM-CURSO.md pro contraste
+        calculado (mesmo método OKLab→sRGB linear→WCAG de sempre) e
+        pra tabela completa de valores.
    ============================================================ */
 
 @layer base {
   :root {
-    /* --- papel e tinta --- */
-    --background: oklch(0.968 0.004 255);
-    --foreground: oklch(0.22 0.028 258);
+    /* Pilha do sistema: no Mac e no iPhone resolve para a San Francisco de
+       verdade; nas outras plataformas cai na fonte nativa delas. */
+    --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI",
+      system-ui, sans-serif;
 
-    --papel-1: oklch(1 0 0);
-    --papel-2: oklch(0.978 0.004 255);
-    --papel-3: oklch(0.948 0.006 255);
+    /* --- casca ESCURA por padrão (era `.dark` antes desta rodada) ---
+       Preto nunca absoluto (`0.11`, não `0`) — herdado da skin anterior,
+       continua valendo. */
+    --background: oklch(0.11 0 0);
+    --foreground: oklch(0.985 0 0);
 
-    /* A linha do livro-caixa: separa sem gritar. */
-    --pauta: oklch(0.22 0.028 258 / 12%);
-    --muted-fg: oklch(0.485 0.018 258);
+    --papel-1: oklch(1 0 0 / 8%);
+    --papel-2: oklch(1 0 0 / 12%);
+    --papel-3: oklch(1 0 0 / 16%);
+    /* Superfície OPACA de cartão e de barra fixa. Existe por um defeito visto
+       ao vivo (SPEC-CALEN-PRECISO, PARTE 1.3): `--papel-1` é translúcido, e o
+       conteúdo da página passava POR TRÁS do cabeçalho fixo, continuando
+       legível através dele ao rolar. O Calen não usa vidro em lugar nenhum —
+       superfície é sólida, e é isso que faz não parecer quebrado. */
+    --papel-solido: oklch(0.175 0 0);
+    --pauta: oklch(1 0 0 / 12%);
+    --vidro-realce: oklch(1 0 0 / 6%);
+    --muted-fg: oklch(0.68 0 0);
 
-    /* --- cores que informam --- */
-    --lch-acao: 0.29 0.045 262;
-    --lch-positivo: 0.49 0.13 248;
-    --lch-negativo: 0.52 0.18 26;
-    --lch-atencao: 0.6 0.13 66;
-    --lch-alerta: 0.68 0.13 88;
-    --lch-destaque: 0.45 0.15 292;
-    --lch-dado: 0.48 0.085 212;
+    --texto-2: oklch(0.72 0 0);
+    --texto-3: oklch(0.68 0 0);
 
-    /* --- shadcn --- */
-    --card: 0 0% 100%;
-    --card-foreground: 258 22% 14%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 258 22% 14%;
-    --primary: 258 30% 18%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 255 14% 94%;
-    --secondary-foreground: 258 20% 22%;
-    --muted: 255 14% 95%;
-    --muted-foreground: 258 8% 45%;
-    --accent: 255 16% 92%;
-    --accent-foreground: 258 24% 18%;
-    --destructive: 12 68% 46%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 255 12% 87%;
-    --input: 255 12% 84%;
-    --ring: 248 45% 45%;
+    /* --- espaço e forma --- */
+    /* Cantos mais generosos que a skin anterior (18px→20px, + 8px em
+       `.ios-card` = 28px) — "cards com cantos bem generosos" do pedido
+       Calen. Pequeno de propósito: o resto do layout (grade, respiro)
+       já batia com a referência, não precisou mudar. */
+    --raio-cartao: 1.25rem; /* 20px — cartão soma +8px em `.ios-card` */
+    --raio-campo: 14px;
+    --raio-pilula: 999px;
+    --largura-conteudo: 1560px; /* `max-w-[1560px]` do shell de painéis flutuando */
+    --curva: cubic-bezier(0.32, 0.72, 0, 1);
+    --tempo: 200ms;
+
+    /* --- superfície --- */
+    --vidro: oklch(1 0 0 / 6%);
+    --vidro-forte: oklch(1 0 0 / 10%);
+    --desfoque: 28px;
+    --desfoque-forte: 40px;
+    --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -22px oklch(0 0 0 / 80%);
+    --sombra-flutuante: 0 24px 60px -28px oklch(0 0 0 / 90%);
+
+    /* --- os tokens que informam ---
+       Chroma de VERDADE nestes quatro (acao/positivo/negativo/dado) —
+       decisão desta rodada (ver bloco de comentário no topo do arquivo).
+       `atencao`/`alerta`/`destaque` CONTINUAM chroma zero: são pastilha
+       de status não-numérico (categoria fora do padrão, aviso genérico),
+       fora do "números e gráficos" que Davi pediu pra colorir.
+
+       `acao` é TEAL/verde-azulado (hue 170) — deliberadamente diferente
+       do `positivo` (verde-grama, hue 145), pra não confundir "isto é
+       uma ação/link" com "isto é receita/saldo bom" quando os dois
+       aparecem perto (ex.: botão dentro de um cartão de saldo positivo).
+       Valores calculados OKLab→sRGB linear→WCAG contra `--background`
+       E `--card` (a superfície mais clara onde o texto aparece) — os
+       dois precisam passar >=4,5:1, não só o pior caso. Números e script
+       completos em docs/REDESIGN-EM-CURSO.md. */
+    --lch-acao: 0.65 0.15 170; /* #00ab81 — contraste 7,06:1 (bg) / 6,30:1 (card) */
+    --lch-positivo: 0.65 0.17 145; /* #3ba946 — 6,84:1 / 6,10:1 */
+    --lch-negativo: 0.65 0.18 25; /* #e85854 — 5,88:1 / 5,25:1 */
+    --lch-atencao: 0.7 0 0;
+    --lch-alerta: 0.64 0 0;
+    --lch-destaque: 0.85 0 0;
+    --lch-dado: 0.65 0.15 230; /* #009ed8 — 6,76:1 / 6,03:1 */
+
+    /* Variante "sólida" — fundo de botão/preenchimento com texto BRANCO
+       em cima (`--primary`, faixa crítica do banner, ✓ do checkbox,
+       indicador do toggle de preço). NÃO inverte com o tema (mesmo
+       princípio de antes: hospeda branco fixo, então precisa ficar
+       escura o bastante nos dois temas — só recalculada pro matiz novo,
+       não pro "-solido" virar claro). */
+    --lch-acao-solido: 0.43 0.15 170; /* #006743 — branco em cima: 6,91:1 */
+    --lch-negativo-solido: 0.46 0.18 25; /* #a50d1c — branco em cima: 7,84:1 */
+    --lch-positivo-solido: 0.43 0.17 145; /* #006500 — branco em cima: 7,33:1 */
+
+    /* --- shadcn ---
+       `--primary`/`--ring`/`--accent-foreground` usam o acento (antes
+       eram preto/branco puro, "botão iOS"; agora o botão principal e o
+       item ativo da navegação carregam o teal — pedido explícito:
+       "acento roxo/violeta do Calen", trocado por verde). `--accent`
+       (fundo da pastilha ativa) é o mesmo teal bem diluído sobre o
+       fundo escuro, não o preenchimento sólido. */
+    --card: 0.175 0 0;
+    --card-foreground: 0.985 0 0;
+    --popover: 0.175 0 0;
+    --popover-foreground: 0.985 0 0;
+    --primary: var(--lch-acao-solido);
+    --primary-foreground: 1 0 0;
+    --secondary: 0.25 0 0;
+    --secondary-foreground: 0.985 0 0;
+    --muted: 0.24 0 0;
+    --muted-foreground: 0.68 0 0;
+    --accent: 0.24 0.025 170;
+    --accent-foreground: var(--lch-acao);
+    --destructive: var(--lch-negativo-solido);
+    --destructive-foreground: 1 0 0;
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: var(--lch-acao);
+
+    /* Gráficos: só a série principal e duas semânticas ganham matiz
+       (2-3 tons no máximo, "nunca uma cor por item" — pedido do Davi).
+       Séries a mais (4/5) continuam em cinza, de propósito. */
+    --chart-1: oklch(var(--lch-acao));
+    --chart-2: oklch(var(--lch-positivo));
+    --chart-3: oklch(var(--lch-negativo));
+    --chart-4: oklch(0.44 0 0);
+    --chart-5: oklch(0.3 0 0);
+
+    --sidebar: oklch(0.15 0 0);
+    --sidebar-accent: oklch(0.25 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+
+    --glass: oklch(1 0 0 / 6%);
+    --glass-strong: oklch(1 0 0 / 10%);
+    --gradient-blue: linear-gradient(135deg, oklch(0.98 0 0), oklch(0.72 0 0));
+    --gradient-steel: linear-gradient(135deg, oklch(0.88 0 0), oklch(0.6 0 0));
+    --gradient-mint: linear-gradient(135deg, oklch(0.92 0 0), oklch(0.7 0 0));
+    --gradient-sun: linear-gradient(135deg, oklch(0.8 0 0), oklch(0.5 0 0));
+    --gradient-plum: linear-gradient(135deg, oklch(0.85 0 0), oklch(0.55 0 0));
 
     --radius: 12px;
 
-    /* Sombra de papel sobre papel: curta e sem borrão. */
-    --sombra-ficha: 0 1px 2px oklch(0.22 0.03 258 / 6%), 0 6px 18px oklch(0.22 0.03 258 / 5%);
-    --sombra-alta: 0 8px 28px oklch(0.22 0.03 258 / 12%), 0 2px 6px oklch(0.22 0.03 258 / 8%);
+    --sombra-ficha: var(--sombra-ios);
+    --sombra-alta: var(--sombra-flutuante);
   }
 
-  .dark {
-    /* Grafite azulado, não preto: preto puro em tela OLED some com a
-       hierarquia — cartão e fundo viram a mesma coisa. */
-    --background: oklch(0.171 0.012 258);
-    --foreground: oklch(0.962 0.004 258);
+  /* Claro OPCIONAL agora (era o padrão antes desta rodada) — ligado via
+     `.light`. `ThemeProvider` (`theme-provider.tsx`) aplica essa classe
+     quando `theme === "light"`; sem classe nenhuma (padrão) cai no
+     `:root` escuro acima. Mesmos quatro tokens com matiz (acao/positivo/
+     negativo/dado), recalculados pro par claro — luminosidade mais baixa
+     pra continuar passando >=4,5:1 contra fundo/card claros. */
+  .light {
+    --background: oklch(0.975 0 0);
+    --foreground: oklch(0.14 0 0);
 
-    --papel-1: oklch(0.207 0.014 258);
-    --papel-2: oklch(0.238 0.015 258);
-    --papel-3: oklch(0.272 0.016 258);
+    --papel-1: oklch(1 0 0 / 78%);
+    --papel-2: oklch(1 0 0 / 88%);
+    --papel-3: oklch(1 0 0 / 94%);
+    --papel-solido: oklch(1 0 0);
+    --pauta: oklch(0 0 0 / 10%);
+    --vidro-realce: oklch(1 0 0 / 70%);
+    --muted-fg: oklch(0.5 0 0);
 
-    --pauta: oklch(1 0 0 / 11%);
-    --muted-fg: oklch(0.7 0.015 258);
+    --texto-2: oklch(0.42 0 0);
+    --texto-3: oklch(0.5 0 0);
 
-    --lch-acao: 0.95 0.01 258;
-    --lch-positivo: 0.76 0.13 246;
-    --lch-negativo: 0.7 0.17 26;
-    --lch-atencao: 0.78 0.14 70;
-    --lch-alerta: 0.86 0.14 90;
-    --lch-destaque: 0.73 0.14 294;
-    --lch-dado: 0.75 0.09 212;
+    --vidro: oklch(0 0 0 / 5%);
+    --vidro-forte: oklch(0 0 0 / 9%);
+    --desfoque: 28px;
+    --desfoque-forte: 40px;
+    --sombra-ios: 0 1px 0 0 var(--vidro-realce) inset, 0 18px 40px -24px oklch(0 0 0 / 28%);
+    --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
 
-    --card: 258 16% 13%;
-    --card-foreground: 0 0% 96%;
-    --popover: 258 16% 15%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 0 0% 96%;
-    --primary-foreground: 258 22% 14%;
-    --secondary: 258 12% 22%;
-    --secondary-foreground: 0 0% 96%;
-    --muted: 258 12% 21%;
-    --muted-foreground: 258 8% 70%;
-    --accent: 258 12% 24%;
-    --accent-foreground: 0 0% 96%;
-    --destructive: 12 70% 62%;
-    --destructive-foreground: 258 22% 14%;
-    --border: 258 10% 27%;
-    --input: 258 10% 30%;
-    --ring: 246 60% 70%;
+    --lch-acao: 0.45 0.15 170; /* #006d48 — 5,92:1 (bg) / 6,37:1 (card) */
+    --lch-positivo: 0.45 0.17 145; /* #006b00 — 6,29:1 / 6,76:1 */
+    --lch-negativo: 0.55 0.18 25; /* #c53637 — 4,95:1 / 5,32:1 */
+    --lch-atencao: 0.4 0 0;
+    --lch-alerta: 0.46 0 0;
+    --lch-destaque: 0.26 0 0;
+    --lch-dado: 0.51 0.15 230; /* #0072aa — 4,89:1 / 5,26:1 */
 
-    --sombra-ficha: 0 1px 2px oklch(0 0 0 / 40%), 0 8px 24px oklch(0 0 0 / 30%);
-    --sombra-alta: 0 10px 32px oklch(0 0 0 / 55%), 0 2px 8px oklch(0 0 0 / 35%);
+    --lch-acao-solido: 0.43 0.15 170;
+    --lch-negativo-solido: 0.46 0.18 25;
+    --lch-positivo-solido: 0.43 0.17 145;
+
+    --card: 1 0 0;
+    --card-foreground: 0.14 0 0;
+    --popover: 1 0 0;
+    --popover-foreground: 0.14 0 0;
+    --primary: var(--lch-acao-solido);
+    --primary-foreground: 1 0 0;
+    --secondary: 0.94 0 0;
+    --secondary-foreground: 0.18 0 0;
+    --muted: 0.945 0 0;
+    --muted-foreground: 0.5 0 0;
+    --accent: 0.94 0.025 170;
+    --accent-foreground: var(--lch-acao);
+    --destructive: var(--lch-negativo-solido);
+    --destructive-foreground: 1 0 0;
+    --border: oklch(0 0 0 / 10%);
+    --input: oklch(0 0 0 / 12%);
+    --ring: var(--lch-acao);
+
+    --chart-1: oklch(var(--lch-acao));
+    --chart-2: oklch(var(--lch-positivo));
+    --chart-3: oklch(var(--lch-negativo));
+    --chart-4: oklch(0.75 0 0);
+    --chart-5: oklch(0.87 0 0);
+
+    --sidebar: oklch(1 0 0);
+    --sidebar-accent: oklch(0.94 0 0);
+    --sidebar-border: oklch(0 0 0 / 8%);
+
+    --glass: oklch(0 0 0 / 4%);
+    --glass-strong: oklch(0 0 0 / 7%);
+    --gradient-blue: linear-gradient(135deg, oklch(0.32 0 0), oklch(0.1 0 0));
+    --gradient-steel: linear-gradient(135deg, oklch(0.45 0 0), oklch(0.2 0 0));
+    --gradient-mint: linear-gradient(135deg, oklch(0.55 0 0), oklch(0.28 0 0));
+    --gradient-sun: linear-gradient(135deg, oklch(0.62 0 0), oklch(0.36 0 0));
+    --gradient-plum: linear-gradient(135deg, oklch(0.5 0 0), oklch(0.22 0 0));
+
+    --sombra-ficha: var(--sombra-ios);
+    --sombra-alta: var(--sombra-flutuante);
   }
 
   * {
@@ -117,21 +250,29 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-corpo), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ios);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* Algarismo de largura fixa em toda a interface. Numa lista de valores, o
-       "1" estreito desalinha a coluna inteira e conferir extrato passa a exigir
-       esforço que o papel não exigia. */
     font-variant-numeric: tabular-nums;
+    /* Fundo "flutuando": dois halos radiais bem discretos, fixos no viewport
+       (não rolam com o conteúdo) — é o que faz sidebar/topbar/cartão
+       parecerem painéis soltos sobre uma superfície, não um shell contínuo.
+       Halo BRANCO por padrão agora (fundo escuro é o padrão); `.light`
+       troca pro halo preto de antes. */
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(1 0 0 / 8%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(1 0 0 / 5%), transparent 62%);
+    background-attachment: fixed;
   }
 
-  /* Dinheiro em fonte de largura fixa e algarismo tabular.
-     Sem isso a coluna de valores dança conforme o dígito, e conferir
-     extrato vira caça ao erro. É a régua do livro-caixa. */
+  .light body {
+    background-image:
+      radial-gradient(900px 520px at 12% -8%, oklch(0 0 0 / 7%), transparent 62%),
+      radial-gradient(760px 480px at 92% 0%, oklch(0 0 0 / 5%), transparent 62%);
+  }
+
   .numero,
   [data-numero] {
-    font-family: var(--font-numero), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
     letter-spacing: -0.01em;
@@ -140,39 +281,79 @@
   h1,
   h2,
   .display {
-    font-family: var(--font-display), var(--font-corpo), sans-serif;
+    font-family: var(--font-ios);
     letter-spacing: -0.022em;
   }
 
   ::selection {
-    background: oklch(var(--lch-positivo) / 22%);
+    background: oklch(var(--lch-acao) / 22%);
   }
 
   :focus-visible {
-    outline: 2px solid oklch(var(--lch-positivo));
+    outline: 2px solid oklch(var(--lch-acao));
     outline-offset: 2px;
   }
 }
 
 @layer components {
-  /* A ficha: o cartão do livro-caixa.
-     A pauta no topo é o único enfeite do sistema — e é o que dá à tela
-     a cara de papel pautado em vez de painel de aplicativo. */
-  .ficha {
+  /* A ficha (`.ficha`/`.ios-card`, mesma classe — nomes convivem pra não
+     quebrar os dois vocabulários já espalhados pelo app).
+
+     OPACA desde 08/09/2026 (SPEC-CALEN-PRECISO, PARTE 1.3). Antes era vidro
+     translúcido com `backdrop-filter`; o cabeçalho fixo usa esta mesma classe,
+     e o efeito deixava o texto da página vazar por trás dele ao rolar — vi
+     "R$ 16.586,00" legível ATRAVÉS da barra. Sozinho isso já fazia a tela
+     parecer quebrada. O Calen não tem vidro em canto nenhum.
+
+     Raio 20px (`--raio-cartao` puro, sem os +8px de antes): é o número do
+     spec, medido nas 36 telas de referência. */
+  .ficha,
+  .ios-card {
     position: relative;
-    background: var(--papel-1);
+    background: var(--papel-solido);
     border: 1px solid var(--pauta);
-    border-radius: 14px;
-    box-shadow: var(--sombra-ficha);
+    border-radius: var(--raio-cartao);
+    box-shadow: var(--sombra-ios);
     overflow: hidden;
   }
 
-  .ficha::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 2px;
-    background: linear-gradient(90deg, oklch(var(--lch-positivo) / 55%), transparent 62%);
+  /* Material "grosso": diálogo, gaveta, dock, faixa fixa do trilho. */
+  .liquid-glass-elevated {
+    position: relative;
+    background: var(--papel-3);
+    border: 1px solid var(--pauta);
+    box-shadow: var(--sombra-alta);
+    backdrop-filter: blur(var(--desfoque-forte)) saturate(1.8);
+  }
+
+  /* Material "fino": menu suspenso, popover, painel de hover, select. */
+  .vidro-menu {
+    position: relative;
+    background: var(--papel-3);
+    border: 1px solid var(--pauta);
+    box-shadow: var(--sombra-alta);
+    backdrop-filter: blur(var(--desfoque)) saturate(1.8);
+  }
+
+  .spring-press {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .spring-press:active {
+    transform: scale(0.96);
+  }
+
+  .ios-tap {
+    transition:
+      transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+  .ios-tap:active {
+    transform: scale(0.97);
+  }
+
+  .bg-vidro {
+    background: var(--vidro);
   }
 
   .toque {
@@ -180,22 +361,21 @@
       transform 0.14s cubic-bezier(0.32, 0.72, 0, 1),
       background-color 0.14s ease;
   }
-
   .toque:active {
     transform: scale(0.97);
   }
 }
 
-/* A área de conteúdo desloca conforme a coluna da esquerda. Fica em CSS, e não
-   em prop, para o menu poder recolher sem re-renderizar a tela inteira. */
-@media (min-width: 768px) {
+/* A área de conteúdo desloca pela largura do trilho lateral flutuando:
+   96px de trilho + 12px de margem de cada lado (`inset-y-3 left-3` em
+   `navegacao.tsx`) + um respiro de 20px antes do conteúdo. O trilho passou
+   de 64px para 96px quando os rótulos de 12px viraram visíveis
+   (SPEC-CALEN-PRECISO, PARTE 4.2), e este número acompanha. Breakpoint em
+   1024px (`lg`), não mais 768px (`md`) — o trilho e a barra do polegar
+   trocam de lugar juntos no mesmo ponto agora (ver `navegacao.tsx`). */
+@media (min-width: 1024px) {
   .area-do-app {
-    padding-left: 248px;
-    transition: padding-left 0.2s ease;
-  }
-
-  html[data-menu="recolhido"] .area-do-app {
-    padding-left: 68px;
+    padding-left: 140px;
   }
 }
 
@@ -211,6 +391,14 @@
   .safe-top {
     padding-top: env(safe-area-inset-top);
   }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes entrada {
@@ -224,8 +412,6 @@
   }
 }
 
-/* O mascote respira devagar quando está tranquilo, e mais rápido quando
-   a situação aperta. Movimento aqui é informação, não enfeite. */
 @keyframes respiro {
   0%,
   100% {

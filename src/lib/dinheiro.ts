@@ -58,6 +58,21 @@ export function formatarMoeda(centavos: number, comSimbolo = true): string {
   return comSimbolo ? FORMATADOR.format(reais) : FORMATADOR_SEM_SIMBOLO.format(reais)
 }
 
+/**
+ * Número decimal escrito como brasileiro escreve: vírgula, não ponto.
+ *
+ * O dinheiro sempre passou pelo `Intl` e saía certo. Quem escapava era o número
+ * DERIVADO — meses de folga, taxa ao mês, meses de renda — escrito com
+ * `toFixed()` direto, que devolve ponto. A tela dizia "0.8 meses" no meio de um
+ * app inteiro em português.
+ *
+ * Não use em número que vai para uma API: ali o ponto é o separador correto, e
+ * trocar quebra a integração. Isto é só para texto que a pessoa lê.
+ */
+export function formatarDecimal(valor: number, casas = 1): string {
+  return valor.toFixed(casas).replace(".", ",")
+}
+
 /** Versão curta para gráficos e cartões: R$ 12,3 mil / R$ 1,2 mi. */
 export function formatarMoedaCurta(centavos: number): string {
   const reais = Math.abs(paraReais(centavos))

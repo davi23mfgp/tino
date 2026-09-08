@@ -150,10 +150,58 @@ enum PapelMensagem {
   ASSISTENTE
 }
 
+enum ProvedorPagamento {
+  MERCADO_PAGO
+  STRIPE
+}
+
+/// Estados possíveis de uma assinatura, iguais para os dois gateways.
+///
+/// Traduzir o vocabulário de cada provedor na borda é o que impede o resto do
+/// app de saber que existe "authorized" no Mercado Pago e "past_due" no Stripe.
+enum StatusAssinatura {
+  /// Período de teste, sem cobrança feita ainda.
+  TESTE
+  /// Checkout iniciado, aguardando o provedor confirmar o primeiro pagamento.
+  PENDENTE
+  ATIVA
+  /// Cobrança falhou e o provedor ainda está tentando. Não é cancelamento.
+  INADIMPLENTE
+  CANCELADA
+}
+
+enum CicloCobranca {
+  MENSAL
+  ANUAL
+}
+
+enum StatusCobranca {
+  PENDENTE
+  PAGA
+  FALHOU
+  ESTORNADA
+}
+
+enum TipoChamado {
+  BUG
+  DUVIDA
+  COBRANCA
+}
+
+enum StatusChamado {
+  ABERTO
+  RESOLVIDO
+}
+
 enum OrigemCaptura {
   NOTIFICACAO // aviso de compra do app do banco, repassado pelo celular
   TELEGRAM // mensagem ou arquivo enviado ao bot
   ATALHO // atalho do iOS / widget
+  /// Folha de compartilhamento do Android: a pessoa tocou em "Compartilhar" no
+  /// app do banco e escolheu o Tino. Separado de ATALHO porque o texto chega
+  /// diferente — vem do app de origem, não de um modelo escrito pela pessoa — e
+  /// é olhando a origem que dá para melhorar o leitor depois.
+  COMPARTILHAMENTO
   EMAIL
   MANUAL
 }
@@ -212,6 +260,7 @@ model Lar {
   importacoes     Importacao[]
   conexoes        ConexaoOpenFinance[]
   alertas         Alerta[]
+  vigiaConfigs    VigiaConfig[]
   conversas       Conversa[]
   meiPerfil       MeiPerfil?
   meiCompetencias MeiCompetencia[]
@@ -232,10 +281,31 @@ model Usuario {
   membroId     String?   @unique
   membro       Membro?   @relation(fields: [membroId], references: [id])
   ultimoLogin  DateTime?
-  criadoEm     DateTime  @default(now())
-  atualizadoEm DateTime  @updatedAt
 
-  conversas Conversa[]
+  /// Acesso ao painel de administração do produto.
+  ///
+  /// É um papel na mesma conta, não um login separado: dois sistemas de sessão
+  /// dobram a superfície de ataque e o dono acabaria com duas senhas para a
+  /// mesma pessoa. Só se liga por comando no banco — não existe tela que
+  /// promova ninguém, justamente para não haver escalada de privilégio por bug
+  /// de rota.
+  admin Boolean @default(false)
+
+  /// Como esta pessoa deixou o Tino: cor do corpo e acessório.
+  ///
+  /// Fica no usuário e não no lar porque é escolha de gosto, e duas pessoas do
+  /// mesmo lar podem querer coisas diferentes. O que elas NÃO escolhem é a
+  /// expressão dele — essa vem do motor de alertas e é a mesma para as duas,
+  /// porque as contas são as mesmas.
+  tinoCor       String @default("grafite")
+  tinoAcessorio String @default("nenhum")
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  conversas  Conversa[]
+  assinatura Assinatura?
+  chamados   Chamado[]
 
   @@index([larId])
 }
@@ -737,6 +807,21 @@ model Alerta {
   @@index([larId, lido])
 }
 
+/// Liga/desliga por TIPO de alerta — os "vigias" do redesign de 07/09/2026.
+/// Ausência de linha = ligado (o padrão é vigiar tudo); só existe registro
+/// pra quem desligou algum. Isso poupa criar 6 linhas em branco por lar novo.
+model VigiaConfig {
+  id     String @id @default(cuid())
+  larId  String
+  lar    Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+  /// Mesmo valor de Alerta.tipo — não é enum porque um vigia novo não pode
+  /// pedir migration pra existir, só uma linha na lista do motor.
+  tipo   String
+  ativo  Boolean @default(true)
+
+  @@unique([larId, tipo])
+}
+
 model Conversa {
   id           String   @id @default(cuid())
   larId        String
@@ -1176,4 +1261,152 @@ enum CategoriaDaLoja {
   IMPOSTO
   FUNCIONARIO
   OUTRO
+}
+
+// ============================================================
+// ASSINATURA E COBRANÇA
+//
+// Dois gateways ao mesmo tempo, Mercado Pago e Stripe, com o cliente
+// escolhendo. Quem vende no Brasil precisa de Pix e boleto (Mercado Pago) e
+// quem cobra fora precisa de cartão internacional (Stripe) — e o gateway que
+// cai leva a receita junto, então ter o segundo é também o plano B.
+//
+// O status desta tabela nunca é escrito pela tela: só o webhook do provedor,
+// depois de a assinatura do evento ser conferida, muda para ATIVA ou
+// INADIMPLENTE. Confiar no retorno do navegador deixaria qualquer pessoa
+// liberar a própria conta trocando a URL.
+// ============================================================
+
+model Assinatura {
+  id        String  @id @default(cuid())
+  usuarioId String  @unique
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  provedor ProvedorPagamento
+  status   StatusAssinatura  @default(TESTE)
+
+  /// Código do plano em `src/lib/planos.ts` ("pessoal", "loja"). Texto e não
+  /// enum porque plano é decisão comercial: criar um plano novo não pode
+  /// exigir migration.
+  planoId String
+  ciclo   CicloCobranca @default(MENSAL)
+
+  /// Preço congelado na contratação. O valor da tabela muda com reajuste, e
+  /// quem já assinou continua pagando o que contratou até aceitar o novo.
+  valorCentavos Int @default(0)
+
+  /// Id da assinatura no provedor (preapproval_id ou sub_...). Nulo enquanto o
+  /// checkout não voltou.
+  idExterno String?
+
+  /// Id do cliente no provedor, para reabrir o portal de cobrança sem criar
+  /// um cadastro novo a cada visita.
+  clienteExterno String?
+
+  testeAteEm        DateTime?
+  inicioEm          DateTime?
+  proximaCobrancaEm DateTime?
+  canceladaEm       DateTime?
+
+  /// Último motivo de recusa informado pelo provedor. É o que a tela do usuário
+  /// mostra em vez de "algo deu errado".
+  motivoFalha String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  cobrancas Cobranca[]
+
+  @@unique([provedor, idExterno])
+  @@index([status])
+}
+
+/// Uma cobrança concreta: o que o provedor tentou receber, e se recebeu.
+///
+/// Separada da assinatura porque falha de pagamento é histórico, não estado.
+/// Guardar só o status atual apagaria a terceira tentativa recusada — que é
+/// justamente o que o suporte precisa ver quando o cliente reclama.
+model Cobranca {
+  id           String     @id @default(cuid())
+  assinaturaId String
+  assinatura   Assinatura @relation(fields: [assinaturaId], references: [id], onDelete: Cascade)
+
+  provedor  ProvedorPagamento
+  /// Id do pagamento/fatura no provedor. Único por provedor: o mesmo evento
+  /// reenviado não vira uma segunda linha de cobrança.
+  idExterno String
+
+  status        StatusCobranca @default(PENDENTE)
+  valorCentavos Int
+  motivoFalha   String?
+
+  competencia String? // YYYY-MM da mensalidade paga
+  pagaEm      DateTime?
+  criadoEm    DateTime  @default(now())
+
+  @@unique([provedor, idExterno])
+  @@index([assinaturaId, criadoEm])
+}
+
+/// Evento de webhook já processado.
+///
+/// Os dois provedores reentregam o mesmo evento quando a resposta demora ou
+/// falha, e o Stripe diz na documentação que a entrega é "pelo menos uma vez".
+/// Sem esta trava, uma reentrega criaria a mesma cobrança duas vezes e o
+/// faturamento do painel passaria a mentir.
+model EventoWebhook {
+  id        String            @id @default(cuid())
+  provedor  ProvedorPagamento
+  idEvento  String
+  tipo      String
+  recebidoEm DateTime         @default(now())
+
+  @@unique([provedor, idEvento])
+  @@index([recebidoEm])
+}
+
+// ============================================================
+// SUPORTE E PARÂMETROS DO SISTEMA
+// ============================================================
+
+/// Chamado aberto pelo usuário de dentro do app.
+///
+/// A alternativa era um e-mail de suporte, que some na caixa de entrada e não
+/// diz de qual conta veio. Aqui o chamado já nasce ligado ao usuário, então
+/// quem responde vê a assinatura e o histórico de cobrança do mesmo lugar.
+model Chamado {
+  id        String  @id @default(cuid())
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  tipo     TipoChamado   @default(DUVIDA)
+  status   StatusChamado @default(ABERTO)
+  mensagem String
+
+  /// Rota em que a pessoa estava. Bug relatado sem a tela obriga a adivinhar.
+  rota String?
+
+  resposta    String?
+  resolvidoEm DateTime?
+  criadoEm    DateTime  @default(now())
+
+  @@index([status, criadoEm])
+  @@index([usuarioId])
+}
+
+/// Parâmetro global do produto, editável sem deploy.
+///
+/// Preço de plano e teto de juros são números que mudam por decisão de negócio
+/// ou por lei, não por código. Enquanto viviam em constante, mudar o preço
+/// exigia commit, build e deploy — e o valor divergia da propaganda no
+/// intervalo. O valor fica como texto: cada leitor sabe se o seu é Int de
+/// centavos, pontos-base ou palavra, e um campo por tipo daria três colunas
+/// nulas em toda linha.
+model ParametroSistema {
+  chave     String @id
+  valor     String
+  descricao String?
+
+  atualizadoEm DateTime @updatedAt
+  atualizadoPor String?
 }

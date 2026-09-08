@@ -2,6 +2,7 @@ import { comSessao, ok } from "@/lib/api"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { dividirRenda, efeitoDoCorte } from "@/lib/tino/investir"
+import { valorVigente } from "@/lib/parametros"
 
 export const dynamic = "force-dynamic"
 
@@ -21,7 +22,13 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const corteCentavos = Math.max(0, Number(url.searchParams.get("corteCentavos") ?? 0) || 0)
   const meses = Math.min(60, Math.max(6, Number(url.searchParams.get("meses") ?? 24) || 24))
 
-  const panorama = await montarPanorama(sessao.larId, competenciaAtual())
+  const [panorama, jurosNegativoMensalBps] = await Promise.all([
+    montarPanorama(sessao.larId, competenciaAtual()),
+    // O juro do saldo negativo é o mesmo teto do cheque especial usado no plano
+    // de pagamento e no simulador: as três telas têm de projetar com a mesma
+    // taxa, senão a mesma pergunta recebe três respostas.
+    valorVigente("juros.chequeEspecialBps"),
+  ])
 
   const receita = panorama.medias.receitaCentavos
   const despesa = panorama.medias.despesaCentavos
@@ -33,6 +40,7 @@ export const GET = comSessao(async (sessao, requisicao) => {
     despesaMensalCentavos: despesa,
     cortePorMesCentavos: corteCentavos,
     meses,
+    jurosNegativoMensalBps,
   })
 
   return ok({

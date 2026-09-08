@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 import { conferirVenda, totalDaVenda } from "@/lib/loja/venda"
 import type { FormaPagamento, ItemDaVenda, PagamentoInformado, RegraDeRecebimento } from "@/lib/loja/venda"
 
@@ -71,7 +71,7 @@ const FORMAS: { valor: FormaPagamento; rotulo: string }[] = [
   { valor: "FIADO", rotulo: "Fiado" },
 ]
 
-const campo = "rounded-2xl border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
 
 export default function Loja() {
   const [dados, setDados] = useState<Estado | null>(null)
@@ -197,7 +197,7 @@ export default function Loja() {
         }
       >
         {caixa ? (
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Metrica rotulo="Vendido no caixa" valor={formatarMoeda(caixa.resumo.vendidoCentavos)} />
             <Metrica rotulo="Em dinheiro" valor={formatarMoeda(caixa.resumo.emDinheiroCentavos)} />
             <Metrica rotulo="Sangria" valor={formatarMoeda(caixa.resumo.sangriaCentavos)} />
@@ -223,7 +223,7 @@ export default function Loja() {
                 <button
                   key={produto.id}
                   onClick={() => adicionar(produto)}
-                  className="rounded-2xl border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[13px]"
+                  className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[13px]"
                 >
                   <span className="block font-medium">{produto.nome}</span>
                   <span className="text-muted-fg">{formatarMoeda(produto.precoCentavos)}</span>
@@ -286,7 +286,7 @@ export default function Loja() {
             </div>
           )}
 
-          <p className="numero mt-4 text-4xl font-bold">{formatarMoeda(total)}</p>
+          <Valor className="mt-4">{formatarMoeda(total)}</Valor>
 
           <div className="mt-4 flex flex-wrap gap-2">
             {FORMAS.map((opcao) => (
@@ -329,7 +329,7 @@ export default function Loja() {
           <button
             onClick={fechar}
             disabled={ocupado || carrinho.length === 0}
-            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[15px] font-medium text-white disabled:opacity-50"
+            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[15px] font-medium text-primary-foreground disabled:opacity-50"
           >
             fechar venda
           </button>
@@ -342,7 +342,7 @@ export default function Loja() {
       <Cartao titulo="Os últimos 30 dias">
         {dados && dados.resumo.vendas > 0 ? (
           <>
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Metrica
                 rotulo="Vendeu"
                 valor={formatarMoeda(dados.resumo.brutoCentavos)}
@@ -369,7 +369,7 @@ export default function Loja() {
             </div>
 
             {dados.aCair.length > 0 && (
-              <div className="mt-4 rounded-2xl border border-pauta bg-papel-2 p-4">
+              <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
                 <p className="text-[12px] uppercase tracking-widest text-muted-fg">Próximos dias</p>
                 <div className="mt-2 space-y-1">
                   {dados.aCair.slice(0, 6).map((linha) => (

@@ -2,6 +2,18 @@
 const nextConfig = {
   allowedDevOrigins: ['lubricant-parcel-elaborate.ngrok-free.dev'],
 
+  images: {
+    // A lista padrão do Next é 16, 32, 48, 64, 96, 128, 256 e 384. Para uma
+    // imagem de tamanho fixo ele monta o srcset com a largura pedida e o dobro
+    // dela — e 96px, que é o tamanho do mascote no cartão de recado, pedia 192.
+    // 192 não está na lista, o otimizador respondia 400 e a imagem não
+    // aparecia. Falhava calada: nenhum erro no console do servidor, só um
+    // espaço em branco onde devia estar o desenho.
+    //
+    // 72 entra pelo mesmo motivo, para o mascote de 36px da coluna lateral.
+    imageSizes: [16, 32, 48, 64, 72, 96, 128, 192, 256, 384],
+  },
+
   // Headers de segurança globais
   async headers() {
     return [
