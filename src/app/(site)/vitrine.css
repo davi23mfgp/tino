@@ -60,8 +60,13 @@
   text-wrap: balance;
 }
 
+/* Ate 104px no desktop. Os dois concorrentes que o Davi mandou de
+   referencia vao a 108px (Calen) e 44px (Pierre); a escolha aqui e do lado
+   grande porque o titulo tem seis palavras e precisa ocupar a dobra
+   sozinho — com o texto de apoio pequeno logo abaixo, e o contraste de
+   tamanho que faz a frase soar como afirmacao, nao como slogan. */
 .vitrine .h-hero {
-  font-size: clamp(2.5rem, 7.2vw, 5.25rem);
+  font-size: clamp(2.6rem, 8vw, 6.5rem);
 }
 
 .vitrine .h-secao {
@@ -531,4 +536,346 @@
 
 .vitrine .rodape a:hover {
   color: var(--giz);
+}
+
+/* --- o app dentro de um celular --------------------------- */
+
+/* Moldura de aparelho, não print. O miolo é HTML: fica nítido em qualquer
+   densidade e não envelhece na próxima mudança de skin. Quando existir
+   captura real do celular, ela entra no lugar do miolo sem mexer aqui. */
+.vitrine .celular {
+  position: relative;
+  width: min(300px, 78vw);
+  aspect-ratio: 390 / 844;
+  border-radius: 44px;
+  padding: 9px;
+  background: linear-gradient(160deg, oklch(0.42 0.005 250), oklch(0.22 0.004 250) 45%, oklch(0.34 0.005 250));
+  box-shadow:
+    0 2px 0 oklch(1 0 0 / 12%) inset,
+    0 50px 90px -40px oklch(0 0 0 / 85%),
+    0 0 0 1px oklch(0 0 0 / 60%);
+}
+
+.vitrine .celular-tela {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  background: oklch(0.11 0 0);
+  color: oklch(0.96 0 0);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.vitrine .cel-sistema {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 18px 3px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.vitrine .cel-ilha {
+  width: 52px;
+  height: 13px;
+  border-radius: 999px;
+  background: #000;
+}
+
+.vitrine .cel-bateria {
+  width: 18px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid oklch(1 0 0 / 55%);
+  background: linear-gradient(90deg, oklch(0.96 0 0) 70%, transparent 70%);
+  background-clip: content-box;
+  padding: 1px;
+}
+
+.vitrine .cel-conteudo {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 7px 10px 0;
+}
+
+.vitrine .cel-cartao {
+  border-radius: 13px;
+  border: 1px solid oklch(1 0 0 / 11%);
+  background: oklch(0.175 0 0);
+  padding: 10px 11px;
+}
+
+.vitrine .cel-marca {
+  font-size: 7px;
+  letter-spacing: 0.16em;
+  color: oklch(0.68 0 0);
+}
+
+.vitrine .cel-ola {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 108;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 1px;
+}
+
+.vitrine .cel-mes {
+  font-size: 8px;
+  color: oklch(0.68 0 0);
+  margin-top: 2px;
+}
+
+.vitrine .cel-heroi {
+  padding: 3px 3px 0;
+}
+
+.vitrine .cel-rotulo {
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: oklch(0.68 0 0);
+}
+
+.vitrine .cel-numero {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 108;
+  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-top: 5px;
+}
+
+.vitrine .cel-apoio {
+  font-size: 8px;
+  color: oklch(0.72 0 0);
+  margin-top: 5px;
+}
+
+.vitrine .cel-botao {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: oklch(0.43 0.15 170);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.vitrine .cel-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.vitrine .cel-tile {
+  border-radius: 13px;
+  background: oklch(0.175 0 0);
+  padding: 8px 9px;
+}
+
+.vitrine .cel-tile-rotulo {
+  font-size: 6.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.68 0 0);
+}
+
+.vitrine .cel-tile-valor {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 108;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 3px;
+}
+
+.vitrine .cel-cartao-titulo {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 108;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.vitrine .cel-rosca-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+}
+
+.vitrine .cel-rosca {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.vitrine .cel-rosca-buraco {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: oklch(0.175 0 0);
+  text-align: center;
+}
+
+.vitrine .cel-rosca-total {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  font-variation-settings: "wdth" 108;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.vitrine .cel-rosca-nota {
+  font-size: 6px;
+  color: oklch(0.68 0 0);
+}
+
+.vitrine .cel-legenda {
+  display: grid;
+  gap: 5px;
+  font-size: 8px;
+  color: oklch(0.82 0 0);
+  min-width: 0;
+}
+
+.vitrine .cel-legenda li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vitrine .cel-ponto {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.vitrine .cel-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 7px 10px 9px;
+  padding: 7px 4px;
+  border-radius: 16px;
+  border: 1px solid oklch(1 0 0 / 11%);
+  background: oklch(0.175 0 0);
+}
+
+.vitrine .cel-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 7px;
+  font-weight: 500;
+  color: oklch(0.68 0 0);
+}
+
+.vitrine .cel-item--ativo {
+  color: oklch(0.72 0.15 165);
+}
+
+.vitrine .cel-icone {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1.4px solid currentColor;
+}
+
+.vitrine .cel-mais {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: oklch(0.43 0.15 170);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+
+/* --- vitrine do app: o celular ao lado do texto ----------- */
+
+.vitrine .mostruario {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 4.5rem);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .vitrine .mostruario {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.vitrine .mostruario-celular {
+  display: flex;
+  justify-content: center;
+}
+
+/* Halo atrás do aparelho: separa ele do fundo preto sem moldura extra. */
+.vitrine .mostruario-celular {
+  position: relative;
+}
+
+.vitrine .mostruario-celular::before {
+  content: "";
+  position: absolute;
+  inset: -12% -18%;
+  background: radial-gradient(closest-side, oklch(0.72 0.15 165 / 16%), transparent 72%);
+  pointer-events: none;
+}
+
+.vitrine .lista-marcada {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1.1rem;
+  max-width: 44ch;
+}
+
+.vitrine .lista-marcada li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: start;
+  font-size: 0.9375rem;
+  color: var(--areia);
+}
+
+.vitrine .lista-marcada strong {
+  color: var(--giz);
+  font-weight: 600;
+}
+
+.vitrine .risco-marca {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--entra);
+  margin-top: 0.5rem;
 }

@@ -7,6 +7,7 @@ import { descontoAnualBps } from "@/lib/planos"
 import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
 import { TinoMascote } from "@/components/tino-mascote"
 import { FitaDoTempo } from "./fita-do-tempo"
+import { TelaNoCelular } from "./tela-no-celular"
 
 export const metadata: Metadata = {
   title: "Tino, o contador que olha suas contas todo dia",
@@ -151,6 +152,44 @@ export default async function Vitrine() {
               </p>
             </article>
           ))}
+        </section>
+
+        {/* ── O app no celular, ao lado do que ele faz ── */}
+        <section className="cerca faixa">
+          <div className="mostruario">
+            <div>
+              <p className="sobrancelha">No seu bolso</p>
+              <h2 className="display h-secao mt-5 max-w-[16ch]">Abre, olha, entende. Em três segundos.</h2>
+
+              <ul className="lista-marcada">
+                <li>
+                  <span className="risco-marca" aria-hidden />
+                  <span>
+                    <strong>Um número manda na tela.</strong> O que sobra depois da fatura e da parcela — não o saldo
+                    que o banco mostra.
+                  </span>
+                </li>
+                <li>
+                  <span className="risco-marca" aria-hidden />
+                  <span>
+                    <strong>A fila do que espera você.</strong> Gasto capturado do Pix, da foto da nota ou do extrato,
+                    esperando um toque para virar lançamento.
+                  </span>
+                </li>
+                <li>
+                  <span className="risco-marca" aria-hidden />
+                  <span>
+                    <strong>Para onde o mês foi.</strong> Categoria por categoria, sem você classificar nada na mão
+                    depois da primeira vez.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mostruario-celular">
+              <TelaNoCelular />
+            </div>
+          </div>
         </section>
 
         {/* ── A virada para o papel: agora falando com quem atende o balcão ── */}
