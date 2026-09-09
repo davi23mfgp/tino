@@ -1289,3 +1289,8 @@ local nem contra o Neon de produção.
 
 Verificado: tsc limpo, next build limpo (55 rotas), npm test 298/298
 (265 do redesign + 33 de `main`).
+
+
+### 09/09/2026 — revisão das telas avançadas
+
+Valores cortados nos cartões corrigidos, formulário de contas fixas em diálogo com recuperação de falhas, campos de metas identificados e largura de notificações corrigida. Evidências e modo opcional de build com pouca memória em CONTINUAR-NO-OUTRO-NOTEBOOK.md.

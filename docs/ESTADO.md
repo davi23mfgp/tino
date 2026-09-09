@@ -165,3 +165,7 @@ alguns dias de uso normal. Há também um dump de antes da troca em
 - **Visual próprio desde 30/08/2026.** O `globals.css` do Controllares saiu
   inteiro; a identidade atual está em `docs/IDENTIDADE.md`. Positivo é azul, não
   verde — verde já foi rejeitado aqui uma vez, não reintroduza.
+
+### 09/09/2026 — revisão das telas avançadas
+
+Valores cortados nos cartões corrigidos, formulário de contas fixas em diálogo com recuperação de falhas, campos de metas identificados e largura de notificações corrigida. Evidências e modo opcional de build com pouca memória em CONTINUAR-NO-OUTRO-NOTEBOOK.md.

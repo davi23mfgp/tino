@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   devIndicators: false,
+  // Permite validar em notebooks com pouca memória sem abrir um worker por CPU.
+  ...(process.env.TINO_BUILD_LEVE === "1" ? { experimental: { cpus: 1 } } : {}),
   allowedDevOrigins: ['lubricant-parcel-elaborate.ngrok-free.dev'],
 
   images: {

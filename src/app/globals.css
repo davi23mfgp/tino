@@ -484,3 +484,12 @@
  .home-grid .home-side > * { order:1;margin:0; }
  .home-grid .home-main > section:not(.home-balance) { order:2;margin:0; }
 }
+
+/* Métricas precisam caber por inteiro: esconder overflow ocultava dinheiro.
+   Em celulares estreitos cada resumo ganha uma linha, sem reduzir a leitura. */
+.tino-metrica > .numero { max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 479px) {
+  .area-do-app .grid:has(> .tino-metrica) { grid-template-columns: minmax(0, 1fr); }
+  .tino-metrica { padding: 12px; }
+  .tino-metrica > .numero { font-size: 26px; }
+}

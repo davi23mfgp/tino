@@ -55,12 +55,12 @@ export default async function Metas() {
 
           return (
             <Cartao key={meta.id}>
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="font-medium">{meta.nome}</p>
                   <p className="text-[12px] text-muted-fg">{ROTULO_TIPO[meta.tipo] ?? "Meta"}</p>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <Valor tamanho="medio">{formatarMoeda(meta.saldoCentavos)}</Valor>
                   <p className="text-[12px] text-muted-fg">de {formatarMoeda(meta.alvoCentavos)}</p>
                 </div>

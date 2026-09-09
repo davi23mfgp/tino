@@ -198,10 +198,11 @@ export default function Capturas() {
       <Cartao titulo="Anotar em segundos">
         <form onSubmit={anotarRapido} className="flex gap-2">
           <input
+            aria-label="Descreva o gasto ou recebimento"
             value={rapido}
             onChange={(evento) => setRapido(evento.target.value)}
             placeholder="mercado 52,30"
-            className="flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
+            className="min-w-0 flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
           />
           <button
             type="submit"
@@ -381,7 +382,7 @@ export default function Capturas() {
           </div>
         )}
 
-        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
           <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
               <Share2 className="size-4" /> Compartilhar do celular (Android)

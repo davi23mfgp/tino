@@ -169,7 +169,7 @@ export function Metrica({
   // entre si, mas o `gap-4` já faz isso; somada à borda do cartão que os
   // contém ela virava listra dupla, que é o que dava aspecto técnico.
   return (
-    <div className="ios-tap relative overflow-hidden rounded-[var(--raio-cartao)] bg-papel-2 p-4">
+    <div className="tino-metrica ios-tap relative min-w-0 rounded-[var(--raio-cartao)] bg-papel-2 p-4">
       {Icone && (
         // Círculo sólido — bg-card (não papel translúcido, pra destacar do
         // fundo do tile) + borda de 1px, ícone em foreground. Chroma zero:

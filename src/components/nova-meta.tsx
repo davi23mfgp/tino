@@ -98,8 +98,9 @@ export function NovaMeta() {
 
   return (
     <div className="mt-4 border-t border-pauta pt-4">
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
+          aria-label="Descreva sua meta"
           value={frase}
           onChange={(evento) => setFrase(evento.target.value)}
           onKeyDown={(evento) => {
@@ -109,7 +110,7 @@ export function NovaMeta() {
             }
           }}
           placeholder="escreva: Viagem 8000 até dezembro, já tenho 1200"
-          className={cn(campo, "flex-1")}
+          className={cn(campo, "min-w-0 flex-1")}
         />
         <button
           type="button"
@@ -127,7 +128,8 @@ export function NovaMeta() {
           </DialogHeader>
           <form id="form-nova-meta" onSubmit={criar}>
             <DialogBody className="grid gap-2 sm:grid-cols-3">
-              <input
+              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Nome da meta
+                <input
                 value={nova.nome}
                 onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
                 placeholder="nome da meta"
@@ -135,14 +137,18 @@ export function NovaMeta() {
                 autoFocus
                 className={cn(campo, "sm:col-span-2")}
               />
-              <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
+              </label>
+              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Tipo de meta
+                <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
                 {TIPOS.map((tipo) => (
                   <option key={tipo.valor} value={tipo.valor}>
                     {tipo.rotulo}
                   </option>
                 ))}
               </SelectNative>
-              <input
+              </label>
+              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Quanto quer juntar (R$)
+                <input
                 value={nova.alvo}
                 onChange={(evento) => setNova({ ...nova, alvo: evento.target.value })}
                 placeholder="quanto quer juntar"
@@ -150,20 +156,25 @@ export function NovaMeta() {
                 inputMode="decimal"
                 className={campo}
               />
-              <input
+              </label>
+              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Já guardado (R$, opcional)
+                <input
                 value={nova.saldo}
                 onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
                 placeholder="já tem guardado (opcional)"
                 inputMode="decimal"
                 className={campo}
               />
-              <input
+              </label>
+              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Por mês (R$, opcional)
+                <input
                 value={nova.aporte}
                 onChange={(evento) => setNova({ ...nova, aporte: evento.target.value })}
                 placeholder="aporte por mês (opcional)"
                 inputMode="decimal"
                 className={campo}
               />
+              </label>
               <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-3">
                 data alvo (opcional)
                 <input

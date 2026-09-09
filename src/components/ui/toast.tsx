@@ -69,18 +69,18 @@ export function Toaster() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-md flex flex-col items-center gap-2 pointer-events-none">
       {toasts.map(t => {
         const Icon = ICON[t.variant]
         return (
-          <div key={t.id}
+          <div key={t.id} role={t.variant === "error" ? "alert" : "status"}
             className={cn(
-              "pointer-events-auto flex items-start gap-2.5 max-w-[90vw] w-fit",
-              "bg-papel-1 border border-pauta rounded-[14px] shadow-lg shadow-black/30",
+              "pointer-events-auto flex items-start gap-2.5 w-full",
+              "bg-[var(--papel-solido)] border border-pauta rounded-[14px] shadow-lg shadow-black/30",
               "px-4 py-3 spring-slide-up",
             )}>
             <Icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", ACCENT[t.variant])} strokeWidth={2.2} />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1 break-words">
               <p className="text-[14px] font-medium text-foreground leading-snug">{t.title}</p>
               {t.description && <p className="text-[13px] text-muted-fg mt-0.5">{t.description}</p>}
             </div>
@@ -90,13 +90,14 @@ export function Toaster() {
                   t.action?.onClick()
                   setToasts(prev => prev.filter(x => x.id !== t.id))
                 }}
-                className="shrink-0 text-[13px] font-semibold text-acao hover:underline"
+                className="min-h-11 shrink-0 text-[13px] font-semibold text-acao hover:underline"
               >
                 {t.action.label}
               </button>
             )}
             <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))}
-              className="text-muted-fg hover:text-foreground flex-shrink-0 -mr-1">
+              aria-label="Fechar notificação"
+              className="grid size-11 place-items-center text-muted-fg hover:text-foreground flex-shrink-0 -mr-2 -mt-2">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>

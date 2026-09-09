@@ -42,3 +42,14 @@ A cópia do código no GitHub, as credenciais locais e o histórico desta tarefa
 A Vercel já tinha uma versão pública anterior. Confirmar o commit do novo deployment antes de afirmar que esta versão está no ar. Nunca ativar SEMEAR_DEMO em produção para corrigir um build. Usar push normal, sem force-push.
 
 Próximo trabalho de produto: revisar visualmente as telas avançadas por prioridade real, mantendo a navegação simplificada. Não recriar os mockups antigos da landing. Para o Fixa, seguir a seção própria de MIGRACAO-CODEX.md; esta rodada não alterou seu código nem resolveu a divergência de branches documentada lá.
+
+
+## Segunda rodada — 09/09/2026
+
+Corrigido corte de valores dentro de Metrica em celular estreito: uma coluna abaixo de 480 px, sem esconder dinheiro com overflow. Metas tem campos identificados e controles que cabem no mobile; Anotar deixa os cards e o campo encolherem corretamente. Contas fixas agora cadastra em Dialog, oferece recuperação do carregamento, preserva formulário em falhas e restaura a conta na tela se sua exclusão falhar. Botões Lançar e Remover têm alvos de 44 px. Notificações receberam largura mobile, fundo opaco e nome acessível no botão de fechar.
+
+A auditoria não se limita ao scrollWidth da página: verifica também elementos cortados dentro dos cartões. Scripts: validar-telas-avancadas.mjs usa o mesmo TINO_PLAYWRIGHT_MODULE das outras verificações. Os fluxos de falha de Contas fixas foram exercitados com respostas simuladas 503, sem gravar registros.
+
+O build com 11 processos esgotou a memória deste notebook. Para validar com um processo, definir TINO_BUILD_LEVE=1 antes de npx next build. É opcional e não muda o comportamento do sistema publicado.
+
+Publicação da primeira rodada confirmada: commit aaefb81, Vercel com status success e domínio público servindo as novas capturas.

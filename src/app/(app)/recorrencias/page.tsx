@@ -8,6 +8,7 @@ import { formatarData } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 /**
@@ -66,6 +67,8 @@ export default function Recorrencias() {
   const [nova, setNova] = useState(VAZIO)
   const [abrir, setAbrir] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  const [erro, setErro] = useState("")
+  const [erroFormulario, setErroFormulario] = useState("")
 
   const carregar = useCallback(async () => {
     const [resposta, listaContas, listaCategorias] = await Promise.all([
@@ -80,11 +83,13 @@ export default function Recorrencias() {
   }, [])
 
   useEffect(() => {
-    carregar()
+    carregar().catch((erro: unknown) => setErro(erro instanceof Error ? erro.message : "Não foi possível carregar as contas."))
   }, [carregar])
 
   async function criar(evento: React.FormEvent) {
     evento.preventDefault()
+    if (ocupado) return
+    setErroFormulario("")
     setOcupado(true)
     try {
       await enviar("/api/recorrencias", {
@@ -100,6 +105,8 @@ export default function Recorrencias() {
       setNova({ ...VAZIO, contaId: contas[0]?.id ?? "" })
       setAbrir(false)
       await carregar()
+    } catch (erro) {
+      setErroFormulario(erro instanceof Error ? erro.message : "Não foi possível salvar. Tente novamente.")
     } finally {
       setOcupado(false)
     }
@@ -107,10 +114,13 @@ export default function Recorrencias() {
 
   /** Lança a ocorrência do período. Idempotente: dois cliques não geram duas contas. */
   async function lancar(recorrencia: Recorrencia) {
+    if (ocupado) return
     setOcupado(true)
     try {
       await enviar("/api/recorrencias", { id: recorrencia.id }, "PUT")
       await carregar()
+    } catch (erro) {
+      showToast("Não foi possível concluir", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
     } finally {
       setOcupado(false)
     }
@@ -145,9 +155,19 @@ export default function Recorrencias() {
 
     setTimeout(async () => {
       if (desfeito) return
-      await buscar(`/api/recorrencias?id=${idAlvo}`, { method: "DELETE" })
+      try {
+        await buscar(`/api/recorrencias?id=${idAlvo}`, { method: "DELETE" })
+        await carregar()
+      } catch (erro) {
+        setDados((atual) => atual && !atual.recorrencias.some((r) => r.id === idAlvo) ? { ...atual, recorrencias: [...atual.recorrencias, recorrencia] } : atual)
+        showToast("Não foi possível remover a conta", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
+      }
     }, 5000)
   }
+
+  if (!dados) return <Cartao titulo="Contas fixas">
+    {erro ? <div role="alert"><p className="text-sm text-muted-fg">{erro}</p><button className="mt-3 min-h-11 text-acao" onClick={() => { setErro(""); carregar().catch((erro: unknown) => setErro(erro instanceof Error ? erro.message : "Não foi possível carregar as contas.")) }}>Tentar novamente</button></div> : <p role="status" className="text-sm text-muted-fg">Carregando suas contas…</p>}
+  </Cartao>
 
   const ativas = dados?.recorrencias.filter((linha) => linha.ativa) ?? []
   const despesas = ativas.filter((linha) => linha.tipo === "DESPESA")
@@ -159,8 +179,8 @@ export default function Recorrencias() {
       <Cartao
         titulo="Contas fixas"
         acao={
-          <button onClick={() => setAbrir((atual) => !atual)} className="flex items-center gap-1.5">
-            <Plus className="size-3.5" /> nova
+          <button onClick={() => setAbrir((atual) => !atual)} className="flex min-h-11 items-center gap-1.5">
+            <Plus className="size-4" /> Nova conta
           </button>
         }
       >
@@ -184,20 +204,24 @@ export default function Recorrencias() {
         </div>
 
         <p className="mt-3 text-[12px] leading-relaxed text-muted-fg">
-          O custo fixo é a base de dois cálculos: quanto sua reserva de emergência precisa ter, e o piso da projeção de
-          caixa. Cadastrar aqui melhora as duas coisas de uma vez.
+          Cadastre uma vez o que entra e sai com frequência. O Tino usa essas contas para prever os próximos meses.
         </p>
 
-        {abrir && (
-          <form onSubmit={criar} className="mt-4 grid gap-2 sm:grid-cols-3">
-            <input
+        <Dialog open={abrir} onOpenChange={(aberto) => { if (!ocupado) setAbrir(aberto) }}>
+          <DialogContent>
+          <DialogHeader><DialogTitle>Nova conta fixa</DialogTitle></DialogHeader>
+          <form onSubmit={criar} className="grid gap-3 px-5 py-4 sm:grid-cols-2 sm:px-6">
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Descrição
+                <input
               value={nova.descricao}
               onChange={(e) => setNova({ ...nova, descricao: e.target.value })}
               placeholder="o que é (aluguel, luz, salário)"
               required
               className={cn(campo, "sm:col-span-2")}
             />
-            <select
+              </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Entrada ou saída
+<select
               value={nova.tipo}
               onChange={(e) => setNova({ ...nova, tipo: e.target.value as "RECEITA" | "DESPESA" })}
               className={campo}
@@ -205,7 +229,9 @@ export default function Recorrencias() {
               <option value="DESPESA">sai da conta</option>
               <option value="RECEITA">entra na conta</option>
             </select>
-            <input
+              </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Valor (R$)
+                <input
               value={nova.valor}
               onChange={(e) => setNova({ ...nova, valor: e.target.value })}
               placeholder="valor"
@@ -213,7 +239,9 @@ export default function Recorrencias() {
               className={campo}
               inputMode="decimal"
             />
-            <select
+              </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Repete a cada
+<select
               value={nova.periodicidade}
               onChange={(e) => setNova({ ...nova, periodicidade: e.target.value })}
               className={campo}
@@ -224,21 +252,27 @@ export default function Recorrencias() {
                 </option>
               ))}
             </select>
-            <input
+              </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Dia do vencimento
+                <input
               value={nova.dia}
               onChange={(e) => setNova({ ...nova, dia: e.target.value })}
               placeholder="dia do vencimento"
               className={campo}
               inputMode="numeric"
             />
-            <select value={nova.contaId} onChange={(e) => setNova({ ...nova, contaId: e.target.value })} className={campo}>
+              </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Conta
+<select value={nova.contaId} onChange={(e) => setNova({ ...nova, contaId: e.target.value })} className={campo}>
               {contas.map((conta) => (
                 <option key={conta.id} value={conta.id}>
                   {conta.nome}
                 </option>
               ))}
             </select>
-            <select
+              </label>
+            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Categoria (opcional)
+<select
               value={nova.categoriaId}
               onChange={(e) => setNova({ ...nova, categoriaId: e.target.value })}
               className={cn(campo, "sm:col-span-2")}
@@ -250,8 +284,10 @@ export default function Recorrencias() {
                 </option>
               ))}
             </select>
+              </label>
 
-            <label className="flex items-center gap-2 text-[12px] sm:col-span-3">
+            {contas.length === 0 && <p role="status" className="text-sm text-muted-fg sm:col-span-2">Cadastre uma conta em <a href="/configuracoes" className="underline">Configurações</a> antes de adicionar uma conta fixa.</p>}
+            <label className="flex min-h-11 items-center gap-2 text-[12px] sm:col-span-2">
               <input
                 type="checkbox"
                 checked={nova.variavel}
@@ -260,14 +296,16 @@ export default function Recorrencias() {
               o valor muda todo mês (luz, água) — a projeção usa o último valor lançado
             </label>
 
+            {erroFormulario && <p role="alert" className="text-sm text-negativo sm:col-span-2">{erroFormulario}</p>}
             <button
-              disabled={ocupado}
-              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
+              disabled={ocupado || !nova.contaId}
+              className="min-h-11 rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-2"
             >
-              Adicionar conta fixa
+              {ocupado ? "Salvando…" : "Adicionar conta fixa"}
             </button>
           </form>
-        )}
+          </DialogContent>
+        </Dialog>
       </Cartao>
 
       {[
@@ -309,14 +347,15 @@ export default function Recorrencias() {
                     <button
                       onClick={() => lancar(recorrencia)}
                       disabled={ocupado}
-                      className="rounded-full border border-pauta px-3 py-1.5 text-[11px] transition hover:border-positivo/40 hover:text-positivo disabled:opacity-40"
+                      className="flex min-h-11 items-center gap-2 rounded-full border border-pauta px-3 py-2 text-xs transition hover:border-positivo/40 hover:text-positivo disabled:opacity-40"
                       title="lançar a ocorrência deste período"
                     >
-                      <Check className="size-3.5" />
+                      <Check className="size-4" /> Lançar
                     </button>
                     <button
                       onClick={() => remover(recorrencia)}
-                      className="text-muted-fg transition hover:text-negativo"
+                      aria-label={`Remover ${recorrencia.descricao}`}
+                      className="flex min-h-11 min-w-11 items-center justify-center text-muted-fg transition hover:text-negativo"
                     >
                       <Trash2 className="size-4" />
                     </button>
