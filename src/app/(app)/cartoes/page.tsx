@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { CreditCard } from "lucide-react"
 
 import { prisma } from "@/lib/prisma"
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
+export const metadata: Metadata = { title: "Cartões — Tino", description: "Suas faturas e parcelas em um lugar.", robots: { index: false, follow: false } }
 
 export default async function Cartoes() {
   const sessao = await sessaoDaPagina()
@@ -116,7 +118,7 @@ export default async function Cartoes() {
                         style={{ width: `${Math.max(2, Math.min(100, percentualUsado))}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-[12px] text-white/70">
+                    <div className="flex flex-wrap justify-between gap-2 text-[12px] text-white/70">
                       <span>
                         usado {formatarMoeda(usado)} de {formatarMoeda(cartao.limiteCentavos)}
                       </span>
@@ -168,7 +170,7 @@ export default async function Cartoes() {
         )}
       </div>
 
-      <Cartao titulo="Faturas projetadas">
+      <details className="app-nav-group"><summary><span>Parcelas dos próximos meses<small>Veja o que já está contratado.</small></span><span aria-hidden>+</span></summary><Cartao titulo="Faturas projetadas" estatico>
         <div className="space-y-2">
           {compromissos.map((linha) => (
             <div key={linha.competencia} className="flex items-center justify-between text-sm">
@@ -183,7 +185,7 @@ export default async function Cartoes() {
         <p className="mt-3 text-[12px] text-muted-fg">
           Só parcelas já contratadas. Compras novas entram conforme forem lançadas.
         </p>
-      </Cartao>
+      </Cartao></details>
     </div>
   )
 }

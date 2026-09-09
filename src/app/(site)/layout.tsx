@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { getSessao } from "@/lib/auth"
 import { fonteCorpo, fonteDisplay } from "./tipografia"
 import "./vitrine.css"
+import "./redesign.css"
 
 /**
  * A vitrine só existe para quem não entrou.

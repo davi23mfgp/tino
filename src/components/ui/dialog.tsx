@@ -20,7 +20,7 @@ const DialogOverlay = React.forwardRef<
       "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      "duration-200",
+      "duration-200 motion-reduce:!animate-none motion-reduce:!transition-none",
       className
     )}
     {...props}
@@ -36,25 +36,25 @@ const DialogContent = React.forwardRef<
     {/* Backdrop */}
     <DialogOverlay />
     {/* Centering wrapper: fixed inset-0 flex — sem translate no content, robusto no mobile */}
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+    <div className="fixed inset-0 z-50 flex h-[100dvh] items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none">
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
           "relative pointer-events-auto",
           "w-full max-w-[min(calc(100vw-32px),512px)]",
-          "liquid-glass-elevated rounded-[28px] shadow-black/20",
-          "max-h-[90vh] overflow-y-auto overscroll-contain",
+          "border border-pauta bg-[var(--papel-solido)] rounded-[24px] shadow-alta",
+          "max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "duration-200",
+          "duration-200 motion-reduce:!animate-none motion-reduce:!transition-none",
           className
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 z-10 grid place-items-center h-8 w-8 rounded-full bg-foreground/[0.08] text-muted-fg opacity-80 hover:opacity-100 hover:bg-foreground/[0.14] transition-all focus:outline-none focus:ring-2 focus:ring-acao/30">
-          <X className="h-4 w-4" />
+        <DialogPrimitive.Close className="absolute right-3 top-3 z-10 grid place-items-center size-11 rounded-full bg-foreground/[0.08] text-muted-fg opacity-80 hover:opacity-100 hover:bg-foreground/[0.14] transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acao">
+          <X aria-hidden="true" className="size-4" />
           <span className="sr-only">Fechar</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
@@ -64,7 +64,7 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col gap-1 px-5 pt-5 pb-4 sm:px-6 sm:pt-6 border-b border-pauta", className)} {...props} />
+  <div className={cn("flex flex-col gap-1 px-5 pt-5 pb-4 sm:px-6 sm:pt-6 border-b border-pauta", className, "pr-16 sm:pr-16")} {...props} />
 )
 
 const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

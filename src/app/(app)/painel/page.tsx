@@ -1,187 +1,60 @@
 import Link from "next/link"
-import { ArrowRight, CalendarClock, Receipt, TrendingDown, TrendingUp, Wallet } from "lucide-react"
-
+import type { Metadata } from "next"
+import { ArrowRight, CalendarClock, CreditCard, Receipt } from "lucide-react"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
-import { competenciaAtual } from "@/lib/datas"
+import { competenciaAtual, formatarData } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
-import { montarPlanoDoLar } from "@/lib/tino/plano-do-lar"
-import { Cartao, Heroi, LinhaLista, Metrica, Vazio } from "@/components/ui/painel"
-import { GraficoEvolucao, RoscaCategorias } from "@/components/graficos"
+import { Cartao, LinhaLista, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
+export const metadata: Metadata = { title:"Início — Tino",description:"Seu saldo, os movimentos do mês e os próximos compromissos.",robots:{index:false,follow:false} }
 
-/**
- * Início — a tela que mais importa.
- *
- * A ordem vertical daqui é a da PARTE 4.1 do `docs/SPEC-CALEN-PRECISO.md`, e
- * ela não é preferência: a rodada anterior passou em todo teste automático e
- * o Davi olhou e disse "ainda tem muita parte técnica". O diagnóstico, feito
- * na tela rodando, foi que o Tino abria com DUAS frases de jargão em 22px e
- * escondia o número num tile de 20px — exatamente o inverso do que a
- * referência faz (número de 36px, três palavras de rótulo, uma linha curta).
- *
- * Por isso esta página encolheu. Tudo o que saiu daqui — patrimônio
- * detalhado, mapa de calor, categorias comparadas, parcelas, balanço — já
- * existia em `/analise`, então nada foi perdido: virou um "Ver mais
- * detalhes" no fim. A regra do Davi é simples primeiro, fundo depois.
- */
 export default async function Painel() {
-  const sessao = await sessaoDaPagina()
-  const competencia = competenciaAtual()
-
-  const [panorama, planoDoLar, pendentes, totalPendentes, proximaConta] = await Promise.all([
-    montarPanorama(sessao.larId, competencia),
-    montarPlanoDoLar(sessao.larId, competencia),
-    prisma.captura.findMany({
-      where: { larId: sessao.larId, status: "PENDENTE" },
-      orderBy: { criadoEm: "desc" },
-      take: 3,
-    }),
-    prisma.captura.count({ where: { larId: sessao.larId, status: "PENDENTE" } }),
-    prisma.recorrencia.findFirst({
-      where: { larId: sessao.larId, ativa: true, tipo: "DESPESA", proximaData: { gte: new Date() } },
-      orderBy: { proximaData: "asc" },
-    }),
+  const sessao=await sessaoDaPagina()
+  const competencia=competenciaAtual()
+  const [panorama,pendentes,totalPendentes,contas]=await Promise.all([
+    montarPanorama(sessao.larId,competencia),
+    prisma.captura.findMany({where:{larId:sessao.larId,status:"PENDENTE"},orderBy:{criadoEm:"desc"},take:3}),
+    prisma.captura.count({where:{larId:sessao.larId,status:"PENDENTE"}}),
+    // Uma conta com data passada ainda precisa ser conferida; nao deve sumir.
+    prisma.recorrencia.findMany({where:{larId:sessao.larId,ativa:true,tipo:"DESPESA"},orderBy:{proximaData:"asc"},take:3}),
   ])
-
-  const piorDivida = planoDoLar.plano.ordem[0] ?? null
-  const cartoes = panorama.saldoPorConta.filter((conta) => conta.tipo === "CARTAO_CREDITO")
-  const faturaTotal = cartoes.reduce((soma, cartao) => soma + Math.abs(Math.min(0, cartao.saldoCentavos)), 0)
-  const sobra = panorama.mes.sobraCentavos
-
-  // Linha de apoio: teto de 8 palavras, por contrato do spec (PARTE 2). O que
-  // não cabe em 8 palavras não é apoio, é outra tela — a taxa de juros, por
-  // exemplo, saiu daqui e mora em `/plano`, onde ela decide alguma coisa.
-  //
-  // O nome da conta é cortado no travessão de propósito: contas cadastradas
-  // como "Conta corrente — cheque especial" trazem o jargão de volta pela
-  // porta dos fundos, e a própria PARTE 3 do spec corta esse sufixo na frase
-  // que ela manda escrever. O dado no banco não é tocado.
-  const nomeCurto = piorDivida?.nome.split("—")[0].trim()
-  const apoio =
-    panorama.saldoTotalCentavos < 0
-      ? "Conta negativa: o dinheiro mais caro que existe."
-      : nomeCurto
-        ? `${nomeCurto} é sua dívida mais cara.`
-        : "Nenhuma dívida cara em aberto agora."
-
-  return (
-    <div className="space-y-4">
-      {/* 2) O herói: rótulo 11px, número 36px, apoio curto, um botão. */}
-      <Heroi
-        rotulo={sobra >= 0 ? "Sobra deste mês" : "Falta neste mês"}
-        valor={formatarMoeda(Math.abs(sobra))}
-        tom={sobra >= 0 ? "neutro" : "negativo"}
-        apoio={apoio}
-        acao={
-          <Link
-            href={piorDivida ? "/plano" : "/transacoes"}
-            className="toque inline-flex h-11 items-center gap-2 rounded-[var(--raio-pilula)] bg-primary px-5 text-[14px] font-medium text-primary-foreground"
-          >
-            {piorDivida ? "Ver como pagar" : "Ver meus gastos"}
-            <ArrowRight className="size-4" />
-          </Link>
-        }
-      />
-
-      {/* 3) A fila automática, antes de qualquer coisa manual. Some inteira
-          quando está vazia — card vazio ocupa a dobra sem informar nada. */}
-      {totalPendentes > 0 && (
-        <Cartao
-          titulo="Esperando você"
-          acao={
-            <Link
-              href="/capturas"
-              // Alvo de 44px: o link tinha 18px de altura, que acerta com
-              // mouse e erra com dedo (PARTE 2 do spec).
-              className="-my-2 inline-flex h-11 items-center px-1 text-[13px] text-acao hover:underline"
-            >
-              ver tudo
-            </Link>
-          }
-        >
-          <div className="space-y-1">
-            {pendentes.map((captura) => (
-              <LinhaLista
-                key={captura.id}
-                icone={Receipt}
-                nome={captura.estabelecimento ?? captura.textoBruto ?? "Sem descrição"}
-                valor={captura.valorCentavos !== null ? formatarMoeda(captura.valorCentavos) : undefined}
-                href="/capturas"
-              />
-            ))}
-          </div>
+  const fatura=panorama.saldoPorConta.filter(c=>c.tipo==="CARTAO_CREDITO").reduce((total,c)=>total+Math.abs(Math.min(0,c.saldoCentavos)),0)
+  const categorias=panorama.mes.despesasPorCategoria.slice(0,5)
+  const maiorCategoria=Math.max(1,...categorias.map(c=>c.totalCentavos))
+  return <div className="space-y-5">
+    <div className="home-grid">
+      <div className="home-main min-w-0 space-y-5">
+        <section className="home-balance" aria-labelledby="saldo-titulo">
+          <h2 id="saldo-titulo" className="home-balance-label">Saldo das contas</h2>
+          <p className={"home-balance-value "+(panorama.saldoTotalCentavos<0 ? "text-negativo" : "")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
+          <div className="home-flow"><div><small>↙ Entrou no mês</small><strong className="text-positivo">{formatarMoeda(panorama.mes.receitasCentavos)}</strong></div><div><small>↗ Saiu no mês</small><strong className="text-negativo">{formatarMoeda(panorama.mes.despesasCentavos)}</strong></div></div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-pauta pt-4 text-sm"><span className="text-muted-fg">Resultado do mês</span><strong className={panorama.mes.sobraCentavos<0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(panorama.mes.sobraCentavos)}</strong></div>
+          <p className="mt-1 text-xs text-muted-fg">Entradas menos saídas registradas no mês.</p>
+          <Link href="/transacoes" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground">Ver movimentos<ArrowRight size={16} aria-hidden/></Link>
+        </section>
+        <Cartao titulo="Para onde foi" estatico acao={<Link className="inline-flex min-h-11 items-center" href="/analise">Ver detalhes</Link>}>
+          {categorias.length ? <div>{categorias.map(c=><div key={c.categoriaId??"sem-categoria"} className="home-category"><div><span className="min-w-0 truncate">{c.nome}</span><strong className="shrink-0 font-medium">{formatarMoeda(c.totalCentavos)}</strong></div><div className="home-category-track" aria-hidden><span style={{width:Math.max(1,c.totalCentavos/maiorCategoria*100)+"%"}}/></div></div>)}</div>
+          : <Vazio titulo="Seu primeiro gasto aparece aqui." texto="Use o botão + para registrar um gasto. Depois, você vê como o mês se divide."/>}
         </Cartao>
-      )}
-
-      {/* 4) Os quatro números do mês: 2×2 no celular, 4×1 no desktop. */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Metrica
-          rotulo="Saldo"
-          valor={formatarMoeda(panorama.saldoTotalCentavos)}
-          tom={panorama.saldoTotalCentavos < 0 ? "negativo" : "neutro"}
-          icone={Wallet}
-        />
-        <Metrica
-          rotulo="Entrou"
-          valor={formatarMoeda(panorama.mes.receitasCentavos)}
-          tom="positivo"
-          icone={TrendingUp}
-        />
-        <Metrica
-          rotulo="Saiu"
-          valor={formatarMoeda(panorama.mes.despesasCentavos)}
-          tom="negativo"
-          icone={TrendingDown}
-        />
-        {/* O dia vai no RÓTULO, não na linha de variação: a variação desenha
-            um sinal (=, ↑, ↓) na frente do texto, e "= dia 10" não quer
-            dizer nada. */}
-        <Metrica
-          rotulo={proximaConta ? `Próxima conta · dia ${proximaConta.diaVencimento}` : "Próxima conta"}
-          valor={proximaConta ? formatarMoeda(proximaConta.valorCentavos) : "nenhuma"}
-          tom="neutro"
-          icone={CalendarClock}
-        />
       </div>
-
-      {/* 5) A rosca no lugar das barras finas (PARTE 1.6): o Início conta "o
-          mês inteiro, repartido", e é isso que uma rosca desenha. */}
-      <Cartao titulo="Para onde foi">
-        {panorama.mes.despesasPorCategoria.length > 0 ? (
-          <RoscaCategorias dados={panorama.mes.despesasPorCategoria} />
-        ) : (
-          <Vazio
-            titulo="Nenhum gasto neste mês"
-            texto="Anote pelo celular ou importe um extrato para o Tino começar a trabalhar."
-          />
-        )}
-      </Cartao>
-
-      {/* 6) O gráfico de evolução, sozinho — sem tabela ao lado. */}
-      {panorama.historico.some((mes) => mes.receitasCentavos > 0 || mes.despesasCentavos > 0) && (
-        <Cartao titulo="Entrou e saiu, mês a mês">
-          <GraficoEvolucao dados={panorama.historico} />
+      <div className="home-side min-w-0 space-y-5">
+        <Cartao titulo="Contas para acompanhar" estatico acao={<Link href="/recorrencias" className="inline-flex min-h-11 items-center">Ver todas</Link>}>
+          {contas.length ? contas.map(conta=><LinhaLista key={conta.id} icone={CalendarClock} nome={conta.descricao} detalhe={formatarData(conta.proximaData)} valor={formatarMoeda(conta.valorCentavos)} href="/recorrencias"/>)
+          : <Vazio titulo="Nenhuma conta fixa cadastrada." texto="Cadastre aluguel, internet e outras contas para acompanhar as próximas datas."/>}
+          {!contas.length && <Link href="/recorrencias" className="mt-2 inline-flex min-h-11 items-center text-sm underline">Adicionar conta fixa</Link>}
         </Cartao>
-      )}
-
-      {/* 7) O fundo, para quem quiser. Tudo o que saiu da primeira dobra está
-          em `/analise`, que já tinha as mesmas peças antes desta mudança. */}
-      <Link
-        href="/analise"
-        className="ios-tap flex min-h-[44px] items-center justify-between gap-3 rounded-[var(--raio-cartao)] px-4 text-[14px] font-medium text-[color:var(--texto-2)] hover:bg-foreground/[0.04]"
-      >
-        Ver mais detalhes
-        <ArrowRight className="size-4 shrink-0" />
-      </Link>
-
-      {faturaTotal > 0 && (
-        <p className="px-1 text-[12px] text-[color:var(--texto-3)]">
-          Fatura de cartão em aberto: {formatarMoeda(faturaTotal)}.
-        </p>
-      )}
+        <Link href="/cartoes" className="flex min-h-20 items-center gap-3 rounded-2xl border border-pauta bg-papel-1 p-5"><CreditCard className="size-5 shrink-0" aria-hidden/><div className="min-w-0 flex-1"><p className="text-sm font-medium">Cartões</p><p className="mt-1 text-xs text-muted-fg">{fatura>0 ? formatarMoeda(fatura)+" em faturas abertas" : "Veja faturas e parcelas"}</p></div><ArrowRight className="size-4 shrink-0" aria-hidden/></Link>
+        {totalPendentes>0 && <Cartao titulo={"Para conferir ("+totalPendentes+")"} estatico acao={<Link href="/capturas" className="inline-flex min-h-11 items-center">Conferir</Link>}>
+          <p className="mb-2 text-xs text-muted-fg">Estes registros ainda não entram no seu saldo.</p>
+          {pendentes.map(c=><LinhaLista key={c.id} icone={Receipt} nome={c.estabelecimento??c.textoBruto??"Sem descrição"} valor={c.valorCentavos!==null ? formatarMoeda(c.valorCentavos) : undefined} href="/capturas"/>)}
+        </Cartao>}
+      </div>
     </div>
-  )
+    <details className="app-nav-group"><summary><span>Quer olhar mais de perto?<small>Planejamento e análises, no seu ritmo.</small></span><span aria-hidden>+</span></summary>
+      <div className="grid gap-2 pb-3 sm:grid-cols-3">{[["/plano","Organizar dívidas"],["/projecao","Ver saldo futuro"],["/analise","Analisar meu dinheiro"]].map(([rota,titulo])=><Link key={rota} href={rota} className="flex min-h-12 items-center justify-between gap-2 rounded-xl bg-papel-1 px-4 text-sm">{titulo}<ArrowRight size={16} aria-hidden/></Link>)}</div>
+    </details>
+  </div>
 }

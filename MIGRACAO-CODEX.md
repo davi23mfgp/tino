@@ -1,3 +1,5 @@
+> Atualização de 09/09/2026: veja [continuidade do Tino](docs/CONTINUAR-NO-OUTRO-NOTEBOOK.md). A rodada atual remodelou navegação e telas principais, substituiu mockups por capturas reais e corrigiu a migração fiscal. As seções antigas abaixo são histórico.
+
 # Migração para o Codex — tudo que os projetos `tino` e `fixa` acumularam
 
 Escrito em 08/09/2026 para o Davi levar o contexto inteiro daqui (Claude Code)

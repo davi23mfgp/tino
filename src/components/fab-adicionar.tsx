@@ -1,74 +1,138 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Plus, Receipt, Upload, Zap } from "lucide-react"
 
-import { buscar, enviar } from "@/lib/cliente"
+import { buscar, enviar, TRANSACOES_ATUALIZADAS } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog, DialogTrigger, DialogContent, DialogHeader, DialogBody,
+  DialogTitle, DialogDescription,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { SelectNative } from "@/components/ui/select-native"
 import { showToast } from "@/components/ui/toast"
-
-/**
- * Botão "+" fixo — padrão mobile do Calen (pedido explícito de Davi: "botão
- * + fixo... replique de verdade"). Só no celular (`lg:hidden`, o desktop já
- * tem espaço de sobra pros mesmos destinos no trilho/menu "Mais").
- *
- * A ORDEM das opções segue o pedido de automação-primeiro: "Anotar" (fila
- * automática — a pessoa escreve como falaria, o Tino tenta preencher
- * sozinho, mesma ideia de `lib/captura/notificacao.ts`) e "Importar
- * extrato" (o banco preenche sozinho) vêm ANTES de "Nova transação
- * manual", que continua existindo como saída de emergência, nunca como a
- * ação sugerida primeiro.
- *
- * "Nova transação manual" é a única peça de verdade nova aqui: a API
- * (`POST /api/transacoes`) já aceitava lançamento manual desde sempre, mas
- * NENHUMA tela tinha formulário pra isso — só existia por natural language
- * (`/capturas`) ou import (`/importar`). Formulário mínimo (conta, tipo,
- * descrição, valor, data); categoria fica de fora de propósito — a própria
- * rota já sugere pela regra do lar quando não vem categoria, então pedir
- * pra escolher aqui seria o oposto de "mínimo esforço".
- */
 
 interface Conta {
   id: string
   nome: string
 }
 
-const HOJE_ISO = () => new Date().toISOString().slice(0, 10)
+interface FabAdicionarProps {
+  /** Mantém o botão dentro da barra de navegação; por padrão, flutua no celular. */
+  ancorado?: boolean
+  /** Renderiza um botão com texto no fluxo, inclusive no desktop; prevalece sobre ancorado. */
+  inline?: boolean
+  onSaved?: () => void
+}
 
-export function FabAdicionar({ ancorado = false }: { ancorado?: boolean }) {
+type EstadoContas = "carregando" | "pronto" | "erro"
+
+function dataLocal(dia = new Date()): string {
+  return `${dia.getFullYear()}-${String(dia.getMonth() + 1).padStart(2, "0")}-${String(dia.getDate()).padStart(2, "0")}`
+}
+
+function centavosDoValor(valor: string): number | null {
+  const texto = valor.trim()
+  if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(texto)) return null
+  const [inteiro, decimal = ""] = texto.split(",")
+  const centavos = Number(`${inteiro.replace(/\./g, "")}${decimal.padEnd(2, "0")}`)
+  return Number.isSafeInteger(centavos) && centavos > 0 ? centavos : null
+}
+
+const focoVisivel = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acao focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+const acaoMenu = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[14px] transition-colors hover:bg-foreground/[0.05] motion-reduce:transition-none ${focoVisivel}`
+
+export function FabAdicionar({ ancorado = false, inline: compacto = false, onSaved }: FabAdicionarProps) {
   const router = useRouter()
-  const [menuAberto, setMenuAberto] = useState(false)
-  const [formAberto, setFormAberto] = useState(false)
+  const id = useId()
+  const tituloFormulario = useRef<HTMLHeadingElement>(null)
+  const campoValor = useRef<HTMLInputElement>(null)
+  const salvando = useRef(false)
+  const [aberto, setAberto] = useState(false)
+  const [tela, setTela] = useState<"menu" | "formulario">("menu")
   const [contas, setContas] = useState<Conta[]>([])
+  const [estadoContas, setEstadoContas] = useState<EstadoContas>("carregando")
+  const [tentativa, setTentativa] = useState(0)
   const [enviando, setEnviando] = useState(false)
-
+  const [erro, setErro] = useState<string | null>(null)
+  const [erroValor, setErroValor] = useState(false)
   const [contaId, setContaId] = useState("")
   const [tipo, setTipo] = useState<"DESPESA" | "RECEITA">("DESPESA")
   const [descricao, setDescricao] = useState("")
   const [valor, setValor] = useState("")
-  const [data, setData] = useState(HOJE_ISO())
+  const [data, setData] = useState(dataLocal)
+  const formAberto = aberto && tela === "formulario"
+  const contaPronta = estadoContas === "pronto" && contas.some((conta) => conta.id === contaId)
+
+  useEffect(() => {
+    if (formAberto) tituloFormulario.current?.focus()
+  }, [formAberto])
 
   useEffect(() => {
     if (!formAberto) return
-    buscar<Conta[]>("/api/contas")
+    const controlador = new AbortController()
+    setEstadoContas("carregando")
+    buscar<unknown>("/api/contas", { signal: controlador.signal })
       .then((lista) => {
+        if (controlador.signal.aborted) return
+        if (!Array.isArray(lista) || !lista.every((conta): conta is Conta =>
+          typeof conta === "object" && conta !== null &&
+          "id" in conta && typeof conta.id === "string" && conta.id.length > 0 &&
+          "nome" in conta && typeof conta.nome === "string",
+        )) {
+          throw new Error("Resposta de contas inválida.")
+        }
         setContas(lista)
-        setContaId((atual) => atual || lista[0]?.id || "")
+        setContaId((atual) => lista.some((conta) => conta.id === atual) ? atual : lista[0]?.id ?? "")
+        setEstadoContas("pronto")
       })
-      .catch(() => setContas([]))
-  }, [formAberto])
+      .catch(() => {
+        if (controlador.signal.aborted) return
+        setContas([])
+        setContaId("")
+        setEstadoContas("erro")
+      })
+    return () => controlador.abort()
+  }, [formAberto, tentativa])
 
-  async function salvar(evento: React.FormEvent) {
+  function abrirFormulario() {
+    setEstadoContas("carregando")
+    setErro(null)
+    setErroValor(false)
+    if (!descricao && !valor) setData(dataLocal())
+    setTela("formulario")
+  }
+
+  async function salvar(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault()
-    const valorCentavos = Math.round(Number(valor.replace(",", ".")) * 100)
-    if (!contaId || !descricao.trim() || !Number.isFinite(valorCentavos) || valorCentavos <= 0) {
-      showToast("Preencha conta, descrição e um valor válido.", { variant: "error" })
+    if (salvando.current) return
+    setErro(null)
+    if (!contaPronta) {
+      setErro("Aguarde as contas carregarem e escolha uma conta para salvar.")
+      return
+    }
+    if (!descricao.trim()) {
+      setErro("Informe uma descrição para o lançamento.")
+      return
+    }
+    const valorCentavos = centavosDoValor(valor)
+    if (valorCentavos === null) {
+      setErroValor(true)
+      setErro("Informe um valor maior que zero, como 52,30 ou 1.234,56, com até duas casas decimais.")
+      campoValor.current?.focus()
+      return
+    }
+    const dia = new Date(`${data}T12:00:00`)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || Number.isNaN(dia.getTime()) || dataLocal(dia) !== data) {
+      setErro("Informe uma data válida.")
       return
     }
 
+    salvando.current = true
     setEnviando(true)
     try {
       await enviar(
@@ -77,185 +141,195 @@ export function FabAdicionar({ ancorado = false }: { ancorado?: boolean }) {
         "POST",
       )
       showToast("Lançamento adicionado.", { variant: "success" })
-      setFormAberto(false)
+      setAberto(false)
       setDescricao("")
       setValor("")
+      window.dispatchEvent(new Event(TRANSACOES_ATUALIZADAS))
       router.refresh()
+      onSaved?.()
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "Não consegui salvar.", { variant: "error" })
+      setErro(e instanceof Error ? e.message : "Não consegui salvar. Tente novamente.")
     } finally {
+      salvando.current = false
       setEnviando(false)
     }
   }
 
   return (
-    <>
-      {/* `ancorado`: o "+" mora DENTRO da barra do polegar, no meio dos quatro
-          itens — é a anatomia da PARTE 4.2 do spec, copiada da referência.
-          Antes ele flutuava sobre o canto direito, e ali ele tapava conteúdo
-          e não lia como parte da navegação. O modo flutuante continua
-          existindo porque o botão também é montado fora da barra em tela
-          cheia de diálogo. */}
-      <div
-        className={cn(
-          ancorado ? "relative flex items-center justify-center" : "fixed bottom-24 right-4 z-40 lg:hidden",
-        )}
-      >
-        {menuAberto && (
-          <div
+    <Dialog
+      open={aberto}
+      onOpenChange={(proximo) => {
+        if (proximo) {
+          if (salvando.current) return
+          setTela("menu")
+        }
+        setAberto(proximo)
+      }}
+    >
+      <div className={cn(
+        compacto ? "inline-flex" : ancorado
+          ? "relative flex items-center justify-center"
+          : "fixed bottom-24 right-4 z-40 lg:hidden",
+      )}>
+        <DialogTrigger asChild>
+          <button
+            type="button"
+            aria-label="Adicionar"
             className={cn(
-              "vidro-menu w-56 space-y-0.5 rounded-[var(--raio-cartao)] p-1.5",
-              // Ancorado na barra do polegar, o menu vai por PORTAL e em
-              // `fixed`: a barra é `.ios-card`, que tem `overflow: hidden`
-              // para cortar o vidro no raio da borda, e isso cortaria
-              // qualquer filho `absolute` mais alto que ela — o mesmo motivo
-              // que já obrigou o painel de notificações e o menu "Mais" a
-              // usar portal (ver `barra-topo.tsx` e `navegacao.tsx`).
-              ancorado
-                ? "fixed bottom-[92px] left-1/2 z-50 -translate-x-1/2"
-                : "absolute bottom-16 right-0",
+              "ios-tap flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-alta motion-reduce:!transform-none motion-reduce:!transition-none",
+              focoVisivel,
+              compacto ? "min-h-11 px-4 py-2 text-sm font-medium" : ancorado ? "size-12" : "size-14",
             )}
           >
-            <button
-              onClick={() => {
-                setMenuAberto(false)
-                router.push("/capturas")
-              }}
-              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[14px] transition-colors hover:bg-foreground/[0.05]"
-            >
-              <Zap className="size-4 shrink-0 text-muted-fg" />
-              Anotar
-            </button>
-            <button
-              onClick={() => {
-                setMenuAberto(false)
-                router.push("/importar")
-              }}
-              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[14px] transition-colors hover:bg-foreground/[0.05]"
-            >
-              <Upload className="size-4 shrink-0 text-muted-fg" />
-              Importar extrato
-            </button>
-            <button
-              onClick={() => {
-                setMenuAberto(false)
-                setFormAberto(true)
-              }}
-              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[14px] transition-colors hover:bg-foreground/[0.05]"
-            >
-              <Receipt className="size-4 shrink-0 text-muted-fg" />
-              Nova transação manual
-            </button>
-          </div>
-        )}
-
-        {/* Capa para fechar ao tocar fora. Com o menu ancorado ela precisa
-            ficar ACIMA da barra (z-40, logo abaixo do menu em z-50): em
-            `-z-10` ela ficava atrás da própria barra, e tocar na barra não
-            fechava o menu. */}
-        {menuAberto && (
-          <button
-            aria-label="Fechar"
-            onClick={() => setMenuAberto(false)}
-            className={cn("fixed inset-0 cursor-default", ancorado ? "z-40" : "-z-10")}
-          />
-        )}
-
-        <button
-          onClick={() => setMenuAberto((atual) => !atual)}
-          aria-label="Adicionar"
-          aria-expanded={menuAberto}
-          className={cn(
-            "ios-tap grid place-items-center rounded-full bg-primary text-primary-foreground shadow-alta",
-            // `relative z-50` para o próprio "+" continuar acima da capa que
-            // fecha o menu — senão o segundo toque (para fechar) caía na capa
-            // e o botão parecia travado.
-            ancorado ? "relative z-50 size-12" : "size-14",
-          )}
-        >
-          <Plus className={cn("size-6 transition-transform duration-200", menuAberto && "rotate-45")} />
-        </button>
+            <Plus aria-hidden="true" className="size-6 shrink-0" />
+            {compacto && <span>Adicionar</span>}
+          </button>
+        </DialogTrigger>
       </div>
 
-      <Dialog open={formAberto} onOpenChange={setFormAberto}>
-        <DialogContent className="max-w-[min(420px,92vw)]">
-          <DialogHeader>
-            <DialogTitle>Nova transação</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={salvar} className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setTipo("DESPESA")}
-                className={cn(
-                  "rounded-[var(--raio-campo)] border px-3 py-2 text-[13px] font-medium transition-colors",
-                  tipo === "DESPESA"
-                    ? "border-negativo/40 bg-negativo/10 text-negativo"
-                    : "border-pauta text-muted-fg hover:bg-foreground/[0.04]",
-                )}
-              >
-                Despesa
+      <DialogContent className="max-w-[420px]">
+        {tela === "menu" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Adicionar</DialogTitle>
+              <DialogDescription>Escolha como registrar seu dinheiro.</DialogDescription>
+            </DialogHeader>
+            <DialogBody className="flex flex-col gap-1">
+              <button type="button" onClick={abrirFormulario} className={acaoMenu}>
+                <Receipt aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-medium">Registrar gasto</span>
+                  <span className="text-[13px] text-muted-fg">Preencha os dados manualmente.</span>
+                </span>
               </button>
-              <button
-                type="button"
-                onClick={() => setTipo("RECEITA")}
-                className={cn(
-                  "rounded-[var(--raio-campo)] border px-3 py-2 text-[13px] font-medium transition-colors",
-                  tipo === "RECEITA"
-                    ? "border-positivo/40 bg-positivo/10 text-positivo"
-                    : "border-pauta text-muted-fg hover:bg-foreground/[0.04]",
-                )}
-              >
-                Receita
-              </button>
-            </div>
+              <Link href="/capturas" onClick={() => setAberto(false)} className={acaoMenu}>
+                <Zap aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
+                Anotar com texto
+              </Link>
+              <Link href="/importar" onClick={() => setAberto(false)} className={acaoMenu}>
+                <Upload aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
+                Importar extrato
+              </Link>
+            </DialogBody>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle ref={tituloFormulario} tabIndex={-1} className="outline-none">Registrar gasto</DialogTitle>
+              <DialogDescription>Informe a conta, o tipo e os dados do lançamento.</DialogDescription>
+            </DialogHeader>
+            <DialogBody>
+              <form onSubmit={salvar} className="flex flex-col gap-4" aria-busy={enviando}>
+                {erro && <p id={`${id}-erro`} role="alert" className="text-sm text-negativo">{erro}</p>}
+                <fieldset disabled={enviando} className="flex min-w-0 flex-col gap-4">
+                  <fieldset className="min-w-0">
+                    <legend className="mb-2 text-sm font-medium">Tipo de lançamento</legend>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        aria-pressed={tipo === "DESPESA"}
+                        onClick={() => setTipo("DESPESA")}
+                        className={cn(
+                          "min-h-11 rounded-[var(--raio-campo)] border px-3 py-2 text-[13px] font-medium",
+                          focoVisivel,
+                          tipo === "DESPESA" ? "border-negativo/40 bg-negativo/10 text-negativo" : "border-pauta text-muted-fg hover:bg-foreground/[0.04]",
+                        )}
+                      >Despesa</button>
+                      <button
+                        type="button"
+                        aria-pressed={tipo === "RECEITA"}
+                        onClick={() => setTipo("RECEITA")}
+                        className={cn(
+                          "min-h-11 rounded-[var(--raio-campo)] border px-3 py-2 text-[13px] font-medium",
+                          focoVisivel,
+                          tipo === "RECEITA" ? "border-positivo/40 bg-positivo/10 text-positivo" : "border-pauta text-muted-fg hover:bg-foreground/[0.04]",
+                        )}
+                      >Receita</button>
+                    </div>
+                  </fieldset>
 
-            <SelectNative value={contaId} onChange={(e) => setContaId(e.target.value)} required>
-              {contas.length === 0 && <option value="">Carregando contas…</option>}
-              {contas.map((conta) => (
-                <option key={conta.id} value={conta.id}>
-                  {conta.nome}
-                </option>
-              ))}
-            </SelectNative>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor={`${id}-conta`}>Conta</Label>
+                    <SelectNative
+                      id={`${id}-conta`}
+                      value={contaId}
+                      onChange={(e) => setContaId(e.target.value)}
+                      disabled={estadoContas !== "pronto" || contas.length === 0}
+                      aria-describedby={`${id}-estado-contas`}
+                      className="min-h-11"
+                      required
+                    >
+                      {estadoContas !== "pronto" || contas.length === 0 ? (
+                        <option value="">{estadoContas === "carregando" ? "Carregando contas…" : "Nenhuma conta disponível"}</option>
+                      ) : contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}
+                    </SelectNative>
+                    <p id={`${id}-estado-contas`} role="status" className="text-[13px] text-muted-fg">
+                      {estadoContas === "carregando" ? "Carregando suas contas…"
+                        : estadoContas === "erro" ? "Não foi possível carregar suas contas. Tente novamente ou gerencie suas contas nas configurações."
+                          : contas.length === 0 ? "Cadastre uma conta nas configurações para registrar seu primeiro gasto."
+                            : "Escolha a conta deste lançamento."}
+                    </p>
+                    {(estadoContas === "erro" || (estadoContas === "pronto" && contas.length === 0)) && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEstadoContas("carregando")
+                            setTentativa((atual) => atual + 1)
+                          }}
+                          className={cn("min-h-11 rounded-lg px-2 text-sm underline underline-offset-4", focoVisivel)}
+                        >Tentar novamente</button>
+                        <Link href="/configuracoes" onClick={() => setAberto(false)} className={cn("inline-flex min-h-11 items-center rounded-lg px-2 text-sm underline underline-offset-4", focoVisivel)}>
+                          {estadoContas === "erro" ? "Gerenciar contas" : "Cadastrar conta"}
+                        </Link>
+                      </div>
+                    )}
+                  </div>
 
-            <input
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Descrição (ex.: mercado)"
-              required
-              className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 px-3.5 py-2.5 text-[14px] outline-none focus:border-acao/50"
-            />
-
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                value={valor}
-                onChange={(e) => setValor(e.target.value)}
-                placeholder="Valor (ex.: 52,30)"
-                inputMode="decimal"
-                required
-                className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 px-3.5 py-2.5 text-[14px] outline-none focus:border-acao/50"
-              />
-              <input
-                type="date"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-                required
-                className="w-full rounded-[var(--raio-campo)] border border-pauta bg-background/60 px-3.5 py-2.5 text-[14px] outline-none focus:border-acao/50"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={enviando}
-              className="ios-tap w-full rounded-[var(--raio-pilula)] bg-primary py-2.5 text-[14px] font-medium text-primary-foreground transition disabled:opacity-60"
-            >
-              {enviando ? "Salvando…" : "Salvar"}
-            </button>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor={`${id}-descricao`}>Descrição</Label>
+                    <Input id={`${id}-descricao`} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: mercado" className="motion-reduce:transition-none" required />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Label htmlFor={`${id}-valor`}>Valor (R$)</Label>
+                      <Input
+                        ref={campoValor}
+                        id={`${id}-valor`}
+                        value={valor}
+                        onChange={(e) => {
+                          setValor(e.target.value)
+                          if (erroValor) {
+                            setErroValor(false)
+                            setErro(null)
+                          }
+                        }}
+                        placeholder="52,30"
+                        inputMode="decimal"
+                        aria-invalid={erroValor}
+                        aria-describedby={cn(`${id}-valor-ajuda`, erroValor && `${id}-erro`)}
+                        className="motion-reduce:transition-none"
+                        required
+                      />
+                      <p id={`${id}-valor-ajuda`} className="text-[13px] text-muted-fg">Ex.: 52,30 ou 1.234,56.</p>
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Label htmlFor={`${id}-data`}>Data</Label>
+                      <Input id={`${id}-data`} type="date" value={data} onChange={(e) => setData(e.target.value)} className="min-w-0 motion-reduce:transition-none" required />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!contaPronta || enviando}
+                    className={cn("ios-tap min-h-11 w-full rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[14px] font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:!transform-none motion-reduce:!transition-none", focoVisivel)}
+                  >{enviando ? "Salvando…" : "Salvar"}</button>
+                </fieldset>
+                <p role="status" className="sr-only">{enviando ? "Salvando lançamento. Aguarde." : ""}</p>
+              </form>
+            </DialogBody>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }

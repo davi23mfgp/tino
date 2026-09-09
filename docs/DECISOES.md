@@ -130,3 +130,8 @@ apagado quebrava toda tela com erro de servidor.
 
 **Cookie não pode ser apagado em Server Component.** Por isso o desvio manda
 para `/login?sessao=invalida` e deixa o próximo login sobrescrever.
+
+
+## 09/09/2026 — simplificação e continuidade
+
+Por pedido explícito do usuário, priorizar saldo e ações básicas no início; recursos avançados permanecem em Mais. Terminar telas reais antes das capturas da landing. Manter stack existente, cálculos em centavos e permissões. Registrar a migração fiscal aditiva que faltava ao histórico do schema. Evidências e retomada em CONTINUAR-NO-OUTRO-NOTEBOOK.md.

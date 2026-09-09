@@ -1,539 +1,100 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { ArrowRight, Check, Minus } from "lucide-react"
-
-import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
-import { descontoAnualBps } from "@/lib/planos"
+import { ArrowRight, Check, Plus, Wallet, CreditCard, ScanLine, CalendarDays, Store, SlidersHorizontal } from "lucide-react"
+import { formatarMoeda } from "@/lib/dinheiro"
 import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
-import { FitaDoTempo } from "./fita-do-tempo"
 import { Porquinho } from "./porquinho"
+import { FitaDoTempo } from "./fita-do-tempo"
 import { TelaNoCelular } from "./tela-no-celular"
+import { PalcoDoProduto, Revelar } from "@/components/landing/movimento"
 
-export const metadata: Metadata = {
-  title: "Tino · Seu dinheiro tem uma data de virada",
-  description:
-    "Contador pessoal para pessoa física e MEI: mostra o mês em que o caixa vira, qual dívida pagar primeiro e o que sobra de verdade depois da fatura.",
-  openGraph: {
-    title: "Tino · Seu dinheiro tem uma data de virada",
-    description:
-      "Contador pessoal para pessoa física e MEI. Ele diz o mês em que o caixa vira, qual dívida atacar primeiro e o que o corte de hoje faz em vinte anos.",
-    type: "website",
-    locale: "pt_BR",
-    siteName: "Tino",
-  },
-}
-
-/**
- * A página que vende.
- *
- * O produto não é uma planilha bonita: é alguém olhando os números e dizendo o
- * que fazer. Por isso a primeira coisa depois do título é a FITA DO TEMPO, a
- * saída de verdade da tela `/projecao`, com o mês em que o caixa vira marcado.
- * Um número grande não tem data; uma fita de meses tem, e a data é o que o
- * produto vende.
- *
- * Os números são de demonstração e a página diz isso onde aparecem. Não há
- * depoimento nem nota de loja de aplicativo: inventar caso de sucesso seria a
- * mesma mentira que o app inteiro existe para não contar.
- *
- * TODO O CONTEÚDO EDITÁVEL ESTÁ NOS ARRAYS ABAIXO — mexer em texto não exige
- * abrir o JSX.
- */
-
-const NAVEGACAO = [
-  { href: "#recursos", rotulo: "Recursos" },
-  { href: "#como-funciona", rotulo: "Como funciona" },
-  { href: "#planos", rotulo: "Preços" },
-  { href: "#duvidas", rotulo: "Dúvidas" },
-]
-
-const PILARES = [
-  {
-    titulo: "Quanto sobra de verdade",
-    metrica: "R$ 1.284",
-    unidade: "sobra real deste mês, na conta de demonstração",
-    texto: "Depois da fatura que ainda vai fechar e da parcela já comprada. Não é o saldo que o banco mostra.",
-  },
-  {
-    titulo: "Qual dívida pagar primeiro",
-    metrica: "R$ 2.847",
-    unidade: "de juros economizados na ordem certa",
-    texto: "A ordem sai pronta, com a conta de quanto cada caminho custa até o fim — a mais cara ou a menor primeiro.",
-  },
-  {
-    titulo: "O efeito do corte",
-    metrica: "R$ 96.400",
-    unidade: "em 20 anos, cortando R$ 200 por mês",
-    texto: "Duas linhas no mesmo gráfico: o ritmo de hoje e o ritmo com o corte. Você decide olhando os dois.",
-  },
-]
-
-const BOLSO = [
-  {
-    titulo: "Um número manda na tela.",
-    texto: "O que sobra depois da fatura e da parcela — não o saldo que o banco mostra.",
-  },
-  {
-    titulo: "A fila do que espera você.",
-    texto: "Gasto capturado do Pix, da foto da nota ou do extrato, esperando um toque para virar lançamento.",
-  },
-  {
-    titulo: "Para onde o mês foi.",
-    texto: "Categoria por categoria, sem você classificar nada na mão depois da primeira vez.",
-  },
-]
-
-const PASSOS = [
-  {
-    numero: "01",
-    titulo: "Traga o que já existe",
-    texto: "Importe o extrato em OFX, CSV ou o PDF da fatura. Ou escreva “uber 18” e deixe o Tino entender.",
-  },
-  {
-    numero: "02",
-    titulo: "Confirme uma vez",
-    texto: "Ele classifica sozinho e mostra a fila para você conferir. O que você corrigir, ele aprende e não erra de novo.",
-  },
-  {
-    numero: "03",
-    titulo: "Receba a data",
-    texto: "Com lançamento na mão, ele projeta os próximos meses e diz onde o caixa vira — e quanto cortar para não virar.",
-  },
-]
-
-const RECURSOS = [
-  {
-    titulo: "Projeção de caixa",
-    texto: "Doze meses à frente, com o mês da virada marcado e o corte necessário calculado.",
-  },
-  {
-    titulo: "Plano de dívidas",
-    texto: "Ordem de ataque com a comparação entre juro mais alto e menor saldo, em reais.",
-  },
-  {
-    titulo: "Captura automática",
-    texto: "Notificação do banco, foto da nota, PDF da fatura ou uma frase escrita à mão.",
-  },
-  {
-    titulo: "Cartões e parcelas",
-    texto: "O que já está comprometido em cada mês futuro, antes de qualquer gasto novo.",
-  },
-  {
-    titulo: "Loja do MEI",
-    texto: "Balcão, prateleira com margem, fiado e o faturamento caindo na competência.",
-  },
-  {
-    titulo: "Simulador",
-    texto: "Empréstimo, corte de gasto ou aporte: a conta aberta, não o resultado sozinho.",
-  },
-]
-
-const DUVIDAS = [
-  {
-    pergunta: "Preciso conectar meu banco?",
-    resposta:
-      "Não. Dá para importar o extrato em arquivo (OFX, CSV ou PDF da fatura) ou escrever “uber 18” que o Tino entende. Conectar pelo Open Finance é o caminho que enche o app sozinho, mas é escolha sua.",
-  },
-  {
-    pergunta: "O Tino investe por mim?",
-    resposta:
-      "Não, e não recomenda ativo, corretora nem aplicação específica — isso é atividade regulada. Ele mostra o que o seu dinheiro faz em cada cenário e deixa a decisão com você.",
-  },
-  {
-    pergunta: "Serve para quem tem CNPJ?",
-    resposta:
-      "Serve para MEI: venda no balcão, prateleira com custo e margem, fiado e o faturamento caindo sozinho na competência, com o limite anual e o DAS acompanhando. Empresa fora do MEI ainda não.",
-  },
-  {
-    pergunta: "Posso cancelar quando quiser?",
-    resposta:
-      "Pode, pela própria tela de assinatura. O que você já lançou continua seu, e a exportação não é bloqueada em nenhum momento.",
-  },
-]
-
-/**
- * Preço lido do banco a cada visita, e não congelado no build.
- *
- * O admin edita o preço sem deploy; se esta página guardasse o valor do build,
- * a propaganda continuaria anunciando o preço velho até o próximo commit — e
- * anunciar um valor e cobrar outro é a pior forma de começar uma relação
- * comercial. Se o banco não responder, `planosVigentes` devolve o padrão do
- * código e a página continua de pé.
- */
 export const dynamic = "force-dynamic"
-
+export const metadata: Metadata = {
+  title: "Tino — Seu dinheiro, mais simples.",
+  description: "Entenda seu saldo, acompanhe gastos e veja o que vem pela frente. Seu contador pessoal para pessoa física e MEI.",
+  openGraph: { title: "Tino — Seu dinheiro, mais simples.", description: "Contas, cartões e planos. Clareza para decidir o próximo passo.", type: "website", locale: "pt_BR", siteName: "Tino", images: [{url:"/mascote/tino.png",width:1024,height:1024,alt:"Porquinho do Tino"}] },
+}
+const RECURSOS = [
+  {titulo:"Tudo em um lugar.",texto:"Contas e lançamentos organizados para encontrar o que você precisa.",Icone:Wallet},
+  {titulo:"A fatura sem susto.",texto:"Acompanhe seus cartões e as parcelas que ainda vão chegar.",Icone:CreditCard},
+  {titulo:"Anotou. Conferiu. Pronto.",texto:"Registre com texto ou importe um extrato. Confira antes de confirmar.",Icone:ScanLine},
+  {titulo:"Olhe para a frente.",texto:"Contas fixas, metas e projeções para planejar os próximos meses.",Icone:CalendarDays},
+  {titulo:"Seu negócio também.",texto:"Vendas, estoque, fiado e acompanhamento do MEI no mesmo app.",Icone:Store},
+  {titulo:"Mais, quando precisar.",texto:"Análises e simulações a um toque, sem ocupar seu dia a dia.",Icone:SlidersHorizontal},
+]
+const PASSOS = [
+  ["Comece pelo que tem.", "Cadastre sua conta e o saldo inicial. O resto pode vir depois."],
+  ["Traga seus movimentos.", "Anote uma compra ou importe um extrato. Você confere os lançamentos."],
+  ["Entenda o próximo passo.", "Veja entradas, saídas e contas a vencer. Planeje no seu ritmo."],
+]
+const FAQ = [
+  ["Preciso entender de finanças?", "Não. Comece por saldo, entradas e saídas. Planejamento e análise ficam em Mais, para quando você quiser explorar."],
+  ["É só para quem tem empresa?", "Não. Você pode cuidar apenas do seu dinheiro. Quem tem um negócio encontra loja e MEI no plano correspondente."],
+  ["Preciso conectar meu banco?", "Você pode começar cadastrando sua conta e registrando os gastos ou importando um extrato. Conectar o banco é uma opção, conforme a disponibilidade da integração."],
+  ["Funciona no celular e no computador?", "Sim. O Tino funciona pelo navegador, com uma interface adaptada a cada tela. Entre com a mesma conta para acessar seus dados."],
+  ["Os valores das telas são reais?", "As telas desta página usam dados de demonstração. Dentro do Tino, os resumos e projeções usam os lançamentos da sua conta."],
+  ["O Tino substitui meu contador?", "O Tino ajuda a organizar o dinheiro e acompanhar o negócio. Obrigações fiscais que exigem um profissional continuam com seu contador."],
+]
+const TELAS = [
+  {n:"01",titulo:"Seu mês, num olhar.",texto:"O que entrou, o que saiu e o que está por vir. O essencial aparece primeiro.",tela:"inicio" as const},
+  {n:"02",titulo:"Cada gasto no lugar.",texto:"Movimentos fáceis de encontrar. Filtros e detalhes só quando você precisa.",tela:"movimento" as const},
+  {n:"03",titulo:"Cartão sob controle.",texto:"Fatura e parcelas lado a lado. Veja os compromissos dos próximos meses.",tela:"cartoes" as const},
+]
 export default async function Vitrine() {
-  const [PLANOS, DIAS_DE_TESTE] = await Promise.all([planosVigentes(), diasDeTesteVigentes()])
-
-  return (
-    <>
-      {/* 1 ── Menu flutuante em pílula */}
-      <header className="menu-flutuante glass-pill">
-        <Link href="/" className="menu-marca">
-          <Porquinho tamanho={30} />
-          Tino
-        </Link>
-
-        <nav className="menu-links" aria-label="Seções da página">
-          {NAVEGACAO.map((item) => (
-            <a key={item.href} href={item.href}>
-              {item.rotulo}
-            </a>
-          ))}
-        </nav>
-
-        <div className="menu-acoes">
-          <Link href="/login" className="menu-entrar">
-            Entrar
-          </Link>
-          <Link href="/cadastro" className="botao botao--pequeno">
-            Testar {DIAS_DE_TESTE} dias
-          </Link>
-        </div>
-      </header>
-
-      <main>
-        {/* 2 ── Herói */}
-        <section className="cerca heroi">
-          <p className="eyebrow">Contador pessoal · pessoa física e MEI</p>
-
-          <h1 className="display h-hero rise">Seu dinheiro tem uma data de virada.</h1>
-
-          <p className="apoio">
-            A planilha guarda o passado. O Tino olha para frente: diz o mês em que o caixa vira, qual dívida atacar
-            primeiro e o que o corte de hoje faz daqui a vinte anos.
-          </p>
-
-          <div className="heroi-acoes">
-            <Link href="/cadastro" className="botao">
-              Testar {DIAS_DE_TESTE} dias de graça <ArrowRight className="size-4" />
-            </Link>
-            <span className="nota">Sem cartão para começar.</span>
-          </div>
-        </section>
-
-        {/* 3 ── Saldo projetado + o porquinho */}
-        <section className="cerca" style={{ paddingBottom: "clamp(4rem, 9vw, 7.5rem)" }}>
-          <div className="projecao">
-            <FitaDoTempo />
-
-            <div className="mascote-palco">
-              <Porquinho tamanho={260} flutua prioritario />
-            </div>
-          </div>
-        </section>
-
-        {/* 4 ── Os três pilares */}
-        <section className="cerca faixa linha-fina">
-          <p className="eyebrow">O que ele responde</p>
-          <h2 className="display h-secao mt-4 max-w-[18ch]">Três perguntas que a planilha não responde.</h2>
-
-          <div className="pilares mt-12">
-            {PILARES.map((pilar) => (
-              <article key={pilar.titulo} className="pilar soft-card">
-                <h3 className="display h-card">{pilar.titulo}</h3>
-                <p className="pilar-texto">{pilar.texto}</p>
-                <span className="numero pilar-metrica em-alta">{pilar.metrica}</span>
-                <span className="pilar-unidade">{pilar.unidade}</span>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* 5 ── No seu bolso */}
-        <section className="cerca faixa linha-fina">
-          <div className="com-celular">
-            <div>
-              <p className="eyebrow">No seu bolso</p>
-              <h2 className="display h-secao mt-4 max-w-[16ch]">Abre, olha, entende. Em três segundos.</h2>
-
-              <ul className="lista-marcada">
-                {BOLSO.map((item) => (
-                  <li key={item.titulo}>
-                    <span className="risco-marca" aria-hidden />
-                    <span>
-                      <strong>{item.titulo}</strong> {item.texto}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="celular-palco">
-              <TelaNoCelular tela="inicio" />
-            </div>
-          </div>
-        </section>
-
-        {/* 5b ── Movimento (aparelho do outro lado) */}
-        <section className="cerca faixa linha-fina">
-          <div className="com-celular com-celular--invertido">
-            <div>
-              <p className="eyebrow">Movimento</p>
-              <h2 className="display h-secao mt-4 max-w-[17ch]">Você confere. Ele digita.</h2>
-
-              <ul className="lista-marcada">
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Chega pela notificação do banco,</strong> pela foto da nota ou pelo PDF da fatura — e cai
-                    numa fila, nunca direto na sua conta.
-                  </span>
-                </li>
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>A categoria vem sugerida.</strong> Corrigiu uma vez, ele não erra de novo naquele
-                    estabelecimento.
-                  </span>
-                </li>
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Transferência não conta como gasto.</strong> Dinheiro que sai da conta e entra na poupança
-                    não empobreceu ninguém.
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="celular-palco">
-              <TelaNoCelular tela="movimento" />
-            </div>
-          </div>
-        </section>
-
-        {/* 5c ── Cartões */}
-        <section className="cerca faixa linha-fina">
-          <div className="com-celular">
-            <div>
-              <p className="eyebrow">Cartões</p>
-              <h2 className="display h-secao mt-4 max-w-[18ch]">A fatura de dezembro já existe hoje.</h2>
-
-              <ul className="lista-marcada">
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Cada mês futuro já tem dono.</strong> O Tino mostra quanto de cada mês está comprometido
-                    antes de qualquer gasto novo.
-                  </span>
-                </li>
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Limite não é dinheiro seu.</strong> Por isso o cartão nunca entra na soma do saldo — só na
-                    conta do que você deve.
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="celular-palco">
-              <TelaNoCelular tela="cartoes" />
-            </div>
-          </div>
-        </section>
-
-        {/* 6 ── Como funciona */}
-        <section id="como-funciona" className="cerca faixa linha-fina">
-          <p className="eyebrow">Como funciona</p>
-          <h2 className="display h-secao mt-4 max-w-[16ch]">Três passos, nessa ordem.</h2>
-
-          <div className="passos">
-            {PASSOS.map((passo) => (
-              <article key={passo.numero} className="passo">
-                <p className="passo-numero">{passo.numero}</p>
-                <h3 className="passo-titulo">{passo.titulo}</h3>
-                <p className="passo-texto">{passo.texto}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* 5d ── Plano de pagamento */}
-        <section className="cerca faixa linha-fina">
-          <div className="com-celular com-celular--invertido">
-            <div>
-              <p className="eyebrow">Dívidas</p>
-              <h2 className="display h-secao mt-4 max-w-[17ch]">A ordem de pagar muda o preço.</h2>
-
-              <ul className="lista-marcada">
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Juro mais alto ou menor saldo?</strong> O Tino faz as duas contas e mostra a diferença em
-                    reais, não em teoria.
-                  </span>
-                </li>
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Com data de fim.</strong> Quantos meses até ficar livre, mantendo o valor que você
-                    consegue pagar.
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="celular-palco">
-              <TelaNoCelular tela="plano" />
-            </div>
-          </div>
-        </section>
-
-        {/* 5e ── Loja do MEI */}
-        <section className="cerca faixa linha-fina">
-          <div className="com-celular">
-            <div>
-              <p className="eyebrow">Para quem tem loja</p>
-              <h2 className="display h-secao mt-4 max-w-[19ch]">
-                A maquininha mostra o bruto. O extrato mostra o líquido três semanas depois.
-              </h2>
-
-              <ul className="lista-marcada">
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>A venda já entra com a taxa e o prazo</strong> da sua maquininha: quanto cai na conta, e em
-                    que dia.
-                  </span>
-                </li>
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>Prateleira com margem</strong> por produto. Sem o custo, o app avisa que falta — não
-                    inventa número.
-                  </span>
-                </li>
-                <li>
-                  <span className="risco-marca" aria-hidden />
-                  <span>
-                    <strong>O faturamento cai na competência do MEI</strong> sozinho, com o limite anual e o DAS
-                    acompanhando.
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="celular-palco">
-              <TelaNoCelular tela="loja" />
-            </div>
-          </div>
-        </section>
-
-        {/* 7 ── Bento de recursos */}
-        <section id="recursos" className="cerca faixa linha-fina">
-          <p className="eyebrow">Recursos</p>
-          <h2 className="display h-secao mt-4 max-w-[16ch]">O que vem junto.</h2>
-
-          <div className="bento">
-            {RECURSOS.map((recurso) => (
-              <article key={recurso.titulo} className="recurso">
-                <h3 className="recurso-titulo">{recurso.titulo}</h3>
-                <p className="recurso-texto">{recurso.texto}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* 8 ── Preços */}
-        <section id="planos" className="cerca faixa linha-fina">
-          <p className="eyebrow">Preços</p>
-          <h2 className="display h-secao mt-4">{DIAS_DE_TESTE} dias para testar, sem cartão.</h2>
-
-          <div className="planos">
-            {PLANOS.map((linha, indice) => {
-              const desconto = descontoAnualBps(linha)
-              const destaque = indice === PLANOS.length - 1
-
-              return (
-                <article key={linha.codigo} className={`plano soft-card ${destaque ? "plano--destaque" : ""}`}>
-                  {destaque && <span className="plano-selo">Mais escolhido</span>}
-
-                  <h3 className="display h-card">{linha.nome}</h3>
-                  <p className="mt-2 text-[14px] text-[color:var(--creme-2)]">{linha.chamada}</p>
-
-                  <p className="numero plano-preco">
-                    {formatarMoeda(linha.mensalCentavos)}
-                    <span className="plano-por">por mês</span>
-                  </p>
-                  <p className="mt-2 text-[13px] text-[color:var(--creme-3)]">
-                    ou {formatarMoeda(linha.anualCentavos)} por ano — {formatarPercentual(desconto, 0)} de desconto
-                  </p>
-
-                  <ul className="plano-lista">
-                    {linha.inclui.map((item) => (
-                      <li key={item}>
-                        <Check className="mt-0.5 size-4 shrink-0 text-[color:var(--acento)]" aria-hidden />
-                        {item}
-                      </li>
-                    ))}
-                    {linha.naoInclui.map((item) => (
-                      <li key={item} className="plano-fora">
-                        <Minus className="mt-0.5 size-4 shrink-0" aria-hidden />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link href="/cadastro" className="botao mt-8 self-start">
-                    Começar o teste
-                  </Link>
-                </article>
-              )
-            })}
-          </div>
-
-          <p className="mt-8 max-w-[64ch] text-[13px] text-[color:var(--creme-3)]">
-            O Tino não é consultor de investimentos nem substitui contador para obrigação fiscal. Ele organiza, projeta
-            e mostra a conta com os seus números.
-          </p>
-        </section>
-
-        {/* 9 ── Dúvidas */}
-        <section id="duvidas" className="cerca faixa linha-fina">
-          <p className="eyebrow">Dúvidas</p>
-          <h2 className="display h-secao mt-4">Antes de você perguntar.</h2>
-
-          <div className="faq">
-            {DUVIDAS.map((item) => (
-              <details key={item.pergunta}>
-                <summary>{item.pergunta}</summary>
-                <p>{item.resposta}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        {/* 10 ── Fecho e rodapé */}
-        <section className="cerca faixa">
-          <div className="fecho soft-card">
-            <div className="mascote-palco">
-              <Porquinho tamanho={128} flutua />
-            </div>
-            <h2 className="display h-secao mx-auto mt-6 max-w-[15ch]">Descubra sua data antes que ela chegue.</h2>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link href="/cadastro" className="botao">
-                Testar {DIAS_DE_TESTE} dias de graça <ArrowRight className="size-4" />
-              </Link>
-              <Link href="/login" className="botao botao--fantasma">
-                Já tenho conta
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <footer className="cerca rodape">
-          <span className="flex items-center gap-2.5">
-            <Porquinho tamanho={26} />
-            Tino · contador pessoal
-          </span>
-          <div className="flex gap-5">
-            <Link href="/login">Entrar</Link>
-            <Link href="/cadastro">Criar conta</Link>
-          </div>
-        </footer>
-      </main>
-    </>
-  )
+  const [planos, dias] = await Promise.all([planosVigentes(),diasDeTesteVigentes()])
+  return <>
+    <a href="#conteudo" className="landing-skip">Pular para o conteúdo</a>
+    <header className="landing-menu glass-pill">
+      <Link href="/" className="landing-brand" aria-label="Tino — início"><Porquinho tamanho={38} /><span>tino.</span></Link>
+      <nav aria-label="Seções da página"><a href="#recursos">Recursos</a><a href="#como-funciona">Como funciona</a><a href="#planos">Preços</a><a href="#duvidas">Dúvidas</a></nav>
+      <div className="landing-menu-actions"><Link href="/login">Entrar</Link><Link href="/cadastro" className="botao botao--pequeno">Testar {dias} dias <ArrowRight size={15} aria-hidden /></Link></div>
+    </header>
+    <main id="conteudo">
+      <section className="landing-hero cerca">
+        <p className="eyebrow">Contador pessoal · pessoa física e MEI</p>
+        <h1 className="display">Seu dinheiro tem<br />uma <span>data de virada.</span></h1>
+        <p className="landing-lead">Saiba o que sobra hoje.<br />Entenda o que vem amanhã.</p>
+        <div className="landing-cta-row"><Link href="/cadastro" className="botao">Testar {dias} dias de graça <ArrowRight size={18} aria-hidden /></Link><a href="#no-seu-bolso" className="landing-secondary">Conhecer o Tino <span aria-hidden>↘</span></a></div>
+        <p className="landing-note">Sem cartão para começar. No celular e no computador.</p>
+        <PalcoDoProduto />
+      </section>
+      <section className="landing-manifesto cerca" id="no-seu-bolso">
+        <Revelar><p className="eyebrow">Menos planilha. Mais vida.</p><h2 className="display">Abre.<br />Olha.<br /><span className="em-alta">Entende.</span></h2><p>Seu dinheiro não precisa de mais complicação.<br />Precisa de um lugar que faça sentido.</p></Revelar>
+      </section>
+      <section className="cerca landing-feature-grid" id="recursos" aria-label="O Tino no seu bolso">
+        {TELAS.map(item => <Revelar key={item.n} className="landing-feature"><div className="landing-feature-copy"><span className="eyebrow">{item.n} / No seu bolso</span><h3 className="display">{item.titulo}</h3><p>{item.texto}</p></div><div className="landing-feature-phone"><TelaNoCelular tela={item.tela} /></div></Revelar>)}
+      </section>
+      <p className="landing-demo-note">Telas ilustrativas do Tino com valores de demonstração.</p>
+      <section className="cerca landing-future">
+        <Revelar><p className="eyebrow">Hoje é um bom começo</p><h2 className="display">Antes do aperto.<br /><span className="em-alta">Depois, com calma.</span></h2><p>Veja como seu saldo pode mudar nos próximos meses. Experimente cenários e decida com mais contexto.</p><Link href="/cadastro" className="landing-text-link">Quero enxergar meu próximo mês <ArrowRight size={18} aria-hidden /></Link></Revelar>
+        <Revelar className="landing-chart"><FitaDoTempo /></Revelar>
+      </section>
+      <section className="cerca landing-steps" id="como-funciona">
+        <Revelar><p className="eyebrow">Como funciona</p><h2 className="display">Começar é simples.<br />Continuar também.</h2></Revelar>
+        <div className="landing-steps-grid">{PASSOS.map(([titulo,texto],i)=><Revelar key={titulo}><span className="landing-step-number">0{i+1}</span><h3>{titulo}</h3><p>{texto}</p></Revelar>)}</div>
+      </section>
+      <section className="cerca landing-resources">
+        <Revelar><p className="eyebrow">Cresce com você</p><h2 className="display">Simples no começo.<br />Completo quando quiser.</h2></Revelar>
+        <div className="landing-bento">{RECURSOS.map(({titulo,texto,Icone})=><Revelar key={titulo}><Icone size={24} aria-hidden /><h3>{titulo}</h3><p>{texto}</p></Revelar>)}</div>
+      </section>
+      <section className="cerca landing-pricing" id="planos">
+        <Revelar className="landing-centered"><p className="eyebrow">Cabe nos seus planos</p><h2 className="display">Clareza para o dinheiro.<br />Inclusive no preço.</h2><p>{dias} dias para conhecer o Tino. Sem cartão para começar.</p></Revelar>
+        <div className="planos">{planos.map((plano,i)=><article key={plano.codigo} className={`plano soft-card ${i===planos.length-1 ? "plano--destaque" : ""}`}>
+          {i===planos.length-1 && <span className="plano-selo">Para ir além</span>}
+          <h3 className="display h-card">{plano.nome}</h3><p className="landing-note">{plano.chamada}</p>
+          <p className="numero plano-preco">{formatarMoeda(plano.mensalCentavos)}<span className="plano-por">/mês</span></p>
+          <p className="landing-note">ou {formatarMoeda(plano.anualCentavos)} por ano</p>
+          <Link href="/cadastro" className="botao">Testar {dias} dias <ArrowRight size={17} aria-hidden /></Link>
+          <ul className="plano-lista">{plano.inclui.map(item=><li key={item}><Check size={17} className="em-alta shrink-0" aria-hidden />{item}</li>)}</ul>
+          {plano.naoInclui.length > 0 && <p className="landing-note">Não inclui: {plano.naoInclui.join(", ")}.</p>}
+        </article>)}</div>
+      </section>
+      <section className="cerca landing-faq" id="duvidas">
+        <div><p className="eyebrow">Sem ponto solto</p><h2 className="display">Dúvidas?<br />Vamos lá.</h2></div>
+        <div className="faq">{FAQ.map(([pergunta,resposta])=><details key={pergunta}><summary>{pergunta}<Plus size={20} aria-hidden /></summary><p>{resposta}</p></details>)}</div>
+      </section>
+      <section className="cerca landing-final"><Revelar><p className="eyebrow">Dê um pouco de tino ao seu dinheiro</p><h2 className="display">A sua virada<br />começa aqui.</h2><Link href="/cadastro" className="botao">Testar {dias} dias de graça <ArrowRight size={18} aria-hidden /></Link><p className="landing-note">Um passo de cada vez. Do seu jeito.</p></Revelar><Porquinho tamanho={270} flutua /></section>
+    </main>
+    <footer className="cerca landing-footer"><Link href="/" className="landing-brand"><Porquinho tamanho={34} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><Link href="/login">Entrar</Link><a href="#planos">Planos</a><a href="#duvidas">Dúvidas</a></nav><small>© {new Date().getFullYear()} Tino</small></footer>
+  </>
 }

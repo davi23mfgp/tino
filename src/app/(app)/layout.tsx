@@ -1,22 +1,25 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { getSessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { Navegacao, SubAbas } from "@/components/navegacao"
-import { TinoDock } from "@/components/tino-dock"
+
 import { BarraTopo } from "@/components/barra-topo"
 import { AvisoCritico } from "@/components/aviso-critico"
 import { Toaster } from "@/components/ui/toast"
 import { BuscaPaginasProvider } from "@/components/buscar-paginas"
-import { FaixaConectar } from "@/components/faixa-conectar"
-import { temBancoConectado } from "@/lib/open-finance/provedor"
+
+
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
   if (!sessao) redirect("/login")
 
-  const [lar, usuario, bancoConectado] = await Promise.all([
+  const [lar, usuario] = await Promise.all([
     prisma.lar.findUnique({
       where: { id: sessao.larId },
       select: { onboardingEm: true, meiPerfil: { select: { id: true } } },
@@ -25,10 +28,6 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // de alguém precisa valer no próximo clique. `avatarUrl` pela mesma razão:
     // trocar a foto não deveria esperar o token vencer para aparecer.
     prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true } }),
-    // Quem já ligou o banco não precisa mais do convite. A consulta é do
-    // servidor porque a faixa aparece no primeiro paint: decidir isso no
-    // cliente faria a página inteira pular para baixo depois de montada.
-    temBancoConectado(sessao.larId),
   ])
 
   // Lar apagado com token ainda válido: manda para o login em vez de estourar.
@@ -52,16 +51,11 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // móvel, além do campo "Buscar..." da BarraTopo, dividem UM Provider —
     // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
     // duplicado que existia antes dele.
-    <BuscaPaginasProvider mei={Boolean(lar.meiPerfil) && !apenasLoja}>
+    <BuscaPaginasProvider mei={Boolean(lar.meiPerfil)} apenasLoja={apenasLoja}>
       <div className="area-do-app min-h-screen">
-        {/* `AvisoCritico`, `TinoDock` (chat do Tino) e `FaixaConectar`
-            (convite de Open Finance) buscam dado PESSOAL do lar — alerta
-            financeiro, panorama, conexão bancária. `lib/acesso.ts` bloqueia
-            essas rotas por API para o funcionário (só libera `/loja`,
-            `/api/loja`, `/login`, `/api/auth/logout`); sem esta guarda os
-            três ficariam pedindo endpoint que a própria API recusa. */}
+        {/* Alertas pessoais não são consultados pela conta do funcionário da loja. */}
         {!apenasLoja && <AvisoCritico />}
-        <div className="mx-auto w-full max-w-6xl px-4 pb-28 md:pb-10">
+        <div className="app-content mx-auto w-full max-w-6xl px-4">
           {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
               por isso moram no mesmo container de largura da página) — ver
               `components/navegacao.tsx`. `apenasLoja` vem do merge com main
@@ -86,13 +80,13 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             apenasLoja={apenasLoja}
           />
           <SubAbas mei={Boolean(lar.meiPerfil)} apenasLoja={apenasLoja} />
-          {!apenasLoja && <FaixaConectar conectado={bancoConectado} />}
+
           <main className="animate-page-enter">{children}</main>
         </div>
 
         {/* O "+" agora mora no meio da barra do polegar (`navegacao.tsx`),
             não mais flutuando sobre o canto — PARTE 4.2 do spec. */}
-        {!apenasLoja && <TinoDock />}
+
         <Toaster />
       </div>
     </BuscaPaginasProvider>

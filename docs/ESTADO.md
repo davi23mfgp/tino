@@ -1,3 +1,5 @@
+> Atualização de 09/09/2026: veja [continuidade do Tino](CONTINUAR-NO-OUTRO-NOTEBOOK.md). A rodada atual remodelou navegação e telas principais, substituiu mockups por capturas reais e corrigiu a migração fiscal. As seções antigas abaixo são histórico.
+
 # Onde o projeto está
 
 Última atualização: 03/09/2026.

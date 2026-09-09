@@ -75,7 +75,7 @@ export function Banner({
     <div
       role="status"
       className={cn(
-        "relative flex items-center justify-center gap-3 px-4 py-2.5 text-center text-[13px] font-medium",
+        "relative flex items-center justify-center gap-3 pl-4 pr-14 py-2.5 text-center text-[13px] font-medium",
         TOM[tom],
         className,
       )}

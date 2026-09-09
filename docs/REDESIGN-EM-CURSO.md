@@ -1,3 +1,5 @@
+> Atualização de 09/09/2026: veja [continuidade do Tino](CONTINUAR-NO-OUTRO-NOTEBOOK.md). A rodada atual remodelou navegação e telas principais, substituiu mockups por capturas reais e corrigiu a migração fiscal. As seções antigas abaixo são histórico.
+
 # Redesign do Tino — estado em 05/09/2026, noite
 
 Ponto de retomada. Quem abrir isto numa sessão nova consegue continuar sem

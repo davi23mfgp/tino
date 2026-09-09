@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { X } from "lucide-react"
+import { Send } from "lucide-react"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 import { cn } from "@/lib/utils"
 import { buscar } from "@/lib/cliente"
@@ -93,45 +94,27 @@ export function TinoDock() {
             copia[copia.length - 1] = { papel: "ASSISTENTE", texto: copia[copia.length - 1].texto + pedaco }
             return copia
           })
-          fim.current?.scrollIntoView({ behavior: "smooth" })
+          fim.current?.scrollIntoView({ behavior: "auto", block: "nearest" })
         }
       }
     } catch {
       setTurnos((atual) => [...atual, { papel: "ASSISTENTE", texto: "Não consegui responder agora. Tente de novo." }])
     } finally {
       setPensando(false)
-      fim.current?.scrollIntoView({ behavior: "smooth" })
+      fim.current?.scrollIntoView({ behavior: "auto", block: "nearest" })
     }
   }
 
-  if (!aberto) {
-    return (
-      <button
-        onClick={() => setAberto(true)}
-        className="fixed bottom-[76px] right-4 z-40 flex items-center gap-2 rounded-full border border-pauta bg-papel-1 py-2 pl-2 pr-4 text-[13px] font-medium shadow-alta transition hover:border-positivo/40 sm:bottom-5 sm:right-5"
-      >
-        <TinoMascote estado={estado} className="h-9 w-9" />
-        Falar com o Tino
-      </button>
-    )
-  }
-
   return (
-    <div className="fixed bottom-0 right-0 z-40 flex h-[min(560px,80vh)] w-full flex-col border-l border-t border-pauta bg-papel-1 backdrop-blur-xl sm:bottom-6 sm:right-6 sm:h-[560px] sm:w-[420px] sm:rounded-3xl sm:border">
-      <header className="flex items-center justify-between border-b border-pauta px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <TinoMascote estado={estado} animado={false} className="h-8 w-8" />
-          <div className="leading-tight">
-            <p className="text-sm font-medium">Tino</p>
-            <p className="text-[11px] text-muted-fg">{FRASE[estado]}</p>
-          </div>
-        </div>
-        <button onClick={() => setAberto(false)} className="text-muted-fg hover:text-foreground">
-          <X className="h-4 w-4" />
+    <Dialog open={aberto} onOpenChange={setAberto}>
+      <DialogTrigger asChild>
+        <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
+          <TinoMascote estado={estado} className="size-8" />
         </button>
-      </header>
-
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      </DialogTrigger>
+      <DialogContent className="flex h-[min(640px,85dvh)] flex-col overflow-hidden">
+        <DialogHeader><DialogTitle>Tino</DialogTitle><DialogDescription>{FRASE[estado]}</DialogDescription></DialogHeader>
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {turnos.length === 0 && (
           <div>
             <p className="text-[13px] text-[color:var(--texto-2)]">
@@ -178,15 +161,19 @@ export function TinoDock() {
           evento.preventDefault()
           perguntar(pergunta)
         }}
-        className="border-t border-pauta p-3"
+        className="flex shrink-0 items-center gap-2 border-t border-pauta p-3"
       >
         <input
           value={pergunta}
           onChange={(evento) => setPergunta(evento.target.value)}
+          aria-label="Pergunta para o Tino"
+          disabled={pensando}
           placeholder="Pergunte sobre suas finanças…"
-          className="w-full rounded-full border border-pauta bg-background px-4 py-2.5 text-sm outline-none focus:border-acao/50"
+          className="min-w-0 w-full rounded-full border border-pauta bg-background px-4 py-2.5 text-sm outline-none focus:border-acao/50"
         />
+        <button type="submit" disabled={pensando || !pergunta.trim()} aria-label="Enviar pergunta" className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-40"><Send className="size-4" /></button>
       </form>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -75,7 +75,7 @@ export const NUCLEO: GrupoNav[] = [
   },
   {
     chave: "movimento",
-    titulo: "Movimento",
+    titulo: "Extrato",
     pergunta: "Para onde foi meu dinheiro?",
     itens: [
       { rota: "/transacoes", rotulo: "Transações", Icone: Receipt },

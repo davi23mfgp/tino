@@ -43,7 +43,7 @@ function achatar(s: string) {
 
 const BuscaContexto = createContext<{ abrir: () => void } | null>(null)
 
-export function BuscaPaginasProvider({ mei, children }: { mei: boolean; children: React.ReactNode }) {
+export function BuscaPaginasProvider({ mei, apenasLoja = false, children }: { mei: boolean; apenasLoja?: boolean; children: React.ReactNode }) {
   const router = useRouter()
   const [aberto, setAberto] = useState(false)
   const [termo, setTermo] = useState("")
@@ -51,16 +51,17 @@ export function BuscaPaginasProvider({ mei, children }: { mei: boolean; children
   const campo = useRef<HTMLInputElement>(null)
 
   const opcoes = useMemo(() => {
-    const base = todasAsTelas(mei)
+    const base = apenasLoja ? [] : todasAsTelas(mei)
     const q = achatar(termo.trim())
     if (!q) return base
     return base.filter((item) => achatar(item.rotulo).includes(q) || achatar(item.grupo).includes(q))
-  }, [termo, mei])
+  }, [termo, mei, apenasLoja])
 
   // Atalho global: Ctrl/Cmd+K abre a busca de qualquer tela, sem precisar
   // clicar em nada — é o padrão que quem usa app de produtividade espera.
   // Um listener só, porque agora só existe um Provider montado.
   useEffect(() => {
+    if (apenasLoja) return
     function aoTeclar(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault()
@@ -69,7 +70,7 @@ export function BuscaPaginasProvider({ mei, children }: { mei: boolean; children
     }
     window.addEventListener("keydown", aoTeclar)
     return () => window.removeEventListener("keydown", aoTeclar)
-  }, [])
+  }, [apenasLoja])
 
   useEffect(() => {
     if (aberto) {
@@ -90,7 +91,7 @@ export function BuscaPaginasProvider({ mei, children }: { mei: boolean; children
   }
 
   return (
-    <BuscaContexto.Provider value={{ abrir: () => setAberto(true) }}>
+    <BuscaContexto.Provider value={{ abrir: () => { if (!apenasLoja) setAberto(true) } }}>
       {children}
 
       <Dialog open={aberto} onOpenChange={setAberto}>

@@ -35,13 +35,13 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "liquid-glass-elevated fixed inset-y-0 right-0 z-50 h-full w-3/4 max-w-sm rounded-l-[28px] border-y-0 border-r-0 p-6 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300",
+        "border border-pauta bg-[var(--papel-solido)] fixed inset-y-0 right-0 z-50 h-[100dvh] overflow-y-auto overscroll-contain w-3/4 max-w-sm rounded-l-[28px] border-y-0 border-r-0 p-6 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none">
+      <DialogPrimitive.Close className="absolute right-3 top-3 grid size-11 place-items-center rounded-full opacity-70 transition-opacity hover:opacity-100 focus:outline-none">
         <X className="h-4 w-4" />
         <span className="sr-only">Fechar</span>
       </DialogPrimitive.Close>
@@ -51,7 +51,7 @@ const SheetContent = React.forwardRef<
 SheetContent.displayName = "SheetContent"
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex flex-col space-y-2 text-left mb-4", className)} {...props} />
+  <div className={cn("flex flex-col space-y-2 text-left mb-4 pr-9", className)} {...props} />
 )
 SheetHeader.displayName = "SheetHeader"
 

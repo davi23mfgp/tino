@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  devIndicators: false,
   allowedDevOrigins: ['lubricant-parcel-elaborate.ngrok-free.dev'],
 
   images: {

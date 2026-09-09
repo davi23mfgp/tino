@@ -21,6 +21,7 @@ import "./globals.css"
  */
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://tino-kappa.vercel.app"),
   title: "Tino, seu contador pessoal",
   description:
     "Organize contas, dívidas e metas em um lugar só. Projeção de caixa, plano de pagamento e ajuda para decidir empréstimo. Para pessoa física e MEI.",

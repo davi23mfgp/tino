@@ -18,3 +18,6 @@ export async function buscar<T>(rota: string, init?: RequestInit): Promise<T> {
 
 export const enviar = <T>(rota: string, corpo: unknown, metodo: "POST" | "PUT" | "PATCH" | "DELETE" = "POST") =>
   buscar<T>(rota, { method: metodo, body: JSON.stringify(corpo) })
+
+/** Atualiza as listas quando qualquer botao da navegacao cria um gasto. */
+export const TRANSACOES_ATUALIZADAS = "tino:transacoes-atualizadas"
