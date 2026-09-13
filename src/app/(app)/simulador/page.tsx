@@ -1,5 +1,6 @@
 "use client"
 
+import estilos from "../analise/avancadas.module.css"
 import { useCallback, useEffect, useState } from "react"
 import { Plus, RotateCcw, Trash2 } from "lucide-react"
 
@@ -213,7 +214,7 @@ export default function Simulador() {
   )
 
   return (
-    <div className="space-y-4">
+    <div className={cn(estilos.pagina, "space-y-4")}>
       <Cartao
         titulo="Simulador de cenários"
         acao={
@@ -236,34 +237,33 @@ export default function Simulador() {
       >
         <p className="text-[13px] leading-relaxed text-muted-fg">
           Monte hipóteses e veja o efeito no seu caixa mês a mês. Tudo parte dos seus números reais: renda de{" "}
-          {formatarMoeda(comparacao?.entrada.rendaMensalCentavos ?? 0)}, custo de vida de{" "}
-          {formatarMoeda(comparacao?.entrada.custoDeVidaMensalCentavos ?? 0)} e saldo de{" "}
-          {formatarMoeda(comparacao?.entrada.saldoInicialCentavos ?? 0)}.
+          <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.rendaMensalCentavos ?? 0)}</span>, custo de vida de{" "}
+          <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.custoDeVidaMensalCentavos ?? 0)}</span> e saldo de{" "}
+          <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.saldoInicialCentavos ?? 0)}</span>.
         </p>
 
         {comparacao && comparacao.entrada.rendaMensalCentavos === 0 && (
           <p className="mt-3 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[13px] text-atencao">
-            Ainda não sei sua renda nem seus gastos, então a simulação parte do zero. Responda a conversa inicial em
-            Configurações ou importe um extrato para os números ficarem seus.
+            Sem renda cadastrada. Complete seu perfil ou importe um extrato para simular com seus dados.
           </p>
         )}
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <h3 className="mt-5 text-sm font-semibold">1. Escolha o que deseja mudar</h3><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {MODELOS.map((modelo) => (
             <button
               key={modelo.tipo}
               onClick={() => adicionar(modelo.tipo)}
-              className="flex items-center gap-1.5 rounded-full border border-pauta px-3.5 py-2 text-[12px] transition hover:border-acao/40 hover:text-acao"
+              className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-pauta bg-papel-2 p-4 text-left text-sm transition hover:border-acao/60"
             >
               <Plus className="size-3.5" />
-              {modelo.titulo}
+              <strong>{modelo.titulo}</strong><span className="text-xs text-muted-fg">{modelo.texto}</span>
             </button>
           ))}
         </div>
       </Cartao>
 
       {temHipotese && (
-        <Cartao titulo="Suas hipóteses">
+        <Cartao titulo="2. Ajuste os valores e simule">
           <div className="space-y-3">
             {hipoteses.map((hipotese) => (
               <div key={hipotese.id} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-3">
@@ -290,7 +290,7 @@ export default function Simulador() {
                     >
                       {comparacao?.entrada.dividas.map((divida) => (
                         <option key={divida.id} value={divida.id}>
-                          {divida.nome} ({formatarMoeda(divida.saldoCentavos)})
+                          {divida.nome} (<span className="valor-inteiro">{formatarMoeda(divida.saldoCentavos)}</span>)
                         </option>
                       ))}
                     </select>
@@ -375,7 +375,7 @@ export default function Simulador() {
       {comparacao && cenario && base && (
         <>
           <Cartao titulo={temHipotese ? "Com as hipóteses, comparado a hoje" : "Seu cenário atual"}>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grade-valores">
               <Metrica
                 rotulo="Patrimônio em"
                 valor={formatarMoeda(cenario.patrimonioFinalCentavos)}
@@ -449,7 +449,7 @@ export default function Simulador() {
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="text-[13px] font-medium">{rotuloCompetencia(mes.competencia)}</span>
                       <span className={cn("text-[15px] font-semibold", negativo ? "text-negativo" : "text-foreground")}>
-                        {formatarMoeda(mes.saldoAcumuladoCentavos)}
+                        <span className="valor-inteiro">{formatarMoeda(mes.saldoAcumuladoCentavos)}</span>
                       </span>
                     </div>
 

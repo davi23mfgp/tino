@@ -19,6 +19,8 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
   })
   if (!parcelamento) throw new ErroDeUso("Parcelamento não encontrado.", 404)
 
+  if(dados.categoriaId && !await prisma.categoria.findFirst({where:{id:dados.categoriaId,larId:sessao.larId}}))throw new ErroDeUso("Categoria inválida.")
+  if(dados.parcelasPagas!==undefined && (!Number.isInteger(dados.parcelasPagas)||dados.parcelasPagas<0||dados.parcelasPagas>parcelamento.parcelasTotal))throw new ErroDeUso("Quantidade de parcelas inválida.")
   if (dados.parcelasPagas !== undefined) {
     const ate = Math.max(0, Math.min(dados.parcelasPagas, parcelamento.parcelasTotal))
     // As duas atualizações são espelhadas de propósito: corrigir para menos

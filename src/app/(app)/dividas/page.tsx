@@ -1,7 +1,10 @@
 "use client"
 
+import estilos from "../analise/avancadas.module.css"
+import { Button } from "@/components/ui/button"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { useCallback, useEffect, useState } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
@@ -71,6 +74,10 @@ const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", pa
 
 export default function Dividas() {
   const [dados, setDados] = useState<Resposta | null>(null)
+  const [base, setBase] = useState<Resposta | null>(null)
+  const [extraAplicado, setExtraAplicado] = useState("")
+  const [simulando, setSimulando] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
   const [extra, setExtra] = useState("")
   const [nova, setNova] = useState(VAZIO)
   const [abrirForm, setAbrirForm] = useState(false)
@@ -78,14 +85,35 @@ export default function Dividas() {
   const [frase, setFrase] = useState("")
 
   const carregar = useCallback(async () => {
-    const centavos = extra ? paraCentavos(extra) : 0
-    setDados(await buscar<Resposta>(`/api/dividas?extraMensalCentavos=${centavos}`))
-  }, [extra])
+    try {
+      setErro(null)
+      const resposta = await buscar<Resposta>("/api/dividas?extraMensalCentavos=0")
+      setBase(resposta)
+      setDados(resposta)
+      setExtra("")
+      setExtraAplicado("")
+    } catch (excecao) {
+      setErro(excecao instanceof Error ? excecao.message : "Não foi possível carregar as dívidas.")
+    }
+  }, [])
 
-  useEffect(() => {
-    carregar()
-  }, [carregar])
+  useEffect(() => { carregar() }, [carregar])
 
+  async function simularExtra(evento: React.FormEvent) {
+    evento.preventDefault()
+    setSimulando(true)
+    setErro(null)
+    try {
+      const centavos = extra ? paraCentavos(extra) : 0
+      if (centavos < 0) throw new Error("Informe um pagamento extra positivo.")
+      setDados(await buscar<Resposta>("/api/dividas?extraMensalCentavos=" + centavos))
+      setExtraAplicado(extra)
+    } catch (excecao) {
+      setErro(excecao instanceof Error ? excecao.message : "Não foi possível simular.")
+    } finally {
+      setSimulando(false)
+    }
+  }
   async function criar(evento: React.FormEvent) {
     evento.preventDefault()
     setOcupado(true)
@@ -106,6 +134,8 @@ export default function Dividas() {
       setNova(VAZIO)
       setAbrirForm(false)
       await carregar()
+    } catch (excecao) {
+      setErro(excecao instanceof Error ? excecao.message : "Não foi possível salvar a dívida.")
     } finally {
       setOcupado(false)
     }
@@ -142,47 +172,63 @@ export default function Dividas() {
   const comparativo = dados?.comparativo
 
   return (
-    <div className="space-y-4">
+    <div className={cn(estilos.pagina, "space-y-4")}>
+      {erro && <Cartao><p role="alert" className="text-sm">{erro}</p><Button variant="outline" onClick={carregar} disabled={simulando || ocupado} className="mt-3">Recarregar dívidas</Button></Cartao>}
       <Cartao
         titulo="Dívidas"
         acao={
-          <button onClick={() => setAbrirForm((atual) => !atual)} className="flex items-center gap-1.5">
-            <Plus className="size-3.5" /> nova
-          </button>
+          <Button onClick={() => setAbrirForm((atual) => !atual)} variant="outline" disabled={simulando} className="flex items-center gap-1.5">
+            <Plus className="size-3.5" /> Nova dívida
+          </Button>
         }
       >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Metrica rotulo="Total devido" valor={formatarMoeda(dados?.totalCentavos ?? 0)} tom="negativo" />
-          <Metrica rotulo="Parcelas por mês" valor={formatarMoeda(dados?.parcelaMensalCentavos ?? 0)} />
+        <div className="grade-valores">
+          <Metrica rotulo="Total devido" valor={dados ? formatarMoeda(dados.totalCentavos) : "—"} tom="negativo" />
+          <Metrica rotulo="Parcelas por mês" valor={dados ? formatarMoeda(dados.parcelaMensalCentavos) : "—"} />
           <Metrica
             rotulo="Livre em"
-            valor={dados?.plano ? `${dados.plano.meses} meses` : "—"}
-            detalhe={dados?.plano ? `${formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho` : undefined}
+            valor={dados?.plano ? dados.plano.quitacoes.length === abertas.length ? dados.plano.meses + " meses" : "Além de 50 anos" : "—"}
+            detalhe={dados?.plano ? `$<span className="valor-inteiro">{formatarMoeda(dados.plano.totalJurosCentavos)}</span> de juros no caminho` : undefined}
             tom={dados?.plano ? "atencao" : "neutro"}
           />
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-[12px] text-muted-fg">
-            se eu pagar a mais por mês
-            <input
-              value={extra}
-              onChange={(evento) => setExtra(evento.target.value)}
-              placeholder="0,00"
-              className={cn(campo, "w-32 text-right tabular-nums")}
-              inputMode="decimal"
-            />
-          </label>
-          {dados?.plano && extra && (
-            <span className="text-[12px] text-positivo">
-              fica livre em {dados.plano.meses} meses
-            </span>
+        <form onSubmit={simularExtra} className="mt-4 rounded-[20px] border border-foreground/20 bg-papel-2 p-4 sm:p-5">
+          <h1 className="text-xl font-semibold tracking-tight">Quite suas dívidas mais cedo</h1>
+          <p className="mt-1 text-sm text-muted-fg">Veja o efeito de pagar mais por mês.</p>
+          <label className="mt-4 block text-sm font-medium" htmlFor="pagamento-extra">Pagamento extra mensal</label>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <input id="pagamento-extra" value={extra} onChange={(evento) => setExtra(evento.target.value)} disabled={simulando || ocupado} placeholder="0,00" className={cn(campo, "w-full sm:w-44 tabular-nums")} inputMode="decimal" />
+            <Button type="submit" disabled={simulando || ocupado || !base || abertas.length === 0}>{simulando ? "Calculando…" : "Simular pagamento extra"}</Button>
+          </div>
+          <p className="mt-2 text-xs text-muted-fg">Simulação. Nenhum pagamento será feito.</p>
+          {extra !== extraAplicado && <p role="status" className="mt-3 text-sm">Valor alterado. Simule para atualizar o resultado.</p>}
+          {base?.plano && dados?.plano && extra === extraAplicado && (
+            <div aria-live="polite" className="mt-4 space-y-4">
+              <div className="grade-valores">
+                <div className="rounded-xl border border-pauta bg-background p-4">
+                  <p className="text-xs text-muted-fg">Sem pagamento extra</p>
+                  <p className="mt-2 text-lg font-semibold">{base.plano.quitacoes.length === abertas.length ? base.plano.meses + " meses" : "Não quita em 50 anos"}</p>
+                  <p className="mt-1 text-sm"><span className="valor-inteiro">{formatarMoeda(base.plano.totalJurosCentavos)}</span> em juros</p>
+                </div>
+                <div className="rounded-xl border border-foreground/30 bg-background p-4">
+                  <p className="text-xs text-muted-fg">Com pagamento extra</p>
+                  <p className="mt-2 text-lg font-semibold">{dados.plano.quitacoes.length === abertas.length ? dados.plano.meses + " meses" : "Não quita em 50 anos"}</p>
+                  <p className="mt-1 text-sm"><span className="valor-inteiro">{formatarMoeda(dados.plano.totalJurosCentavos)}</span> em juros</p>
+                </div>
+              </div>
+              {extraAplicado && base.plano.quitacoes.length === abertas.length && dados.plano.quitacoes.length === abertas.length && (
+                <p className="text-sm font-semibold">
+                  {base.plano.meses - dados.plano.meses} meses a menos · <span className="valor-inteiro">{formatarMoeda(base.plano.totalJurosCentavos - dados.plano.totalJurosCentavos)}</span> de economia
+                </p>
+              )}
+              {(base.plano.quitacoes.length !== abertas.length || dados.plano.quitacoes.length !== abertas.length) && <p className="text-xs text-muted-fg">Juros acumulados até quitar ou completar 50 anos.</p>}
+            </div>
           )}
-        </div>
-
+        </form>
         {abrirForm && (
           <form onSubmit={criar} className="mt-4 grid gap-2 sm:grid-cols-3">
-            <div className="flex gap-2 sm:col-span-3">
+            <div className="flex flex-wrap gap-2 sm:col-span-3">
               <input
                 value={frase}
                 onChange={(evento) => setFrase(evento.target.value)}
@@ -195,16 +241,16 @@ export default function Dividas() {
                 placeholder="ou escreva: Nubank 3200, juros 2,5% ao mês, parcela 350, vence dia 10"
                 className={cn(campo, "flex-1")}
               />
-              <button
+              <Button
                 type="button"
                 onClick={interpretarFrase}
                 className="shrink-0 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[13px] text-acao"
               >
                 Preencher
-              </button>
+              </Button>
             </div>
 
-            <input
+            <input aria-label="credor"
               value={nova.credor}
               onChange={(evento) => setNova({ ...nova, credor: evento.target.value })}
               placeholder="para quem você deve"
@@ -218,7 +264,7 @@ export default function Dividas() {
                 </option>
               ))}
             </SelectNative>
-            <input
+            <input aria-label="saldo"
               value={nova.saldo}
               onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
               placeholder="quanto falta pagar"
@@ -226,89 +272,77 @@ export default function Dividas() {
               className={campo}
               inputMode="decimal"
             />
-            <input
+            <input aria-label="juros"
               value={nova.juros}
               onChange={(evento) => setNova({ ...nova, juros: evento.target.value })}
               placeholder="juros % ao mês (ex.: 2,5)"
               className={campo}
               inputMode="decimal"
             />
-            <input
+            <input aria-label="parcela"
               value={nova.parcela}
               onChange={(evento) => setNova({ ...nova, parcela: evento.target.value })}
               placeholder="parcela mensal"
               className={campo}
               inputMode="decimal"
             />
-            <input
+            <input aria-label="parcelasTotal"
               value={nova.parcelasTotal}
               onChange={(evento) => setNova({ ...nova, parcelasTotal: evento.target.value })}
               placeholder="total de parcelas"
               className={campo}
               inputMode="numeric"
             />
-            <input
+            <input aria-label="pagas"
               value={nova.pagas}
               onChange={(evento) => setNova({ ...nova, pagas: evento.target.value })}
               placeholder="já pagas"
               className={campo}
               inputMode="numeric"
             />
-            <input
+            <input aria-label="dia"
               value={nova.dia}
               onChange={(evento) => setNova({ ...nova, dia: evento.target.value })}
               placeholder="dia do vencimento"
               className={campo}
               inputMode="numeric"
             />
-            <button
+            <Button
               disabled={ocupado}
               className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
             >
               Adicionar dívida
-            </button>
+            </Button>
           </form>
         )}
       </Cartao>
 
       {comparativo && abertas.length > 1 && (
-        <Cartao titulo="Qual estratégia sai mais barata">
-          <div className="grid gap-3 sm:grid-cols-2">
+        <Cartao titulo="Compare formas de pagar">
+          <Accordion type="single" collapsible><AccordionItem value="estrategias"><AccordionTrigger>Maior juro ou menor saldo?</AccordionTrigger><AccordionContent><div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-acao/40 bg-acao/10 p-4">
-              <p className="text-[13px] font-medium text-acao">Avalanche: paga primeiro o juro mais alto</p>
+              <p className="text-[13px] font-medium text-acao">Maior juro primeiro</p>
               <p className="mt-1.5 text-[20px] font-semibold">{comparativo.avalanche.meses} meses</p>
               <p className="text-[12px] text-muted-fg">
-                {formatarMoeda(comparativo.avalanche.totalJurosCentavos)} de juros
+                <span className="valor-inteiro">{formatarMoeda(comparativo.avalanche.totalJurosCentavos)}</span> de juros
               </p>
             </div>
 
             <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-              <p className="text-[13px] font-medium">Bola de neve: paga primeiro o menor saldo</p>
+              <p className="text-[13px] font-medium">Menor saldo primeiro</p>
               <p className="mt-1.5 text-[20px] font-semibold">{comparativo.bolaDeNeve.meses} meses</p>
               <p className="text-[12px] text-muted-fg">
-                {formatarMoeda(comparativo.bolaDeNeve.totalJurosCentavos)} de juros
+                <span className="valor-inteiro">{formatarMoeda(comparativo.bolaDeNeve.totalJurosCentavos)}</span> de juros
               </p>
             </div>
           </div>
 
-          <p className="mt-3 text-[13px] leading-relaxed">
-            {comparativo.economiaAvalancheCentavos > 0 ? (
-              <>
-                Atacar pelo maior juro economiza{" "}
-                <b>{formatarMoeda(comparativo.economiaAvalancheCentavos)}</b>
-                {comparativo.mesesAMais > 0 && ` e termina ${comparativo.mesesAMais} mês(es) antes`}. A bola de neve
-                paga mais caro, mas quita a primeira dívida antes — o que ajuda quem precisa ver progresso para não
-                desistir.
-              </>
-            ) : (
-              "As duas estratégias dão praticamente o mesmo resultado no seu caso. Escolha a que te mantém no plano."
-            )}
-          </p>
+          <p className="mt-3 text-sm">Maior juro prioriza economia. Menor saldo prioriza quitar uma dívida.</p></AccordionContent></AccordionItem></Accordion>
         </Cartao>
       )}
 
       {dados && dados.ordem.length > 0 && (
-        <Cartao titulo="Ordem de ataque">
+        <Cartao titulo="Qual pagar primeiro">
           <ol className="space-y-2">
             {dados.ordem.map((divida, indice) => {
               const quitacao = dados.plano?.quitacoes.find((linha) => linha.id === divida.id)
@@ -325,7 +359,7 @@ export default function Dividas() {
                     </p>
                   </div>
                   <span className="whitespace-nowrap text-[14px] tabular-nums">
-                    {formatarMoeda(divida.saldoDevedorCentavos)}
+                    <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
                   </span>
                 </li>
               )
@@ -335,7 +369,7 @@ export default function Dividas() {
       )}
 
       <Cartao titulo={`Suas dívidas (${abertas.length})`}>
-        {abertas.length === 0 && (
+        {dados && abertas.length === 0 && (
           <Vazio titulo="Nenhuma dívida em aberto" texto="Se tiver alguma fora do app, cadastre para entrar no plano." />
         )}
 
@@ -344,19 +378,19 @@ export default function Dividas() {
             const progresso = divida.parcelasTotal ? (divida.parcelasPagas / divida.parcelasTotal) * 100 : 0
             return (
               <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-                <div className="flex items-start justify-between gap-3">
+                <div className="linha-financeira">
                   <div className="min-w-0">
                     <p className="truncate text-[14px] font-medium">{divida.credor}</p>
                     <p className="text-[11px] text-muted-fg">
                       {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
-                      {divida.parcelaCentavos > 0 && ` · ${formatarMoeda(divida.parcelaCentavos)}/mês`}
+                      {divida.parcelaCentavos > 0 && ` · $<span className="valor-inteiro">{formatarMoeda(divida.parcelaCentavos)}</span>/mês`}
                       {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
                       {` · vence dia ${divida.diaVencimento}`}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[16px] font-semibold tabular-nums">
-                      {formatarMoeda(divida.saldoDevedorCentavos)}
+                    <p className="whitespace-nowrap text-[16px] font-semibold tabular-nums">
+                      <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
                     </p>
                     {divida.jurosMensalBps > 0 && (
                       <p className={cn("text-[11px]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>

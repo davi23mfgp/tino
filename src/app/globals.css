@@ -493,3 +493,30 @@
   .tino-metrica { padding: 12px; }
   .tino-metrica > .numero { font-size: 26px; }
 }
+
+/* iOS: superfícies agrupadas, controles de sistema e navegação discreta.
+   Escopo do app preserva a identidade editorial da landing. */
+.area-do-app { --raio-cartao: 24px; --raio-campo: 16px; font-family: var(--font-ios); }
+.area-do-app .ficha { box-shadow: none; border-color: color-mix(in oklch, var(--pauta) 65%, transparent); }
+.app-bottom-nav { border-radius: 30px; padding-inline: 6px; box-shadow: var(--sombra-flutuante); }
+.app-bottom-item { font-size: 12px; gap: 4px; }
+.app-bottom-item.is-active { color: oklch(var(--lch-acao)); background: var(--papel-1); }
+.app-nav-item.is-active { background: var(--papel-2); }
+.app-header-title h1 { font-weight: 700; letter-spacing: -.04em; }
+.ios-saldo { border: 0; background: transparent; padding: 4px 2px 8px; }
+.ios-saldo .home-balance-value { font-size: clamp(36px,6vw,56px); font-weight: 700; }
+.ios-saldo .home-flow { background: var(--papel-solido); border: 0; border-radius: 20px; padding: 18px; }
+.ios-atalhos { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.ios-atalhos a { padding-inline: 10px; }
+.ios-lista { overflow: hidden; border-radius: 18px; background: var(--papel-1); }
+.ios-lista-linha { display: flex; min-height: 56px; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--pauta); font-size: 14px; }
+.ios-lista-linha:last-child { border-bottom: 0; }
+.ios-lista-linha:hover { background: var(--papel-2); }
+.ios-icone { display: grid; width: 34px; height: 34px; flex-shrink: 0; place-items: center; border-radius: 10px; background: var(--papel-2); }
+.ios-icone svg { width: 18px; height: 18px; }
+@media (max-width: 380px) { .ios-atalhos a { font-size: 12px; gap: 5px; } }
+
+/* Valores permanecem inteiros; o tamanho acompanha a largura da métrica. */
+.area-do-app .tino-metrica { container-type: inline-size; border: 1px solid var(--pauta); border-radius: 18px; }
+.area-do-app .tino-metrica .numero { white-space: nowrap; overflow-wrap: normal; word-break: normal; font-size: clamp(1rem, 10cqi, 1.75rem); max-width: 100%; overflow-x: auto; }
+.area-do-app .numero { font-variant-numeric: tabular-nums; }

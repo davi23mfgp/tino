@@ -50,11 +50,13 @@ export const GET = comSessao(async (sessao, requisicao) => {
     by: ["tipo"],
     where: onde,
     _sum: { valorCentavos: true },
+    _count: { _all: true },
   })
 
   return ok({
     transacoes: pagina,
     proximoCursor: temMais ? pagina[pagina.length - 1].id : null,
+    contagem: { entradas: totais.find(t=>t.tipo==="RECEITA")?._count._all??0, saidas: totais.find(t=>t.tipo==="DESPESA")?._count._all??0 },
     totais: {
       receitasCentavos: totais.find((t) => t.tipo === "RECEITA")?._sum.valorCentavos ?? 0,
       despesasCentavos: totais.find((t) => t.tipo === "DESPESA")?._sum.valorCentavos ?? 0,
@@ -85,13 +87,16 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const contaId = exigir(dados.contaId, "Escolha a conta")
   const descricao = exigir(dados.descricao, "Descreva o lançamento").trim()
   const valorCentavos = Math.abs(Number(exigir(dados.valorCentavos, "Informe o valor")))
-  if (!Number.isFinite(valorCentavos) || valorCentavos === 0) throw new ErroDeUso("Valor inválido.")
+  if (!Number.isSafeInteger(valorCentavos) || valorCentavos === 0 || valorCentavos > 2147483647) throw new ErroDeUso("Valor inválido.")
 
   const data = new Date(exigir(dados.data, "Informe a data"))
   if (Number.isNaN(data.getTime())) throw new ErroDeUso("Data inválida.")
 
   const conta = await prisma.conta.findFirst({ where: { id: contaId, larId: sessao.larId } })
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
+
+  if(dados.categoriaId && !await prisma.categoria.findFirst({where:{id:dados.categoriaId,larId:sessao.larId}})) throw new ErroDeUso("Categoria inválida.")
+  if(dados.membroId && !await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}})) throw new ErroDeUso("Membro inválido.")
 
   // Sem categoria informada, o Tino sugere pelas regras do lar — o usuário
   // não deveria ter de escolher categoria em todo lançamento manual.

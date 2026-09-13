@@ -1,5 +1,6 @@
 "use client"
 
+import { CarteiraInvestimentos } from "@/components/carteira-investimentos"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { buscar } from "@/lib/cliente"
@@ -92,6 +93,9 @@ export default function Investir() {
 
   return (
     <div className="space-y-4">
+      <CarteiraInvestimentos/>
+      <details><summary className="min-h-11 cursor-pointer py-3 font-semibold">Simular aportes e divisão ARCA</summary>
+
       <Cartao titulo="E se eu cortar um pouco por mês?">
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
@@ -254,25 +258,9 @@ export default function Investir() {
           )}
         </Cartao>
 
-        <Cartao titulo="Reserva de emergência">
-          {dados?.reserva ? (
-            <>
-              <Valor tamanho="medio">{formatarMoeda(dados.reserva.atualCentavos)}</Valor>
-              <p className="mt-1 text-sm text-muted-fg">
-                de {formatarMoeda(dados.reserva.idealCentavos)} — cobre {formatarDecimal(dados.reserva.mesesDeFolga)}{" "}
-                mês(es) de custo
-              </p>
 
-              <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">
-                A reserva vem antes de investir em qualquer coisa de prazo longo. Sem ela, o primeiro imprevisto vira
-                dívida de cartão — e juro de cartão come qualquer rendimento que você fosse ter.
-              </p>
-            </>
-          ) : (
-            <Vazio titulo="Sem dados para calcular a reserva" />
-          )}
-        </Cartao>
       </div>
+      </details>
     </div>
   )
 }

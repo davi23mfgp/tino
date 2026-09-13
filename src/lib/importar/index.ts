@@ -58,6 +58,7 @@ export function impressaoDigital(params: {
 
 export interface PreviaLancamento extends LancamentoBruto {
   hashImport: string
+  possivelDuplicada?: boolean
   duplicada: boolean
   categoriaId?: string
   categoriaNome?: string
@@ -140,12 +141,16 @@ export async function previaImportacao(params: {
     ).map((transacao) => transacao.hashImport as string),
   )
 
+  const capturados=await prisma.transacao.findMany({where:{larId:params.larId,contaId:params.contaId,observacao:{startsWith:"Capturado do celular"},valorCentavos:{in:brutos.map(b=>Math.abs(b.valorCentavos))}},select:{data:true,valorCentavos:true,descricao:true}})
+  const normalizar=(t:string)=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")
   const lancamentos: PreviaLancamento[] = brutos.map((bruto, indice) => {
     const sugestao = categorizar(bruto.descricao, regras as unknown as RegraAplicavel[], mapaCategorias)
+    const possivelDuplicada=capturados.some(c=>c.data.toISOString().slice(0,10)===bruto.data.toISOString().slice(0,10)&&c.valorCentavos===Math.abs(bruto.valorCentavos)&&normalizar(c.descricao).length>=3&&normalizar(bruto.descricao).includes(normalizar(c.descricao)))
     return {
       ...bruto,
+      possivelDuplicada,
       hashImport: hashes[indice],
-      duplicada: jaExistem.has(hashes[indice]),
+      duplicada: jaExistem.has(hashes[indice]) || possivelDuplicada,
       categoriaId: sugestao.categoriaId,
       categoriaNome: sugestao.categoriaNome,
       descricaoSugerida: sugestao.descricaoLimpa,
@@ -153,6 +158,7 @@ export async function previaImportacao(params: {
     }
   })
 
+  if(lancamentos.some(l=>l.possivelDuplicada))avisos.push("Há possíveis repetições de gastos recebidos do celular. Foram desmarcadas; confira e selecione apenas se forem compras diferentes.")
   return {
     formato,
     total: lancamentos.length,

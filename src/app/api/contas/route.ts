@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
 
 export const GET = comSessao(async (sessao) => {
   const contas = await prisma.conta.findMany({
@@ -54,6 +54,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
     cor?: string
   }>(requisicao)
 
+  for(const valor of [dados.saldoInicialCentavos,dados.limiteCentavos])if(valor!==undefined&&(!Number.isSafeInteger(valor)||Math.abs(valor)>2147483647))throw new ErroDeUso("Valor inválido.")
+  if(dados.membroId&&!await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}}))throw new ErroDeUso("Membro inválido.")
   const conta = await prisma.conta.create({
     data: {
       larId: sessao.larId,

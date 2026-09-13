@@ -169,3 +169,12 @@ alguns dias de uso normal. Há também um dump de antes da troca em
 ### 09/09/2026 — revisão das telas avançadas
 
 Valores cortados nos cartões corrigidos, formulário de contas fixas em diálogo com recuperação de falhas, campos de metas identificados e largura de notificações corrigida. Evidências e modo opcional de build com pouca memória em CONTINUAR-NO-OUTRO-NOTEBOOK.md.
+
+
+### 09/09/2026 — iOS com shadcn
+
+Pedido do usuário implementado na estrutura principal: abas Agora/Futuro/Categorias, Drawer e Accordion no menu, controles shadcn, previsão compartilhada e capturas reais atualizadas. Detalhes e verificações em CONTINUAR-NO-OUTRO-NOTEBOOK.md.
+
+
+## Retomada em 10/09/2026
+Notificações migradas para Sheet à direita com rolagem interna, títulos fortes e destaque por severidade. Busca e adicionar no cabeçalho; assistente na lateral no desktop e canto inferior direito no celular. Navegação pessoal não oferece módulos MEI; dados preservados. Permissions-Policy corrigida para permitir pedido de microfone na própria origem; reconhecimento de voz ainda precisa de validação no aparelho. Os demais pedidos de docs/PEDIDOS-REDESIGN-53.md continuam em andamento.

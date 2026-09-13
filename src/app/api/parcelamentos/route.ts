@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
 import { competenciaDe } from "@/lib/datas"
 import { compromissosFuturos, criarParcelamento, resumoParcelamentos } from "@/lib/parcelamentos"
 
@@ -55,9 +55,12 @@ export const POST = comSessao(async (sessao, requisicao) => {
   }>(requisicao)
 
   const contaId = exigir(dados.contaId, "Escolha o cartão")
-  const conta = await prisma.conta.findFirst({ where: { id: contaId, larId: sessao.larId } })
+  const conta = await prisma.conta.findFirst({ where: { id: contaId, larId: sessao.larId, tipo:"CARTAO_CREDITO", arquivada:false } })
   if (!conta) throw new Error("Cartão não encontrado.")
 
+  if(!Number.isSafeInteger(dados.valorTotalCentavos)||dados.valorTotalCentavos<=0||dados.valorTotalCentavos>2147483647||!Number.isInteger(dados.parcelasTotal)||dados.parcelasTotal<1||dados.parcelasTotal>120)throw new ErroDeUso("Valor ou parcelas inválidos.")
+  if(dados.categoriaId&&!await prisma.categoria.findFirst({where:{id:dados.categoriaId,larId:sessao.larId}}))throw new ErroDeUso("Categoria inválida.")
+  if(dados.primeiraCompetencia&&!/^\d{4}-(0[1-9]|1[0-2])$/.test(dados.primeiraCompetencia))throw new ErroDeUso("Mês inválido.")
   const dataCompra = dados.dataCompra ? new Date(dados.dataCompra) : new Date()
 
   const parcelamento = await criarParcelamento({

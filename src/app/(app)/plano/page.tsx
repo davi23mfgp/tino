@@ -1,3 +1,7 @@
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+import estilos from "../analise/avancadas.module.css"
 import { ArrowDownRight, ArrowUpRight } from "lucide-react"
 
 import { sessaoDaPagina } from "@/lib/pagina"
@@ -15,21 +19,38 @@ export default async function Plano() {
 
   const { alvos, plano, capacidadeMensalCentavos } = await montarPlanoDoLar(sessao.larId, competencia)
 
+  const primeiroPagamento = plano.passos[0]?.pagamentos[0]
   const totalDivida = alvos.reduce((soma, alvo) => soma + alvo.saldoCentavos, 0)
 
   return (
-    <div className="space-y-4">
+    <div className={cn(estilos.pagina, "space-y-4")}>
       <Cartao titulo="Plano de pagamento">
         {alvos.length === 0 ? (
           <Vazio
             titulo="Nenhuma dívida aberta"
-            texto="Sem saldo negativo, fatura em aberto ou empréstimo cadastrado — nada a atacar por aqui."
+            texto="Não há dívidas abertas para organizar."
           />
         ) : (
           <>
-            <p className="text-sm leading-relaxed">{plano.primeiroPasso}</p>
+            <div className="rounded-[20px] bg-papel-2 p-4 sm:p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-fg">Comece neste mês</p>
+              <h1 className="mt-2 text-xl font-semibold tracking-tight">
+                {primeiroPagamento ? "Seu primeiro pagamento" : "Abra espaço no orçamento"}
+              </h1>
+              {primeiroPagamento && <><p className="mt-2 text-sm">{primeiroPagamento.nome}</p><p className="valor-inteiro mt-3 text-[30px] font-bold tracking-tight">{formatarMoeda(primeiroPagamento.valorCentavos)}</p></>}
+              <p className="mt-2 text-sm text-muted-fg">
+                {primeiroPagamento ? "Confira todos os pagamentos previstos no roteiro." : "Revise gastos antes de assumir novos pagamentos."}
+              </p>
+              <Button asChild className="mt-4"><Link href={primeiroPagamento ? "#roteiro" : "/orcamento"}>{primeiroPagamento ? "Ver pagamentos do mês" : "Revisar orçamento"}</Link></Button>
+            </div>
+            <Accordion type="single" collapsible className="mt-2">
+              <AccordionItem value="criterios">
+                <AccordionTrigger>Como o plano foi calculado</AccordionTrigger>
+                <AccordionContent><p className="text-sm leading-relaxed">{plano.primeiroPasso}</p></AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-4 grade-valores">
               <Metrica rotulo="Dívida total" valor={formatarMoeda(totalDivida)} tom="negativo" />
               <Metrica
                 rotulo="Livre em"
@@ -55,7 +76,7 @@ export default async function Plano() {
 
       {alvos.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Cartao titulo="Ordem de ataque (do juro mais caro)">
+          <Cartao titulo="Qual pagar primeiro">
             <ol className="space-y-3">
               {plano.ordem.map((alvo, indice) => (
                 <li key={alvo.id} className="flex items-start justify-between gap-3 text-sm">
@@ -72,17 +93,17 @@ export default async function Plano() {
                       </span>
                     </span>
                   </span>
-                  <span className="whitespace-nowrap">{formatarMoeda(alvo.saldoCentavos)}</span>
+                  <span className="whitespace-nowrap"><span className="valor-inteiro">{formatarMoeda(alvo.saldoCentavos)}</span></span>
                 </li>
               ))}
             </ol>
           </Cartao>
 
-          <Cartao titulo="Roteiro mês a mês">
-            <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+          <Cartao titulo="Roteiro mês a mês"><div id="roteiro" className="scroll-mt-28" />
+            <Accordion type="single" collapsible defaultValue={plano.passos[0]?.competencia}>
               {plano.passos.map((passo) => (
-                <div key={passo.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
-                  <div className="flex items-center justify-between text-sm">
+                <AccordionItem key={passo.competencia} value={passo.competencia}>
+                  <AccordionTrigger className="text-left"><span className="linha-financeira w-full text-sm">
                     <span className="font-medium">{rotuloCompetencia(passo.competencia)}</span>
                     <span
                       className={cn(
@@ -95,23 +116,21 @@ export default async function Plano() {
                       ) : (
                         <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
                       )}
-                      sobra {formatarMoeda(passo.sobraCentavos)}
+                      sobra <span className="valor-inteiro">{formatarMoeda(passo.sobraCentavos)}</span>
                     </span>
-                  </div>
-
-                  <p className="mt-1 text-[12px] text-muted-fg">
-                    parcelas já contratadas: {formatarMoeda(passo.parcelasFixasCentavos)} · juros do mês:{" "}
-                    {formatarMoeda(passo.jurosDoMesCentavos)}
+                  </span></AccordionTrigger><AccordionContent><p className="mt-1 text-[12px] text-muted-fg">
+                    parcelas já contratadas: <span className="valor-inteiro">{formatarMoeda(passo.parcelasFixasCentavos)}</span> · juros do mês:{" "}
+                    <span className="valor-inteiro">{formatarMoeda(passo.jurosDoMesCentavos)}</span>
                   </p>
 
                   {passo.pagamentos.length > 0 && (
                     <ul className="mt-2 space-y-1">
                       {passo.pagamentos.map((pagamento) => (
-                        <li key={pagamento.id} className="flex justify-between text-xs">
+                        <li key={pagamento.id} className="linha-financeira text-xs">
                           <span className="text-muted-fg">
                             {pagamento.nome} <span className="opacity-60">({pagamento.motivo})</span>
                           </span>
-                          <span>{formatarMoeda(pagamento.valorCentavos)}</span>
+                          <span><span className="valor-inteiro">{formatarMoeda(pagamento.valorCentavos)}</span></span>
                         </li>
                       ))}
                     </ul>
@@ -119,13 +138,10 @@ export default async function Plano() {
 
                   <p className="mt-2 text-xs">
                     resta depois deste mês:{" "}
-                    <span className="font-medium">{formatarMoeda(passo.dividaRestanteCentavos)}</span>
+                    <span className="font-medium"><span className="valor-inteiro">{formatarMoeda(passo.dividaRestanteCentavos)}</span></span>
                   </p>
-                </div>
-              ))}
-            </div>
-          </Cartao>
-        </div>
+                </AccordionContent></AccordionItem>
+              ))}</Accordion></Cartao></div>
       )}
     </div>
   )

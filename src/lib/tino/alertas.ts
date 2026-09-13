@@ -131,9 +131,9 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     alertas.push({
       tipo: "reserva_baixa",
       severidade: panorama.reserva.mesesDeFolga < 1 ? "CRITICO" : "ATENCAO",
-      titulo: "Sua reserva cobre pouco tempo",
+      titulo: "Reserva abaixo do objetivo",
       texto: `Hoje a reserva sustenta ${panorama.reserva.mesesDeFolga} mês(es) do seu custo essencial. O alvo do seu lar é ${panorama.lar.mesesReserva} meses (${formatarMoeda(panorama.reserva.idealCentavos)}).`,
-      acaoRota: "/metas",
+      acaoRota: "/reserva",
       chave: `reserva_baixa:${mes}`,
     })
   }
@@ -180,7 +180,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     alertas.push({
       tipo: "meta_atrasada",
       severidade: "INFO",
-      titulo: `${meta.nome} não chega na data`,
+      titulo: `${meta.nome}: revise o aporte`,
       texto: `Com ${formatarMoeda(meta.aporteAtualCentavos)} por mês a meta não fecha no prazo. Seriam necessários ${formatarMoeda(meta.aporteNecessarioCentavos)} — ${formatarMoeda(diferenca)} a mais.`,
       acaoRota: "/metas",
       chave: `meta_atrasada:${mes}:${meta.id}`,
@@ -236,7 +236,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       // (SPEC-CALEN-PRECISO, PARTE 3). "Gasto" é a mesma coisa dita como a
       // pessoa fala, e "o Tino aprende" diz o benefício em vez do mecanismo.
       titulo: `${panorama.mes.naoCategorizadas} gastos sem categoria`,
-      texto: "Ajuste uma vez e o Tino aprende. Da próxima ele acerta sozinho.",
+      texto: "Escolha as categorias para organizar seus gastos.",
       acaoRota: "/transacoes?filtro=sem-categoria",
       chave: `sem_categoria:${mes}`,
     })
@@ -299,6 +299,8 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
  * pode rodar a cada abertura do app sem multiplicar avisos.
  */
 export async function atualizarAlertas(larId: string) {
+  // Metas: reaproveita a atualização interna, sem serviço externo de agenda.
+  await (await import("@/lib/metas")).atualizarLembretesMetas(larId)
   const [panorama, desligados] = await Promise.all([
     montarPanorama(larId),
     prisma.vigiaConfig.findMany({ where: { larId, ativo: false }, select: { tipo: true } }),

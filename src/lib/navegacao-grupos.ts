@@ -115,8 +115,8 @@ export const GRUPOS_NAV: GrupoNav[] = [
     itens: [
       { rota: "/orcamento", rotulo: "Orçamento", Icone: Target },
       { rota: "/recorrencias", rotulo: "Contas fixas", Icone: Repeat },
-      { rota: "/parcelamentos", rotulo: "Parcelamentos", Icone: ListOrdered },
       { rota: "/metas", rotulo: "Metas", Icone: Flag },
+      { rota: "/reserva", rotulo: "Reserva de emergência", Icone: Wallet },
     ],
   },
   {
@@ -137,14 +137,14 @@ export const GRUPOS_NAV: GrupoNav[] = [
       { rota: "/analise", rotulo: "Análise", Icone: PieChart },
       { rota: "/projecao", rotulo: "Projeção", Icone: LineChart },
       { rota: "/simulador", rotulo: "Simulador", Icone: Wand2 },
-      { rota: "/investir", rotulo: "Longo prazo", Icone: Sprout },
+      { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     ],
   },
   {
     chave: "ajustes",
     titulo: "Ajustes",
     pergunta: "Configurar o app",
-    itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }],
+    itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }, { rota: "/categorias", rotulo: "Categorias e ícones", Icone: PieChart }],
   },
 ]
 

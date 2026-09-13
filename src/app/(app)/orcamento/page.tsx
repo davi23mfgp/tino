@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { SimboloCategoria } from "@/components/seletor-categoria"
 import { cn } from "@/lib/utils"
 
 /**
@@ -42,7 +43,7 @@ interface Orcamento {
   gastoTotalCentavos: number
 }
 
-const campo = "w-28 rounded-xl border border-pauta bg-background px-3 py-1.5 text-right text-[13px] tabular-nums outline-none focus:border-acao/50"
+const campo = "min-h-11 w-32 rounded-xl border border-pauta bg-background px-3 py-1.5 text-right text-sm tabular-nums outline-none focus:border-acao/50"
 
 export default function OrcamentoPagina() {
   const [competencia, setCompetencia] = useState(competenciaAtual())
@@ -63,7 +64,7 @@ export default function OrcamentoPagina() {
   }, [competencia])
 
   useEffect(() => {
-    carregar()
+    carregar().catch(()=>setMensagem("Não foi possível carregar o orçamento. Recarregue a página."))
   }, [carregar])
 
   async function salvar() {
@@ -176,11 +177,11 @@ export default function OrcamentoPagina() {
             className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2 text-[12px] transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
           >
             <Sparkles className="size-3.5" />
-            sugerir pelo meu histórico
+            Usar meu histórico
           </button>
 
           <label className="flex items-center gap-2 text-[12px] text-muted-fg">
-            repetir nos próximos
+            Repetir por
             <select
               value={repetir}
               onChange={(evento) => setRepetir(Number(evento.target.value))}
@@ -206,24 +207,25 @@ export default function OrcamentoPagina() {
         {mensagem && <p className="mt-3 text-[12px] text-acao">{mensagem}</p>}
       </Cartao>
 
-      <Cartao titulo="Limites por categoria">
+      <Cartao titulo="Plano por categoria">
         {dados && dados.linhas.length === 0 && Object.keys(rascunho).length === 0 && (
           <Vazio
             titulo="Nenhum limite definido"
-            texto="Use o botão de sugestão para partir do seu próprio histórico, em vez de chutar números."
+            texto="Use seu histórico ou defina um valor por categoria."
           />
         )}
 
         <div className="space-y-2">
           {dados?.linhas.map((linha) => (
-            <div key={linha.categoriaId} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
+            <div key={linha.categoriaId} className="rounded-2xl border border-pauta bg-papel-2 p-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="min-w-0 flex-1 truncate text-[14px]">{linha.categoria.nome}</span>
-                <span className={cn("text-[13px] tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
+                <SimboloCategoria categoria={linha.categoria}/><span className="min-w-0 flex-1 text-sm font-semibold">{linha.categoria.nome}</span>
+                <span className={cn("text-sm tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
                   {formatarMoeda(linha.gastoCentavos)}
                 </span>
                 <span className="text-[12px] text-muted-fg">de</span>
                 <input
+                  aria-label={`Orçamento de ${linha.categoria.nome}`}
                   value={rascunho[linha.categoriaId] ?? ""}
                   onChange={(evento) =>
                     setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))
@@ -235,7 +237,8 @@ export default function OrcamentoPagina() {
                   onClick={() =>
                     setRascunho((atual) => ({ ...atual, [linha.categoriaId]: "0" }))
                   }
-                  className="text-muted-fg transition hover:text-negativo"
+                  className="grid size-11 place-items-center text-muted-fg transition hover:text-negativo"
+                  aria-label={`Zerar orçamento de ${linha.categoria.nome}`}
                   title="zerar limite"
                 >
                   <Trash2 className="size-4" />
@@ -265,8 +268,8 @@ export default function OrcamentoPagina() {
                   key={linha.categoria.id}
                   className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-pauta p-3"
                 >
-                  <span className="min-w-0 flex-1 truncate text-[14px]">{linha.categoria.nome}</span>
-                  <span className="text-[13px] tabular-nums text-atencao">
+                  <SimboloCategoria categoria={linha.categoria}/><span className="min-w-0 flex-1 text-sm font-semibold">{linha.categoria.nome}</span>
+                  <span className="text-sm tabular-nums text-atencao">
                     {formatarMoeda(linha.gastoCentavos)}
                   </span>
                   <input

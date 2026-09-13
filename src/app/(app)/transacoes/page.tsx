@@ -1,4 +1,5 @@
 "use client"
+import { MarcaPersonalizada } from "@/components/identidades-visuais"
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -13,7 +14,10 @@ import { SelectNative } from "@/components/ui/select-native"
 import { Checkbox } from "@/components/ui/checkbox"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { iconeDaCategoria } from "@/lib/icone-categoria"
+import Link from "next/link"
+import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
+import { Button } from "@/components/ui/button"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 interface Transacao {
   id: string
@@ -22,18 +26,16 @@ interface Transacao {
   valorCentavos: number
   tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
   categoriaId: string | null
-  categoria: { nome: string; cor: string; grupo?: string | null } | null
+  categoria: { nome: string; cor: string; grupo?: string | null; icone?: string | null } | null
   conta: { nome: string }
 }
 
-interface Categoria {
-  id: string
-  nome: string
-}
+type Categoria = CategoriaSelecionavel
 
 interface Resultado {
   transacoes: Transacao[]
   proximoCursor: string | null
+  contagem: { entradas: number; saidas: number }
   totais: { receitasCentavos: number; despesasCentavos: number }
 }
 
@@ -42,8 +44,14 @@ const CLASSE_BOTAO = "min-h-11 rounded-full border border-pauta px-4 py-2 text-s
 
 export default function Transacoes() {
   const [competencia, setCompetencia] = useState(competenciaAtual())
+  const [contaFiltro,setContaFiltro]=useState("")
+  const [contas,setContas]=useState<{id:string;nome:string}[]>([])
+  useEffect(()=>{buscar<{id:string;nome:string}[]>("/api/contas").then(setContas).catch(()=>showToast("Não foi possível carregar contas.",{variant:"error"}))},[])
   const [busca, setBusca] = useState("")
   const [semCategoria, setSemCategoria] = useState(false)
+  const [tipo, setTipo] = useState("todos")
+  const [categoriaFiltro, setCategoriaFiltro] = useState<string | null>(null)
+  const [contagem, setContagem] = useState<{ entradas: number; saidas: number } | null>(null)
   const [transacoes, setTransacoes] = useState<Transacao[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [totais, setTotais] = useState<Resultado["totais"] | null>(null)
@@ -63,6 +71,9 @@ export default function Transacoes() {
   const parametros = new URLSearchParams({ competencia, limite: String(TAMANHO_PAGINA) })
   if (busca.trim()) parametros.set("busca", busca.trim())
   if (semCategoria) parametros.set("semCategoria", "1")
+  if (tipo !== "todos") parametros.set("tipo", tipo)
+  if (categoriaFiltro && !semCategoria) parametros.set("categoriaId", categoriaFiltro)
+  if(contaFiltro)parametros.set("contaId",contaFiltro)
   const filtro = parametros.toString()
 
   const carregar = useCallback(async (cursor: string | null = null) => {
@@ -110,6 +121,7 @@ export default function Transacoes() {
       }
       setProximoCursor(proximo)
       setTotais(dados.totais)
+      setContagem(dados.contagem)
     } catch (falha) {
       if (!controle.signal.aborted) {
         setErro({
@@ -214,6 +226,16 @@ export default function Transacoes() {
             />
           </label>
         </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <ToggleGroup type="single" value={tipo} onValueChange={valor => {if(valor) setTipo(valor)}} aria-label="Tipo de movimento">
+            <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
+            <ToggleGroupItem value="RECEITA">Entradas</ToggleGroupItem>
+            <ToggleGroupItem value="DESPESA">Saídas</ToggleGroupItem>
+          </ToggleGroup>
+          <SelectNative aria-label="Filtrar conta ou cartão" value={contaFiltro} onChange={e=>setContaFiltro(e.target.value)}><option value="">Todas as contas e cartões</option>{contas.map(c=><option key={c.id} value={c.id}>{c.nome}</option>)}</SelectNative>
+          <SeletorCategoria opcoes={categorias} valor={categoriaFiltro} aoMudar={id => {setCategoriaFiltro(id);setSemCategoria(false)}} vazio="Todas as categorias" rotulo="Filtrar categoria" desabilitado={carregandoCategorias || erroCategorias} />
+          <Button asChild variant="link"><Link href="/categorias">Personalizar categorias</Link></Button>
+        </div>
         <details className="mt-3 text-sm">
           <summary className="min-h-11 cursor-pointer py-3 font-medium">
             Mais filtros{semCategoria ? " · 1 ativo" : ""}
@@ -231,14 +253,17 @@ export default function Transacoes() {
               { rotulo: "Saídas", valor: totais?.despesasCentavos, tom: "" },
               { rotulo: "Saldo do período", valor: saldo, tom: saldo !== null && saldo < 0 ? "text-negativo" : "" },
             ].map((metrica) => (
-              <div key={metrica.rotulo} className="flex min-w-0 flex-wrap items-baseline justify-between gap-1 sm:block">
+              <div key={metrica.rotulo} className="min-w-0 rounded-2xl border border-pauta bg-papel-2 p-4">
                 <dt className="text-sm text-muted-fg">{metrica.rotulo}</dt>
-                <dd className={cn("numero break-words text-lg font-semibold sm:mt-1", metrica.tom)}>
+                <dd className={cn("numero whitespace-nowrap text-lg font-semibold sm:mt-1", metrica.tom)}>
                   {metrica.valor == null ? "—" : formatarMoeda(metrica.valor)}
                 </dd>
               </div>
             ))}
           </dl>
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm" aria-live="polite">
+            <p>{contagem ? `${contagem.entradas} entradas · ${contagem.saidas} saídas neste filtro` : `${transacoes.filter(item => item.tipo === "RECEITA").length} entradas · ${transacoes.filter(item => item.tipo === "DESPESA").length} saídas carregadas`}</p>
+          </div>
         </div>
       </Cartao>
 
@@ -263,9 +288,9 @@ export default function Transacoes() {
         {!carregando && !erro && transacoes.length === 0 && (
           <Vazio
             titulo="Nenhum lançamento encontrado"
-            texto={busca || semCategoria ? "Tente outra busca ou limpe os filtros." : "Adicione um lançamento ou escolha outro mês."}
-            acao={busca || semCategoria ? (
-              <button type="button" className={CLASSE_BOTAO} onClick={() => { setBusca(""); setSemCategoria(false) }}>
+            texto={busca || semCategoria || categoriaFiltro || tipo !== "todos" ? "Tente outra busca ou limpe os filtros." : "Adicione um lançamento ou escolha outro mês."}
+            acao={busca || semCategoria || categoriaFiltro || tipo !== "todos" ? (
+              <button type="button" className={CLASSE_BOTAO} onClick={() => { setBusca(""); setSemCategoria(false); setCategoriaFiltro(null); setTipo("todos") }}>
                 Limpar filtros
               </button>
             ) : undefined}
@@ -274,13 +299,10 @@ export default function Transacoes() {
 
         <ul className="space-y-3 sm:space-y-0 sm:divide-y sm:divide-pauta" aria-label="Lançamentos" aria-busy={ocupado}>
           {transacoes.map((transacao) => {
-            const Icone = iconeDaCategoria(transacao.categoria, transacao.tipo)
             const transferencia = transacao.tipo === "TRANSFERENCIA"
             return (
               <li key={transacao.id} className="grid min-w-0 grid-cols-[40px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl border border-pauta p-3 sm:grid-cols-[40px_minmax(0,1fr)_minmax(140px,190px)_auto] sm:items-center sm:rounded-none sm:border-0 sm:px-0 sm:py-3">
-                <span aria-hidden className="grid size-10 place-items-center rounded-full bg-foreground/[0.07] text-muted-fg">
-                  <Icone className="size-[18px]" />
-                </span>
+                <MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} />
                 <div className="min-w-0">
                   <EditavelTexto
                     valor={transacao.descricao}
@@ -292,27 +314,13 @@ export default function Transacoes() {
                     {new Date(transacao.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })} · {transacao.conta.nome}
                   </p>
                 </div>
-                <details className="col-span-2 min-w-0 sm:col-span-1">
-                  <summary className="flex min-h-11 cursor-pointer items-center text-xs text-muted-fg">{transacao.categoria?.nome ?? "Sem categoria"} <span className="ml-2" aria-hidden>⌄</span></summary>
-                  {transferencia ? (
-                    <span className="text-xs text-muted-fg">Transferência entre contas</span>
-                  ) : (
-                    <SelectNative
-                      tamanho="pilula"
-                      aria-label={`Categoria de ${transacao.descricao}`}
-                      value={transacao.categoriaId ?? ""}
-                      disabled={ocupado || carregandoCategorias || erroCategorias}
-                      onChange={(evento) => {
-                        const categoriaId = evento.target.value || null
-                        void salvarEdicao(transacao.id, { categoriaId, criarRegra: categoriaId !== null })
-                      }}
-                      className={cn("min-h-11 w-full truncate", !transacao.categoriaId && "text-atencao")}
-                    >
-                      <option value="">Sem categoria</option>
-                      {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
-                    </SelectNative>
-                  )}
-                </details>
+                <div className="col-span-2 min-w-0 sm:col-span-1">
+                  {transferencia ? <span className="text-sm text-muted-fg">Transferência entre contas</span> : <SeletorCategoria
+                    opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`}
+                    desabilitado={ocupado || carregandoCategorias || erroCategorias} className="w-full justify-start"
+                    aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
+                  />}
+                </div>
                 <div className={cn("col-span-2 flex min-w-0 flex-wrap items-center justify-end gap-1 sm:col-span-1", transacao.tipo === "RECEITA" && "text-positivo")}>
                   {transferencia ? (
                     <span className="numero break-words text-sm text-muted-fg">{formatarMoeda(transacao.valorCentavos)}</span>

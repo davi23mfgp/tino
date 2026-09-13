@@ -9,7 +9,10 @@ import { enviar } from "@/lib/cliente"
 import { TinoMarca } from "@/components/tino-mascote"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { FabAdicionar } from "@/components/fab-adicionar"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet"
+import { TinoDock } from "@/components/tino-dock"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button"
 import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA_FUNCIONARIO, NUCLEO, todosOsGrupos, type GrupoNav } from "@/lib/navegacao-grupos"
 
 export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
@@ -25,25 +28,28 @@ export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boole
 function Mais({ grupos, ativo, desktop = false }: { grupos: GrupoNav[]; ativo: boolean; desktop?: boolean }) {
   const [aberto, setAberto] = useState(false)
   const caminho = usePathname()
-  return <Sheet open={aberto} onOpenChange={setAberto}>
-    <SheetTrigger asChild><button aria-label="Mais recursos" className={cn(desktop ? "app-nav-item" : "app-bottom-item", ativo && "is-active")}>
+  return <Drawer shouldScaleBackground={false} open={aberto} onOpenChange={setAberto}>
+    <DrawerTrigger asChild><button aria-label="Mais recursos" className={cn(desktop ? "app-nav-item" : "app-bottom-item", ativo && "is-active")}>
       <Menu className="size-5" aria-hidden /><span>Mais</span>
-    </button></SheetTrigger>
-    <SheetContent className="w-full max-w-md overflow-y-auto overscroll-contain pb-[max(24px,env(safe-area-inset-bottom))]">
-      <SheetHeader><SheetTitle>Do seu jeito.</SheetTitle><SheetDescription>O básico está sempre à mão. Explore o resto quando precisar.</SheetDescription></SheetHeader>
+    </button></DrawerTrigger>
+    <DrawerContent >
+      <DrawerHeader><DrawerTitle>Seu Tino</DrawerTitle><DrawerDescription>Escolha o que quer organizar.</DrawerDescription></DrawerHeader>
+      <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-5">
       <div className="mb-4"><GatilhoBuscaPaginas variant="barra" /></div>
-      <nav aria-label="Todos os recursos" className="space-y-3">
-        {grupos.map(grupo => <details key={grupo.chave} className="app-nav-group" open={grupo.chave === "ajustes" || grupo.itens.some(i => estaAtivo(caminho, i.rota))}>
-          <summary><span>{grupo.titulo}<small>{grupo.pergunta}</small></span><span aria-hidden>+</span></summary>
-          <div className="pb-2">{grupo.itens.map(({rota, rotulo, Icone}) =>
-            <Link key={rota} href={rota} onClick={() => setAberto(false)} aria-current={estaAtivo(caminho, rota) ? "page" : undefined}
-              className={cn("flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-accent", estaAtivo(caminho, rota) && "bg-accent font-semibold")}>
-              <Icone className="size-4" aria-hidden />{rotulo}
-            </Link>)}</div>
-        </details>)}
+      <nav aria-label="Todos os recursos">
+        <Accordion type="single" collapsible defaultValue={grupos.find(g => g.itens.some(i => estaAtivo(caminho, i.rota)))?.chave}>
+          {grupos.map(grupo => <AccordionItem key={grupo.chave} value={grupo.chave}>
+            <AccordionTrigger><span className="text-left">{grupo.titulo}<small className="mt-1 block font-normal text-muted-fg">{grupo.pergunta}</small></span></AccordionTrigger>
+            <AccordionContent><div className="ios-lista">{grupo.itens.map(({rota, rotulo, Icone}) =>
+              <Link key={rota} href={rota} onClick={() => setAberto(false)} aria-current={estaAtivo(caminho, rota) ? "page" : undefined} className="ios-lista-linha"><span className="ios-icone"><Icone aria-hidden /></span><span>{rotulo}</span></Link>
+            )}</div></AccordionContent>
+          </AccordionItem>)}
+        </Accordion>
       </nav>
-    </SheetContent>
-  </Sheet>
+      </div>
+      <div className="px-5 pb-5"><DrawerClose asChild><Button variant="secondary" className="w-full">Concluir</Button></DrawerClose></div>
+    </DrawerContent>
+  </Drawer>
 }
 
 export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja?: boolean; nome: string; avatarUrl?: string | null }) {
@@ -55,6 +61,7 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
   const secundario = !principais.some(grupo => grupo.itens.some(item => estaAtivo(caminho,item.rota)))
   async function sair() { await enviar("/api/auth/logout", {}); router.push("/login"); router.refresh() }
   return <>
+    {!apenasLoja && <div className="fixed bottom-24 right-4 z-40 lg:hidden"><TinoDock /></div>}
     <aside className="app-sidebar">
       <Link href={apenasLoja ? "/loja" : "/painel"} className="app-brand" aria-label="Tino — início"><TinoMarca className="size-9" /><span>tino.</span></Link>
       <p className="app-sidebar-caption">{apenasLoja ? "Sua loja" : "Seu dia a dia"}</p>
@@ -62,9 +69,8 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
         {principais.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}
         {!apenasLoja && <Mais grupos={extras} ativo={secundario} desktop />}
       </nav>
-      {!apenasLoja && <div className="mt-6"><FabAdicionar inline /></div>}
+      {!apenasLoja && <div className="mt-6 flex items-center gap-3 px-3"><TinoDock /><span className="text-sm font-medium">Ajuda do Tino</span></div>}
       <div className="mt-auto space-y-2 pt-6">
-        {!apenasLoja && <GatilhoBuscaPaginas variant="barra" />}
         <div className="border-t border-pauta pt-3"><p className="truncate px-3 text-sm font-medium">{nome}</p>
         {!apenasLoja && <Link href="/configuracoes" className="app-nav-item"><Settings className="size-4" aria-hidden /><span>Minha conta</span></Link>}
         <button onClick={sair} className="app-nav-item"><LogOut className="size-4" aria-hidden /><span>Sair</span></button></div>

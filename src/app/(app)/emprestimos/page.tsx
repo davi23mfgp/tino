@@ -1,5 +1,7 @@
 "use client"
 
+import estilos from "../analise/avancadas.module.css"
+import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
 import { buscar, enviar } from "@/lib/cliente"
@@ -98,11 +100,10 @@ export default function Emprestimos() {
   const parecer = analise ? VEREDITO[analise.veredito] : null
 
   return (
-    <div className="space-y-4">
+    <div className={cn(estilos.pagina, "space-y-4")}>
       <Cartao titulo="Vale a pena esse empréstimo?">
         <p className="text-[13px] leading-relaxed text-muted-fg">
-          Coloque o que o banco ofereceu. Eu calculo o CET real — com IOF e tarifas — e comparo com a sua renda e com
-          as dívidas que você já tem.
+          Veja quanto recebe, quanto devolve e o impacto na renda.
         </p>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -127,26 +128,26 @@ export default function Emprestimos() {
         <input
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          placeholder="nome para lembrar essa proposta depois, ex.: Itaú 24x"
+          aria-label="Nome da proposta" placeholder="Nome da proposta (opcional)"
           className={cn(campo, "mt-2")}
         />
 
         <div className="mt-4 flex gap-2">
-          <button
+          <Button
             onClick={() => simular(false)}
             disabled={ocupado || !valor}
             className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
           >
             {ocupado ? "Calculando…" : "Simular"}
-          </button>
+          </Button>
           {analise && (
-            <button
+            <Button
               onClick={() => simular(true)}
               disabled={ocupado}
               className="rounded-full border border-pauta px-4 py-2.5 text-[13px] text-muted-fg transition hover:text-foreground"
             >
               guardar para comparar
-            </button>
+            </Button>
           )}
         </div>
 
@@ -155,7 +156,12 @@ export default function Emprestimos() {
 
       {analise && parecer && (
         <>
-          <Cartao>
+          <Cartao titulo="O custo completo">
+            <div className="grade-valores mb-4">
+              <Metrica rotulo="Você recebe" valor={formatarMoeda(analise.liberadoCentavos)} />
+              <Metrica rotulo="Você devolve" valor={formatarMoeda(analise.totalPagoCentavos)} detalhe={"Em " + analise.tabela.length + " parcelas"} />
+              <Metrica rotulo="Custo além do recebido" valor={formatarMoeda(analise.totalPagoCentavos - analise.liberadoCentavos)} detalhe="Diferença entre receber e devolver" />
+            </div>
             <div className={cn("rounded-2xl border p-4", parecer.borda)}>
               <p className={cn("text-[15px] font-semibold", parecer.tom)}>{parecer.texto}</p>
               <ul className="mt-2 space-y-1.5">
@@ -167,7 +173,7 @@ export default function Emprestimos() {
               </ul>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-4 grade-valores">
               <Metrica rotulo="Parcela" valor={formatarMoeda(analise.parcelaCentavos)} />
               <Metrica
                 rotulo="CET ao mês"
@@ -177,7 +183,7 @@ export default function Emprestimos() {
               />
               <Metrica rotulo="Total de juros" valor={formatarMoeda(analise.totalJurosCentavos)} tom="atencao" />
               <Metrica
-                rotulo="Comprometimento"
+                rotulo="Renda comprometida"
                 valor={`${(analise.comprometimentoBps / 100).toFixed(0)}%`}
                 detalhe="da sua renda, com as dívidas atuais"
                 tom={analise.comprometimentoBps > 3000 ? "negativo" : "neutro"}
@@ -185,8 +191,8 @@ export default function Emprestimos() {
             </div>
 
             <p className="mt-3 text-[12px] text-muted-fg">
-              Você recebe {formatarMoeda(analise.liberadoCentavos)} e devolve{" "}
-              {formatarMoeda(analise.totalPagoCentavos)} ao longo de {analise.tabela.length} meses.
+              Você recebe <span className="valor-inteiro">{formatarMoeda(analise.liberadoCentavos)}</span> e devolve{" "}
+              <span className="valor-inteiro">{formatarMoeda(analise.totalPagoCentavos)}</span> ao longo de {analise.tabela.length} meses.
             </p>
 
             {analise.alternativas.length > 0 && (
@@ -206,14 +212,14 @@ export default function Emprestimos() {
           <Cartao
             titulo="Como a dívida evolui"
             acao={
-              <button onClick={() => setVerTabela((atual) => !atual)}>
+              <Button onClick={() => setVerTabela((atual) => !atual)}>
                 {verTabela ? "esconder" : "ver todas as parcelas"}
-              </button>
+              </Button>
             }
           >
             <div className="space-y-1.5">
               {(verTabela ? analise.tabela : analise.tabela.slice(0, 6)).map((linha) => (
-                <div key={linha.parcela} className="flex items-center gap-3 text-[12px]">
+                <div key={linha.parcela} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-pauta py-3 text-[12px] sm:grid-cols-[2rem_minmax(0,1fr)_auto_auto]">
                   <span className="w-8 shrink-0 text-muted-fg">{linha.parcela}ª</span>
                   <div className="flex h-2.5 flex-1 overflow-hidden rounded-full bg-foreground/[0.06]">
                     {/* Juros em laranja, amortização em verde: mostra de relance
@@ -229,16 +235,15 @@ export default function Emprestimos() {
                       style={{ width: `${(linha.amortizacaoCentavos / Math.max(1, linha.prestacaoCentavos)) * 100}%` }}
                     />
                   </div>
-                  <span className="w-24 text-right tabular-nums text-muted-fg">
-                    {formatarMoeda(linha.jurosCentavos)}
+                  <span className="whitespace-nowrap text-right tabular-nums text-muted-fg">
+                    Juros <span className="valor-inteiro">{formatarMoeda(linha.jurosCentavos)}</span>
                   </span>
-                  <span className="w-24 text-right tabular-nums">{formatarMoeda(linha.saldoCentavos)}</span>
+                  <span className="whitespace-nowrap text-right tabular-nums">Resta <span className="valor-inteiro">{formatarMoeda(linha.saldoCentavos)}</span></span>
                 </div>
               ))}
             </div>
             <p className="mt-3 text-[11px] text-muted-fg">
-              Laranja é o que vai para juros, verde é o que abate a dívida. Nas primeiras parcelas a maior parte é
-              juros — por isso quitar cedo economiza tanto.
+              Cada linha mostra juros pagos e saldo restante.
             </p>
           </Cartao>
         </>
@@ -252,12 +257,12 @@ export default function Emprestimos() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px]">{simulacao.titulo}</p>
                   <p className="text-[11px] text-muted-fg">
-                    {formatarMoeda(simulacao.valorCentavos)} em {simulacao.parcelas}x ·{" "}
+                    <span className="valor-inteiro">{formatarMoeda(simulacao.valorCentavos)}</span> em {simulacao.parcelas}x ·{" "}
                     {formatarPercentual(simulacao.jurosMensalBps)} a.m. nominal
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[13px] tabular-nums">{formatarMoeda(simulacao.resultado.parcelaCentavos)}/mês</p>
+                  <p className="text-[13px] tabular-nums"><span className="valor-inteiro">{formatarMoeda(simulacao.resultado.parcelaCentavos)}</span>/mês</p>
                   <p className="text-[11px] text-muted-fg">
                     CET {formatarPercentual(simulacao.resultado.cetMensalBps)} a.m.
                   </p>
@@ -286,7 +291,7 @@ export default function Emprestimos() {
         <Cartao>
           <Vazio
             titulo="Nenhuma simulação ainda"
-            texto="Coloque os números da proposta acima. Leva dez segundos e costuma mudar a decisão."
+            texto="Preencha a proposta acima para conhecer o custo total."
           />
         </Cartao>
       )}

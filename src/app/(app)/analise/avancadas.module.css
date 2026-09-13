@@ -1,0 +1,24 @@
+/* Uso exclusivo nas seis telas avançadas; não altera os primitivos do app. */
+.pagina { min-width: 0; }
+.pagina :global(.numero), .pagina :global(.valor-inteiro) {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.pagina :global(.grade-valores) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+}
+.pagina :global(.tino-metrica) { min-width: 0; }
+.pagina :global(.tino-metrica .numero) { font-size: 26px; }
+.pagina button, .pagina input, .pagina select, .pagina summary { min-height: 44px; }
+.pagina input, .pagina select { min-width: 0; }
+.pagina button:focus-visible, .pagina summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.pagina :global(.linha-financeira) { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; }

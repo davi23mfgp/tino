@@ -219,6 +219,8 @@ enum StatusCaptura {
 // ============================================================
 
 model Lar {
+  identidades IdentidadeVisual[]
+  faturasRecebidas FaturaRecebida[]
   id          String  @id @default(cuid())
   nome        String
   tipo        TipoLar @default(SOLO)
@@ -335,6 +337,7 @@ model Membro {
 // ============================================================
 
 model Conta {
+  orcamentoMensalCentavos Int?
   id                   String    @id @default(cuid())
   larId                String
   lar                  Lar       @relation(fields: [larId], references: [id], onDelete: Cascade)
@@ -558,6 +561,9 @@ model Orcamento {
 // ============================================================
 
 model Meta {
+  fotoUrl              String?
+  lembreteDia          Int?
+  compromissoMensal    Boolean   @default(false)
   id                   String    @id @default(cuid())
   larId                String
   lar                  Lar       @relation(fields: [larId], references: [id], onDelete: Cascade)
@@ -1409,4 +1415,28 @@ model ParametroSistema {
 
   atualizadoEm DateTime @updatedAt
   atualizadoPor String?
+}
+
+model IdentidadeVisual {
+ id String @id @default(cuid())
+ larId String
+ lar Lar @relation(fields:[larId],references:[id],onDelete:Cascade)
+ nome String
+ logoUrl String?
+ emoji String?
+ @@unique([larId,nome])
+}
+
+model FaturaRecebida {
+ id String @id @default(cuid())
+ larId String
+ lar Lar @relation(fields:[larId],references:[id],onDelete:Cascade)
+ contaId String
+ eventoId String
+ arquivoNome String
+ conteudo Bytes
+ status String @default("PENDENTE")
+ criadoEm DateTime @default(now())
+ @@unique([eventoId,contaId,arquivoNome])
+ @@index([larId,status])
 }

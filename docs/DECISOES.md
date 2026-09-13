@@ -140,3 +140,8 @@ Por pedido explícito do usuário, priorizar saldo e ações básicas no início
 ### 09/09/2026 — revisão das telas avançadas
 
 Valores cortados nos cartões corrigidos, formulário de contas fixas em diálogo com recuperação de falhas, campos de metas identificados e largura de notificações corrigida. Evidências e modo opcional de build com pouca memória em CONTINUAR-NO-OUTRO-NOTEBOOK.md.
+
+
+### 09/09/2026 — iOS com shadcn
+
+Pedido do usuário implementado na estrutura principal: abas Agora/Futuro/Categorias, Drawer e Accordion no menu, controles shadcn, previsão compartilhada e capturas reais atualizadas. Detalhes e verificações em CONTINUAR-NO-OUTRO-NOTEBOOK.md.

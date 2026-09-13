@@ -26,6 +26,11 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
   const atual = await prisma.transacao.findFirst({ where: { id, larId: sessao.larId } })
   if (!atual) throw new ErroDeUso("Lançamento não encontrado.", 404)
 
+  if(atual.metaId && (dados.valorCentavos!==undefined || dados.contaId!==undefined || dados.pago!==undefined || dados.data!==undefined)) throw new ErroDeUso("Altere aportes pela área Metas para preservar o saldo.")
+  if(dados.valorCentavos!==undefined && (!Number.isSafeInteger(dados.valorCentavos)||dados.valorCentavos<=0||dados.valorCentavos>2147483647))throw new ErroDeUso("Valor inválido.")
+  if(dados.categoriaId && !await prisma.categoria.findFirst({where:{id:dados.categoriaId,larId:sessao.larId}}))throw new ErroDeUso("Categoria inválida.")
+  if(dados.contaId && !await prisma.conta.findFirst({where:{id:dados.contaId,larId:sessao.larId,arquivada:false}}))throw new ErroDeUso("Conta inválida.")
+  if(dados.membroId && !await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}}))throw new ErroDeUso("Membro inválido.")
   const data = dados.data ? new Date(dados.data) : undefined
   if (data && Number.isNaN(data.getTime())) throw new ErroDeUso("Data inválida.")
 
@@ -76,6 +81,8 @@ export const DELETE = comSessao<Contexto>(async (sessao, _requisicao, contexto) 
 
   const transacao = await prisma.transacao.findFirst({ where: { id, larId: sessao.larId } })
   if (!transacao) throw new ErroDeUso("Lançamento não encontrado.", 404)
+
+  if(transacao.metaId)throw new ErroDeUso("Registre uma retirada em Metas para corrigir o aporte.")
 
   // Apagar só um lado de uma transferência deixaria dinheiro aparecendo do nada
   // na conta de destino. As duas pontas saem juntas.

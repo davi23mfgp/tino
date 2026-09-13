@@ -5,21 +5,8 @@ import { Mic, Square } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-/**
- * Ditar um gasto.
- *
- * "Mercado cinquenta e dois e trinta" vira lançamento sem teclado. É o jeito
- * mais rápido de anotar com a sacola na mão, saindo do caixa.
- *
- * Usa o reconhecimento de voz do próprio navegador, e não um serviço de
- * transcrição. Três motivos: não custa nada por minuto falado, não manda o áudio
- * do usuário para terceiro nenhum, e funciona sem chave de API — num app que vai
- * ser vendido, cada um desses seria conta a pagar ou termo a explicar.
- *
- * O preço disso é suporte desigual: Chrome e Android reconhecem bem, Firefox
- * não tem, e no iOS depende da versão. Quando não há suporte o botão simplesmente
- * não aparece, em vez de aparecer e falhar no toque.
- */
+/** Usa o reconhecimento disponível no navegador. O navegador pode processar
+ * áudio em um serviço próprio; o Tino recebe apenas o texto reconhecido. */
 
 /** O tipo não está no lib padrão do TypeScript; só o que este componente usa. */
 interface ReconhecimentoDeFala extends EventTarget {
@@ -54,6 +41,7 @@ export function DitarGasto({
   const [ouvindo, setOuvindo] = useState(false)
   const [parcial, setParcial] = useState("")
   const [erro, setErro] = useState<string | null>(null)
+  const textoReconhecido = useRef("")
   const motor = useRef<ReconhecimentoDeFala | null>(null)
 
   useEffect(() => {
@@ -66,12 +54,15 @@ export function DitarGasto({
     setOuvindo(false)
   }, [])
 
-  function ouvir() {
+  async function ouvir() {
+    if (ouvindo) return
+    if (!window.isSecureContext) { setErro("Abra o Tino por HTTPS para usar o microfone."); return }
     const Construtor = construtorDeFala()
     if (!Construtor) return
 
     setErro(null)
     setParcial("")
+    textoReconhecido.current = ""
 
     const reconhecimento = new Construtor()
     reconhecimento.lang = "pt-BR"
@@ -83,13 +74,14 @@ export function DitarGasto({
     reconhecimento.onresult = (evento) => {
       let texto = ""
       for (let i = 0; i < evento.results.length; i += 1) texto += evento.results[i][0].transcript
+      textoReconhecido.current = texto
       setParcial(texto)
     }
 
     reconhecimento.onerror = (evento) => {
       setErro(
         evento.error === "not-allowed"
-          ? "Preciso da permissão do microfone. Libere nas configurações do navegador."
+          ? "Microfone bloqueado. Abra as permissões deste site, permita o microfone e tente novamente."
           : "Não consegui ouvir. Tente de novo, ou escreva.",
       )
       setOuvindo(false)
@@ -97,15 +89,19 @@ export function DitarGasto({
 
     reconhecimento.onend = () => {
       setOuvindo(false)
-      setParcial((texto) => {
-        if (texto.trim()) aoTranscrever(texto.trim())
-        return ""
-      })
+      const texto = textoReconhecido.current.trim()
+      textoReconhecido.current = ""
+      setParcial("")
+      if (texto) aoTranscrever(texto)
     }
 
     motor.current = reconhecimento
-    reconhecimento.start()
-    setOuvindo(true)
+    try {
+      const permissao = await navigator.mediaDevices.getUserMedia({ audio: true })
+      permissao.getTracks().forEach(faixa => faixa.stop())
+      reconhecimento.start()
+      setOuvindo(true)
+    } catch { setErro("Não foi possível iniciar o microfone. Confira a permissão do site e o dispositivo selecionado.") }
   }
 
   if (!suportado) return null
@@ -128,7 +124,7 @@ export function DitarGasto({
       </button>
 
       {parcial && <p className="mt-2 text-[13px] italic text-muted-fg">“{parcial}”</p>}
-      {erro && <p className="mt-2 text-[13px] text-negativo">{erro}</p>}
+      {erro && <p role="alert" className="mt-2 text-[13px] text-negativo">{erro}</p>}
     </div>
   )
 }

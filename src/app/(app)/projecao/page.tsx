@@ -1,9 +1,12 @@
+import { cn } from "@/lib/utils"
+import estilos from "../analise/avancadas.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { Cartao, Metrica } from "@/components/ui/painel"
+import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { GraficoFluxo } from "@/components/graficos"
 
 export const dynamic = "force-dynamic"
@@ -17,29 +20,15 @@ export default async function Projecao() {
     compromissosFuturos(sessao.larId, 12),
   ])
 
-  const parcelasDe = (mes: string) =>
-    compromissos.find((linha) => linha.competencia === mes)?.totalCentavos ?? 0
-
-  // A projeção da biblioteca já soma custo fixo e média variável. As parcelas
-  // entram por fora, mês a mês, porque não são um valor constante.
-  const linhas = panorama.projecao.map((linha) => {
-    const parcelas = parcelasDe(linha.competencia)
-    return { ...linha, parcelasCentavos: parcelas, saldoComParcelas: linha.saldoMesCentavos - parcelas }
-  })
-
-  let acumulado = panorama.saldoTotalCentavos
-  const comAcumulado = linhas.map((linha) => {
-    acumulado += linha.saldoComParcelas
-    return { ...linha, acumuladoCentavos: acumulado }
-  })
+  const comAcumulado = projetarComParcelas(panorama, compromissos)
 
   const primeiroNegativo = comAcumulado.find((linha) => linha.acumuladoCentavos < 0)
   const maiorSaida = Math.max(...comAcumulado.map((linha) => linha.despesasCentavos + linha.parcelasCentavos), 1)
 
   return (
-    <div className="space-y-4">
+    <div className={cn(estilos.pagina, "space-y-4")}>
       <Cartao titulo="Projeção de 12 meses">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grade-valores">
           <Metrica
             rotulo="Saldo hoje"
             valor={formatarMoeda(panorama.saldoTotalCentavos)}
@@ -57,7 +46,7 @@ export default async function Projecao() {
         {primeiroNegativo && (
           <p className="mt-4 rounded-2xl border border-negativo/40 bg-negativo/10 p-3 text-sm text-negativo">
             No ritmo atual, o caixa fica negativo em {rotuloCompetencia(primeiroNegativo.competencia)} (
-            {formatarMoeda(primeiroNegativo.acumuladoCentavos)}). Ainda dá tempo de mudar isso cortando gasto ou
+            <span className="valor-inteiro">{formatarMoeda(primeiroNegativo.acumuladoCentavos)}</span>). Ainda dá tempo de mudar isso cortando gasto ou
             adiando compra parcelada.
           </p>
         )}
@@ -88,7 +77,7 @@ export default async function Projecao() {
                     linha.acumuladoCentavos < 0 ? "text-negativo" : "text-positivo"
                   }`}
                 >
-                  {formatarMoeda(linha.acumuladoCentavos)}
+                  <span className="valor-inteiro">{formatarMoeda(linha.acumuladoCentavos)}</span>
                 </span>
               </div>
 
@@ -108,11 +97,11 @@ export default async function Projecao() {
               </div>
 
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-fg">
-                <span>entra {formatarMoeda(linha.receitasCentavos)}</span>
-                <span>sai {formatarMoeda(linha.despesasCentavos)}</span>
-                {linha.parcelasCentavos > 0 && <span>parcelas {formatarMoeda(linha.parcelasCentavos)}</span>}
+                <span>entra <span className="valor-inteiro">{formatarMoeda(linha.receitasCentavos)}</span></span>
+                <span>sai <span className="valor-inteiro">{formatarMoeda(linha.despesasCentavos)}</span></span>
+                {linha.parcelasCentavos > 0 && <span>parcelas <span className="valor-inteiro">{formatarMoeda(linha.parcelasCentavos)}</span></span>}
                 <span className={linha.saldoComParcelas < 0 ? "text-negativo" : "text-positivo"}>
-                  resultado {formatarMoeda(linha.saldoComParcelas)}
+                  resultado <span className="valor-inteiro">{formatarMoeda(linha.saldoComParcelas)}</span>
                 </span>
               </div>
             </div>

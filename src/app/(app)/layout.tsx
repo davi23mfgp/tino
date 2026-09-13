@@ -1,3 +1,4 @@
+import { IdentidadesProvider } from "@/components/identidades-visuais"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
@@ -51,10 +52,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // móvel, além do campo "Buscar..." da BarraTopo, dividem UM Provider —
     // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
     // duplicado que existia antes dele.
-    <BuscaPaginasProvider mei={Boolean(lar.meiPerfil)} apenasLoja={apenasLoja}>
-      <div className="area-do-app min-h-screen">
+    <BuscaPaginasProvider mei={false} apenasLoja={apenasLoja}>
+      <IdentidadesProvider><div className="area-do-app min-h-screen">
         {/* Alertas pessoais não são consultados pela conta do funcionário da loja. */}
-        {!apenasLoja && <AvisoCritico />}
         <div className="app-content mx-auto w-full max-w-6xl px-4">
           {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
               por isso moram no mesmo container de largura da página) — ver
@@ -63,7 +63,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
               menu pessoal — mesmo corte que `middleware.ts` já aplica por
               URL, aqui é só o menu não oferecer o que a rota recusaria. */}
           <Navegacao
-            mei={Boolean(lar.meiPerfil)}
+            mei={false}
             apenasLoja={apenasLoja}
             nome={sessao.nome}
             avatarUrl={usuario?.avatarUrl ?? null}
@@ -79,7 +79,8 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             competencia={rotuloCompetencia(competenciaAtual())}
             apenasLoja={apenasLoja}
           />
-          <SubAbas mei={Boolean(lar.meiPerfil)} apenasLoja={apenasLoja} />
+          {!apenasLoja && <AvisoCritico />}
+          <SubAbas mei={false} apenasLoja={apenasLoja} />
 
           <main className="animate-page-enter">{children}</main>
         </div>
@@ -89,6 +90,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
 
         <Toaster />
       </div>
+      </IdentidadesProvider>
     </BuscaPaginasProvider>
   )
 }

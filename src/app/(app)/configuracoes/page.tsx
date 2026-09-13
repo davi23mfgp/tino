@@ -13,6 +13,11 @@ import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
 import { FotoDePerfil } from "@/components/foto-de-perfil"
+import { Input } from "@/components/ui/input"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { BuscaBancoPerfil, IdentidadeBanco } from "@/components/banco-perfil"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog"
 import { SelectNative } from "@/components/ui/select-native"
 
 interface Conta {
@@ -33,13 +38,6 @@ interface Conexao {
   diasParaExpirar: number | null
 }
 
-interface Funcionario {
-  id: string
-  nome: string
-  email: string
-  ultimoLogin: string | null
-}
-
 const TIPOS_CONTA = [
   { valor: "CORRENTE", rotulo: "Conta corrente" },
   { valor: "POUPANCA", rotulo: "Poupança" },
@@ -57,43 +55,55 @@ export default function Configuracoes() {
   )
   const [nova, setNova] = useState({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "" })
   const [mensagem, setMensagem] = useState<string | null>(null)
-  const [temLoja, setTemLoja] = useState<boolean | null>(null)
-  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
-  const [novoFuncionario, setNovoFuncionario] = useState({ nome: "", email: "", senha: "" })
-  const [erroFuncionario, setErroFuncionario] = useState<string | null>(null)
+  const [cadastroAberto, setCadastroAberto] = useState(false)
+  const [salvandoConta, setSalvandoConta] = useState(false)
+  const [completando, setCompletando] = useState(false)
+  const [erroConta, setErroConta] = useState<string | null>(null)
 
   async function recarregar() {
-    const [lista, of, mei] = await Promise.all([
+    const [lista, of] = await Promise.all([
       buscar<Conta[]>("/api/contas"),
       buscar<{ provedor: string; sandbox: boolean; conexoes: Conexao[] }>("/api/open-finance"),
-      buscar<{ ativo: boolean }>("/api/mei"),
     ])
     setContas(lista)
     setOpenFinance(of)
-    setTemLoja(mei.ativo)
-
-    if (mei.ativo) {
-      const { funcionarios } = await buscar<{ funcionarios: Funcionario[] }>("/api/loja/funcionario")
-      setFuncionarios(funcionarios)
-    }
   }
 
   useEffect(() => {
-    recarregar()
+    recarregar().catch(() => setMensagem("Não consegui carregar suas contas. Atualize a página."))
   }, [])
 
   async function criarConta(evento: React.FormEvent) {
     evento.preventDefault()
+    if (salvandoConta) return
+    setSalvandoConta(true)
+    setErroConta(null)
+    try {
+    if (!nova.nome.trim()) throw new Error("Dê um nome à conta.")
+    const campos = nova.tipo === "CARTAO_CREDITO" ? [nova.saldo, nova.limite] : [nova.saldo]
+    if (campos.some((valor) => valor.trim() && !/^-?(?:\d+|\d{1,3}(?:\.\d{3})+)(?:[,.]\d{1,2})?$/.test(valor.trim()))) {
+      throw new Error("Informe os valores como 1.234,56 ou 1234.56.")
+    }
+    if (campos.some((valor) => Math.abs(paraCentavos(valor)) > 2147483647)) throw new Error("Valor acima do limite permitido.")
+    if (nova.tipo === "CARTAO_CREDITO") {
+      if (paraCentavos(nova.limite) < 0) throw new Error("O limite não pode ser negativo.")
+      if (nova.venc && (!Number.isInteger(Number(nova.venc)) || Number(nova.venc) < 1 || Number(nova.venc) > 31)) throw new Error("Escolha um dia entre 1 e 31.")
+    }
     await enviar("/api/contas", {
-      nome: nova.nome,
+      nome: nova.nome.trim(),
       tipo: nova.tipo,
-      instituicao: nova.instituicao || undefined,
+      instituicao: nova.instituicao.trim() || undefined,
       saldoInicialCentavos: nova.saldo ? paraCentavos(nova.saldo) : 0,
-      limiteCentavos: nova.limite ? paraCentavos(nova.limite) : undefined,
-      diaVencimento: nova.venc ? Number(nova.venc) : undefined,
+      limiteCentavos: nova.tipo === "CARTAO_CREDITO" && nova.limite ? paraCentavos(nova.limite) : undefined,
+      diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc) : undefined,
     })
     setNova({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "" })
-    recarregar()
+    setCadastroAberto(false)
+    showToast("Conta adicionada")
+    await recarregar().catch(() => setMensagem("Conta salva. Atualize a página para recarregar."))
+    } catch (erro) {
+      setErroConta(erro instanceof Error ? erro.message : "Não consegui salvar a conta.")
+    } finally { setSalvandoConta(false) }
   }
 
   async function conectarBanco() {
@@ -111,47 +121,10 @@ export default function Configuracoes() {
     try {
       const resultado = await enviar<{ transacoesNovas: number }>("/api/open-finance", { conexaoId }, "PUT")
       setMensagem(`${resultado.transacoesNovas} lançamento(s) novo(s).`)
-      recarregar()
+      await recarregar()
     } catch (erro) {
       setMensagem(erro instanceof Error ? erro.message : "Falha na sincronização.")
     }
-  }
-
-  /**
-   * Liga e desliga a parte da loja.
-   *
-   * Desligar apaga o perfil, nunca o histórico: faturamento declarado é prova
-   * do que foi informado à Receita, e pode ser preciso anos depois. Quem
-   * religar encontra tudo no lugar.
-   */
-  async function alternarLoja() {
-    if (temLoja) {
-      await buscar("/api/mei", { method: "DELETE" })
-      setMensagem("Parte da loja desligada. O que você já lançou continua guardado.")
-    } else {
-      await enviar("/api/mei", {}, "PUT")
-      setMensagem("Pronto. Balcão, prateleira e MEI apareceram no menu.")
-    }
-
-    await recarregar()
-    router.refresh()
-  }
-
-  async function criarFuncionario(evento: React.FormEvent) {
-    evento.preventDefault()
-    setErroFuncionario(null)
-    try {
-      await enviar("/api/loja/funcionario", novoFuncionario)
-      setNovoFuncionario({ nome: "", email: "", senha: "" })
-      await recarregar()
-    } catch (erro) {
-      setErroFuncionario(erro instanceof Error ? erro.message : "Não consegui criar o acesso.")
-    }
-  }
-
-  async function removerFuncionario(id: string) {
-    await buscar(`/api/loja/funcionario/${id}`, { method: "DELETE" })
-    await recarregar()
   }
 
   /**
@@ -185,15 +158,23 @@ export default function Configuracoes() {
     }, 5000)
   }
 
-  async function refazerConversa() {
-    await buscar("/api/onboarding", { method: "DELETE" })
-    router.push("/bem-vindo")
+  async function completarPerfil() {
+    if (completando) return
+    setCompletando(true)
+    try {
+      await buscar("/api/onboarding", { method: "DELETE" })
+      router.push("/bem-vindo")
+    } catch (erro) {
+      setCompletando(false)
+      showToast(erro instanceof Error ? erro.message : "Não consegui abrir seu perfil.", { variant: "error" })
+    }
   }
 
   return (
     <div className="space-y-4">
-      <Cartao titulo="Sua foto">
+      <Cartao titulo="Seu perfil">
         <FotoDePerfil />
+        <Button variant="ghost" size="sm" className="mt-3" onClick={completarPerfil} disabled={completando}>{completando ? "Abrindo…" : "Completar perfil"}</Button>
       </Cartao>
 
       <Cartao titulo="Assinatura">
@@ -208,108 +189,12 @@ export default function Configuracoes() {
         </Link>
       </Cartao>
 
-      <Cartao titulo="O que o Tino cuida">
-        <p className="text-[13px] leading-relaxed text-muted-fg">
-          {temLoja
-            ? "Você tem o balcão, a prateleira e o acompanhamento do limite do MEI, além das contas pessoais."
-            : "Hoje o Tino cuida só das suas contas pessoais."}
-        </p>
-
-        <button
-          onClick={alternarLoja}
-          disabled={temLoja === null}
-          className="mt-3 rounded-full border border-pauta px-5 py-2.5 text-[13px] disabled:opacity-50"
-        >
-          {temLoja ? "Desligar a parte da loja" : "Ligar a parte da loja (sou MEI)"}
-        </button>
-
-        <p className="mt-3 text-[12px] leading-relaxed text-muted-fg">
-          {temLoja
-            ? "Desligar tira balcão, prateleira e MEI do menu. As vendas e o faturamento já lançados continuam guardados — se religar, tudo volta como estava."
-            : "Ligar acrescenta venda no balcão, controle de estoque e acompanhamento do limite anual do MEI."}
-        </p>
-      </Cartao>
-
-      {temLoja && (
-        <Cartao titulo="Quem atende o balcão">
-          <p className="text-[13px] leading-relaxed text-muted-fg">
-            Login separado do seu: entra só no Balcão, na Prateleira, no Fiado e nas Contas a pagar da loja. Não vê
-            conta pessoal, dívida nem o limite do MEI.
-          </p>
-
-          <div className="mt-3 divide-y divide-pauta">
-            {funcionarios.map((funcionario) => (
-              <div key={funcionario.id} className="flex items-center justify-between py-2.5">
-                <div>
-                  <p className="text-sm">{funcionario.nome}</p>
-                  <p className="text-[12px] text-muted-fg">
-                    {funcionario.email}
-                    {funcionario.ultimoLogin
-                      ? ` · último acesso ${new Date(funcionario.ultimoLogin).toLocaleDateString("pt-BR")}`
-                      : " · nunca entrou"}
-                  </p>
-                </div>
-                <button
-                  onClick={() => removerFuncionario(funcionario.id)}
-                  className="rounded-full border border-pauta px-3 py-1.5 text-xs hover:border-negativo/40"
-                >
-                  remover acesso
-                </button>
-              </div>
-            ))}
-            {funcionarios.length === 0 && <Vazio titulo="Ninguém com acesso separado ainda" />}
-          </div>
-
-          <form onSubmit={criarFuncionario} className="mt-4 grid gap-2 sm:grid-cols-3">
-            <input
-              value={novoFuncionario.nome}
-              onChange={(evento) => setNovoFuncionario({ ...novoFuncionario, nome: evento.target.value })}
-              placeholder="nome"
-              required
-              className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
-            />
-            <input
-              type="email"
-              value={novoFuncionario.email}
-              onChange={(evento) => setNovoFuncionario({ ...novoFuncionario, email: evento.target.value })}
-              placeholder="e-mail de acesso"
-              required
-              className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
-            />
-            <input
-              type="password"
-              value={novoFuncionario.senha}
-              onChange={(evento) => setNovoFuncionario({ ...novoFuncionario, senha: evento.target.value })}
-              placeholder="senha (mín. 8 caracteres)"
-              required
-              className="rounded-2xl border border-pauta bg-background px-4 py-2.5 text-sm"
-            />
-            <button className="rounded-2xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:col-span-3">
-              Criar acesso
-            </button>
-          </form>
-          {erroFuncionario && <p className="mt-2 text-[13px] text-negativo">{erroFuncionario}</p>}
-        </Cartao>
-      )}
-
-      <Cartao titulo="Conversa inicial">
-        <p className="text-[13px] leading-relaxed text-muted-fg">
-          Responder as perguntas do Tino é o que faz o painel, a projeção e o plano de pagamento saírem do zero.
-          Nada do que você já cadastrou é apagado: o que responder soma ao que existe.
-        </p>
-        <button
-          onClick={refazerConversa}
-          className="mt-3 rounded-full border border-acao/40 bg-acao/10 px-5 py-2.5 text-[13px] text-acao"
-        >
-          Responder as perguntas do Tino
-        </button>
-      </Cartao>
-
       <Cartao titulo="Contas e cartões">
         <div className="divide-y divide-pauta">
           {contas.map((conta) => (
-            <div key={conta.id} className="flex items-center justify-between py-3">
-              <div>
+            <div key={conta.id} className="grid grid-cols-[40px_minmax(0,1fr)] items-center gap-x-3 gap-y-1 py-3 sm:grid-cols-[40px_minmax(0,1fr)_auto]">
+              <IdentidadeBanco instituicao={conta.instituicao} nome={conta.nome} />
+              <div className="min-w-0 flex-1 break-words">
                 <p className="text-sm">{conta.nome}</p>
                 <p className="text-[12px] text-muted-fg">
                   {TIPOS_CONTA.find((tipo) => tipo.valor === conta.tipo)?.rotulo ?? conta.tipo}
@@ -317,7 +202,7 @@ export default function Configuracoes() {
                   {conta.limiteCentavos ? ` · limite ${formatarMoeda(conta.limiteCentavos)}` : ""}
                 </p>
               </div>
-              <span className={`text-sm ${conta.saldoCentavos < 0 ? "text-negativo" : ""}`}>
+              <span className={`col-start-2 whitespace-nowrap text-sm font-semibold tabular-nums sm:col-start-3 ${conta.saldoCentavos < 0 ? "text-negativo" : ""}`}>
                 {formatarMoeda(conta.saldoCentavos)}
               </span>
             </div>
@@ -325,53 +210,56 @@ export default function Configuracoes() {
           {contas.length === 0 && <Vazio titulo="Nenhuma conta cadastrada" />}
         </div>
 
-        <form onSubmit={criarConta} className="mt-4 grid gap-2 sm:grid-cols-3">
-          <input
-            value={nova.nome}
+        <Dialog open={cadastroAberto} onOpenChange={(aberto) => { if (!salvandoConta) setCadastroAberto(aberto) }}>
+          <DialogTrigger asChild><Button variant="outline" size="sm" className="mt-3">Adicionar conta ou cartão</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Adicionar conta ou cartão</DialogTitle><DialogDescription>Informe os dados da sua conta.</DialogDescription></DialogHeader>
+            <DialogBody>
+        <form onSubmit={criarConta} className="grid gap-3">
+<fieldset disabled={salvandoConta} className="min-w-0">
+<FieldGroup>
+          <Field><FieldLabel htmlFor="conta-nome">Nome da conta</FieldLabel><Input id="conta-nome" value={nova.nome}
             onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
             placeholder="nome da conta"
             required
-            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-          />
-          <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
+          /></Field>
+          <Field><FieldLabel htmlFor="conta-tipo">Tipo</FieldLabel><SelectNative id="conta-tipo" value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
             {TIPOS_CONTA.map((tipo) => (
               <option key={tipo.valor} value={tipo.valor}>
                 {tipo.rotulo}
               </option>
             ))}
-          </SelectNative>
-          <input
-            value={nova.instituicao}
-            onChange={(evento) => setNova({ ...nova, instituicao: evento.target.value })}
-            placeholder="banco"
-            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-          />
-          <input
-            value={nova.saldo}
+          </SelectNative></Field>
+          <Field><FieldLabel htmlFor="conta-instituicao">Banco ou instituição</FieldLabel>
+            <BuscaBancoPerfil valor={nova.instituicao} aoMudar={(instituicao) => setNova({ ...nova, instituicao })}
+              nomesExistentes={contas.flatMap((conta) => conta.instituicao ? [conta.instituicao] : [])} desabilitado={salvandoConta} />
+          </Field>
+          <Field><FieldLabel htmlFor="conta-saldo">Saldo atual (R$)</FieldLabel><Input inputMode="decimal" id="conta-saldo" value={nova.saldo}
             onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
             placeholder="saldo atual (ex.: -6.582,74)"
-            className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-          />
+          /></Field>
           {nova.tipo === "CARTAO_CREDITO" && (
             <>
-              <input
-                value={nova.limite}
+              <Field><FieldLabel htmlFor="conta-limite">Limite total (R$)</FieldLabel><Input inputMode="decimal" id="conta-limite" value={nova.limite}
                 onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
                 placeholder="limite total"
-                className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-              />
-              <input
-                value={nova.venc}
+              /></Field>
+              <Field><FieldLabel htmlFor="conta-venc">Dia do vencimento</FieldLabel><Input id="conta-venc" value={nova.venc}
                 onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
+                type="number" min={1} max={31} step={1}
                 placeholder="dia do vencimento"
-                className="rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2.5 text-sm"
-              />
+              /></Field>
             </>
           )}
-          <button className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:col-span-3">
-            Adicionar conta
-          </button>
+</FieldGroup>
+</fieldset>
+          {erroConta && <p role="alert" className="text-sm text-negativo">{erroConta}</p>}
+          <Button disabled={salvandoConta}>{salvandoConta ? "Salvando…" : "Adicionar"}</Button>
+          <Button type="button" variant="ghost" disabled={salvandoConta} onClick={() => setCadastroAberto(false)}>Cancelar</Button>
         </form>
+            </DialogBody>
+          </DialogContent>
+        </Dialog>
       </Cartao>
 
       <Cartao titulo="Conexão com o banco (Open Finance)">

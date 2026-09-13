@@ -22,9 +22,9 @@ const TOM: Record<Tom, string> = {
   // abaixo do 4,5:1 exigido) — a faixa usa a variante "-solido", calculada
   // para >=5:1 (ver globals.css). `atencao` já nasceu clara o bastante para
   // hospedar texto escuro em cima, então segue igual.
-  critico: "bg-negativo-solido text-white",
-  atencao: "bg-atencao text-[oklch(0.2_0_0)]",
-  info: "bg-acao-solido text-white",
+  critico: "border-negativo/25 bg-negativo/5 text-foreground",
+  atencao: "border-atencao/25 bg-atencao/5 text-foreground",
+  info: "border-acao/25 bg-acao/5 text-foreground",
 }
 
 const CHAVE = (id: string) => `tino:banner-dispensado:${id}`
@@ -75,7 +75,7 @@ export function Banner({
     <div
       role="status"
       className={cn(
-        "relative flex items-center justify-center gap-3 pl-4 pr-14 py-2.5 text-center text-[13px] font-medium",
+        "relative mb-5 flex items-center gap-3 rounded-2xl border pl-4 pr-14 py-3 text-left text-[13px] font-medium",
         TOM[tom],
         className,
       )}
@@ -88,7 +88,7 @@ export function Banner({
         // Alvo de 44px, o mínimo de área tocável do spec (PARTE 2). O
         // ícone continua com 14px: quem cresceu foi a área clicável, não o
         // desenho — em 26px o X era um alvo que só acerta com mouse.
-        className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full opacity-80 transition hover:bg-white/15 hover:opacity-100"
+        className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full opacity-80 transition hover:bg-foreground/10 hover:opacity-100"
       >
         <X className="size-3.5" />
       </button>

@@ -1,3 +1,4 @@
+import estilos from "./avancadas.module.css"
 import { ArrowDownRight, ArrowUpRight } from "lucide-react"
 
 import { sessaoDaPagina } from "@/lib/pagina"
@@ -85,7 +86,7 @@ export default async function Analise() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className={cn(estilos.pagina, "space-y-4")}>
       {/* ── Parecer ───────────────────────────────────── */}
       <Cartao titulo={`Parecer de ${rotuloCompetencia(competencia)}`}>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -100,6 +101,7 @@ export default async function Analise() {
         </div>
       </Cartao>
 
+      <details className="space-y-4"><summary className="min-h-12 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-3 font-semibold">Indicadores e prioridades</summary>
       {/* ── Indicadores ───────────────────────────────── */}
       <Cartao titulo="Indicadores">
         <div className="grid gap-3 lg:grid-cols-2">
@@ -138,7 +140,7 @@ export default async function Analise() {
                 <p className="mt-1.5 text-[13px] leading-relaxed">{prioridade.acao}</p>
                 {prioridade.impactoMensalCentavos ? (
                   <p className="mt-1.5 text-[12px] text-positivo">
-                    Efeito estimado: {formatarMoeda(prioridade.impactoMensalCentavos)} por mês.
+                    Efeito estimado: <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span> por mês.
                   </p>
                 ) : null}
               </div>
@@ -147,6 +149,8 @@ export default async function Analise() {
         </ol>
       </Cartao>
 
+      </details>
+      <details className="space-y-4"><summary className="min-h-12 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-3 font-semibold">Entradas, saídas e patrimônio</summary>
       {/* ── DRE ───────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Demonstrativo do mês">
@@ -164,7 +168,7 @@ export default async function Analise() {
             />
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grade-valores">
             <Metrica rotulo="Custo fixo" valor={formatarMoeda(dre.custoFixoCentavos)} detalhe="não muda com o uso" />
             <Metrica rotulo="Custo variável" valor={formatarMoeda(dre.custoVariavelCentavos)} detalhe="onde dá para mexer" />
             <Metrica rotulo="Essencial" valor={formatarMoeda(dre.essenciaisCentavos)} />
@@ -181,7 +185,7 @@ export default async function Analise() {
                 <div className="flex items-center justify-between text-[13px]">
                   <span>{NOME_GRUPO[grupo.grupo] ?? grupo.grupo}</span>
                   <span className="text-muted-fg">
-                    {formatarMoeda(grupo.totalCentavos)}
+                    <span className="valor-inteiro">{formatarMoeda(grupo.totalCentavos)}</span>
                     {grupo.percentualDaReceita > 0 && ` · ${(grupo.percentualDaReceita / 100).toFixed(0)}% da renda`}
                   </span>
                 </div>
@@ -238,7 +242,7 @@ export default async function Analise() {
                   ) : (
                     <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
                   )}
-                  {formatarMoeda(mensal.variacaoCentavos)}
+                  <span className="valor-inteiro">{formatarMoeda(mensal.variacaoCentavos)}</span>
                 </p>
               </div>
 
@@ -285,6 +289,8 @@ export default async function Analise() {
       </div>
 
       {/* ── Gráficos ──────────────────────────────────── */}
+      </details>
+      <details className="space-y-4"><summary className="min-h-12 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-3 font-semibold">Categorias e evolução</summary>
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Para onde foi o dinheiro">
           {panorama.mes.despesasPorCategoria.length > 0 ? (
@@ -317,6 +323,7 @@ export default async function Analise() {
         </Cartao>
       </div>
 
+      </details>
       <p className="px-1 text-[11px] leading-relaxed text-muted-fg">
         Este parecer lê os seus próprios lançamentos contra faixas de referência de mercado. Não é recomendação de
         investimento nem substitui contador para questão tributária.
@@ -341,7 +348,7 @@ function Linha({
   return (
     <div className={cn("flex items-baseline justify-between gap-3 py-1", forte && "font-semibold")}>
       <span className={cn("text-[13px]", !forte && "text-muted-fg")}>{rotulo}</span>
-      <span className={cn("text-[14px] tabular-nums", cor)}>{formatarMoeda(valor)}</span>
+      <span className={cn("text-[14px] tabular-nums", cor)}><span className="valor-inteiro">{formatarMoeda(valor)}</span></span>
     </div>
   )
 }

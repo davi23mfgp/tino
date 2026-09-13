@@ -1,5 +1,6 @@
 "use client"
 
+import { CompromissosMetas } from "@/components/compromissos-metas"
 import { useCallback, useEffect, useState } from "react"
 import { Check, Plus, Trash2 } from "lucide-react"
 
@@ -8,6 +9,10 @@ import { formatarData } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
+import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { SelectNative } from "@/components/ui/select-native"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
@@ -47,7 +52,7 @@ const PERIODOS = [
   { valor: "ANUAL", rotulo: "uma vez por ano" },
 ]
 
-const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+
 
 const VAZIO = {
   descricao: "",
@@ -176,6 +181,7 @@ export default function Recorrencias() {
 
   return (
     <div className="space-y-4">
+      <CompromissosMetas/>
       <Cartao
         titulo="Contas fixas"
         acao={
@@ -212,70 +218,70 @@ export default function Recorrencias() {
           <DialogHeader><DialogTitle>Nova conta fixa</DialogTitle></DialogHeader>
           <form onSubmit={criar} className="grid gap-3 px-5 py-4 sm:grid-cols-2 sm:px-6">
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Descrição
-                <input
+                <Input
               value={nova.descricao}
               onChange={(e) => setNova({ ...nova, descricao: e.target.value })}
               placeholder="o que é (aluguel, luz, salário)"
               required
-              className={cn(campo, "sm:col-span-2")}
+
             />
               </label>
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Entrada ou saída
-<select
+                <SelectNative
               value={nova.tipo}
               onChange={(e) => setNova({ ...nova, tipo: e.target.value as "RECEITA" | "DESPESA" })}
-              className={campo}
+
             >
               <option value="DESPESA">sai da conta</option>
               <option value="RECEITA">entra na conta</option>
-            </select>
+            </SelectNative>
               </label>
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Valor (R$)
-                <input
+                <Input
               value={nova.valor}
               onChange={(e) => setNova({ ...nova, valor: e.target.value })}
               placeholder="valor"
               required
-              className={campo}
+
               inputMode="decimal"
             />
               </label>
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Repete a cada
-<select
+                <SelectNative
               value={nova.periodicidade}
               onChange={(e) => setNova({ ...nova, periodicidade: e.target.value })}
-              className={campo}
+
             >
               {PERIODOS.map((periodo) => (
                 <option key={periodo.valor} value={periodo.valor}>
                   {periodo.rotulo}
                 </option>
               ))}
-            </select>
+            </SelectNative>
               </label>
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Dia do vencimento
-                <input
+                <Input
               value={nova.dia}
               onChange={(e) => setNova({ ...nova, dia: e.target.value })}
               placeholder="dia do vencimento"
-              className={campo}
+
               inputMode="numeric"
             />
               </label>
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Conta
-<select value={nova.contaId} onChange={(e) => setNova({ ...nova, contaId: e.target.value })} className={campo}>
+                <SelectNative value={nova.contaId} onChange={(e) => setNova({ ...nova, contaId: e.target.value })} >
               {contas.map((conta) => (
                 <option key={conta.id} value={conta.id}>
                   {conta.nome}
                 </option>
               ))}
-            </select>
+            </SelectNative>
               </label>
             <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Categoria (opcional)
-<select
+                <SelectNative
               value={nova.categoriaId}
               onChange={(e) => setNova({ ...nova, categoriaId: e.target.value })}
-              className={cn(campo, "sm:col-span-2")}
+
             >
               <option value="">sem categoria</option>
               {categorias.map((categoria) => (
@@ -283,26 +289,17 @@ export default function Recorrencias() {
                   {categoria.nome}
                 </option>
               ))}
-            </select>
+            </SelectNative>
               </label>
 
             {contas.length === 0 && <p role="status" className="text-sm text-muted-fg sm:col-span-2">Cadastre uma conta em <a href="/configuracoes" className="underline">Configurações</a> antes de adicionar uma conta fixa.</p>}
             <label className="flex min-h-11 items-center gap-2 text-[12px] sm:col-span-2">
-              <input
-                type="checkbox"
-                checked={nova.variavel}
-                onChange={(e) => setNova({ ...nova, variavel: e.target.checked })}
-              />
+              <Switch checked={nova.variavel} onCheckedChange={(variavel) => setNova({ ...nova, variavel })} aria-label="O valor muda todo mês" />
               o valor muda todo mês (luz, água) — a projeção usa o último valor lançado
             </label>
 
             {erroFormulario && <p role="alert" className="text-sm text-negativo sm:col-span-2">{erroFormulario}</p>}
-            <button
-              disabled={ocupado || !nova.contaId}
-              className="min-h-11 rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-2"
-            >
-              {ocupado ? "Salvando…" : "Adicionar conta fixa"}
-            </button>
+            <Button disabled={ocupado || !nova.contaId} className="sm:col-span-2">{ocupado ? "Salvando…" : "Adicionar conta fixa"}</Button>
           </form>
           </DialogContent>
         </Dialog>

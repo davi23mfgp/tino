@@ -53,3 +53,16 @@ A auditoria não se limita ao scrollWidth da página: verifica também elementos
 O build com 11 processos esgotou a memória deste notebook. Para validar com um processo, definir TINO_BUILD_LEVE=1 antes de npx next build. É opcional e não muda o comportamento do sistema publicado.
 
 Publicação da primeira rodada confirmada: commit aaefb81, Vercel com status success e domínio público servindo as novas capturas.
+
+
+## Direção iOS com shadcn — 09/09/2026
+
+Pedido explícito: aproximar a experiência do Calen e usar ui.shadcn.com com estilo iOS em todo o sistema. Mantida a identidade escura e verde do Tino. A referência funcional vem da página pública do Calen (saldo futuro, faturas e categorias); não alegar paridade completa com o app privado.
+
+Implementado: início com saldo, resultado do mês e ações rápidas; abas Agora, Próximos meses e Categorias usando Tabs shadcn/Radix. Projeção e início compartilham projetarComParcelas para não mostrar previsões divergentes. Categorias reutiliza RoscaCategorias com dados reais e agrupamento das categorias menores. Mais usa Drawer oficial (Vaul) com Accordion; campos, botões, cards e seletores receberam a linguagem iOS. Tipo de lançamento usa ToggleGroup; formulários reutilizam Field e Input. Contas fixas usa Switch e SelectNative. Alertas continuam visíveis, integrados à página. Landing usa as capturas reais atualizadas.
+
+Componentes instalados pelo CLI oficial: accordion, drawer, field, toggle e toggle-group; label e separator locais preservados. O CLI duplicou keyframes já presentes no Tailwind: preservada a configuração original. Não rodar --overwrite em lote. Drawer exige autoFocus para que a navegação por teclado entre no menu; validar com e sem movimento reduzido.
+
+Verificações: 300 testes, incluindo acumulação com parcelas; scripts/validar-ios.mjs cobre abas e gráficos em quatro larguras, Drawer e foco. scripts/validar-fluxos.mjs aguarda a animação antes de medir o menu. Não confundir um painel ainda animando com overflow definitivo. Capturas locais são demonstração; nunca usar dados reais de clientes nos arquivos públicos.
+
+Referências: https://ui.shadcn.com/docs/components e https://usecalen.com.br/ . A stack permanece Next/React/Tailwind 3; não iniciar migração para Tailwind 4 por causa do gerador de componentes.

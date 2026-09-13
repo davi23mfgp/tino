@@ -36,13 +36,13 @@ const DialogContent = React.forwardRef<
     {/* Backdrop */}
     <DialogOverlay />
     {/* Centering wrapper: fixed inset-0 flex — sem translate no content, robusto no mobile */}
-    <div className="fixed inset-0 z-50 flex h-[100dvh] items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none">
+    <div className="fixed inset-0 z-50 flex h-[100dvh] items-end sm:items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none">
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
           "relative pointer-events-auto",
           "w-full max-w-[min(calc(100vw-32px),512px)]",
-          "border border-pauta bg-[var(--papel-solido)] rounded-[24px] shadow-alta",
+          "border border-pauta bg-[var(--papel-solido)] rounded-[28px] shadow-alta",
           "max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",

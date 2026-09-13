@@ -19,7 +19,7 @@ const MODELO = process.env.ANTHROPIC_MODEL || "claude-opus-5"
 const BETAS = ["server-side-fallback-2026-07-01"]
 
 export function modeloDisponivel(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY)
+  return Boolean(process.env.GROQ_API_KEY || process.env.ANTHROPIC_API_KEY)
 }
 
 let cliente: Anthropic | null = null
@@ -65,12 +65,22 @@ function parametros(historico: TurnoConversa[], pergunta: string, panorama: Pano
   }
 }
 
+async function responderGroq(params:{pergunta:string;panorama:Panorama;historico?:TurnoConversa[]}):Promise<RespostaAssistente>{
+ const resposta=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",signal:AbortSignal.timeout(30000),headers:{Authorization:`Bearer ${process.env.GROQ_API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({model:process.env.GROQ_MODEL||"openai/gpt-oss-20b",max_completion_tokens:1500,messages:[{role:"system",content:PERSONA+" Responda em português, com frases curtas e próximos passos concretos. Não invente taxas, logos, benefícios nem consulta online."},...(params.historico??[]).slice(-10).map(t=>({role:t.papel==="USUARIO"?"user":"assistant",content:t.texto})),{role:"user",content:contextoParaModelo(params.panorama)+"\n\n"+params.pergunta}]})})
+ if(!resposta.ok)throw new Error(resposta.status===429?"Limite do assistente atingido. Tente mais tarde.":"Assistente indisponível.")
+ const dados=await resposta.json() as {choices?:{message?:{content?:string}}[]}
+ const texto=dados.choices?.[0]?.message?.content?.trim()
+ if(!texto)throw new Error("O assistente não retornou uma resposta.")
+ return {texto,fonte:"modelo"}
+}
+
 /** Resposta completa de uma vez. Usada quando a tela não precisa de streaming. */
 export async function responderComModelo(params: {
   pergunta: string
   panorama: Panorama
   historico?: TurnoConversa[]
 }): Promise<RespostaAssistente> {
+  if(process.env.GROQ_API_KEY)return responderGroq(params)
   const resposta = await obterCliente().beta.messages.create(
     parametros(params.historico ?? [], params.pergunta, params.panorama),
   )
@@ -111,6 +121,7 @@ export function responderComModeloStream(params: {
     async start(controlador) {
       let completo = ""
       try {
+        if(process.env.GROQ_API_KEY){const resposta=await responderGroq(params);controlador.enqueue(codificador.encode(resposta.texto));await params.aoConcluir?.(resposta.texto);return}
         const fluxo = obterCliente().beta.messages.stream(
           parametros(params.historico ?? [], params.pergunta, params.panorama),
         )

@@ -56,6 +56,10 @@ export const PUT = comSessao(async (sessao, requisicao) => {
 
   if (!dados.lancamentos?.length) return erro("Nenhum lançamento para importar.")
 
+  if(!await prisma.conta.findFirst({where:{id:dados.contaId,larId:sessao.larId,arquivada:false}}))throw new ErroDeUso("Conta inválida.")
+  if(dados.lancamentos.length>10000||dados.lancamentos.some(l=>!Number.isSafeInteger(l.valorCentavos)||l.valorCentavos<=0||l.valorCentavos>2147483647))throw new ErroDeUso("Valores do arquivo inválidos.")
+  const ids=[...new Set(dados.lancamentos.flatMap(l=>l.categoriaId?[l.categoriaId]:[]))]
+  if(await prisma.categoria.count({where:{id:{in:ids},larId:sessao.larId}})!==ids.length)throw new ErroDeUso("Categoria inválida.")
   const importacao = await confirmarImportacao({
     larId: sessao.larId,
     contaId: dados.contaId,

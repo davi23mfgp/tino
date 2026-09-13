@@ -2,200 +2,88 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
-
 import { enviar } from "@/lib/cliente"
 import { paraCentavos } from "@/lib/dinheiro"
-import { lerMeta } from "@/lib/tino/lingua-natural"
-import { showToast } from "@/components/ui/toast"
-import { SelectNative } from "@/components/ui/select-native"
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-/**
- * Criar meta — item 3 do redesign de experiência (07/09/2026).
- *
- * A tela de Metas não tinha NENHUM jeito de cadastrar uma pela interface: só
- * existia via a conversa inicial. O próprio chat do Tino (`lib/tino/chat.ts`)
- * já dizia "crie uma em Metas" para quem perguntava de aposentadoria — a
- * promessa existia, a tela não cumpria. Isto fecha essa lacuna com o mesmo
- * padrão de linguagem natural das dívidas: escreve como falaria, confere os
- * campos, salva.
- *
- * O formulário de conferência virou `<Dialog>` em 07/09/2026 — mapeamento do
- * `dialog` do originui (21st.dev). Antes ele empurrava o resto da tela de
- * Metas para baixo ao abrir; como modal, abre por cima e fecha sozinho ao
- * salvar, sem mover o que já estava na tela.
- */
+export type ContaMeta = { id: string; nome: string }
+export type DadosFormularioMeta = {
+  id: string; nome: string; tipo: string; alvoCentavos: number; saldoCentavos: number;
+  aporteMensalCentavos: number; dataAlvo: string | null; contaId: string | null;
+  fotoUrl: string | null; lembreteDia: number | null; compromissoMensal: boolean; status: string;
+}
+const campo = "min-h-11 w-full rounded-xl border border-pauta bg-background px-3 py-2 text-sm"
 
-const TIPOS = [
-  { valor: "OUTRO", rotulo: "Meta" },
-  { valor: "VIAGEM", rotulo: "Viagem" },
-  { valor: "RESERVA_EMERGENCIA", rotulo: "Reserva de emergência" },
-  { valor: "APOSENTADORIA", rotulo: "Aposentadoria" },
-  { valor: "IMOVEL", rotulo: "Imóvel" },
-  { valor: "VEICULO", rotulo: "Veículo" },
-  { valor: "EDUCACAO", rotulo: "Educação" },
-  { valor: "QUITAR_DIVIDA", rotulo: "Quitar dívida" },
-]
-
-const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
-
-const VAZIO = { nome: "", tipo: "OUTRO", alvo: "", saldo: "", dataAlvo: "", aporte: "" }
-
-export function NovaMeta() {
+export function NovaMeta({ contas = [], meta, reserva = false }: { contas?: ContaMeta[]; meta?: DadosFormularioMeta; reserva?: boolean }) {
   const router = useRouter()
-  const [frase, setFrase] = useState("")
-  const [abrir, setAbrir] = useState(false)
-  const [nova, setNova] = useState(VAZIO)
+  const [aberto, setAberto] = useState(false)
   const [ocupado, setOcupado] = useState(false)
+  const [lendoFoto, setLendoFoto] = useState(false)
+  const [erro, setErro] = useState("")
+  const [fotoUrl, setFotoUrl] = useState<string | null>(meta?.fotoUrl ?? null)
+  const [compromisso, setCompromisso] = useState(meta?.compromissoMensal ?? false)
 
-  function interpretarFrase() {
-    if (!frase.trim()) return
-    const lida = lerMeta(frase)
-    setNova((atual) => ({
-      ...atual,
-      nome: lida.nome ?? atual.nome,
-      alvo: lida.alvoCentavos !== null ? String(lida.alvoCentavos / 100).replace(".", ",") : atual.alvo,
-      saldo: lida.saldoCentavos !== null ? String(lida.saldoCentavos / 100).replace(".", ",") : atual.saldo,
-      dataAlvo: lida.dataAlvo ?? atual.dataAlvo,
-    }))
-    setAbrir(true)
-    setFrase("")
-  }
-
-  async function criar(evento: React.FormEvent) {
-    evento.preventDefault()
-    setOcupado(true)
+  async function lerFoto(arquivo?: File) {
+    if (!arquivo) return
+    setErro("")
+    if (!["image/png", "image/jpeg", "image/webp"].includes(arquivo.type) || arquivo.size > 500 * 1024) { setErro("Use PNG, JPEG ou WebP de até 500 KB."); return }
+    setLendoFoto(true)
     try {
-      await enviar("/api/metas", {
-        nome: nova.nome,
-        tipo: nova.tipo,
-        alvoCentavos: paraCentavos(nova.alvo),
-        saldoCentavos: nova.saldo ? paraCentavos(nova.saldo) : 0,
-        dataAlvo: nova.dataAlvo || undefined,
-        aporteMensalCentavos: nova.aporte ? paraCentavos(nova.aporte) : 0,
+      const foto = await createImageBitmap(arquivo)
+      if (foto.width > 6000 || foto.height > 6000) { foto.close(); throw new Error("Use uma foto com até 6000 pixels por lado.") }
+      foto.close()
+      const leitor = new FileReader()
+      const url = await new Promise<string>((resolve, reject) => {
+        leitor.onload = () => typeof leitor.result === "string" ? resolve(leitor.result) : reject(new Error("Foto inválida."))
+        leitor.onerror = () => reject(new Error("Não consegui ler a foto."))
+        leitor.readAsDataURL(arquivo)
       })
-      setNova(VAZIO)
-      setAbrir(false)
-      router.refresh()
-    } catch (erro) {
-      showToast("Não consegui criar a meta", {
-        description: erro instanceof Error ? erro.message : undefined,
-        variant: "error",
-      })
-    } finally {
-      setOcupado(false)
-    }
+      setFotoUrl(url)
+    } catch { setErro("Não consegui abrir essa imagem. Escolha outra foto.") }
+    finally { setLendoFoto(false) }
   }
 
-  return (
-    <div className="mt-4 border-t border-pauta pt-4">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          aria-label="Descreva sua meta"
-          value={frase}
-          onChange={(evento) => setFrase(evento.target.value)}
-          onKeyDown={(evento) => {
-            if (evento.key === "Enter") {
-              evento.preventDefault()
-              interpretarFrase()
-            }
-          }}
-          placeholder="escreva: Viagem 8000 até dezembro, já tenho 1200"
-          className={cn(campo, "min-w-0 flex-1")}
-        />
-        <button
-          type="button"
-          onClick={frase.trim() ? interpretarFrase : () => setAbrir(true)}
-          className="flex shrink-0 items-center gap-1.5 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[13px] text-acao"
-        >
-          <Plus className="size-3.5" /> nova meta
-        </button>
-      </div>
-
-      <Dialog open={abrir} onOpenChange={setAbrir}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nova meta</DialogTitle>
-          </DialogHeader>
-          <form id="form-nova-meta" onSubmit={criar}>
-            <DialogBody className="grid gap-2 sm:grid-cols-3">
-              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Nome da meta
-                <input
-                value={nova.nome}
-                onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
-                placeholder="nome da meta"
-                required
-                autoFocus
-                className={cn(campo, "sm:col-span-2")}
-              />
-              </label>
-              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Tipo de meta
-                <SelectNative value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
-                {TIPOS.map((tipo) => (
-                  <option key={tipo.valor} value={tipo.valor}>
-                    {tipo.rotulo}
-                  </option>
-                ))}
-              </SelectNative>
-              </label>
-              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Quanto quer juntar (R$)
-                <input
-                value={nova.alvo}
-                onChange={(evento) => setNova({ ...nova, alvo: evento.target.value })}
-                placeholder="quanto quer juntar"
-                required
-                inputMode="decimal"
-                className={campo}
-              />
-              </label>
-              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Já guardado (R$, opcional)
-                <input
-                value={nova.saldo}
-                onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
-                placeholder="já tem guardado (opcional)"
-                inputMode="decimal"
-                className={campo}
-              />
-              </label>
-              <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Por mês (R$, opcional)
-                <input
-                value={nova.aporte}
-                onChange={(evento) => setNova({ ...nova, aporte: evento.target.value })}
-                placeholder="aporte por mês (opcional)"
-                inputMode="decimal"
-                className={campo}
-              />
-              </label>
-              <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-3">
-                data alvo (opcional)
-                <input
-                  type="date"
-                  value={nova.dataAlvo}
-                  onChange={(evento) => setNova({ ...nova, dataAlvo: evento.target.value })}
-                  className={campo}
-                />
-              </label>
-            </DialogBody>
-            <DialogFooter>
-              <button
-                disabled={ocupado || !nova.nome || !nova.alvo}
-                className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
-              >
-                Criar meta
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
+  async function salvar(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault()
+    const dados = new FormData(evento.currentTarget)
+    setOcupado(true); setErro("")
+    try {
+      await enviar(meta ? `/api/metas/${meta.id}` : "/api/metas", {
+        nome: dados.get("nome"), tipo: dados.get("tipo"), alvoCentavos: paraCentavos(String(dados.get("alvo"))),
+        ...(!meta ? { saldoCentavos: paraCentavos(String(dados.get("saldo") || "0")) } : {}),
+        aporteMensalCentavos: paraCentavos(String(dados.get("aporte") || "0")),
+        dataAlvo: dados.get("prazo") || null, contaId: dados.get("conta") || null,
+        lembreteDia: dados.get("lembrete") ? Number(dados.get("lembrete")) : null,
+        compromissoMensal: compromisso, fotoUrl,
+        ...(meta ? { status: dados.get("status") } : {}),
+      }, meta ? "PATCH" : "POST")
+      setAberto(false); router.refresh()
+    } catch (erro) { setErro(erro instanceof Error ? erro.message : "Não consegui salvar.") }
+    finally { setOcupado(false) }
+  }
+  const reais = (valor?: number) => valor ? String(valor / 100).replace(".", ",") : ""
+  return <>
+    <button className="min-h-11 rounded-full border border-pauta px-4 text-sm" onClick={() => setAberto(true)}>{meta ? "Editar meta" : reserva ? "Criar reserva" : "Nova meta"}</button>
+    <Dialog open={aberto} onOpenChange={setAberto}><DialogContent>
+      <DialogHeader><DialogTitle>{meta ? "Editar meta" : reserva ? "Sua reserva" : "Nova meta"}</DialogTitle></DialogHeader>
+      <form onSubmit={salvar}><DialogBody className="grid gap-3 sm:grid-cols-2">
+        <label className="text-xs">Nome<input name="nome" required maxLength={120} defaultValue={meta?.nome ?? (reserva ? "Reserva de emergência" : "")} className={campo} /></label>
+        <label className="text-xs">Tipo<select name="tipo" defaultValue={meta?.tipo ?? (reserva ? "RESERVA_EMERGENCIA" : "OUTRO")} className={campo}>
+          {Object.entries({ OUTRO: "Outra meta", VIAGEM: "Viagem", RESERVA_EMERGENCIA: "Reserva de emergência", APOSENTADORIA: "Aposentadoria", IMOVEL: "Imóvel", VEICULO: "Veículo", EDUCACAO: "Educação", QUITAR_DIVIDA: "Quitar dívida" }).map(([valor, nome]) => <option key={valor} value={valor}>{nome}</option>)}
+        </select></label>
+        <label className="text-xs">Quanto juntar (R$)<input name="alvo" required inputMode="decimal" defaultValue={reais(meta?.alvoCentavos)} className={campo} /></label>
+        {!meta && <label className="text-xs">Saldo já guardado (R$)<input name="saldo" inputMode="decimal" className={campo} /></label>}
+        <label className="text-xs">Aporte planejado por mês (R$)<input name="aporte" inputMode="decimal" defaultValue={reais(meta?.aporteMensalCentavos)} className={campo} /></label>
+        <label className="text-xs">Prazo opcional<input name="prazo" type="date" defaultValue={meta?.dataAlvo?.slice(0, 10)} className={campo} /></label>
+        <label className="text-xs">Conta de saída dos aportes<select name="conta" required={compromisso} defaultValue={meta?.contaId ?? ""} className={campo}><option value="">Escolher depois</option>{contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}</select></label>
+        <label className="text-xs">Dia do lembrete mensal (opcional)<input name="lembrete" type="number" min={1} max={31} defaultValue={meta?.lembreteDia ?? ""} className={campo} /></label>
+        <label className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" checked={compromisso} onChange={e => setCompromisso(e.target.checked)} />Tratar aporte como compromisso fixo</label>
+        <p className="text-xs text-muted-fg sm:col-span-2">Planejar não movimenta dinheiro. Confirme o aporte quando acontecer. Lembretes aparecem ao atualizar os alertas do Tino; dias 29–31 se ajustam ao fim do mês.</p>
+        {meta && <label className="text-xs">Situação<select name="status" defaultValue={meta.status} className={campo}>{Object.entries({ ATIVA: "Ativa", PAUSADA: "Pausada", CONCLUIDA: "Concluída", CANCELADA: "Cancelada" }).map(([valor, nome]) => <option key={valor} value={valor}>{nome}</option>)}</select></label>}
+        <label className="text-xs sm:col-span-2">Foto opcional · até 500 KB<input type="file" accept="image/png,image/jpeg,image/webp" className={campo} onChange={e => void lerFoto(e.target.files?.[0])} /></label>
+        {fotoUrl && <div className="sm:col-span-2"><img src={fotoUrl} alt="Foto escolhida para a meta" className="h-28 w-full rounded-xl object-cover" /><button type="button" className="min-h-11 text-sm" onClick={() => setFotoUrl(null)}>Remover foto</button></div>}
+        {erro && <p role="alert" className="text-sm text-negativo sm:col-span-2">{erro}</p>}
+      </DialogBody><DialogFooter><button disabled={ocupado || lendoFoto} className="min-h-11 rounded-full bg-primary px-5 text-sm text-primary-foreground disabled:opacity-50">{ocupado ? "Salvando…" : "Salvar meta"}</button></DialogFooter></form>
+    </DialogContent></Dialog>
+  </>
 }

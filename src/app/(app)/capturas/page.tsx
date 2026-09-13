@@ -1,4 +1,5 @@
 "use client"
+import { MarcaPersonalizada } from "@/components/identidades-visuais"
 
 import { useCallback, useEffect, useState } from "react"
 import { Check, Copy, Plus, Receipt, Send, Share2, Smartphone, X } from "lucide-react"
@@ -10,7 +11,7 @@ import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
 import { SelectNative } from "@/components/ui/select-native"
-import { TagsSelector } from "@/components/ui/tags-selector"
+import { SeletorCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 
 /**
@@ -52,10 +53,7 @@ interface Conta {
   nome: string
 }
 
-interface Categoria {
-  id: string
-  nome: string
-}
+type Categoria = CategoriaSelecionavel
 
 export default function Capturas() {
   const [capturas, setCapturas] = useState<Captura[]>([])
@@ -214,8 +212,7 @@ export default function Capturas() {
         </form>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
           <p className="max-w-md text-[12px] leading-relaxed text-muted-fg">
-            Escreva como você falaria: <b>uber 18</b>, <b>farmácia 38,90</b>, <b>almoço 45</b>. O Tino adivinha a
-            categoria pelo nome.
+            Informe nome e valor: <b>Uber 18</b>, <b>farmácia 38,90</b> ou <b>almoço 45</b>. Confira a categoria sugerida.
           </p>
 
           {/* Ditar é o caminho para quem está saindo do caixa com a sacola na
@@ -258,7 +255,7 @@ export default function Capturas() {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
+                    <MarcaPersonalizada nome={captura.estabelecimento??""}/><p className="truncate text-[14px] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
                     <p className="text-[11px] text-muted-fg">
                       {captura.instituicao ?? captura.origem.toLowerCase()}
                       {captura.cartaoFinal && ` · final ${captura.cartaoFinal}`}
@@ -309,14 +306,12 @@ export default function Capturas() {
                   </div>
                 </div>
 
-                {/* Categoria como pastilhas — mapeamento do `tags-selector`
-                    do 21st.dev (ver docs/REDESIGN-EM-CURSO.md). Numa linha só
-                    dá para comparar as categorias sem abrir menu nenhum. */}
-                <TagsSelector
+                {/* A busca agrupada mantém a fila compacta mesmo com muitas categorias. */}
+                <SeletorCategoria desabilitado={ocupado} rotulo="Categoria da captura"
                   className="mt-2"
                   opcoes={categorias}
                   valor={captura.categoriaId}
-                  aoEscolher={(id) =>
+                  aoMudar={(id) =>
                     setCapturas((atual) =>
                       atual.map((linha) => (linha.id === captura.id ? { ...linha, categoriaId: id } : linha)),
                     )
@@ -402,10 +397,10 @@ export default function Capturas() {
 
           <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[14px] font-medium">
-              <Smartphone className="size-4" /> Notificações do banco (Android)
+              <Smartphone className="size-4" /> Compras pelo aviso do banco
             </p>
             <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
-              <li>1. Instale o MacroDroid (gratuito) ou o Tasker.</li>
+              <li>1. No Android, instale um encaminhador como MacroDroid ou Tasker e permita o acesso às notificações.</li>
               <li>2. Gatilho: <b>Notificação recebida</b>, filtrando o app do seu banco.</li>
               <li>
                 3. Ação: <b>Requisição HTTP POST</b> para
@@ -424,29 +419,7 @@ export default function Capturas() {
             </button>
           </div>
 
-          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-            <p className="flex items-center gap-2 text-[14px] font-medium">
-              <Send className="size-4" /> Telegram (mandar faturas)
-            </p>
-            <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
-              <li>1. Gere a chave abaixo.</li>
-              <li>
-                2. No Telegram, abra o bot do Tino e mande
-                <code className="mx-1 rounded bg-papel-2 px-1.5 py-0.5">/conectar SUA_CHAVE</code>
-              </li>
-              <li>3. Pronto: encaminhe o PDF da fatura, ou escreva o gasto direto na conversa.</li>
-            </ol>
-            <p className="mt-2 text-[11px] text-muted-fg">
-              PDF com senha não vai por aqui — mensagem em chat fica guardada no aparelho e no servidor do mensageiro.
-              Para esses, use a tela Importar.
-            </p>
-            <button
-              onClick={() => criarChave("TELEGRAM")}
-              className="mt-3 flex items-center gap-1.5 rounded-full border border-acao/40 bg-acao/10 px-4 py-2 text-[12px] text-acao"
-            >
-              <Plus className="size-3.5" /> gerar chave do Telegram
-            </button>
-          </div>
+          <div className="rounded-2xl border border-pauta bg-papel-2 p-4"><h3 className="font-semibold">Faturas por e-mail</h3><p className="mt-2 text-sm text-muted-fg">Receba a fatura diretamente no Tino e confira antes de importar.</p><a href="/cartoes" className="mt-3 inline-flex min-h-11 items-center font-medium text-acao">Configurar no cartão</a></div>
         </div>
 
         {chaves.length > 0 && (

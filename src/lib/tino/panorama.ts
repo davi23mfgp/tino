@@ -274,6 +274,9 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   const receitaObservada = Math.round(mesesComDados.reduce((s, m) => s + m.receitasCentavos, 0) / divisor)
   const despesaObservada = Math.round(mesesComDados.reduce((s, m) => s + m.despesasCentavos, 0) / divisor)
 
+  const compromissoMetas = metas.filter(m => m.compromissoMensal).reduce((s,m)=>s+m.aporteMensalCentavos,0)
+  const idsMetasFixas = new Set(metas.filter(m=>m.compromissoMensal).map(m=>m.id))
+  const mediaAportesFixos = Math.round(transacoesHistorico.filter(t=>t.metaId && idsMetasFixas.has(t.metaId)).reduce((s,t)=>s+(t.tipo==="DESPESA"?t.valorCentavos:t.tipo==="RECEITA"?-t.valorCentavos:0),0)/divisor)
   const medias = {
     receitaCentavos: receitaObservada || rendaDeclaradaCentavos,
     // Mesma lógica da receita: sem histórico, vale o que o usuário estimou na
@@ -292,6 +295,12 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     ),
     rendaDeclaradaCentavos,
   }
+
+  // Aporte confirmado já integra o histórico. Só a diferença planejada é acrescentada.
+  const ajusteMetas = compromissoMetas - mediaAportesFixos
+  medias.despesaCentavos = Math.max(0, medias.despesaCentavos + ajusteMetas)
+  medias.sobraCentavos = medias.receitaCentavos - medias.despesaCentavos
+  medias.custoFixoCentavos += compromissoMetas
 
   // ── Orçamento ─────────────────────────────────────────────
   const linhasOrcamento = orcamentos.map((orcamento) => {
@@ -350,7 +359,8 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   // ── Reserva ───────────────────────────────────────────────
   const custoParaReserva = medias.custoEssencialCentavos || medias.custoFixoCentavos || medias.despesaCentavos
   const metaReserva = metas.find((meta) => meta.tipo === "RESERVA_EMERGENCIA")
-  const reservaAtual = metaReserva?.saldoCentavos ?? Math.max(0, saldoTotalCentavos)
+  const reservas=await prisma.meta.aggregate({where:{larId,tipo:"RESERVA_EMERGENCIA",status:{in:["ATIVA","CONCLUIDA","PAUSADA"]}},_sum:{saldoCentavos:true}})
+  const reservaAtual = reservas._sum.saldoCentavos ?? 0
   const idealReserva = reservaIdeal(custoParaReserva, lar.mesesReserva)
 
   // ── Projeção de caixa ─────────────────────────────────────

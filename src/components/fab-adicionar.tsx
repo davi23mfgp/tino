@@ -11,6 +11,9 @@ import {
   Dialog, DialogTrigger, DialogContent, DialogHeader, DialogBody,
   DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SelectNative } from "@/components/ui/select-native"
@@ -221,31 +224,13 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
             <DialogBody>
               <form onSubmit={salvar} className="flex flex-col gap-4" aria-busy={enviando}>
                 {erro && <p id={`${id}-erro`} role="alert" className="text-sm text-negativo">{erro}</p>}
-                <fieldset disabled={enviando} className="flex min-w-0 flex-col gap-4">
+                <fieldset disabled={enviando}><FieldGroup>
                   <fieldset className="min-w-0">
                     <legend className="mb-2 text-sm font-medium">Tipo de lançamento</legend>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        aria-pressed={tipo === "DESPESA"}
-                        onClick={() => setTipo("DESPESA")}
-                        className={cn(
-                          "min-h-11 rounded-[var(--raio-campo)] border px-3 py-2 text-[13px] font-medium",
-                          focoVisivel,
-                          tipo === "DESPESA" ? "border-negativo/40 bg-negativo/10 text-negativo" : "border-pauta text-muted-fg hover:bg-foreground/[0.04]",
-                        )}
-                      >Despesa</button>
-                      <button
-                        type="button"
-                        aria-pressed={tipo === "RECEITA"}
-                        onClick={() => setTipo("RECEITA")}
-                        className={cn(
-                          "min-h-11 rounded-[var(--raio-campo)] border px-3 py-2 text-[13px] font-medium",
-                          focoVisivel,
-                          tipo === "RECEITA" ? "border-positivo/40 bg-positivo/10 text-positivo" : "border-pauta text-muted-fg hover:bg-foreground/[0.04]",
-                        )}
-                      >Receita</button>
-                    </div>
+                    <ToggleGroup type="single" value={tipo} disabled={enviando} onValueChange={(valor) => { if (valor === "DESPESA" || valor === "RECEITA") setTipo(valor) }} aria-label="Tipo de lançamento">
+                      <ToggleGroupItem value="DESPESA" className="flex-1">Despesa</ToggleGroupItem>
+                      <ToggleGroupItem value="RECEITA" className="flex-1">Receita</ToggleGroupItem>
+                    </ToggleGroup>
                   </fieldset>
 
                   <div className="flex flex-col gap-2">
@@ -286,10 +271,10 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor={`${id}-descricao`}>Descrição</Label>
-                    <Input id={`${id}-descricao`} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: mercado" className="motion-reduce:transition-none" required />
-                  </div>
+                  <Field>
+                    <FieldLabel htmlFor={`${id}-descricao`}>Descrição</FieldLabel>
+                    <Input id={`${id}-descricao`} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: mercado" required />
+                  </Field>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex min-w-0 flex-col gap-2">
                       <Label htmlFor={`${id}-valor`}>Valor (R$)</Label>
@@ -318,12 +303,8 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
                       <Input id={`${id}-data`} type="date" value={data} onChange={(e) => setData(e.target.value)} className="min-w-0 motion-reduce:transition-none" required />
                     </div>
                   </div>
-                  <button
-                    type="submit"
-                    disabled={!contaPronta || enviando}
-                    className={cn("ios-tap min-h-11 w-full rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[14px] font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:!transform-none motion-reduce:!transition-none", focoVisivel)}
-                  >{enviando ? "Salvando…" : "Salvar"}</button>
-                </fieldset>
+                  <Button type="submit" disabled={!contaPronta || enviando} className="w-full">{enviando ? "Salvando…" : "Salvar"}</Button>
+                </FieldGroup></fieldset>
                 <p role="status" className="sr-only">{enviando ? "Salvando lançamento. Aguarde." : ""}</p>
               </form>
             </DialogBody>

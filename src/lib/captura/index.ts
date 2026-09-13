@@ -206,12 +206,18 @@ export async function confirmarCaptura(params: {
   const contaId = params.contaId ?? captura.contaId
   if (!contaId) throw new Error("Escolha em qual conta esse gasto entra.")
 
+  if(!await prisma.conta.findFirst({where:{id:contaId,larId:params.larId,arquivada:false}}))throw new Error("Conta inválida.")
+  const categoriaId=params.categoriaId??captura.categoriaId
+  if(categoriaId&&!await prisma.categoria.findFirst({where:{id:categoriaId,larId:params.larId}}))throw new Error("Categoria inválida.")
   const valorCentavos = params.valorCentavos ?? captura.valorCentavos ?? 0
-  if (valorCentavos <= 0) throw new Error("Informe o valor do gasto.")
+  if (!Number.isSafeInteger(valorCentavos) || valorCentavos <= 0 || valorCentavos > 2147483647) throw new Error("Informe o valor do gasto.")
 
   const data = captura.data ?? new Date()
 
   return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${captura.id}))`
+    const atual=await tx.captura.findUniqueOrThrow({where:{id:captura.id}})
+    if(atual.transacaoId)return tx.transacao.findUniqueOrThrow({where:{id:atual.transacaoId}})
     const transacao = await tx.transacao.create({
       data: {
         larId: params.larId,

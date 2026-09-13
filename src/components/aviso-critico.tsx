@@ -52,7 +52,7 @@ export function AvisoCritico() {
         )
       }
     >
-      {alerta.titulo} — {alerta.texto}
+      <span className="block font-semibold">{alerta.titulo}</span><span className="mt-1 block text-xs font-normal text-muted-fg">{alerta.texto}</span>
     </Banner>
   )
 }
