@@ -27,10 +27,17 @@ const pagina = await contexto.newPage()
 await pagina.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" })
 await pagina.fill('input[type="email"]', "demo@tino.local")
 await pagina.fill('input[type="password"]', "demo12345")
-await pagina.click('button[type="submit"]')
+// O primeiro envio se perde quando o Turbopack ainda esta compilando a rota:
+// o clique acontece antes do handler do formulario existir. Reenviar ate a
+// navegacao valer e mais barato que esperar um seletor que nunca aparece.
+for (let tentativa = 0; tentativa < 6 && !pagina.url().includes("/painel"); tentativa++) {
+  await pagina.click('button[type="submit"]').catch(() => {})
+  await pagina.waitForTimeout(5000)
+}
+if (!pagina.url().includes("/painel")) throw new Error("login nao concluiu: " + pagina.url())
 // O login redireciona por router do cliente, nao por navegacao completa --
 // esperar "load" nunca resolve. Espera-se a barra do app aparecer.
-await pagina.waitForSelector(".app-sidebar, .app-header", { timeout: 40000 })
+await pagina.waitForSelector(".app-header", { state: "attached", timeout: 120000 })
 
 const achados = []
 const erros = []
