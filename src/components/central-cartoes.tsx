@@ -20,6 +20,7 @@ import { mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, ty
 import { rotuloCompetencia } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
+import { useJanela } from "@/lib/usar-largura"
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
@@ -45,8 +46,12 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
   const resumo = resumoDoMes(cartao, mes)
   const meses = mesesDoCartao(cartao, mesAtual)
   const indiceMes = Math.max(0, meses.indexOf(mes))
-  const inicio = Math.max(0, Math.min(indiceMes - 2, meses.length - 6))
-  const mesesVisiveis = meses.slice(inicio, inicio + 6)
+  // Seis colunas fixas empurravam a pagina para 402px num viewport de 320 --
+  // rolagem horizontal, que a aceitacao proibe. A janela encolhe e os
+  // controles anterior/proximo andam de acordo.
+  const porJanela = useJanela([{ ate: 360, itens: 3 }, { ate: 520, itens: 4 }, { ate: 900, itens: 5 }], 6)
+  const inicio = Math.max(0, Math.min(indiceMes - Math.floor(porJanela / 3), meses.length - porJanela))
+  const mesesVisiveis = meses.slice(inicio, inicio + porJanela)
   const barras = mesesVisiveis.map((competencia) => ({ competencia, ...resumoDoMes(cartao, competencia) }))
   const maximo = Math.max(1, ...barras.map((barra) => Math.max(barra.gastos, barra.previsto)))
   const compras = resumo.compras
@@ -85,8 +90,8 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
           <dl><div><dt>Fecha</dt><dd>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "Não informado"}</dd></div><div><dt>Vence</dt><dd>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "Não informado"}</dd></div><div><dt>Limite bancário</dt><dd>{cartao.limiteCentavos ? formatarMoeda(cartao.limiteCentavos) : "Não informado"}</dd></div></dl>
         </div>
         <div className={estilos.faturas}>
-          <header><div><p className={estilos.sobretitulo}>Confirmado e previsto</p><h2>Faturas por mês</h2></div><div><button aria-label="Meses anteriores" disabled={inicio === 0} onClick={() => setMes(meses[Math.max(0, inicio - 1)])}><ChevronLeft /></button><button aria-label="Próximos meses" disabled={inicio + 6 >= meses.length} onClick={() => setMes(meses[Math.min(meses.length - 1, inicio + 6)])}><ChevronRight /></button></div></header>
-          <div className={estilos.barras}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
+          <header><div><p className={estilos.sobretitulo}>Confirmado e previsto</p><h2>Faturas por mês</h2></div><div><button aria-label="Meses anteriores" disabled={inicio === 0} onClick={() => setMes(meses[Math.max(0, inicio - 1)])}><ChevronLeft /></button><button aria-label="Próximos meses" disabled={inicio + porJanela >= meses.length} onClick={() => setMes(meses[Math.min(meses.length - 1, inicio + porJanela)])}><ChevronRight /></button></div></header>
+          <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
             <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
             <small>{rotuloCompetencia(barra.competencia, true)}</small><b>{mes === barra.competencia ? formatarMoeda(barra.saldo) : ""}</b>
           </button>)}</div>

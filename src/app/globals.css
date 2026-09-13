@@ -41,13 +41,14 @@
        entram: reduzir a raiz do documento encolheria o layout junto, e o
        pedido era sobre letra.
 
-       AVISO REGISTRADO, nao escondido: os tamanhos mais usados hoje sao
-       13px (154 vezes), 12px (133) e 11px (65). Em 0.7 eles viram 9,1px,
-       8,4px e 7,7px. Isso fica abaixo do que o proprio brief de 13/09 pede
-       ("texto comum de 14-16px", "nao usar fontes minusculas para fazer
-       caber") e abaixo do minimo confortavel de leitura. Esta e a unica
-       linha a mexer para calibrar. */
-    --escala-letra: 0.7;
+       Calibrado em 13/09: comecou em 0.7 (os 30% pedidos), o Davi olhou e
+       disse que "ficou estranho", e pediu 15%. Os tamanhos mais usados sao
+       13px (154 vezes), 12px (133) e 11px (65): em 0.85 eles ficam 11,1px,
+       10,2px e 9,4px -- compacto sem sair da faixa em que se le num balcao,
+       que era o risco em 0.7 (9,1 / 8,4 / 7,7px).
+
+       Esta e a unica linha a mexer para recalibrar. */
+    --escala-letra: 0.85;
 
     /* Pilha do sistema: no Mac e no iPhone resolve para a San Francisco de
        verdade; nas outras plataformas cai na fonte nativa delas. */
@@ -546,3 +547,38 @@
    rolagem. */
 .area-do-app .tino-metrica .numero { white-space: nowrap; overflow-wrap: normal; word-break: normal; font-size: calc(clamp(0.95rem, 9cqi, 1.5rem) * var(--escala-letra)); max-width: 100%; }
 .area-do-app .numero { font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   Alvo de toque nao depende do tamanho da letra.
+
+   Quando a letra do site encolheu (13/09, `--escala-letra`), todo controle
+   cuja altura vinha do texto encolheu junto: "Definir orcamento" caiu para
+   33px, as linhas do extrato para 26px e os botoes de captura para 34px.
+   Medido nas quatro larguras, nao estimado.
+
+   Isso quebra a regra que o proprio repositorio ja tinha -- 44px no dedo --
+   e quebraria de novo na proxima vez que alguem mexesse no tamanho da
+   letra. O piso fica aqui, preso a largura da tela, e nao ao texto.
+
+   So abaixo de 640px: acima disso o alvo e ponteiro, e 32/36px e o certo.
+   `min-height` so cresce, nunca corta conteudo. Link dentro de paragrafo
+   fica de fora de proposito (`:not(p a)`), senao uma frase com link vira
+   uma escada de 44px.
+   ============================================================ */
+@media (max-width: 639px) {
+  .area-do-app button,
+  .area-do-app summary,
+  .area-do-app select,
+  .area-do-app [role="button"],
+  .area-do-app [role="tab"],
+  .area-do-app [role="option"],
+  .area-do-app a[class*="rounded"]:not(p a) {
+    min-height: 44px;
+  }
+
+  /* Linha de lista clicavel: o alvo e a linha inteira, entao o piso vale
+     para ela e nao para cada pedaco de texto dentro. */
+  .area-do-app [data-slot="item"] {
+    min-height: 44px;
+  }
+}

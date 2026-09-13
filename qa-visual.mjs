@@ -118,7 +118,22 @@ for (const largura of LARGURAS) {
           .slice(0, 5)
           .map(nome)
 
+        // Quando ha rolagem horizontal, guarda QUEM e mais largo que a tela.
+        // Sem isso o achado diz que existe o defeito e nao onde ele esta.
+        const culpados =
+          doc.scrollWidth - doc.clientWidth > 0
+            ? [...document.querySelectorAll("body *")]
+                .filter((el) => el.getBoundingClientRect().width > doc.clientWidth + 2)
+                // So o mais FUNDO: se o pai tambem estoura, quem manda e o
+                // filho. Listar a cadeia inteira aponta o sintoma, nao a
+                // origem.
+                .filter((el) => ![...el.children].some((f) => f.getBoundingClientRect().width > doc.clientWidth + 2))
+                .slice(0, 8)
+                .map((el) => `${el.tagName}.${String(el.className).split("__").pop().slice(0, 20)} ${Math.round(el.getBoundingClientRect().width)}px`)
+            : []
+
         return {
+          culpados,
           overflowX: doc.scrollWidth - doc.clientWidth,
           rolagemEmIndicador,
           alvosPequenos,
@@ -148,7 +163,7 @@ fs.writeFileSync(`${SAIDA}/achados.json`, JSON.stringify({ achados, erros }, nul
 console.log(`achados: ${achados.length} | erros: ${erros.length}`)
 for (const a of achados) {
   const partes = []
-  if (a.overflowX > 0) partes.push(`rolagem horizontal ${a.overflowX}px`)
+  if (a.overflowX > 0) partes.push(`rolagem horizontal ${a.overflowX}px -> ${a.culpados.join(" | ")}`)
   if (a.rolagemEmIndicador.length) partes.push(`rolagem em indicador: ${a.rolagemEmIndicador.join(" | ")}`)
   if (a.controlesGigantes.length) partes.push(`controle >64px: ${a.controlesGigantes.join(" | ")}`)
   if (a.alvosPequenos.length) partes.push(`alvo <40px: ${a.alvosPequenos.join(" | ")}`)
