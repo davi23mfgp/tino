@@ -11,6 +11,7 @@ import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 import { lerOfx, type LancamentoBruto } from "@/lib/importar/ofx"
 import { lerCsv, lerCsvFaturaCartao } from "@/lib/importar/csv"
 import { lerPdf } from "@/lib/importar/pdf"
+import { repeteCapturaDoCelular } from "@/lib/importar/repeticao"
 
 export type FormatoImportacao = "ofx" | "csv" | "pdf"
 
@@ -142,10 +143,9 @@ export async function previaImportacao(params: {
   )
 
   const capturados=await prisma.transacao.findMany({where:{larId:params.larId,contaId:params.contaId,observacao:{startsWith:"Capturado do celular"},valorCentavos:{in:brutos.map(b=>Math.abs(b.valorCentavos))}},select:{data:true,valorCentavos:true,descricao:true}})
-  const normalizar=(t:string)=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")
   const lancamentos: PreviaLancamento[] = brutos.map((bruto, indice) => {
     const sugestao = categorizar(bruto.descricao, regras as unknown as RegraAplicavel[], mapaCategorias)
-    const possivelDuplicada=capturados.some(c=>c.data.toISOString().slice(0,10)===bruto.data.toISOString().slice(0,10)&&c.valorCentavos===Math.abs(bruto.valorCentavos)&&normalizar(c.descricao).length>=3&&normalizar(bruto.descricao).includes(normalizar(c.descricao)))
+    const possivelDuplicada=repeteCapturaDoCelular(bruto,capturados)
     return {
       ...bruto,
       possivelDuplicada,
