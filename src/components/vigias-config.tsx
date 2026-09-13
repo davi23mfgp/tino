@@ -22,7 +22,21 @@ interface Vigia {
  * contagem de disparos dos últimos 30 dias como histórico. Sem marketplace,
  * sem plano pago por vigia — o brief foi explícito nisso.
  */
-export function VigiasConfig() {
+
+/**
+ * Moldura opcional.
+ *
+ * Dentro de Configuracoes este bloco vive DENTRO de uma linha de ajuste, que
+ * ja e um cartao -- cartao dentro de cartao desenha duas bordas e dois
+ * recheios, que e parte do peso visual que Davi rejeitou. Com `semMoldura`
+ * o conteudo entra solto e herda o espacamento de quem o abriu.
+ */
+function Moldura({ titulo, semMoldura, children }: { titulo: string; semMoldura?: boolean; children: React.ReactNode }) {
+  if (semMoldura) return <>{children}</>
+  return <Cartao titulo={titulo} estatico>{children}</Cartao>
+}
+
+export function VigiasConfig({ semMoldura }: { semMoldura?: boolean } = {}) {
   const [vigias, setVigias] = useState<Vigia[] | null>(null)
 
   useEffect(() => {
@@ -36,7 +50,7 @@ export function VigiasConfig() {
   }
 
   return (
-    <Cartao titulo="Vigias" estatico>
+    <Moldura titulo="Vigias" semMoldura={semMoldura}>
       <p className="mb-4 text-[13px] text-muted-fg">
         O que o Tino observa sozinho e avisa sem você perguntar. Desligue o que não interessa — os outros continuam
         de olho.
@@ -66,6 +80,6 @@ export function VigiasConfig() {
 
         {vigias === null && <p className="px-2 py-3 text-sm text-muted-fg">Carregando...</p>}
       </div>
-    </Cartao>
+    </Moldura>
   )
 }

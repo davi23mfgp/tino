@@ -20,7 +20,21 @@ const TIPOS = [
   { valor: "COBRANCA", rotulo: "É sobre cobrança" },
 ] as const
 
-export function RelatarProblema() {
+
+/**
+ * Moldura opcional.
+ *
+ * Dentro de Configuracoes este bloco vive DENTRO de uma linha de ajuste, que
+ * ja e um cartao -- cartao dentro de cartao desenha duas bordas e dois
+ * recheios, que e parte do peso visual que Davi rejeitou. Com `semMoldura`
+ * o conteudo entra solto e herda o espacamento de quem o abriu.
+ */
+function Moldura({ titulo, semMoldura, children }: { titulo: string; semMoldura?: boolean; children: React.ReactNode }) {
+  if (semMoldura) return <>{children}</>
+  return <Cartao titulo={titulo} estatico>{children}</Cartao>
+}
+
+export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
   const rota = usePathname()
   const [tipo, setTipo] = useState<(typeof TIPOS)[number]["valor"]>("BUG")
   const [mensagem, setMensagem] = useState("")
@@ -44,7 +58,7 @@ export function RelatarProblema() {
   }
 
   return (
-    <Cartao titulo="Falar com o suporte">
+    <Moldura titulo="Falar com o suporte" semMoldura={semMoldura}>
       <form onSubmit={mandar} className="space-y-2">
         <div className="flex flex-wrap gap-1.5">
           {TIPOS.map((opcao) => (
@@ -83,6 +97,6 @@ export function RelatarProblema() {
 
       {retorno && <p className="mt-3 text-[13px] text-positivo">{retorno}</p>}
       {erro && <p className="mt-3 text-[13px] text-negativo">{erro}</p>}
-    </Cartao>
+    </Moldura>
   )
 }
