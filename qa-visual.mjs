@@ -19,7 +19,7 @@ const SAIDA = ".qa-visual"
 
 fs.mkdirSync(SAIDA, { recursive: true })
 
-const navegador = await chromium.launch()
+const navegador = await chromium.launch({ channel: "chrome" })
 const contexto = await navegador.newContext()
 const pagina = await contexto.newPage()
 
@@ -27,7 +27,10 @@ const pagina = await contexto.newPage()
 await pagina.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" })
 await pagina.fill('input[type="email"]', "demo@tino.local")
 await pagina.fill('input[type="password"]', "demo12345")
-await Promise.all([pagina.waitForURL(/painel|bem-vindo/, { timeout: 30000 }), pagina.click('button[type="submit"]')])
+await pagina.click('button[type="submit"]')
+// O login redireciona por router do cliente, nao por navegacao completa --
+// esperar "load" nunca resolve. Espera-se a barra do app aparecer.
+await pagina.waitForSelector(".app-sidebar, .app-header", { timeout: 40000 })
 
 const achados = []
 const erros = []
@@ -61,8 +64,15 @@ for (const largura of LARGURAS) {
           .slice(0, 5)
           .map(nome)
 
-        // Alvo de toque abaixo de 44px (regra do proprio repo).
-        const alvosPequenos = [...document.querySelectorAll("button, a, select, [role=button], [role=tab], [role=option]")]
+        // Alvo de toque abaixo de 44px -- so vale ABAIXO de 640px (o `sm` do
+        // Tailwind). Acima disso o `Button` do repo encolhe de proposito para
+        // 32/36px, porque ali o alvo e ponteiro, nao dedo. Medir 44px no
+        // desktop produzia dezenas de falsos positivos e escondia o defeito
+        // de verdade, que so aparece no celular.
+        const alvosPequenos =
+          document.documentElement.clientWidth >= 640
+            ? []
+            : [...document.querySelectorAll("button, a, select, [role=button], [role=tab], [role=option]")]
           .filter((el) => {
             if (!visivel(el)) return false
             const r = el.getBoundingClientRect()
@@ -71,19 +81,40 @@ for (const largura of LARGURAS) {
           .slice(0, 6)
           .map((el) => `${nome(el)} (${Math.round(el.getBoundingClientRect().height)}px)`)
 
-        // Controle exagerado: pilula/botao alto demais para o que oferece.
+        // Controle exagerado: alto demais PARA O QUE OFERECE. Linha com
+        // titulo + descricao (as de Configuracoes) legitimamente passa de
+        // 64px; o defeito e o controle de UMA linha de texto ocupando essa
+        // altura, que foi o que Davi apontou nas pilulas do painel.
         const controlesGigantes = [...document.querySelectorAll("button, a[class*=rounded], input, select")]
           .filter((el) => {
             if (!visivel(el)) return false
             const r = el.getBoundingClientRect()
-            return r.height > 64
+            if (r.height <= 64) return false
+            const linhas = el.querySelectorAll("p, span, small, div").length
+            return linhas <= 1
           })
           .slice(0, 6)
           .map((el) => `${nome(el)} (${Math.round(el.getBoundingClientRect().height)}px)`)
 
         // Texto saindo da tela pela direita.
+        // Vazar so conta quando NAO ha um pai rolavel na horizontal. Dentro
+        // de uma faixa com `overflow-x: auto` (as sub-abas, por exemplo)
+        // passar da borda e o comportamento desejado, nao defeito.
+        const dentroDeFaixaRolavel = (el) => {
+          for (let pai = el.parentElement; pai && pai !== document.body; pai = pai.parentElement) {
+            const e = getComputedStyle(pai)
+            if (["auto", "scroll"].includes(e.overflowX) && pai.scrollWidth > pai.clientWidth + 2) return true
+          }
+          return false
+        }
         const vazando = [...document.querySelectorAll("body *")]
-          .filter((el) => visivel(el) && el.children.length === 0 && el.getBoundingClientRect().right > doc.clientWidth + 1)
+          .filter(
+            (el) =>
+              visivel(el) &&
+              el.children.length === 0 &&
+              el.getBoundingClientRect().right > doc.clientWidth + 1 &&
+              !dentroDeFaixaRolavel(el),
+          )
           .slice(0, 5)
           .map(nome)
 

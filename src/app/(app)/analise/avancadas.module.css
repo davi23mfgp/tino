@@ -1,12 +1,21 @@
 /* Uso exclusivo nas seis telas avançadas; não altera os primitivos do app. */
 .pagina { min-width: 0; }
+/* Indicador de LEITURA: e texto, e texto nao rola.
+   O `overflow-x: auto` que estava aqui nasceu para impedir numero cortado,
+   mas pela regra do CSS declarar um eixo como `auto` promove o outro de
+   `visible` para `auto` junto. A caixa fica 26px e a linha do numero ocupa
+   30px, entao o navegador desenhava a BARRA VERTICAL com setas colada no
+   valor -- as setinhas que aparecem em "R$ 31.750,00" e "36 meses" nas
+   capturas de 13/09. E o mesmo defeito ja corrigido em `.tino-metrica`, que
+   sobreviveu aqui porque esta e outra folha.
+   O numero cabe por `clamp` no tamanho da fonte, nunca por rolagem. */
 .pagina :global(.numero), .pagina :global(.valor-inteiro) {
   white-space: nowrap;
   overflow-wrap: normal;
   word-break: normal;
   font-variant-numeric: tabular-nums;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: visible;
 }
 .pagina :global(.grade-valores) {
   display: grid;

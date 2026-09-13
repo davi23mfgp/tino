@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA de larguras — Tino</title>
+    <style>
+      /* Banca de QA: a mesma rota em quatro larguras, lado a lado.
+         Media query dentro de iframe responde a largura do IFRAME, nao da
+         janela -- entao isto e fiel, ao contrario de redimensionar a janela
+         (que nesta maquina nao muda o viewport). */
+      body { margin: 0; background: #111; color: #eee; font: 13px system-ui; }
+      header { display: flex; gap: 8px; align-items: center; padding: 8px 12px; position: sticky; top: 0; background: #111; z-index: 9; }
+      input, button { font: inherit; padding: 4px 8px; background: #222; color: #eee; border: 1px solid #444; border-radius: 6px; }
+      .banca { display: flex; gap: 12px; padding: 12px; align-items: flex-start; overflow-x: auto; }
+      figure { margin: 0; flex: 0 0 auto; }
+      figcaption { padding: 4px 0; color: #999; }
+      iframe { border: 1px solid #333; background: #000; height: 820px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <label>Rota <input id="rota" value="/configuracoes" size="24" /></label>
+      <button id="ir">Abrir</button>
+      <span id="resumo"></span>
+    </header>
+    <div class="banca" id="banca"></div>
+
+    <script>
+      const LARGURAS = [320, 390, 768, 1440]
+
+      function montar() {
+        const rota = document.getElementById("rota").value
+        const banca = document.getElementById("banca")
+        banca.innerHTML = ""
+        for (const largura of LARGURAS) {
+          const figura = document.createElement("figure")
+          const legenda = document.createElement("figcaption")
+          legenda.textContent = `${largura}px`
+          const quadro = document.createElement("iframe")
+          quadro.width = largura
+          quadro.src = rota
+          quadro.dataset.largura = largura
+          figura.append(legenda, quadro)
+          banca.append(figura)
+        }
+      }
+
+      /** Mede dentro de cada iframe. Mesma origem, entao o acesso e direto. */
+      window.medir = function medir() {
+        const achados = []
+        for (const quadro of document.querySelectorAll("iframe")) {
+          const doc = quadro.contentDocument
+          if (!doc) continue
+          const raiz = doc.documentElement
+          const visivel = (el) => {
+            const e = quadro.contentWindow.getComputedStyle(el)
+            return e.display !== "none" && e.visibility !== "hidden" && Number(e.opacity) > 0
+          }
+          const nome = (el) =>
+            (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().replace(/\s+/g, " ").slice(0, 38)
+
+          const rolagemEmIndicador = [...doc.querySelectorAll("body *")]
+            .filter((el) => {
+              if (!visivel(el)) return false
+              const e = quadro.contentWindow.getComputedStyle(el)
+              const r = el.getBoundingClientRect()
+              const rola = ["auto", "scroll"].includes(e.overflowY) || ["auto", "scroll"].includes(e.overflowX)
+              return rola && r.height < 90 && el.scrollHeight > el.clientHeight + 2
+            })
+            .slice(0, 4)
+            .map(nome)
+
+          const alvosPequenos = [...doc.querySelectorAll("button,a,select,[role=button],[role=tab]")]
+            .filter((el) => {
+              if (!visivel(el)) return false
+              const r = el.getBoundingClientRect()
+              return r.width > 0 && r.height > 0 && r.height < 40
+            })
+            .slice(0, 5)
+            .map((el) => `${nome(el)} ${Math.round(el.getBoundingClientRect().height)}px`)
+
+          const controlesGigantes = [...doc.querySelectorAll("button,input,select")]
+            .filter((el) => visivel(el) && el.getBoundingClientRect().height > 64)
+            .slice(0, 5)
+            .map((el) => `${nome(el)} ${Math.round(el.getBoundingClientRect().height)}px`)
+
+          const vazando = [...doc.querySelectorAll("body *")]
+            .filter((el) => visivel(el) && el.children.length === 0 && el.getBoundingClientRect().right > raiz.clientWidth + 1)
+            .slice(0, 4)
+            .map(nome)
+
+          achados.push({
+            largura: Number(quadro.dataset.largura),
+            overflowX: raiz.scrollWidth - raiz.clientWidth,
+            altura: raiz.scrollHeight,
+            rolagemEmIndicador,
+            alvosPequenos,
+            controlesGigantes,
+            vazando,
+          })
+        }
+        return achados
+      }
+
+      document.getElementById("ir").addEventListener("click", montar)
+      montar()
+    </script>
+  </body>
+</html>
