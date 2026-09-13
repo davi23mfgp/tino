@@ -490,26 +490,26 @@
 .tino-metrica > .numero { max-width: 100%; overflow-wrap: anywhere; }
 @media (max-width: 479px) {
   .area-do-app .grid:has(> .tino-metrica) { grid-template-columns: minmax(0, 1fr); }
-  .tino-metrica { padding: 12px; }
-  .tino-metrica > .numero { font-size: 26px; }
+  .tino-metrica { padding: 10px 12px; }
+  .tino-metrica > .numero { font-size: 22px; }
 }
 
 /* iOS: superfícies agrupadas, controles de sistema e navegação discreta.
    Escopo do app preserva a identidade editorial da landing. */
-.area-do-app { --raio-cartao: 24px; --raio-campo: 16px; font-family: var(--font-ios); }
+.area-do-app { --raio-cartao: 18px; --raio-campo: 12px; font-family: var(--font-ios); }
 .area-do-app .ficha { box-shadow: none; border-color: color-mix(in oklch, var(--pauta) 65%, transparent); }
-.app-bottom-nav { border-radius: 30px; padding-inline: 6px; box-shadow: var(--sombra-flutuante); }
+.app-bottom-nav { border-radius: 20px; padding-inline: 6px; box-shadow: var(--sombra-flutuante); }
 .app-bottom-item { font-size: 12px; gap: 4px; }
 .app-bottom-item.is-active { color: oklch(var(--lch-acao)); background: var(--papel-1); }
 .app-nav-item.is-active { background: var(--papel-2); }
 .app-header-title h1 { font-weight: 700; letter-spacing: -.04em; }
 .ios-saldo { border: 0; background: transparent; padding: 4px 2px 8px; }
-.ios-saldo .home-balance-value { font-size: clamp(36px,6vw,56px); font-weight: 700; }
-.ios-saldo .home-flow { background: var(--papel-solido); border: 0; border-radius: 20px; padding: 18px; }
+.ios-saldo .home-balance-value { font-size: clamp(28px,4.4vw,40px); font-weight: 700; letter-spacing: -.03em; }
+.ios-saldo .home-flow { background: var(--papel-solido); border: 0; border-radius: 16px; padding: 12px 14px; }
 .ios-atalhos { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
 .ios-atalhos a { padding-inline: 10px; }
 .ios-lista { overflow: hidden; border-radius: 18px; background: var(--papel-1); }
-.ios-lista-linha { display: flex; min-height: 56px; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--pauta); font-size: 14px; }
+.ios-lista-linha { display: flex; min-height: 48px; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--pauta); font-size: 14px; }
 .ios-lista-linha:last-child { border-bottom: 0; }
 .ios-lista-linha:hover { background: var(--papel-2); }
 .ios-icone { display: grid; width: 34px; height: 34px; flex-shrink: 0; place-items: center; border-radius: 10px; background: var(--papel-2); }
@@ -518,5 +518,13 @@
 
 /* Valores permanecem inteiros; o tamanho acompanha a largura da métrica. */
 .area-do-app .tino-metrica { container-type: inline-size; border: 1px solid var(--pauta); border-radius: 18px; }
-.area-do-app .tino-metrica .numero { white-space: nowrap; overflow-wrap: normal; word-break: normal; font-size: clamp(1rem, 10cqi, 1.75rem); max-width: 100%; overflow-x: auto; }
+/* Indicador de leitura e TEXTO: sem barra de rolagem, sem spinner.
+   O `overflow-x: auto` que estava aqui nasceu para impedir numero cortado,
+   mas pela regra do CSS declarar um eixo como `auto` promove o outro de
+   `visible` para `auto` tambem -- e como a caixa fica um fio mais baixa que
+   a linha do texto, o Edge desenhava a BARRA VERTICAL com setas ao lado do
+   valor. Era isso que aparecia colado em "A confirmar 3" e "Somam R$ 326,80".
+   O numero cabe pelo tamanho que acompanha o container (`cqi`), nao por
+   rolagem. */
+.area-do-app .tino-metrica .numero { white-space: nowrap; overflow-wrap: normal; word-break: normal; font-size: clamp(0.95rem, 9cqi, 1.5rem); max-width: 100%; }
 .area-do-app .numero { font-variant-numeric: tabular-nums; }
