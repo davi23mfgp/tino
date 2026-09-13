@@ -255,6 +255,7 @@ model Lar {
   regras          RegraCategorizacao[]
   recorrencias    Recorrencia[]
   orcamentos      Orcamento[]
+  orcamentosCartao OrcamentoCartao[]
   metas           Meta[]
   dividas         Divida[]
   simulacoes      SimulacaoEmprestimo[]
@@ -368,6 +369,7 @@ model Conta {
   recorrencias  Recorrencia[]
   parcelamentos Parcelamento[]
   dividas       Divida[]
+  orcamentosCartao OrcamentoCartao[]
 
   @@index([larId])
 }
@@ -397,6 +399,7 @@ model Categoria {
   orcamentos    Orcamento[]
   recorrencias  Recorrencia[]
   parcelamentos Parcelamento[]
+  orcamentosCartao OrcamentoCartaoCategoria[]
 
   @@unique([larId, nome, paiId])
   @@index([larId])
@@ -554,6 +557,35 @@ model Orcamento {
 
   @@unique([larId, competencia, categoriaId])
   @@index([larId, competencia])
+}
+
+/// Plano mensal de gastos de um cartão. Separado do limite concedido pelo banco.
+model OrcamentoCartao {
+  id             String @id @default(cuid())
+  larId          String
+  lar            Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+  contaId        String
+  conta          Conta  @relation(fields: [contaId], references: [id], onDelete: Cascade)
+  competencia    String
+  totalCentavos  Int
+  categorias     OrcamentoCartaoCategoria[]
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+
+  @@unique([contaId, competencia])
+  @@index([larId, competencia])
+}
+
+model OrcamentoCartaoCategoria {
+  id                String           @id @default(cuid())
+  orcamentoCartaoId String
+  orcamentoCartao   OrcamentoCartao  @relation(fields: [orcamentoCartaoId], references: [id], onDelete: Cascade)
+  categoriaId       String
+  categoria         Categoria        @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  limiteCentavos    Int
+
+  @@unique([orcamentoCartaoId, categoriaId])
+  @@index([categoriaId])
 }
 
 // ============================================================

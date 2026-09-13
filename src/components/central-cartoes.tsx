@@ -1,65 +1,145 @@
 "use client"
-import { MarcaPersonalizada } from "@/components/identidades-visuais"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { CreditCard, Pencil, Plus, Trash2, Upload } from "lucide-react"
-import { formatarMoeda, paraCentavos, formatarDecimal } from "@/lib/dinheiro"
-import { rotuloCompetencia } from "@/lib/datas"
-import { mesesDoCartao,resumoDoMes,type DadosCartao,type CompraCartao,type CompraParcelada } from "@/lib/cartoes"
-import { enviar } from "@/lib/cliente"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { SelectNative } from "@/components/ui/select-native"
-import { Cartao,Vazio } from "@/components/ui/painel"
-import { Tabs,TabsList,TabsTrigger,TabsContent } from "@/components/ui/tabs"
-import { Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription } from "@/components/ui/dialog"
-import { Importador } from "@/components/importador"
-import { CompraCartaoForm } from "@/components/compra-cartao-form"
-import { IdentidadeBanco } from "@/components/banco-perfil"
-import { corDoBanco } from "@/lib/bancos-perfil"
-import { AjudaCartao } from "@/components/ajuda-cartao"
 
-export function CentralCartoes({cartoes,categorias,mesAtual}:{cartoes:DadosCartao[];categorias:{id:string;nome:string}[];mesAtual:string}) {
-  const router=useRouter();const [id,setId]=useState(cartoes[0]?.id??"");const [mes,setMes]=useState(mesAtual)
-  const [categoria,setCategoria]=useState("");const [busca,setBusca]=useState("");const [aba,setAba]=useState("compras")
-  const [form,setForm]=useState<{compra?:CompraCartao;parcelamento?:CompraParcelada}|null>(null)
-  const [excluir,setExcluir]=useState<{id:string;nome:string;tipo:"transacoes"|"parcelamentos"}|null>(null)
-  const [erro,setErro]=useState("");const [ocupado,setOcupado]=useState(false);const [orcamento,setOrcamento]=useState("")
-  useEffect(()=>{if(new URLSearchParams(window.location.search).get("aba")==="parcelas")setAba("parcelas")},[])
-  const cartao=cartoes.find(c=>c.id===id)??cartoes[0]
-  if(!cartao)return <Cartao><Vazio titulo="Adicione seu primeiro cartão" texto="Faturas, compras e parcelas ficam aqui." acao={<Button asChild><Link href="/configuracoes">Cadastrar cartão</Link></Button>}/></Cartao>
-  const resumo=resumoDoMes(cartao,mes);const meses=mesesDoCartao(cartao,mesAtual)
-  const barras=meses.map(m=>({mes:m,...resumoDoMes(cartao,m)}));const maximo=Math.max(1,...barras.map(b=>Math.max(b.gastos,b.previsto)))
-  const compras=resumo.compras.filter(c=>(!categoria||(c.categoriaId??"sem")===categoria)&&c.descricao.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")))
-  const planejado=cartao.orcamentoMensalCentavos??0
-  async function remover(){if(!excluir)return;setOcupado(true);setErro("");try{await enviar(`/api/${excluir.tipo}/${excluir.id}`,{},"DELETE");setExcluir(null);router.refresh()}catch(e){setErro(e instanceof Error?e.message:"Não foi possível excluir.")}finally{setOcupado(false)}}
-  async function salvarOrcamento(){setOcupado(true);setErro("");try{await enviar(`/api/cartoes/${cartao.id}/orcamento`,{valorCentavos:paraCentavos(orcamento)},"PUT");router.refresh()}catch(e){setErro(e instanceof Error?e.message:"Não foi possível salvar.")}finally{setOcupado(false)}}
-  return <div className="space-y-5">
-    <div className="flex gap-3 overflow-x-auto pb-2" aria-label="Escolher cartão">{cartoes.map(c=><button key={c.id} onClick={()=>{setId(c.id);setCategoria("");setOrcamento("")}} aria-pressed={c.id===cartao.id} className={"min-h-14 shrink-0 rounded-2xl border px-4 py-3 text-left "+(c.id===cartao.id?"border-acao bg-acao/10":"border-pauta bg-papel-2")}><span className="block text-sm font-semibold">{c.nome}</span><span className="text-xs text-muted-fg">{c.instituicao??"Cartão de crédito"}</span></button>)}</div>
-    <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-      <section className="rounded-3xl p-6 text-white" style={{background:`linear-gradient(135deg, ${corDoBanco(cartao.instituicao)}, #15201e)`}} aria-label={cartao.nome}>
-        <div className="flex justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-white/70">{cartao.instituicao??"Cartão"}</p><h2 className="mt-2 text-lg font-semibold">{cartao.nome}</h2></div><IdentidadeBanco instituicao={cartao.instituicao??""} nome={cartao.nome}/></div>
-        <p className="mt-7 text-sm text-white/70">Lançamentos de {rotuloCompetencia(mes,true)}</p><p className="mt-1 whitespace-nowrap text-3xl font-semibold tracking-tight">{formatarMoeda(resumo.gastos)}</p>
-        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/80"><span>Fecha {cartao.diaFechamento?`dia ${cartao.diaFechamento}`:"não informado"}</span><span>Vence {cartao.diaVencimento?`dia ${cartao.diaVencimento}`:"não informado"}</span></div>
-        <p className="mt-3 text-sm text-white/70">Limite bancário: {cartao.limiteCentavos?formatarMoeda(cartao.limiteCentavos):"não informado"}</p>
-      </section>
-      <Cartao titulo="Faturas por mês"><label className="block text-sm">Mês<SelectNative value={mes} onChange={e=>{setMes(e.target.value);setCategoria("")}}>{meses.map(m=><option key={m} value={m}>{rotuloCompetencia(m)}</option>)}</SelectNative></label>
-        <div className="mt-4 flex h-40 items-end gap-2 overflow-x-auto pb-1">{barras.map(b=><button key={b.mes} aria-label={`${rotuloCompetencia(b.mes)}: ${formatarMoeda(b.gastos)} registrados, ${formatarMoeda(b.previsto)} previstos em parcelas`} aria-pressed={mes===b.mes} onClick={()=>{setMes(b.mes);setCategoria("")}} className="flex h-full min-w-12 flex-1 flex-col justify-end gap-2"><div className="flex h-28 items-end justify-center gap-1"><span className={"w-4 rounded-t-md "+(mes===b.mes?"bg-acao":"bg-acao/35")} style={{height:`${Math.max(3,b.gastos/maximo*100)}%`}}/><span className="w-3 rounded-t-md bg-amber-400/70" style={{height:`${Math.max(3,b.previsto/maximo*100)}%`}}/></div><span className="text-[11px] text-muted-fg">{rotuloCompetencia(b.mes,true)}</span></button>)}</div>
-        <p className="mt-3 text-xs text-muted-fg">Verde: lançamentos. Amarelo: parcelas previstas, que podem já constar nos lançamentos.</p>
-      </Cartao>
-    </div>
-    <div className="flex flex-wrap gap-2"><Button onClick={()=>setForm({})}><Plus className="size-4"/>Nova compra</Button><Button variant="outline" onClick={()=>setAba("importar")}><Upload className="size-4"/>Importar fatura</Button></div>
-    <Tabs value={aba} onValueChange={setAba}><TabsList className="max-w-full justify-start overflow-x-auto"><TabsTrigger value="compras">Compras</TabsTrigger><TabsTrigger value="parcelas">Parcelas</TabsTrigger><TabsTrigger value="categorias">Categorias</TabsTrigger><TabsTrigger value="orcamento">Orçamento</TabsTrigger><TabsTrigger value="ajuda">Ajuda</TabsTrigger><TabsTrigger value="importar">Importar</TabsTrigger></TabsList>
-    <TabsContent value="compras"><Cartao titulo="Compras do mês"><div className="mb-4 grid gap-3 sm:grid-cols-2"><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={e=>setBusca(e.target.value)}/><SelectNative aria-label="Filtrar categoria" value={categoria} onChange={e=>setCategoria(e.target.value)}><option value="">Todas as categorias</option>{resumo.categorias.map(c=><option key={c.id} value={c.id}>{c.nome}</option>)}</SelectNative></div><p className="mb-3 text-sm text-muted-fg">{compras.length} lançamentos · {formatarMoeda(compras.filter(c=>c.tipo==="DESPESA").reduce((s,c)=>s+c.valorCentavos,0))} em compras</p>
-    <div className="divide-y divide-pauta">{compras.map(c=><div key={c.id} className="flex flex-wrap items-center gap-2 py-3"><MarcaPersonalizada nome={c.descricao}/><div className="min-w-0 flex-1"><p className="font-medium">{c.descricao}</p><p className="text-xs text-muted-fg">{c.data.split("-").reverse().join("/")} · {c.categoria?.nome??"Sem categoria"}</p></div><span className="whitespace-nowrap text-sm font-semibold">{c.tipo==="RECEITA"?"Crédito ":""}{formatarMoeda(c.valorCentavos)}</span><Button variant="ghost" size="icon" aria-label={`Editar ${c.descricao}`} onClick={()=>setForm({compra:c})}><Pencil className="size-4"/></Button><Button variant="ghost" size="icon" aria-label={`Excluir ${c.descricao}`} onClick={()=>setExcluir({id:c.id,nome:c.descricao,tipo:"transacoes"})}><Trash2 className="size-4"/></Button></div>)}</div>{!compras.length&&<Vazio titulo="Nenhuma compra neste filtro"/>}</Cartao></TabsContent>
-    <TabsContent value="parcelas"><Cartao titulo="Compras parceladas"><p className="mb-4 text-sm text-muted-fg">{formatarMoeda(resumo.previsto)} previstos em {rotuloCompetencia(mes,true)}.</p>{cartao.parcelamentos.map(p=><div key={p.id} className="mb-3 rounded-2xl border border-pauta bg-papel-2 p-4"><div className="flex items-start gap-2"><div className="min-w-0 flex-1"><h3 className="font-semibold">{p.descricao}</h3><p className="text-sm text-muted-fg">{p.parcelasPagas} de {p.parcelasTotal} pagas · {formatarMoeda(p.parcelaCentavos)}/mês</p></div><Button variant="ghost" size="icon" aria-label={`Editar parcelamento ${p.descricao}`} onClick={()=>setForm({parcelamento:p})}><Pencil className="size-4"/></Button><Button variant="ghost" size="icon" aria-label={`Excluir parcelamento ${p.descricao}`} onClick={()=>setExcluir({id:p.id,nome:p.descricao,tipo:"parcelamentos"})}><Trash2 className="size-4"/></Button></div><progress aria-label={`Progresso de ${p.descricao}`} className="mt-3 h-2 w-full accent-emerald-500" value={p.parcelasPagas} max={p.parcelasTotal}/><details className="mt-3 text-sm"><summary className="min-h-11 cursor-pointer py-3">Ver calendário de parcelas</summary>{p.parcelas.map(x=><div key={x.id} className={"flex flex-wrap justify-between gap-2 border-t border-pauta py-2 "+(x.competencia===mes?"font-semibold text-acao":"text-muted-fg")}><span>{x.numero}/{p.parcelasTotal} · {rotuloCompetencia(x.competencia,true)}</span><span>{formatarMoeda(x.valorCentavos)} · {x.paga?"Paga":"Prevista"}</span></div>)}</details></div>)}{!cartao.parcelamentos.length&&<Vazio titulo="Sem compras parceladas" texto="Use Nova compra e informe o número de parcelas."/>}</Cartao></TabsContent>
-    <TabsContent value="categorias"><Cartao titulo="Para onde foi"><p className="mb-5 text-sm text-muted-fg">Gastos de {rotuloCompetencia(mes,true)}. Escolha uma categoria para ver as compras.</p><div className="grid items-center gap-6 sm:grid-cols-[180px_1fr]"><div className="relative mx-auto size-44 rounded-full" style={{background:resumo.gastos?`conic-gradient(${resumo.categorias.map((c,i,a)=>{const antes=a.slice(0,i).reduce((s,x)=>s+x.totalCentavos,0)/resumo.gastos*100;return `${["#10b981","#38bdf8","#a78bfa","#fbbf24","#fb7185","#94a3b8"][i%6]} ${antes}% ${antes+c.totalCentavos/resumo.gastos*100}%`}).join(",")})`:"#64748b"}}><div className="absolute inset-7 flex flex-col items-center justify-center rounded-full bg-[var(--papel-solido)]"><strong className="text-base">{formatarMoeda(resumo.gastos)}</strong><span className="text-xs text-muted-fg">em compras</span></div></div><div>{resumo.categorias.map((c,i)=><button key={c.id} onClick={()=>{setCategoria(c.id);setAba("compras")}} className="flex min-h-12 w-full items-center gap-3 border-b border-pauta py-2 text-left text-sm"><span className="size-3 shrink-0 rounded-full" style={{background:["#10b981","#38bdf8","#a78bfa","#fbbf24","#fb7185","#94a3b8"][i%6]}}/><span className="flex-1">{c.nome}</span><strong className="whitespace-nowrap">{formatarMoeda(c.totalCentavos)}</strong></button>)}</div></div></Cartao></TabsContent>
-    <TabsContent value="orcamento"><Cartao titulo="Seu orçamento para este cartão"><p className="text-sm text-muted-fg">Escolha quanto pretende gastar por mês. O limite concedido pelo banco é separado.</p><div className="my-5 grid gap-3 sm:grid-cols-3">{[["Planejado",planejado],["Compras no mês",resumo.gastos],["Disponível no plano",planejado-resumo.gastos]].map(([titulo,valor])=><div key={String(titulo)} className="rounded-2xl border border-pauta bg-papel-2 p-4"><p className="text-xs text-muted-fg">{titulo}</p><strong className="mt-2 block whitespace-nowrap text-xl">{formatarMoeda(Number(valor))}</strong></div>)}</div><div className="flex flex-wrap items-end gap-3"><label className="text-sm">Orçamento mensal (R$)<Input inputMode="decimal" value={orcamento} placeholder={formatarDecimal(planejado / 100, 2)} onChange={e=>setOrcamento(e.target.value)}/></label><Button disabled={ocupado||!orcamento} onClick={()=>void salvarOrcamento()}>Salvar orçamento</Button></div>{erro&&<p role="alert" className="mt-3 text-negativo">{erro}</p>}</Cartao></TabsContent>
-    <TabsContent value="ajuda"><AjudaCartao cartao={cartao} mes={mes}/></TabsContent>
-    <TabsContent value="importar"><Importador key={cartao.id} contaInicial={cartao.id} aoConcluir={()=>router.refresh()}/></TabsContent>
+import Link from "next/link"
+import { useEffect, useMemo, useState, type CSSProperties } from "react"
+import { useRouter } from "next/navigation"
+import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-react"
+
+import estilos from "./central-cartoes.module.css"
+import { MarcaPersonalizada } from "@/components/identidades-visuais"
+import { IdentidadeBanco } from "@/components/banco-perfil"
+import { AjudaCartao } from "@/components/ajuda-cartao"
+import { CompraCartaoForm } from "@/components/compra-cartao-form"
+import { Importador } from "@/components/importador"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { enviar } from "@/lib/cliente"
+import { mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
+import { rotuloCompetencia } from "@/lib/datas"
+import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
+import { corDoBanco } from "@/lib/bancos-perfil"
+
+const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
+
+export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string }) {
+  const router = useRouter()
+  const [id, setId] = useState(cartoes[0]?.id ?? "")
+  const [mes, setMes] = useState(mesAtual)
+  const [categoria, setCategoria] = useState("")
+  const [busca, setBusca] = useState("")
+  const [aba, setAba] = useState("compras")
+  const [form, setForm] = useState<{ compra?: CompraCartao; parcelamento?: CompraParcelada } | null>(null)
+  const [excluir, setExcluir] = useState<{ id: string; nome: string; tipo: "transacoes" | "parcelamentos" } | null>(null)
+  const [erro, setErro] = useState("")
+  const [ocupado, setOcupado] = useState(false)
+  const cartao = cartoes.find((linha) => linha.id === id) ?? cartoes[0]
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("aba") === "parcelas") setAba("parcelas")
+  }, [])
+
+  if (!cartao) return <div className={estilos.vazio}><p>Adicione seu primeiro cartão.</p><Button asChild><Link href="/configuracoes">Cadastrar cartão</Link></Button></div>
+
+  const resumo = resumoDoMes(cartao, mes)
+  const meses = mesesDoCartao(cartao, mesAtual)
+  const indiceMes = Math.max(0, meses.indexOf(mes))
+  const inicio = Math.max(0, Math.min(indiceMes - 2, meses.length - 6))
+  const mesesVisiveis = meses.slice(inicio, inicio + 6)
+  const barras = mesesVisiveis.map((competencia) => ({ competencia, ...resumoDoMes(cartao, competencia) }))
+  const maximo = Math.max(1, ...barras.map((barra) => Math.max(barra.gastos, barra.previsto)))
+  const compras = resumo.compras
+    .filter((compra) => (!categoria || (compra.categoriaId ?? "sem") === categoria) && compra.descricao.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")))
+    .sort((a, b) => b.data.localeCompare(a.data))
+
+  async function remover() {
+    if (!excluir) return
+    setOcupado(true); setErro("")
+    try { await enviar(`/api/${excluir.tipo}/${excluir.id}`, {}, "DELETE"); setExcluir(null); router.refresh() }
+    catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível excluir.") }
+    finally { setOcupado(false) }
+  }
+
+  return <div className={estilos.pagina}>
+    <section className={estilos.topo}>
+      <div className={estilos.carteira} aria-label="Seus cartões">
+        {cartoes.map((linha, indice) => <button
+          key={linha.id}
+          type="button"
+          aria-pressed={linha.id === cartao.id}
+          className={estilos.cartaoFisico}
+          style={{ "--cor-banco": corDoBanco(linha.instituicao), "--indice": indice } as CSSProperties}
+          onClick={() => { setId(linha.id); setMes(mesAtual); setCategoria(""); setBusca("") }}
+        >
+          <span className={estilos.marca}><small>{linha.instituicao ?? "Cartão"}</small><IdentidadeBanco instituicao={linha.instituicao ?? ""} nome={linha.nome} /></span>
+          <strong>{linha.nome}</strong>
+          <span className={estilos.final}>Vence {linha.diaVencimento ? `dia ${linha.diaVencimento}` : "não informado"}</span>
+        </button>)}
+      </div>
+
+      <div className={estilos.detalhes}>
+        <div className={estilos.resumoCartao}>
+          <div><p className={estilos.sobretitulo}>{cartao.instituicao ?? "Cartão selecionado"}</p><h1>{cartao.nome}</h1></div>
+          <div><small>Fatura de {rotuloCompetencia(mes, true)}</small><strong>{formatarMoeda(resumo.saldo)}</strong></div>
+          <dl><div><dt>Fecha</dt><dd>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "Não informado"}</dd></div><div><dt>Vence</dt><dd>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "Não informado"}</dd></div><div><dt>Limite bancário</dt><dd>{cartao.limiteCentavos ? formatarMoeda(cartao.limiteCentavos) : "Não informado"}</dd></div></dl>
+        </div>
+        <div className={estilos.faturas}>
+          <header><div><p className={estilos.sobretitulo}>Confirmado e previsto</p><h2>Faturas por mês</h2></div><div><button aria-label="Meses anteriores" disabled={inicio === 0} onClick={() => setMes(meses[Math.max(0, inicio - 1)])}><ChevronLeft /></button><button aria-label="Próximos meses" disabled={inicio + 6 >= meses.length} onClick={() => setMes(meses[Math.min(meses.length - 1, inicio + 6)])}><ChevronRight /></button></div></header>
+          <div className={estilos.barras}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
+            <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
+            <small>{rotuloCompetencia(barra.competencia, true)}</small><b>{mes === barra.competencia ? formatarMoeda(barra.saldo) : ""}</b>
+          </button>)}</div>
+          <p className={estilos.legenda}><span />Confirmado <span />Parcelas previstas</p>
+        </div>
+      </div>
+    </section>
+
+    <div className={estilos.acoes}><Button onClick={() => setForm({})}><Plus />Nova compra</Button><Button variant="outline" onClick={() => setAba("importar")}><Upload />Importar fatura</Button></div>
+
+    <Tabs value={aba} onValueChange={setAba}>
+      <TabsList className={estilos.abas}><TabsTrigger value="compras">Compras</TabsTrigger><TabsTrigger value="parcelas">Parcelas</TabsTrigger><TabsTrigger value="categorias">Categorias</TabsTrigger><TabsTrigger value="orcamento">Orçamento</TabsTrigger><TabsTrigger value="ajuda">Ajuda</TabsTrigger><TabsTrigger value="importar">Importar</TabsTrigger></TabsList>
+
+      <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><select aria-label="Filtrar categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)}><option value="">Todas as categorias</option>{resumo.categorias.map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select></div>
+        <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><MarcaPersonalizada nome={compra.descricao} /><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
+      </section></TabsContent>
+
+      <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} /><div className={estilos.parcelamentos}>{cartao.parcelamentos.map((parcela) => <article key={parcela.id}><header><span><strong>{parcela.descricao}</strong><small>{formatarMoeda(parcela.parcelaCentavos)}/mês · termina em {rotuloCompetencia(parcela.parcelas.at(-1)?.competencia ?? mes, true)}</small></span><b>{parcela.parcelasPagas}/{parcela.parcelasTotal}</b><button aria-label={`Editar ${parcela.descricao}`} onClick={() => setForm({ parcelamento: parcela })}><Pencil /></button><button aria-label={`Excluir ${parcela.descricao}`} onClick={() => setExcluir({ id: parcela.id, nome: parcela.descricao, tipo: "parcelamentos" })}><Trash2 /></button></header><progress value={parcela.parcelasPagas} max={parcela.parcelasTotal} /><details><summary>Ver calendário</summary>{parcela.parcelas.map((linha) => <div key={linha.id} data-atual={linha.competencia === mes}><span>{linha.numero}/{parcela.parcelasTotal} · {rotuloCompetencia(linha.competencia, true)}</span><b>{formatarMoeda(linha.valorCentavos)} · {linha.paga ? "Paga" : "Prevista"}</b></div>)}</details></article>)}</div></section></TabsContent>
+
+      <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
+
+      <TabsContent value="orcamento"><OrcamentoDoCartao cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
+      <TabsContent value="ajuda"><AjudaCartao cartao={cartao} mes={mes} /></TabsContent>
+      <TabsContent value="importar"><Importador contaInicial={cartao.id} aoConcluir={() => router.refresh()} /></TabsContent>
     </Tabs>
-    {form&&<CompraCartaoForm contaId={cartao.id} categorias={categorias} {...form} fechar={()=>setForm(null)} salvou={()=>router.refresh()}/>}
-    <Dialog open={Boolean(excluir)} onOpenChange={a=>{if(!a&&!ocupado)setExcluir(null)}}><DialogContent><DialogHeader><DialogTitle>Excluir {excluir?.tipo==="parcelamentos"?"parcelamento":"compra"}?</DialogTitle><DialogDescription>{excluir?.nome}. Este registro será removido dos cálculos.</DialogDescription></DialogHeader>{erro&&<p role="alert" className="text-negativo">{erro}</p>}<div className="flex justify-end gap-2"><Button variant="outline" disabled={ocupado} onClick={()=>setExcluir(null)}>Cancelar</Button><Button variant="destructive" disabled={ocupado} onClick={()=>void remover()}>{ocupado?"Excluindo…":"Excluir"}</Button></div></DialogContent></Dialog>
+
+    <Dialog open={form !== null} onOpenChange={(aberto) => !aberto && setForm(null)}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>{form?.compra || form?.parcelamento ? "Editar compra" : "Nova compra"}</DialogTitle><DialogDescription>Registre no cartão selecionado.</DialogDescription></DialogHeader>{form && <CompraCartaoForm contaId={cartao.id} categorias={categorias} compra={form.compra} parcelamento={form.parcelamento} fechar={() => setForm(null)} salvou={() => router.refresh()} embutido />}</DialogContent></Dialog>
+    <Dialog open={Boolean(excluir)} onOpenChange={(aberto) => !aberto && setExcluir(null)}><DialogContent><DialogHeader><DialogTitle>Excluir {excluir?.nome}?</DialogTitle><DialogDescription>Esta ação não pode ser desfeita.</DialogDescription></DialogHeader>{erro && <p role="alert">{erro}</p>}<div className={estilos.rodapeModal}><Button variant="outline" onClick={() => setExcluir(null)}>Cancelar</Button><Button variant="destructive" disabled={ocupado} onClick={() => void remover()}>Excluir</Button></div></DialogContent></Dialog>
   </div>
+}
+
+function Cabecalho({ titulo, apoio }: { titulo: string; apoio: string }) {
+  return <header className={estilos.cabecalho}><div><h2>{titulo}</h2><p>{apoio}</p></div></header>
+}
+
+function OrcamentoDoCartao({ cartao, mes, categorias, gastos, aoSalvar }: { cartao: DadosCartao; mes: string; categorias: { id: string; nome: string }[]; gastos: { id: string; nome: string; totalCentavos: number }[]; aoSalvar: () => void }) {
+  const existente = cartao.orcamentos?.find((plano) => plano.competencia === mes)
+  const inicial = existente?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0
+  const [total, setTotal] = useState(inicial)
+  const [linhas, setLinhas] = useState<Record<string, number>>(() => Object.fromEntries(existente?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? []))
+  const [erro, setErro] = useState("")
+  const [salvando, setSalvando] = useState(false)
+  const [novaCategoria, setNovaCategoria] = useState("")
+  useEffect(() => { const plano = cartao.orcamentos?.find((item) => item.competencia === mes); setTotal(plano?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0); setLinhas(Object.fromEntries(plano?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? [])); setErro("") }, [cartao, mes])
+  const distribuido = Object.values(linhas).reduce((soma, valor) => soma + valor, 0)
+  const categoriasAtivas = useMemo(() => categorias.filter((linha) => gastos.some((gasto) => gasto.id === linha.id) || (linhas[linha.id] ?? 0) > 0), [categorias, gastos, linhas])
+  async function salvar() { setErro(""); if (distribuido > total) { setErro("As categorias ultrapassam o orçamento total."); return } setSalvando(true); try { await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos: total, categorias: Object.entries(linhas).filter(([, valor]) => valor > 0).map(([categoriaId, limiteCentavos]) => ({ categoriaId, limiteCentavos })) }, "PUT"); aoSalvar() } catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível salvar.") } finally { setSalvando(false) } }
+  const gastoTotal = gastos.reduce((soma, linha) => soma + linha.totalCentavos, 0)
+  const maximo = Math.max(10000, cartao.limiteCentavos ?? 0, gastoTotal * 2)
+  return <section className={estilos.painel}><Cabecalho titulo="Orçamento do cartão" apoio={`Plano de ${rotuloCompetencia(mes, true)} · limite bancário separado`} /><div className={estilos.resumoOrcamento}><div><small>Planejado</small><strong>{total ? formatarMoeda(total) : "Definir orçamento"}</strong></div><div><small>Utilizado</small><strong>{formatarMoeda(gastoTotal)}</strong></div><div><small>Restante</small><strong>{total ? formatarMoeda(total - gastoTotal) : "—"}</strong></div><div><small>Não distribuído</small><strong>{formatarMoeda(Math.max(0, total - distribuido))}</strong></div></div>
+    <label className={estilos.slider}><span><b>Total do mês</b><input aria-label="Valor exato do orçamento total" value={formatarDecimal(total / 100, 2)} onChange={(e) => setTotal(paraCentavos(e.target.value))} inputMode="decimal" /></span><input type="range" min="0" max={maximo} step="5000" value={Math.min(total, maximo)} onChange={(e) => setTotal(Number(e.target.value))} /></label>
+    <div className={estilos.adicionarCategoria}><select aria-label="Adicionar categoria ao orçamento" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)}><option value="">Adicionar categoria</option>{categorias.filter((linha) => !categoriasAtivas.some((ativa) => ativa.id === linha.id)).map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select><Button type="button" variant="outline" disabled={!novaCategoria} onClick={() => { setLinhas((atual) => ({ ...atual, [novaCategoria]: 1000 })); setNovaCategoria("") }}>Adicionar</Button></div>
+    <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)} utilizado</small><input aria-label={`Orçamento de ${linha.nome}`} value={formatarDecimal(limite / 100, 2)} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: paraCentavos(e.target.value) }))} inputMode="decimal" /></span><input type="range" min="0" max={Math.max(total, 10000)} step="1000" value={Math.min(limite, Math.max(total, 10000))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
+    {erro && <p className={estilos.erro} role="alert">{erro}</p>}<Button disabled={salvando} onClick={() => void salvar()}>Salvar orçamento</Button>
+  </section>
 }

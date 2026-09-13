@@ -159,7 +159,7 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
 }
 
 /** Pergunta pede resposta; o resto é lançamento. */
-export function ehPergunta(texto: string): boolean {
+function ehPergunta(texto: string): boolean {
   if (texto.includes("?")) return true
   return /^(quanto|quando|onde|como|qual|quais|quem|por que|porque|vale a pena|posso|devo|d[áa] para)\b/i.test(texto)
 }
