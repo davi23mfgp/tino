@@ -7,7 +7,8 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { Cartao, Metrica } from "@/components/ui/painel"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
-import { GraficoFluxo } from "@/components/graficos"
+import { FluxoDeCaixaNoTempo } from "@/components/graficos"
+import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 
 export const dynamic = "force-dynamic"
 
@@ -21,6 +22,7 @@ export default async function Projecao() {
   ])
 
   const comAcumulado = projetarComParcelas(panorama, compromissos)
+  const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, comAcumulado)
 
   const primeiroNegativo = comAcumulado.find((linha) => linha.acumuladoCentavos < 0)
   const maiorSaida = Math.max(...comAcumulado.map((linha) => linha.despesasCentavos + linha.parcelasCentavos), 1)
@@ -57,13 +59,11 @@ export default async function Projecao() {
         </p>
       </Cartao>
 
-      <Cartao titulo="Saldo projetado">
-        <GraficoFluxo
-          dados={comAcumulado.map((linha) => ({
-            competencia: linha.competencia,
-            saldoAcumuladoCentavos: linha.acumuladoCentavos,
-          }))}
-        />
+      {/* Mesmo grafico do inicio, com a janela maior: quem clica em "Ver
+          projecao" quer o mesmo desenho que viu no painel, nao outro. Aqui ele
+          vem com 300px de altura porque a tela e dedicada a isso. */}
+      <Cartao titulo="Quando o caixa fica assim">
+        <FluxoDeCaixaNoTempo series={fluxo} altura={300} />
       </Cartao>
 
       <Cartao titulo="Mês a mês">

@@ -22,6 +22,8 @@ import {
 } from "recharts"
 
 import { formatarMoeda, formatarMoedaCurta } from "@/lib/dinheiro"
+import { cn } from "@/lib/utils"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { rotuloCompetencia } from "@/lib/datas"
 
 /**
@@ -662,4 +664,125 @@ export function GraficoBalanco({
       </ComposedChart>
     </ResponsiveContainer>
   )
+}
+
+// ============================================================
+// FLUXO DE CAIXA AO LONGO DO TEMPO
+// ============================================================
+
+/**
+ * Quando o caixa fica como, ao longo do tempo.
+ *
+ * Pedido do Davi em 13/09, com as palavras dele: "baseado no que esta entrando
+ * e vai entrar e no que saiu e vai sair, quando que vai ficar meu caixa ao
+ * longo do tempo, filtro dias mes e ano. deixe o grafico mais claro possivel
+ * com retangulos junto com as linhas".
+ *
+ * Retângulo e linha respondem coisas diferentes e por isso convivem: a barra é
+ * o movimento do período (entrou, saiu), a linha é o saldo que sobra depois
+ * dele. Sem a barra, a linha sobe e desce sem dizer por quê; sem a linha, as
+ * barras não somam para lugar nenhum.
+ *
+ * O futuro aparece com traço pontilhado e barra mais apagada. Desenhar o que
+ * ainda não aconteceu igual ao que já aconteceu é prometer certeza que não
+ * existe — a legenda diz isso por escrito, não só pela cor.
+ */
+export function FluxoDeCaixaNoTempo({
+  series,
+  altura = 260,
+}: {
+  series: Record<"dia" | "mes" | "ano", PontoFluxoGrafico[]>
+  altura?: number
+}) {
+  const cores = useCores()
+  const [granularidade, setGranularidade] = useState<"dia" | "mes" | "ano">("mes")
+  const serie = series[granularidade]
+
+  const dados = serie.map((ponto) => ({
+    rotulo: ponto.rotulo,
+    entrou: ponto.entrouCentavos / 100,
+    saiu: ponto.saiuCentavos / 100,
+    // Duas chaves para a MESMA linha: o Recharts não sabe pontilhar metade de
+    // uma série. O ponto de virada entra nas duas, senão a linha nasce com um
+    // buraco entre o último dia realizado e o primeiro previsto.
+    caixaRealizado: ponto.futuro ? null : ponto.caixaCentavos / 100,
+    caixaPrevisto: ponto.futuro || ponto.viradaDoFuturo ? ponto.caixaCentavos / 100 : null,
+    futuro: ponto.futuro,
+  }))
+
+  const virada = dados.findIndex((ponto) => ponto.futuro)
+  const fim = serie[serie.length - 1]
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ToggleGroup
+          type="single"
+          value={granularidade}
+          onValueChange={(valor) => { if (valor) setGranularidade(valor as "dia" | "mes" | "ano") }}
+          aria-label="Período do fluxo de caixa"
+        >
+          <ToggleGroupItem value="dia">Dias</ToggleGroupItem>
+          <ToggleGroupItem value="mes">Meses</ToggleGroupItem>
+          <ToggleGroupItem value="ano">Anos</ToggleGroupItem>
+        </ToggleGroup>
+        <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
+          No fim de {fim?.rotulo}:{" "}
+          <span className={cn("numero font-semibold", (fim?.caixaCentavos ?? 0) < 0 && "text-negativo")}>
+            {formatarMoeda(fim?.caixaCentavos ?? 0)}
+          </span>
+        </p>
+      </div>
+
+      <div style={{ height: altura }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+            <XAxis dataKey="rotulo" tick={eixo} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={12} />
+            <YAxis tick={eixo} tickLine={false} axisLine={false} width={58} tickFormatter={(valor) => formatarMoedaCurta(valor * 100)} />
+            <Tooltip content={<Dica />} cursor={{ fill: "currentColor", opacity: 0.06 }} />
+            {/* Zero marcado sempre: sem ele, "caixa negativo" vira só uma
+                linha mais baixa que as outras. */}
+            <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.35} />
+            {virada > 0 && (
+              <ReferenceLine
+                x={dados[virada]?.rotulo}
+                stroke="currentColor"
+                strokeOpacity={0.35}
+                strokeDasharray="3 3"
+                label={{ value: "hoje", position: "insideTopLeft", fill: "currentColor", fontSize: 10, opacity: 0.6 }}
+              />
+            )}
+            <Bar dataKey="entrou" name="Entrou" fill={cores.positivo} radius={[4, 4, 0, 0]} maxBarSize={18}>
+              {dados.map((ponto, indice) => (
+                <Cell key={indice} fillOpacity={ponto.futuro ? 0.42 : 1} />
+              ))}
+            </Bar>
+            <Bar dataKey="saiu" name="Saiu" fill={cores.negativo} radius={[4, 4, 0, 0]} maxBarSize={18}>
+              {dados.map((ponto, indice) => (
+                <Cell key={indice} fillOpacity={ponto.futuro ? 0.42 : 1} />
+              ))}
+            </Bar>
+            <Line type="monotone" dataKey="caixaRealizado" name="Caixa" stroke={cores.dado} strokeWidth={2.4} dot={false} connectNulls={false} />
+            <Line type="monotone" dataKey="caixaPrevisto" name="Caixa previsto" stroke={cores.dado} strokeWidth={2.4} strokeDasharray="5 4" dot={false} connectNulls={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+        Barra cheia e linha contínua: o que já aconteceu. Barra apagada e linha pontilhada: o que está agendado —
+        lançamento com data futura e parcela de cartão já contratada. Não prevê imprevisto nem aumento de renda.
+      </p>
+    </div>
+  )
+}
+
+export interface PontoFluxoGrafico {
+  chave: string
+  rotulo: string
+  entrouCentavos: number
+  saiuCentavos: number
+  caixaCentavos: number
+  futuro: boolean
+  /** Último ponto realizado, que também inicia a linha pontilhada. */
+  viradaDoFuturo?: boolean
 }
