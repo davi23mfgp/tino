@@ -307,7 +307,7 @@ export default function Configuracoes() {
 
         <button
           onClick={conectarBanco}
-          className="mt-4 rounded-full border border-acao/40 bg-acao/10 px-5 py-2.5 text-sm text-acao"
+          className="mt-4 min-h-11 rounded-full border border-acao/40 bg-acao/10 px-5 py-2.5 text-sm text-acao"
         >
           Conectar um banco
         </button>

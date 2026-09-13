@@ -79,10 +79,14 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             competencia={rotuloCompetencia(competenciaAtual())}
             apenasLoja={apenasLoja}
           />
+          {/* Primeiro foco da pagina: sem isto, o teclado atravessa trilho,
+              menu, conta e sair antes de chegar no conteudo, em toda troca de
+              pagina. A vitrine ja tinha o atalho; o app estava sem. */}
+          <a href="#conteudo" className="pular-navegacao">Pular para o conteúdo</a>
           {!apenasLoja && <AvisoCritico />}
           <SubAbas mei={false} apenasLoja={apenasLoja} />
 
-          <main className="animate-page-enter">{children}</main>
+          <main id="conteudo" className="animate-page-enter">{children}</main>
         </div>
 
         {/* O "+" agora mora no meio da barra do polegar (`navegacao.tsx`),
