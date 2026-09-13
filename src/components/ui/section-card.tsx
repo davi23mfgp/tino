@@ -17,8 +17,8 @@ export function SectionCard({ children, className, title, action }: SectionCardP
     <div className={cn("ios-card overflow-hidden", className)}>
       {(title || action) && (
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          {title && <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>}
-          {action && <div className="text-[13px] text-acao">{action}</div>}
+          {title && <h3 className="text-[calc(15px*var(--escala-letra))] font-semibold text-foreground">{title}</h3>}
+          {action && <div className="text-[calc(13px*var(--escala-letra))] text-acao">{action}</div>}
         </div>
       )}
       {children}

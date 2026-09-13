@@ -56,7 +56,7 @@ const VEREDITO = {
   EVITAR: { texto: "Não recomendo", tom: "text-negativo", borda: "border-negativo/40 bg-negativo/10" },
 }
 
-const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
 
 export default function Emprestimos() {
   const [valor, setValor] = useState("")
@@ -102,25 +102,25 @@ export default function Emprestimos() {
   return (
     <div className={cn(estilos.pagina, "space-y-4")}>
       <Cartao titulo="Vale a pena esse empréstimo?">
-        <p className="text-[13px] leading-relaxed text-muted-fg">
+        <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
           Veja quanto recebe, quanto devolve e o impacto na renda.
         </p>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="space-y-1.5">
-            <span className="text-[11px] uppercase tracking-widest text-muted-fg">Valor</span>
+            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Valor</span>
             <input value={valor} onChange={(e) => setValor(e.target.value)} placeholder="10.000,00" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[11px] uppercase tracking-widest text-muted-fg">Parcelas</span>
+            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Parcelas</span>
             <input value={parcelas} onChange={(e) => setParcelas(e.target.value)} placeholder="24" className={campo} inputMode="numeric" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[11px] uppercase tracking-widest text-muted-fg">Juros % ao mês</span>
+            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Juros % ao mês</span>
             <input value={juros} onChange={(e) => setJuros(e.target.value)} placeholder="2,5" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[11px] uppercase tracking-widest text-muted-fg">IOF e tarifas</span>
+            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">IOF e tarifas</span>
             <input value={custos} onChange={(e) => setCustos(e.target.value)} placeholder="opcional" className={campo} inputMode="decimal" />
           </label>
         </div>
@@ -136,7 +136,7 @@ export default function Emprestimos() {
           <Button
             onClick={() => simular(false)}
             disabled={ocupado || !valor}
-            className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+            className="rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
           >
             {ocupado ? "Calculando…" : "Simular"}
           </Button>
@@ -144,14 +144,14 @@ export default function Emprestimos() {
             <Button
               onClick={() => simular(true)}
               disabled={ocupado}
-              className="rounded-full border border-pauta px-4 py-2.5 text-[13px] text-muted-fg transition hover:text-foreground"
+              className="rounded-full border border-pauta px-4 py-2.5 text-[calc(13px*var(--escala-letra))] text-muted-fg transition hover:text-foreground"
             >
               guardar para comparar
             </Button>
           )}
         </div>
 
-        {erro && <p className="mt-3 text-[13px] text-negativo">{erro}</p>}
+        {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
       </Cartao>
 
       {analise && parecer && (
@@ -163,10 +163,10 @@ export default function Emprestimos() {
               <Metrica rotulo="Custo além do recebido" valor={formatarMoeda(analise.totalPagoCentavos - analise.liberadoCentavos)} detalhe="Diferença entre receber e devolver" />
             </div>
             <div className={cn("rounded-2xl border p-4", parecer.borda)}>
-              <p className={cn("text-[15px] font-semibold", parecer.tom)}>{parecer.texto}</p>
+              <p className={cn("text-[calc(15px*var(--escala-letra))] font-semibold", parecer.tom)}>{parecer.texto}</p>
               <ul className="mt-2 space-y-1.5">
                 {analise.motivos.map((motivo) => (
-                  <li key={motivo} className="text-[13px] leading-relaxed">
+                  <li key={motivo} className="text-[calc(13px*var(--escala-letra))] leading-relaxed">
                     {motivo}
                   </li>
                 ))}
@@ -190,17 +190,17 @@ export default function Emprestimos() {
               />
             </div>
 
-            <p className="mt-3 text-[12px] text-muted-fg">
+            <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               Você recebe <span className="valor-inteiro">{formatarMoeda(analise.liberadoCentavos)}</span> e devolve{" "}
               <span className="valor-inteiro">{formatarMoeda(analise.totalPagoCentavos)}</span> ao longo de {analise.tabela.length} meses.
             </p>
 
             {analise.alternativas.length > 0 && (
               <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-                <p className="text-[11px] uppercase tracking-widest text-muted-fg">Antes de assinar</p>
+                <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Antes de assinar</p>
                 <ul className="mt-2 space-y-1.5">
                   {analise.alternativas.map((alternativa) => (
-                    <li key={alternativa} className="text-[13px] leading-relaxed">
+                    <li key={alternativa} className="text-[calc(13px*var(--escala-letra))] leading-relaxed">
                       {alternativa}
                     </li>
                   ))}
@@ -219,7 +219,7 @@ export default function Emprestimos() {
           >
             <div className="space-y-1.5">
               {(verTabela ? analise.tabela : analise.tabela.slice(0, 6)).map((linha) => (
-                <div key={linha.parcela} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-pauta py-3 text-[12px] sm:grid-cols-[2rem_minmax(0,1fr)_auto_auto]">
+                <div key={linha.parcela} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 border-b border-pauta py-3 text-[calc(12px*var(--escala-letra))] sm:grid-cols-[2rem_minmax(0,1fr)_auto_auto]">
                   <span className="w-8 shrink-0 text-muted-fg">{linha.parcela}ª</span>
                   <div className="flex h-2.5 flex-1 overflow-hidden rounded-full bg-foreground/[0.06]">
                     {/* Juros em laranja, amortização em verde: mostra de relance
@@ -242,7 +242,7 @@ export default function Emprestimos() {
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-[11px] text-muted-fg">
+            <p className="mt-3 text-[calc(11px*var(--escala-letra))] text-muted-fg">
               Cada linha mostra juros pagos e saldo restante.
             </p>
           </Cartao>
@@ -255,22 +255,22 @@ export default function Emprestimos() {
             {salvas.map((simulacao) => (
               <div key={simulacao.id} className="flex flex-wrap items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px]">{simulacao.titulo}</p>
-                  <p className="text-[11px] text-muted-fg">
+                  <p className="truncate text-[calc(14px*var(--escala-letra))]">{simulacao.titulo}</p>
+                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                     <span className="valor-inteiro">{formatarMoeda(simulacao.valorCentavos)}</span> em {simulacao.parcelas}x ·{" "}
                     {formatarPercentual(simulacao.jurosMensalBps)} a.m. nominal
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[13px] tabular-nums"><span className="valor-inteiro">{formatarMoeda(simulacao.resultado.parcelaCentavos)}</span>/mês</p>
-                  <p className="text-[11px] text-muted-fg">
+                  <p className="text-[calc(13px*var(--escala-letra))] tabular-nums"><span className="valor-inteiro">{formatarMoeda(simulacao.resultado.parcelaCentavos)}</span>/mês</p>
+                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                     CET {formatarPercentual(simulacao.resultado.cetMensalBps)} a.m.
                   </p>
                 </div>
                 {simulacao.veredito && (
                   <span
                     className={cn(
-                      "rounded-full border px-2.5 py-1 text-[11px]",
+                      "rounded-full border px-2.5 py-1 text-[calc(11px*var(--escala-letra))]",
                       VEREDITO[simulacao.veredito as keyof typeof VEREDITO]?.borda,
                       VEREDITO[simulacao.veredito as keyof typeof VEREDITO]?.tom,
                     )}
@@ -281,7 +281,7 @@ export default function Emprestimos() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[12px] text-muted-fg">
+          <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             Guarde as propostas de bancos diferentes e compare pelo CET, não pela taxa anunciada.
           </p>
         </Cartao>

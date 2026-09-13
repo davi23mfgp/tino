@@ -28,11 +28,11 @@ export function CabecalhoPagina({
           <Icone className="size-[20px] text-foreground" strokeWidth={1.8} />
         </div>
         <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-semibold leading-tight tracking-tight text-foreground">
+          <h1 className="truncate text-[calc(22px*var(--escala-letra))] font-semibold leading-tight tracking-tight text-foreground">
             {titulo}
           </h1>
           {contexto && (
-            <p className="mt-0.5 truncate text-[13px] text-muted-fg">{contexto}</p>
+            <p className="mt-0.5 truncate text-[calc(13px*var(--escala-letra))] text-muted-fg">{contexto}</p>
           )}
         </div>
       </div>

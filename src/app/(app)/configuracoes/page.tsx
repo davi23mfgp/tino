@@ -202,7 +202,7 @@ export default function Configuracoes() {
                 <IdentidadeBanco instituicao={conta.instituicao} nome={conta.nome} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm">{conta.nome}</p>
-                  <p className="truncate text-[12px] text-muted-fg">
+                  <p className="truncate text-[calc(12px*var(--escala-letra))] text-muted-fg">
                     {TIPOS_CONTA.find((tipo) => tipo.valor === conta.tipo)?.rotulo ?? conta.tipo}
                     {conta.instituicao && ` · ${conta.instituicao}`}
                     {conta.limiteCentavos ? ` · limite ${formatarMoeda(conta.limiteCentavos)}` : ""}
@@ -219,7 +219,7 @@ export default function Configuracoes() {
               <Empty className="py-6">
                 <EmptyHeader>
                   <EmptyTitle className="text-sm">Nenhuma conta cadastrada</EmptyTitle>
-                  <EmptyDescription className="text-[13px]">
+                  <EmptyDescription className="text-[calc(13px*var(--escala-letra))]">
                     Cadastre a primeira para o Tino acompanhar saldo e fatura.
                   </EmptyDescription>
                 </EmptyHeader>
@@ -351,7 +351,7 @@ export default function Configuracoes() {
             </p>
           )}
 
-          <p className="text-[13px] text-muted-fg">
+          <p className="text-[calc(13px*var(--escala-letra))] text-muted-fg">
             A autenticação acontece no site do seu banco. O app nunca recebe sua senha — só permissão de leitura, com
             prazo, que você revoga quando quiser.
           </p>
@@ -361,7 +361,7 @@ export default function Configuracoes() {
               <div key={conexao.id} className="flex items-center justify-between gap-2 rounded-[12px] border border-pauta p-2.5">
                 <div className="min-w-0">
                   <p className="truncate text-sm">{conexao.instituicao}</p>
-                  <p className="truncate text-[12px] text-muted-fg">
+                  <p className="truncate text-[calc(12px*var(--escala-letra))] text-muted-fg">
                     {conexao.status.toLowerCase()}
                     {conexao.ultimaSync && ` · sincronizado ${new Date(conexao.ultimaSync).toLocaleDateString("pt-BR")}`}
                     {conexao.diasParaExpirar !== null && ` · expira em ${conexao.diasParaExpirar} dias`}
@@ -383,7 +383,7 @@ export default function Configuracoes() {
             Conectar um banco
           </Button>
 
-          {mensagem && <p className="mt-2 text-[13px] text-muted-fg">{mensagem}</p>}
+          {mensagem && <p className="mt-2 text-[calc(13px*var(--escala-letra))] text-muted-fg">{mensagem}</p>}
         </LinhaAjuste>
 
         <LinhaAjuste

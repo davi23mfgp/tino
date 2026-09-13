@@ -75,7 +75,7 @@ export function Banner({
     <div
       role="status"
       className={cn(
-        "relative mb-5 flex items-center gap-3 rounded-2xl border pl-4 pr-14 py-3 text-left text-[13px] font-medium",
+        "relative mb-5 flex items-center gap-3 rounded-2xl border pl-4 pr-14 py-3 text-left text-[calc(13px*var(--escala-letra))] font-medium",
         TOM[tom],
         className,
       )}

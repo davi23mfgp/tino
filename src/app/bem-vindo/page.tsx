@@ -210,7 +210,7 @@ export default function BemVindo() {
               className={campo}
               inputMode="numeric"
             />
-            <span className="block text-[12px] text-muted-fg">
+            <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">
               Seu mês financeiro passa a começar nesse dia, e não no dia 1º.
             </span>
           </label>
@@ -374,7 +374,7 @@ export default function BemVindo() {
           </BotaoAdicionar>
 
           {cartoes.length === 0 && (
-            <p className="text-[12px] text-muted-fg">Se não usa cartão de crédito, siga adiante.</p>
+            <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Se não usa cartão de crédito, siga adiante.</p>
           )}
         </div>
       ),
@@ -449,7 +449,7 @@ export default function BemVindo() {
                   </div>
 
                   {parcelamento.valorParcela && parcelamento.parcelasTotal && (
-                    <p className="text-[12px] text-muted-fg">
+                    <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                       Faltam{" "}
                       {Math.max(0, Number(parcelamento.parcelasTotal) - Number(parcelamento.parcelasPagas || 0))}{" "}
                       parcela(s) —{" "}
@@ -544,7 +544,7 @@ export default function BemVindo() {
           </BotaoAdicionar>
 
           {dividas.length === 0 && (
-            <p className="text-[12px] text-muted-fg">Se não deve nada além do cartão, pode seguir.</p>
+            <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Se não deve nada além do cartão, pode seguir.</p>
           )}
         </div>
       ),
@@ -595,7 +595,7 @@ export default function BemVindo() {
           </div>
 
           {custo && (
-            <p className="rounded-[var(--raio-cartao)] border border-pauta p-3 text-[12px] text-muted-fg">
+            <p className="rounded-[var(--raio-cartao)] border border-pauta p-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               Pelo gasto que você informou, sua reserva de emergência ideal é{" "}
               {formatarMoeda(paraCentavos(custo) * 6)} (seis meses). Já deixei essa meta criada com esse alvo.
             </p>
@@ -618,7 +618,7 @@ export default function BemVindo() {
             />
             <span>
               Sim, tenho CNPJ de MEI
-              <span className="block text-[12px] text-muted-fg">
+              <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">
                 Crio uma conta separada para o CNPJ — misturar PF e PJ é o erro que mais complica MEI.
               </span>
             </span>

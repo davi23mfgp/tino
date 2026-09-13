@@ -44,22 +44,22 @@ export function CategoriasComparadas({ linhas, limite = 8 }: { linhas: Linha[]; 
         return (
           <div key={linha.categoriaId ?? linha.nome}>
             <div className="flex items-baseline justify-between gap-3">
-              <span className="min-w-0 flex-1 truncate text-[13px]">
+              <span className="min-w-0 flex-1 truncate text-[calc(13px*var(--escala-letra))]">
                 {linha.nome}
                 {/* Espaço explícito: sem ele, leitor de tela e cópia do texto
                     devolvem "Supermercadoessencial" numa palavra só. */}
-                {linha.essencial && <span className="ml-1.5 text-[10px] text-muted-fg"> · essencial</span>}
+                {linha.essencial && <span className="ml-1.5 text-[calc(10px*var(--escala-letra))] text-muted-fg"> · essencial</span>}
               </span>
 
-              <span className="text-[13px] tabular-nums">{formatarMoeda(linha.totalCentavos)}</span>
+              <span className="text-[calc(13px*var(--escala-letra))] tabular-nums">{formatarMoeda(linha.totalCentavos)}</span>
 
               {linha.variacaoBps !== null ? (
-                <span className={cn("flex w-16 items-center justify-end gap-1 text-[11px] tabular-nums", tom)}>
+                <span className={cn("flex w-16 items-center justify-end gap-1 text-[calc(11px*var(--escala-letra))] tabular-nums", tom)}>
                   <Icone className="size-3" />
                   {estavel ? "0%" : `${Math.abs(Math.round(linha.variacaoBps / 100))}%`}
                 </span>
               ) : (
-                <span className="w-16 text-right text-[11px] text-muted-fg">novo</span>
+                <span className="w-16 text-right text-[calc(11px*var(--escala-letra))] text-muted-fg">novo</span>
               )}
             </div>
 
@@ -86,7 +86,7 @@ export function CategoriasComparadas({ linhas, limite = 8 }: { linhas: Linha[]; 
         )
       })}
 
-      <p className="pt-1 text-[11px] text-muted-fg">
+      <p className="pt-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
         A barra fina é o mês passado. Em despesa, cair é bom — por isso a queda aparece em verde.
       </p>
     </div>

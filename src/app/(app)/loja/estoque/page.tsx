@@ -56,7 +56,7 @@ interface Resposta {
 // cair na conta" no balcão — reaproveitar o corte em vez de inventar outro.
 const DIAS_PARADO = 30
 
-const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[13px] outline-none focus:border-positivo/50"
+const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[calc(13px*var(--escala-letra))] outline-none focus:border-positivo/50"
 
 const VAZIO = { produtoId: "", tipo: "ENTRADA" as "ENTRADA" | "AJUSTE", quantidade: "", custo: "", motivo: "" }
 
@@ -109,7 +109,7 @@ function EditorNcm({
     return (
       <button
         onClick={() => setAberto(true)}
-        className="rounded-full border border-pauta px-2 py-0.5 text-[11px] text-muted-fg hover:border-acao/40 hover:text-foreground"
+        className="rounded-full border border-pauta px-2 py-0.5 text-[calc(11px*var(--escala-letra))] text-muted-fg hover:border-acao/40 hover:text-foreground"
       >
         {ncmAtual ?? "definir"}
       </button>
@@ -125,7 +125,7 @@ function EditorNcm({
         onBlur={() => setTimeout(() => setAberto(false), 150)}
         placeholder="busque por nome ou código"
         disabled={salvando}
-        className="w-44 rounded-lg border border-pauta bg-background px-2 py-1 text-[12px] outline-none focus:border-acao/50"
+        className="w-44 rounded-lg border border-pauta bg-background px-2 py-1 text-[calc(12px*var(--escala-letra))] outline-none focus:border-acao/50"
       />
       {resultados.length > 0 && (
         <div className="absolute right-0 z-10 mt-1 w-72 rounded-xl border border-pauta bg-papel-1 p-1 shadow-lg">
@@ -133,7 +133,7 @@ function EditorNcm({
             <button
               key={resultado.codigo}
               onMouseDown={() => escolher(resultado.codigo)}
-              className="block w-full rounded-lg px-2 py-1.5 text-left text-[12px] hover:bg-foreground/[0.05]"
+              className="block w-full rounded-lg px-2 py-1.5 text-left text-[calc(12px*var(--escala-letra))] hover:bg-foreground/[0.05]"
             >
               <span className="numero font-medium">{resultado.codigo}</span>{" "}
               <span className="text-muted-fg">{resultado.descricao}</span>
@@ -212,7 +212,7 @@ export default function Estoque() {
 
       <Cartao titulo="Entrada de mercadoria">
         <form onSubmit={lancar} className="grid gap-3 sm:grid-cols-5">
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-2">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg sm:col-span-2">
             produto
             <select
               required
@@ -229,7 +229,7 @@ export default function Estoque() {
             </select>
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             o que houve
             <select
               value={lancamento.tipo}
@@ -243,7 +243,7 @@ export default function Estoque() {
             </select>
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             {lancamento.tipo === "ENTRADA" ? "quantas peças" : "quantas tem hoje"}
             <input
               required
@@ -255,7 +255,7 @@ export default function Estoque() {
           </label>
 
           {lancamento.tipo === "ENTRADA" ? (
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               custo por peça
               <input
                 inputMode="decimal"
@@ -266,7 +266,7 @@ export default function Estoque() {
               />
             </label>
           ) : (
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               motivo
               <input
                 placeholder="contagem do sábado"
@@ -281,16 +281,16 @@ export default function Estoque() {
             <button
               type="submit"
               disabled={ocupado}
-              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
             >
               <PackagePlus className="size-4" /> lançar
             </button>
           </div>
 
-          {erro && <p className="text-[13px] text-negativo sm:col-span-5">{erro}</p>}
+          {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo sm:col-span-5">{erro}</p>}
         </form>
 
-        <p className="mt-3 text-[12px] leading-relaxed text-muted-fg">
+        <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
           A contagem manda: ao informar quantas peças existem hoje, o saldo passa a ser esse número e a diferença fica
           registrada. A saída não se lança aqui — ela sai sozinha quando você vende no balcão.
         </p>
@@ -298,7 +298,7 @@ export default function Estoque() {
 
       <Cartao titulo="O que tem na loja">
         {dados && !dados.podeVerFinanceiro && (
-          <p className="mb-3 rounded-2xl border border-pauta bg-papel-2 px-3 py-2 text-[12px] text-muted-fg">
+          <p className="mb-3 rounded-2xl border border-pauta bg-papel-2 px-3 py-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             Custo e margem aparecem só pro dono. Este login vê saldo e preço de venda, o que decide se tem o produto e
             por quanto vender.
           </p>
@@ -312,7 +312,7 @@ export default function Estoque() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
-                <tr className="border-b border-pauta text-left text-[11px] uppercase tracking-widest text-muted-fg">
+                <tr className="border-b border-pauta text-left text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">
                   <th className="pb-2 font-normal">produto</th>
                   <th className="pb-2 text-right font-normal">tem</th>
                   <th className="pb-2 text-right font-normal">custou</th>
@@ -342,7 +342,7 @@ export default function Estoque() {
                       ) : (
                         <span className={linha.margem.margemBps < 0 ? "text-negativo" : "text-positivo"}>
                           {formatarMoeda(linha.margem.lucroCentavos ?? 0)}{" "}
-                          <span className="text-[11px] text-muted-fg">
+                          <span className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                             ({formatarPercentual(linha.margem.margemBps, 0)})
                           </span>
                         </span>
@@ -368,7 +368,7 @@ export default function Estoque() {
               {maisVendidos.map((linha, indice) => (
                 <li key={linha.produtoId} className="flex items-center justify-between py-2.5">
                   <span className="flex items-center gap-2">
-                    <span className="numero text-[11px] text-muted-fg">{indice + 1}º</span>
+                    <span className="numero text-[calc(11px*var(--escala-letra))] text-muted-fg">{indice + 1}º</span>
                     {linha.descricao}
                   </span>
                   <span className="numero text-right">{linha.quantidadeVendida} un.</span>
@@ -389,7 +389,7 @@ export default function Estoque() {
               {parados.map((linha) => (
                 <li key={linha.produtoId} className="flex items-center justify-between py-2.5">
                   <span>{linha.descricao}</span>
-                  <span className="text-right text-[13px] text-atencao">
+                  <span className="text-right text-[calc(13px*var(--escala-letra))] text-atencao">
                     {linha.nuncaVendeu ? "nunca vendeu" : `sem vender há ${linha.diasSemVender} dias`}
                   </span>
                 </li>

@@ -116,9 +116,9 @@ function Dica({
 
   return (
     <div className="rounded-xl border border-pauta bg-papel-1 px-3 py-2 shadow-alta">
-      {label && <p className="mb-1 text-[11px] uppercase tracking-widest text-muted-fg">{label}</p>}
+      {label && <p className="mb-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{label}</p>}
       {payload.map((linha, indice) => (
-        <p key={indice} className="flex items-center gap-2 text-[12px]">
+        <p key={indice} className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))]">
           <span className="size-2 rounded-full" style={{ background: linha.color }} />
           <span className="text-muted-fg">{linha.name}</span>
           <span className="font-medium">{formatarMoeda(Number(linha.value ?? 0))}</span>
@@ -264,7 +264,7 @@ export function GraficoCategorias({
 
       <ul className="w-full space-y-1.5">
         {serie.map((linha, indice) => (
-          <li key={linha.name} className="flex items-center gap-2 text-[13px]">
+          <li key={linha.name} className="flex items-center gap-2 text-[calc(13px*var(--escala-letra))]">
             <span className="size-2.5 shrink-0 rounded-full" style={{ background: paleta[indice % paleta.length] }} />
             <span className="min-w-0 flex-1 truncate">{linha.name}</span>
             <span className="text-muted-fg">{total > 0 ? `${Math.round((linha.value / total) * 100)}%` : "0%"}</span>
@@ -334,23 +334,23 @@ export function RoscaCategorias({
         {/* Total no buraco do meio. `pointer-events-none` porque a rosca por
             baixo continua sendo o alvo do toque de cada fatia. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="numero text-[20px] font-semibold leading-none tracking-tight">
+          <span className="numero text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">
             {formatarMoeda(total)}
           </span>
-          <span className="mt-1.5 text-[11px] text-[color:var(--texto-2)]">gasto até hoje</span>
+          <span className="mt-1.5 text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-2)]">gasto até hoje</span>
         </div>
       </div>
 
       <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
         {serie.map((linha, indice) => (
-          <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[13px] sm:w-full">
+          <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[calc(13px*var(--escala-letra))] sm:w-full">
             <span
               aria-hidden
               className="size-2.5 shrink-0 rounded-full"
               style={{ background: paleta[indice % paleta.length] }}
             />
             <span className="min-w-0 truncate sm:flex-1">{linha.name}</span>
-            <span className="numero shrink-0 text-[13px] font-medium sm:text-right">
+            <span className="numero shrink-0 text-[calc(13px*var(--escala-letra))] font-medium sm:text-right">
               {formatarMoeda(linha.value)}
             </span>
           </li>
@@ -474,8 +474,8 @@ export function GraficoAnel({
       </ResponsiveContainer>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[20px] font-semibold leading-none tracking-tight">{valor}</span>
-        <span className="mt-1 text-[11px] uppercase tracking-widest text-muted-fg">{rotulo}</span>
+        <span className="text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">{valor}</span>
+        <span className="mt-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{rotulo}</span>
       </div>
     </div>
   )
@@ -589,8 +589,8 @@ export function GraficoDaDivisao({
       </ResponsiveContainer>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="numero text-[19px] font-semibold leading-none">{total}</span>
-        <span className="mt-1 text-[11px] uppercase tracking-widest text-muted-fg">por mês</span>
+        <span className="numero text-[calc(19px*var(--escala-letra))] font-semibold leading-none">{total}</span>
+        <span className="mt-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">por mês</span>
       </div>
     </div>
   )

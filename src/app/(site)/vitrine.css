@@ -49,7 +49,7 @@
   background: var(--tinta);
   color: var(--creme);
   font-family: var(--fonte-corpo), system-ui, sans-serif;
-  font-size: 16px;
+  font-size: calc(16px * var(--escala-letra));
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -76,18 +76,18 @@
 }
 
 .vitrine .h-hero {
-  font-size: clamp(2.6rem, 8vw, 6rem);
+  font-size: calc(clamp(2.6rem, 8vw, 6rem) * var(--escala-letra));
   font-weight: 700;
 }
 
 .vitrine .h-secao {
-  font-size: clamp(1.9rem, 4.4vw, 3.25rem);
+  font-size: calc(clamp(1.9rem, 4.4vw, 3.25rem) * var(--escala-letra));
   font-weight: 700;
 }
 
 .vitrine .eyebrow {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 0.6875rem;
+  font-size: calc(0.6875rem * var(--escala-letra));
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -96,7 +96,7 @@
 
 .vitrine .apoio {
   color: var(--creme-2);
-  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  font-size: calc(clamp(1rem, 1.5vw, 1.125rem) * var(--escala-letra));
   max-width: 48ch;
 }
 
@@ -156,7 +156,7 @@
   background: var(--creme);
   color: var(--tinta);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
   letter-spacing: -0.01em;
   transition: transform 0.16s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.16s ease;
 }
@@ -180,7 +180,7 @@
 .vitrine .botao--pequeno {
   min-height: 42px;
   padding-inline: 1.15rem;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--escala-letra));
 }
 
 /* --- movimento -------------------------------------------- */
@@ -244,13 +244,13 @@
   font-family: var(--fonte-display), system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
-  font-size: 1.0625rem;
+  font-size: calc(1.0625rem * var(--escala-letra));
 }
 
 .vitrine .menu-links {
   display: none;
   gap: 1.75rem;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--escala-letra));
   color: var(--creme-2);
 }
 
@@ -272,7 +272,7 @@
 
 .vitrine .menu-entrar {
   display: none;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--escala-letra));
   color: var(--creme-2);
   padding-inline: 0.65rem;
 }
@@ -315,7 +315,7 @@
 }
 
 .vitrine .nota {
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem * var(--escala-letra));
   color: var(--creme-3);
 }
 
@@ -347,7 +347,7 @@
 }
 
 .vitrine .fita-conta {
-  font-size: 0.6875rem;
+  font-size: calc(0.6875rem * var(--escala-letra));
   color: var(--creme-3);
 }
 
@@ -412,7 +412,7 @@
 
 .vitrine .fita-mes {
   text-align: center;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--escala-letra));
   color: var(--creme-3);
 }
 
@@ -429,7 +429,7 @@
   margin-top: 1.5rem;
   padding-top: 1.2rem;
   border-top: 1px solid var(--linha);
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--escala-letra));
   color: var(--creme-2);
 }
 
@@ -488,21 +488,21 @@
 .vitrine .pilar-metrica {
   display: block;
   margin-top: 1.5rem;
-  font-size: clamp(1.9rem, 3.4vw, 2.5rem);
+  font-size: calc(clamp(1.9rem, 3.4vw, 2.5rem) * var(--escala-letra));
   line-height: 1;
 }
 
 .vitrine .pilar-unidade {
   display: block;
   margin-top: 0.6rem;
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem * var(--escala-letra));
   color: var(--creme-3);
 }
 
 .vitrine .pilar-texto {
   margin-top: 0.75rem;
   color: var(--creme-2);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
 }
 
 /* --- seções com aparelho ---------------------------------- */
@@ -542,7 +542,7 @@
   grid-template-columns: auto 1fr;
   gap: 0.85rem;
   align-items: start;
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
   color: var(--creme-2);
 }
 
@@ -595,7 +595,7 @@
   overflow: hidden;
   background: oklch(0.11 0 0);
   color: oklch(0.96 0 0);
-  font-size: 10px;
+  font-size: calc(10px * var(--escala-letra));
   line-height: 1.35;
 }
 
@@ -604,7 +604,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 9px 18px 3px;
-  font-size: 9px;
+  font-size: calc(9px * var(--escala-letra));
   font-weight: 600;
 }
 
@@ -643,28 +643,28 @@
 
 .vitrine .cel-titulo-tela {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 13px;
+  font-size: calc(13px * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.03em;
   padding: 2px 3px 0;
 }
 
 .vitrine .cel-marca {
-  font-size: 7px;
+  font-size: calc(7px * var(--escala-letra));
   letter-spacing: 0.16em;
   color: oklch(0.68 0 0);
 }
 
 .vitrine .cel-ola {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 15px;
+  font-size: calc(15px * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.03em;
   margin-top: 1px;
 }
 
 .vitrine .cel-mes {
-  font-size: 8px;
+  font-size: calc(8px * var(--escala-letra));
   color: oklch(0.68 0 0);
   margin-top: 2px;
 }
@@ -674,7 +674,7 @@
 }
 
 .vitrine .cel-rotulo {
-  font-size: 7px;
+  font-size: calc(7px * var(--escala-letra));
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -684,7 +684,7 @@
 .vitrine .cel-numero {
   font-family: var(--fonte-display), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 26px;
+  font-size: calc(26px * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -692,7 +692,7 @@
 }
 
 .vitrine .cel-apoio {
-  font-size: 8px;
+  font-size: calc(8px * var(--escala-letra));
   color: oklch(0.72 0 0);
   margin-top: 5px;
 }
@@ -704,7 +704,7 @@
   border-radius: 999px;
   background: oklch(0.43 0.15 170);
   color: #fff;
-  font-size: 9px;
+  font-size: calc(9px * var(--escala-letra));
   font-weight: 600;
 }
 
@@ -721,7 +721,7 @@
 }
 
 .vitrine .cel-tile-rotulo {
-  font-size: 6.5px;
+  font-size: calc(6.5px * var(--escala-letra));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -731,7 +731,7 @@
 .vitrine .cel-tile-valor {
   font-family: var(--fonte-display), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: calc(13px * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-top: 3px;
@@ -739,7 +739,7 @@
 
 .vitrine .cel-cartao-titulo {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 10px;
+  font-size: calc(10px * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -757,7 +757,7 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 8px;
+  font-size: calc(8px * var(--escala-letra));
 }
 
 .vitrine .cel-categoria-valor {
@@ -810,7 +810,7 @@
 }
 
 .vitrine .cel-linha-nome {
-  font-size: 8.5px;
+  font-size: calc(8.5px * var(--escala-letra));
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -818,13 +818,13 @@
 }
 
 .vitrine .cel-linha-nota {
-  font-size: 7px;
+  font-size: calc(7px * var(--escala-letra));
   color: oklch(0.66 0 0);
 }
 
 .vitrine .cel-linha-valor {
   font-variant-numeric: tabular-nums;
-  font-size: 9px;
+  font-size: calc(9px * var(--escala-letra));
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -838,14 +838,14 @@
 }
 
 .vitrine .cel-plastico-nome {
-  font-size: 8px;
+  font-size: calc(8px * var(--escala-letra));
   color: oklch(0.72 0 0);
 }
 
 .vitrine .cel-plastico-valor {
   font-family: var(--fonte-display), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-size: 18px;
+  font-size: calc(18px * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.03em;
   margin-top: 3px;
@@ -854,7 +854,7 @@
 .vitrine .cel-plastico-rodape {
   display: flex;
   justify-content: space-between;
-  font-size: 7px;
+  font-size: calc(7px * var(--escala-letra));
   color: oklch(0.7 0 0);
   margin-top: 9px;
 }
@@ -875,7 +875,7 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  font-size: 7px;
+  font-size: calc(7px * var(--escala-letra));
   font-weight: 500;
   color: oklch(0.68 0 0);
 }
@@ -899,7 +899,7 @@
   border-radius: 999px;
   background: oklch(0.43 0.15 170);
   color: #fff;
-  font-size: 15px;
+  font-size: calc(15px * var(--escala-letra));
   line-height: 1;
   padding-bottom: 2px;
 }
@@ -932,7 +932,7 @@
 
 .vitrine .passo-numero {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem * var(--escala-letra));
   font-weight: 700;
   letter-spacing: 0.1em;
   color: var(--acento);
@@ -941,7 +941,7 @@
 .vitrine .passo-titulo {
   margin-top: 1.1rem;
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 1.125rem;
+  font-size: calc(1.125rem * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -949,7 +949,7 @@
 .vitrine .passo-texto {
   margin-top: 0.6rem;
   color: var(--creme-2);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
 }
 
 /* --- bento de recursos ------------------------------------ */
@@ -983,7 +983,7 @@
 
 .vitrine .recurso-titulo {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  font-size: 1.0625rem;
+  font-size: calc(1.0625rem * var(--escala-letra));
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -991,7 +991,7 @@
 .vitrine .recurso-texto {
   margin-top: 0.6rem;
   color: var(--creme-2);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
 }
 
 /* --- planos ----------------------------------------------- */
@@ -1027,21 +1027,21 @@
   border-radius: 999px;
   background: var(--acento);
   color: var(--tinta);
-  font-size: 0.6875rem;
+  font-size: calc(0.6875rem * var(--escala-letra));
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 
 .vitrine .plano-preco {
   margin-top: 1.4rem;
-  font-size: 2.75rem;
+  font-size: calc(2.75rem * var(--escala-letra));
   line-height: 1;
 }
 
 .vitrine .plano-por {
   margin-left: 0.5rem;
   font-family: var(--fonte-corpo), system-ui, sans-serif;
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem * var(--escala-letra));
   font-weight: 500;
   letter-spacing: 0;
   color: var(--creme-3);
@@ -1051,7 +1051,7 @@
   margin-top: 1.6rem;
   display: grid;
   gap: 0.65rem;
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
 }
 
 .vitrine .plano-lista li {
@@ -1087,7 +1087,7 @@
   font-family: var(--fonte-display), system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
-  font-size: 1.0625rem;
+  font-size: calc(1.0625rem * var(--escala-letra));
 }
 
 .vitrine .faq summary::-webkit-details-marker {
@@ -1097,7 +1097,7 @@
 .vitrine .faq summary::after {
   content: "+";
   color: var(--creme-3);
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--escala-letra));
   line-height: 1;
   transition: transform 0.2s ease;
 }
@@ -1110,7 +1110,7 @@
 .vitrine .faq p {
   padding-bottom: 1.5rem;
   color: var(--creme-2);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--escala-letra));
   max-width: 64ch;
 }
 
@@ -1144,7 +1144,7 @@
   gap: 1.25rem;
   padding-block: 2.5rem;
   border-top: 1px solid var(--linha);
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem * var(--escala-letra));
   color: var(--creme-3);
 }
 

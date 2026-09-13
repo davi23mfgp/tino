@@ -31,6 +31,24 @@
 
 @layer base {
   :root {
+    /* --- tamanho da letra, um numero para o site inteiro ---
+       Pedido do Davi em 13/09: "diminua a fonte de todo o site em 30%".
+       Todo tamanho de letra do app e da vitrine passa por este fator --
+       `text-[calc(13px*var(--escala-letra))]` no Tailwind e
+       `font-size: calc(... * var(--escala-letra))` no CSS.
+
+       Multiplica SO a letra. Espacamento, raio e altura de controle nao
+       entram: reduzir a raiz do documento encolheria o layout junto, e o
+       pedido era sobre letra.
+
+       AVISO REGISTRADO, nao escondido: os tamanhos mais usados hoje sao
+       13px (154 vezes), 12px (133) e 11px (65). Em 0.7 eles viram 9,1px,
+       8,4px e 7,7px. Isso fica abaixo do que o proprio brief de 13/09 pede
+       ("texto comum de 14-16px", "nao usar fontes minusculas para fazer
+       caber") e abaixo do minimo confortavel de leitura. Esta e a unica
+       linha a mexer para calibrar. */
+    --escala-letra: 0.7;
+
     /* Pilha do sistema: no Mac e no iPhone resolve para a San Francisco de
        verdade; nas outras plataformas cai na fonte nativa delas. */
     --font-ios: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI",
@@ -436,34 +454,34 @@
 .app-content { min-width:0;padding-top:20px;padding-bottom:calc(170px + env(safe-area-inset-bottom)); }
 .app-sidebar { display:none; }
 .app-bottom-nav { position:fixed;inset:auto 12px 12px;z-index:40;display:flex;align-items:stretch;gap:2px;border:1px solid var(--pauta);border-radius:24px;background:color-mix(in oklch,var(--background) 94%,transparent);backdrop-filter:blur(20px);padding:8px 4px calc(8px + env(safe-area-inset-bottom));box-shadow:var(--sombra-ios); }
-.app-bottom-item { flex:1;min-width:0;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:500;color:var(--texto-2);border-radius:14px; }
+.app-bottom-item { flex:1;min-width:0;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size: calc(11px * var(--escala-letra));font-weight:500;color:var(--texto-2);border-radius:14px; }
 .app-bottom-item span { max-width:100%;overflow:hidden;text-overflow:ellipsis; }
 .app-bottom-item.is-active { color:var(--foreground);background:var(--papel-1); }
 .app-bottom-add { display:flex;align-items:center;justify-content:center;width:56px;flex-shrink:0; }
 .app-nav-group { border:1px solid var(--pauta);border-radius:16px;padding:4px 10px; }
-.app-nav-group summary { min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;font-size:15px;font-weight:600;padding-inline:4px;list-style:none; }
+.app-nav-group summary { min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;font-size: calc(15px * var(--escala-letra));font-weight:600;padding-inline:4px;list-style:none; }
 .app-nav-group summary::-webkit-details-marker { display:none; }
-.app-nav-group summary small { display:block;margin-top:3px;color:var(--texto-2);font-size:12px;font-weight:400; }
-.app-nav-group summary > span:last-child { font-size:22px;transition:transform .2s; }
+.app-nav-group summary small { display:block;margin-top:3px;color:var(--texto-2);font-size: calc(12px * var(--escala-letra));font-weight:400; }
+.app-nav-group summary > span:last-child { font-size: calc(22px * var(--escala-letra));transition:transform .2s; }
 .app-nav-group[open] summary > span:last-child { transform:rotate(45deg); }
-.app-nav-item { display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:10px 14px;border-radius:14px;font-size:14px;color:var(--texto-2);text-align:left;transition:background .2s; }
+.app-nav-item { display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:10px 14px;border-radius:14px;font-size: calc(14px * var(--escala-letra));color:var(--texto-2);text-align:left;transition:background .2s; }
 .app-nav-item:hover,.app-nav-item.is-active { background:var(--papel-1);color:var(--foreground); }
 .app-nav-item.is-active { font-weight:600; }
-.app-brand { display:flex;align-items:center;gap:10px;margin:4px 10px 42px;font-size:32px;font-weight:700;letter-spacing:-.06em; }
-.app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size:11px;letter-spacing:.12em;text-transform:uppercase; }
+.app-brand { display:flex;align-items:center;gap:10px;margin:4px 10px 42px;font-size: calc(32px * var(--escala-letra));font-weight:700;letter-spacing:-.06em; }
+.app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size: calc(11px * var(--escala-letra));letter-spacing:.12em;text-transform:uppercase; }
 .app-header { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px; }
 .app-header-title { min-width:0; }
-.app-header-title h1 { font-size:clamp(20px,3vw,28px);font-weight:600;letter-spacing:-.04em;overflow-wrap:anywhere; }
-.app-header-title p { margin-top:4px;font-size:12px;color:var(--texto-2); }
+.app-header-title h1 { font-size: calc(clamp(20px,3vw,28px) * var(--escala-letra));font-weight:600;letter-spacing:-.04em;overflow-wrap:anywhere; }
+.app-header-title p { margin-top:4px;font-size: calc(12px * var(--escala-letra));color:var(--texto-2); }
 .app-header-actions { display:flex;align-items:center;gap:6px;flex-shrink:0; }
 .home-balance { padding:26px;border:1px solid var(--pauta);border-radius:24px;background:oklch(var(--card)); }
-.home-balance-label { font-size:13px;color:var(--texto-2); }
-.home-balance-value { font-size:clamp(32px,5vw,50px);font-weight:600;letter-spacing:-.05em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.2;margin:10px 0 20px; }
+.home-balance-label { font-size: calc(13px * var(--escala-letra));color:var(--texto-2); }
+.home-balance-value { font-size: calc(clamp(32px,5vw,50px) * var(--escala-letra));font-weight:600;letter-spacing:-.05em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.2;margin:10px 0 20px; }
 .home-flow { display:grid;grid-template-columns:1fr 1fr;gap:20px;padding-top:20px;border-top:1px solid var(--pauta); }
-.home-flow small { font-size:12px;color:var(--texto-2); }
-.home-flow strong { display:block;margin-top:6px;font-weight:600;font-size:clamp(18px,3vw,24px);letter-spacing:-.03em;overflow-wrap:anywhere; }
+.home-flow small { font-size: calc(12px * var(--escala-letra));color:var(--texto-2); }
+.home-flow strong { display:block;margin-top:6px;font-weight:600;font-size: calc(clamp(18px,3vw,24px) * var(--escala-letra));letter-spacing:-.03em;overflow-wrap:anywhere; }
 .home-grid { display:grid;gap:18px; }
-.home-category { display:grid;gap:8px;margin-top:18px;font-size:13px; }
+.home-category { display:grid;gap:8px;margin-top:18px;font-size: calc(13px * var(--escala-letra)); }
 .home-category > div { display:flex;justify-content:space-between;gap:12px; }
 .home-category-track { height:7px;border-radius:99px;background:var(--papel-1);overflow:hidden; }
 .home-category-track span { display:block;height:100%;border-radius:99px;background:oklch(var(--primary));opacity:.7; }
@@ -491,7 +509,7 @@
 @media (max-width: 479px) {
   .area-do-app .grid:has(> .tino-metrica) { grid-template-columns: minmax(0, 1fr); }
   .tino-metrica { padding: 10px 12px; }
-  .tino-metrica > .numero { font-size: 22px; }
+  .tino-metrica > .numero { font-size: calc(22px * var(--escala-letra)); }
 }
 
 /* iOS: superfícies agrupadas, controles de sistema e navegação discreta.
@@ -499,22 +517,22 @@
 .area-do-app { --raio-cartao: 18px; --raio-campo: 12px; font-family: var(--font-ios); }
 .area-do-app .ficha { box-shadow: none; border-color: color-mix(in oklch, var(--pauta) 65%, transparent); }
 .app-bottom-nav { border-radius: 20px; padding-inline: 6px; box-shadow: var(--sombra-flutuante); }
-.app-bottom-item { font-size: 12px; gap: 4px; }
+.app-bottom-item { font-size: calc(12px * var(--escala-letra)); gap: 4px; }
 .app-bottom-item.is-active { color: oklch(var(--lch-acao)); background: var(--papel-1); }
 .app-nav-item.is-active { background: var(--papel-2); }
 .app-header-title h1 { font-weight: 700; letter-spacing: -.04em; }
 .ios-saldo { border: 0; background: transparent; padding: 4px 2px 8px; }
-.ios-saldo .home-balance-value { font-size: clamp(28px,4.4vw,40px); font-weight: 700; letter-spacing: -.03em; }
+.ios-saldo .home-balance-value { font-size: calc(clamp(28px,4.4vw,40px) * var(--escala-letra)); font-weight: 700; letter-spacing: -.03em; }
 .ios-saldo .home-flow { background: var(--papel-solido); border: 0; border-radius: 16px; padding: 12px 14px; }
 .ios-atalhos { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
 .ios-atalhos a { padding-inline: 10px; }
 .ios-lista { overflow: hidden; border-radius: 18px; background: var(--papel-1); }
-.ios-lista-linha { display: flex; min-height: 48px; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--pauta); font-size: 14px; }
+.ios-lista-linha { display: flex; min-height: 48px; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--pauta); font-size: calc(14px * var(--escala-letra)); }
 .ios-lista-linha:last-child { border-bottom: 0; }
 .ios-lista-linha:hover { background: var(--papel-2); }
 .ios-icone { display: grid; width: 34px; height: 34px; flex-shrink: 0; place-items: center; border-radius: 10px; background: var(--papel-2); }
 .ios-icone svg { width: 18px; height: 18px; }
-@media (max-width: 380px) { .ios-atalhos a { font-size: 12px; gap: 5px; } }
+@media (max-width: 380px) { .ios-atalhos a { font-size: calc(12px * var(--escala-letra)); gap: 5px; } }
 
 /* Valores permanecem inteiros; o tamanho acompanha a largura da métrica. */
 .area-do-app .tino-metrica { container-type: inline-size; border: 1px solid var(--pauta); border-radius: 18px; }
@@ -526,5 +544,5 @@
    valor. Era isso que aparecia colado em "A confirmar 3" e "Somam R$ 326,80".
    O numero cabe pelo tamanho que acompanha o container (`cqi`), nao por
    rolagem. */
-.area-do-app .tino-metrica .numero { white-space: nowrap; overflow-wrap: normal; word-break: normal; font-size: clamp(0.95rem, 9cqi, 1.5rem); max-width: 100%; }
+.area-do-app .tino-metrica .numero { white-space: nowrap; overflow-wrap: normal; word-break: normal; font-size: calc(clamp(0.95rem, 9cqi, 1.5rem) * var(--escala-letra)); max-width: 100%; }
 .area-do-app .numero { font-variant-numeric: tabular-nums; }

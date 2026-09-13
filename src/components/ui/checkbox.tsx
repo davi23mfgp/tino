@@ -54,7 +54,7 @@ export const Checkbox = React.forwardRef<
   if (!rotulo) return caixa
 
   return (
-    <label htmlFor={idReal} className="inline-flex cursor-pointer items-center gap-2 text-[13px] text-foreground">
+    <label htmlFor={idReal} className="inline-flex cursor-pointer items-center gap-2 text-[calc(13px*var(--escala-letra))] text-foreground">
       {caixa}
       {rotulo}
     </label>

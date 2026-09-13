@@ -39,7 +39,7 @@ export function TagsSelector({
         aria-selected={!valor}
         onClick={() => aoEscolher(null)}
         className={cn(
-          "rounded-[var(--raio-pilula)] px-3 py-1.5 text-[12px] transition-colors",
+          "rounded-[var(--raio-pilula)] px-3 py-1.5 text-[calc(12px*var(--escala-letra))] transition-colors",
           !valor
             ? "bg-atencao/12 text-atencao"
             : "bg-foreground/[0.05] text-[color:var(--texto-2)] hover:bg-foreground/[0.09]",
@@ -58,7 +58,7 @@ export function TagsSelector({
             aria-selected={selecionada}
             onClick={() => aoEscolher(opcao.id)}
             className={cn(
-              "inline-flex items-center gap-1 rounded-[var(--raio-pilula)] px-3 py-1.5 text-[12px] transition-colors",
+              "inline-flex items-center gap-1 rounded-[var(--raio-pilula)] px-3 py-1.5 text-[calc(12px*var(--escala-letra))] transition-colors",
               selecionada
                 ? "bg-acao/12 text-acao"
                 : "bg-foreground/[0.05] text-[color:var(--texto-2)] hover:bg-foreground/[0.09]",

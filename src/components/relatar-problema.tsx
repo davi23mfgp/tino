@@ -66,7 +66,7 @@ export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
               key={opcao.valor}
               type="button"
               onClick={() => setTipo(opcao.valor)}
-              className={`rounded-full border px-3.5 py-1.5 text-[12px] ${tipo === opcao.valor ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
+              className={`rounded-full border px-3.5 py-1.5 text-[calc(12px*var(--escala-letra))] ${tipo === opcao.valor ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
             >
               {opcao.rotulo}
             </button>
@@ -89,14 +89,14 @@ export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
 
         <button
           disabled={enviando}
-          className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
+          className="rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
         >
           {enviando ? "Enviando…" : "Enviar"}
         </button>
       </form>
 
-      {retorno && <p className="mt-3 text-[13px] text-positivo">{retorno}</p>}
-      {erro && <p className="mt-3 text-[13px] text-negativo">{erro}</p>}
+      {retorno && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-positivo">{retorno}</p>}
+      {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
     </Moldura>
   )
 }

@@ -64,21 +64,21 @@ export function FilaDeChamados({ chamados }: { chamados: ChamadoNaFila[] }) {
 
   return (
     <div className="space-y-3">
-      {erro && <p className="text-[13px] text-negativo">{erro}</p>}
+      {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
 
       {chamados.map((chamado) => (
         <Cartao key={chamado.id} className={chamado.status === "RESOLVIDO" ? "opacity-60" : undefined}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="flex flex-wrap items-center gap-2 text-[13px]">
-                <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${COR_TIPO[chamado.tipo]}`}>
+              <p className="flex flex-wrap items-center gap-2 text-[calc(13px*var(--escala-letra))]">
+                <span className={`rounded-full border px-2 py-0.5 text-[calc(10px*var(--escala-letra))] uppercase tracking-wide ${COR_TIPO[chamado.tipo]}`}>
                   {ROTULO_TIPO[chamado.tipo]}
                 </span>
                 <span>{chamado.usuario.nome}</span>
                 <span className="text-muted-fg">{chamado.usuario.email}</span>
               </p>
-              <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed">{chamado.mensagem}</p>
-              <p className="mt-2 text-[12px] text-muted-fg">
+              <p className="mt-2 whitespace-pre-wrap text-[calc(13px*var(--escala-letra))] leading-relaxed">{chamado.mensagem}</p>
+              <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
                 {new Date(chamado.criadoEm).toLocaleString("pt-BR")}
                 {chamado.rota && ` · na tela ${chamado.rota}`}
               </p>
@@ -87,7 +87,7 @@ export function FilaDeChamados({ chamados }: { chamados: ChamadoNaFila[] }) {
             <button
               onClick={() => marcar(chamado, chamado.status === "ABERTO" ? "RESOLVIDO" : "ABERTO")}
               disabled={ocupado === chamado.id}
-              className="shrink-0 rounded-full border border-pauta px-4 py-2 text-[13px] transition-colors hover:border-acao/40 disabled:opacity-50"
+              className="shrink-0 rounded-full border border-pauta px-4 py-2 text-[calc(13px*var(--escala-letra))] transition-colors hover:border-acao/40 disabled:opacity-50"
             >
               {chamado.status === "ABERTO" ? "Marcar resolvido" : "Reabrir"}
             </button>
@@ -104,7 +104,7 @@ export function FilaDeChamados({ chamados }: { chamados: ChamadoNaFila[] }) {
           )}
 
           {chamado.status === "RESOLVIDO" && chamado.resposta && (
-            <p className="mt-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-3 text-[12px] leading-relaxed text-muted-fg">
+            <p className="mt-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
               {chamado.resposta}
             </p>
           )}

@@ -38,8 +38,8 @@ const buttonVariants = cva(
       size: {
         /** Padrão: 44px no dedo, 36px no ponteiro. */
         default: "h-11 px-4 sm:h-9 sm:px-3.5",
-        sm: "h-11 px-3 text-[13px] sm:h-8 sm:px-3",
-        lg: "h-12 px-6 text-[15px] sm:h-10 sm:px-5",
+        sm: "h-11 px-3 text-[calc(13px*var(--escala-letra))] sm:h-8 sm:px-3",
+        lg: "h-12 px-6 text-[calc(15px*var(--escala-letra))] sm:h-10 sm:px-5",
         icon: "size-11 sm:size-9",
         /** Ação secundária dentro de linha de lista, onde 36px ainda pesa. */
         xs: "h-11 px-2.5 text-xs sm:h-7 sm:px-2",

@@ -45,7 +45,7 @@ const CATEGORIAS = [
   { valor: "OUTRO", rotulo: "Outro" },
 ]
 
-const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[13px] outline-none focus:border-positivo/50"
+const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[calc(13px*var(--escala-letra))] outline-none focus:border-positivo/50"
 
 const hoje = () => new Date().toISOString().slice(0, 10)
 const VAZIO = { descricao: "", categoria: "ALUGUEL", valor: "", vencimento: hoje(), mensal: true }
@@ -151,7 +151,7 @@ export default function ContasDaLoja() {
 
       <Cartao titulo="Lançar conta">
         <form onSubmit={criar} className="grid gap-3 sm:grid-cols-5">
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-2">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg sm:col-span-2">
             do que é
             <input
               required
@@ -162,7 +162,7 @@ export default function ContasDaLoja() {
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             tipo
             <select
               value={nova.categoria}
@@ -177,7 +177,7 @@ export default function ContasDaLoja() {
             </select>
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             quanto
             <input
               required
@@ -189,7 +189,7 @@ export default function ContasDaLoja() {
             />
           </label>
 
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             vence em
             <input
               type="date"
@@ -200,7 +200,7 @@ export default function ContasDaLoja() {
             />
           </label>
 
-          <label className="flex items-center gap-2 text-[13px] sm:col-span-3">
+          <label className="flex items-center gap-2 text-[calc(13px*var(--escala-letra))] sm:col-span-3">
             <input
               type="checkbox"
               checked={nova.mensal}
@@ -213,13 +213,13 @@ export default function ContasDaLoja() {
             <button
               type="submit"
               disabled={ocupado}
-              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
             >
               <Plus className="size-4" /> lançar
             </button>
           </div>
 
-          {erro && <p className="text-[13px] text-negativo sm:col-span-5">{erro}</p>}
+          {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo sm:col-span-5">{erro}</p>}
         </form>
       </Cartao>
 
@@ -240,9 +240,9 @@ export default function ContasDaLoja() {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">
                       {conta.descricao}
-                      {conta.mensal && <span className="ml-2 text-[11px] text-muted-fg">todo mês</span>}
+                      {conta.mensal && <span className="ml-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">todo mês</span>}
                     </p>
-                    <p className={`text-[12px] ${vencida ? "text-negativo" : "text-muted-fg"}`}>
+                    <p className={`text-[calc(12px*var(--escala-letra))] ${vencida ? "text-negativo" : "text-muted-fg"}`}>
                       {vencida ? "venceu em " : "vence em "}
                       {vencimento.toLocaleDateString("pt-BR")}
                     </p>
@@ -253,7 +253,7 @@ export default function ContasDaLoja() {
                   <button
                     onClick={() => pagar(conta.id)}
                     disabled={ocupado}
-                    className="rounded-full border border-positivo/40 px-3 py-1 text-[12px] text-positivo disabled:opacity-50"
+                    className="rounded-full border border-positivo/40 px-3 py-1 text-[calc(12px*var(--escala-letra))] text-positivo disabled:opacity-50"
                   >
                     paguei
                   </button>

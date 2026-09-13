@@ -33,11 +33,11 @@ export default async function Plano() {
         ) : (
           <>
             <div className="rounded-[20px] bg-papel-2 p-4 sm:p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-fg">Comece neste mês</p>
+              <p className="text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-[0.14em] text-muted-fg">Comece neste mês</p>
               <h1 className="mt-2 text-xl font-semibold tracking-tight">
                 {primeiroPagamento ? "Seu primeiro pagamento" : "Abra espaço no orçamento"}
               </h1>
-              {primeiroPagamento && <><p className="mt-2 text-sm">{primeiroPagamento.nome}</p><p className="valor-inteiro mt-3 text-[30px] font-bold tracking-tight">{formatarMoeda(primeiroPagamento.valorCentavos)}</p></>}
+              {primeiroPagamento && <><p className="mt-2 text-sm">{primeiroPagamento.nome}</p><p className="valor-inteiro mt-3 text-[calc(30px*var(--escala-letra))] font-bold tracking-tight">{formatarMoeda(primeiroPagamento.valorCentavos)}</p></>}
               <p className="mt-2 text-sm text-muted-fg">
                 {primeiroPagamento ? "Confira todos os pagamentos previstos no roteiro." : "Revise gastos antes de assumir novos pagamentos."}
               </p>
@@ -81,12 +81,12 @@ export default async function Plano() {
               {plano.ordem.map((alvo, indice) => (
                 <li key={alvo.id} className="flex items-start justify-between gap-3 text-sm">
                   <span className="flex items-start gap-2">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-papel-2 text-[11px]">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-papel-2 text-[calc(11px*var(--escala-letra))]">
                       {indice + 1}
                     </span>
                     <span>
                       {alvo.nome}
-                      <span className="block text-[12px] text-muted-fg">
+                      <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">
                         {alvo.jurosMensalBps > 0
                           ? `${formatarPercentual(alvo.jurosMensalBps)} ao mês`
                           : "sem juros enquanto for paga integral"}
@@ -118,7 +118,7 @@ export default async function Plano() {
                       )}
                       sobra <span className="valor-inteiro">{formatarMoeda(passo.sobraCentavos)}</span>
                     </span>
-                  </span></AccordionTrigger><AccordionContent><p className="mt-1 text-[12px] text-muted-fg">
+                  </span></AccordionTrigger><AccordionContent><p className="mt-1 text-[calc(12px*var(--escala-letra))] text-muted-fg">
                     parcelas já contratadas: <span className="valor-inteiro">{formatarMoeda(passo.parcelasFixasCentavos)}</span> · juros do mês:{" "}
                     <span className="valor-inteiro">{formatarMoeda(passo.jurosDoMesCentavos)}</span>
                   </p>

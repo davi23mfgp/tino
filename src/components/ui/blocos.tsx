@@ -64,11 +64,11 @@ export function Situacao({
 }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted-fg">{rotulo}</p>
+      <p className="text-[calc(12px*var(--escala-letra))] font-medium uppercase tracking-[0.08em] text-muted-fg">{rotulo}</p>
       <p className={cn("numero mt-1 text-[clamp(24px,4vw,32px)] font-bold leading-none tracking-[-0.03em]", COR_DO_TOM[tom])}>
         {valorCentavos !== undefined ? formatarMoeda(valorCentavos) : valorTexto}
       </p>
-      {apoio && <p className="mt-1.5 text-[13px] leading-snug text-muted-fg">{apoio}</p>}
+      {apoio && <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] leading-snug text-muted-fg">{apoio}</p>}
     </div>
   )
 }
@@ -99,12 +99,12 @@ export function Progresso({
 
   return (
     <div className={cn("min-w-0", className)}>
-      {rotulo && <p className="text-[13px] font-medium">{rotulo}</p>}
+      {rotulo && <p className="text-[calc(13px*var(--escala-letra))] font-medium">{rotulo}</p>}
       <div className="mt-2 flex items-baseline justify-between gap-3">
-        <span className={cn("numero text-[18px] font-semibold tabular-nums", COR_DO_TOM[tom])}>
+        <span className={cn("numero text-[calc(18px*var(--escala-letra))] font-semibold tabular-nums", COR_DO_TOM[tom])}>
           {formatarMoeda(atualCentavos)}
         </span>
-        <span className="text-[12px] text-muted-fg">
+        <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
           de <span className="numero">{formatarMoeda(metaCentavos)}</span> · {percentual}%
         </span>
       </div>
@@ -116,7 +116,7 @@ export function Progresso({
         value={percentual}
         max={100}
       />
-      <p className="mt-1.5 text-[12px] text-muted-fg">
+      <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
         {falta > 0 ? (
           <>
             Faltam <span className="numero">{formatarMoeda(falta)}</span>
@@ -161,11 +161,11 @@ export function Comparacao({
 
   return (
     <div className={cn("min-w-0", className)}>
-      <p className="text-[12px] font-medium uppercase tracking-[0.08em] text-muted-fg">{rotulo}</p>
-      <p className="numero mt-1 text-[20px] font-semibold leading-none">{formatarMoeda(atualCentavos)}</p>
+      <p className="text-[calc(12px*var(--escala-letra))] font-medium uppercase tracking-[0.08em] text-muted-fg">{rotulo}</p>
+      <p className="numero mt-1 text-[calc(20px*var(--escala-letra))] font-semibold leading-none">{formatarMoeda(atualCentavos)}</p>
       <p
         className={cn(
-          "mt-1.5 flex items-center gap-1 text-[12px]",
+          "mt-1.5 flex items-center gap-1 text-[calc(12px*var(--escala-letra))]",
           igual ? "text-muted-fg" : bom ? "text-positivo" : "text-negativo",
         )}
       >
@@ -204,12 +204,12 @@ export function ProximaAcao({
   return (
     <Moldura className={cn("flex items-center gap-3", className)}>
       <div className="min-w-0 flex-1">
-        <p className="text-[14px] font-semibold leading-snug">{titulo}</p>
-        {descricao && <p className="mt-0.5 text-[12px] leading-snug text-muted-fg">{descricao}</p>}
+        <p className="text-[calc(14px*var(--escala-letra))] font-semibold leading-snug">{titulo}</p>
+        {descricao && <p className="mt-0.5 text-[calc(12px*var(--escala-letra))] leading-snug text-muted-fg">{descricao}</p>}
       </div>
       <Link
         href={href}
-        className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3.5 text-[13px] font-medium text-primary-foreground sm:h-9"
+        className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground sm:h-9"
       >
         {rotuloAcao}
         <ArrowRight aria-hidden className="size-3.5" />
@@ -238,17 +238,17 @@ export function Etapas({
           <span
             aria-hidden
             className={cn(
-              "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-semibold",
+              "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[calc(11px*var(--escala-letra))] font-semibold",
               etapa.concluida ? "bg-positivo/15 text-positivo" : "border border-pauta text-muted-fg",
             )}
           >
             {etapa.concluida ? <Check className="size-3" strokeWidth={3} /> : indice + 1}
           </span>
           <span className="min-w-0 flex-1">
-            <span className={cn("block text-[13px] font-medium leading-snug", etapa.concluida && "text-muted-fg line-through decoration-muted-fg/40")}>
+            <span className={cn("block text-[calc(13px*var(--escala-letra))] font-medium leading-snug", etapa.concluida && "text-muted-fg line-through decoration-muted-fg/40")}>
               {etapa.titulo}
             </span>
-            {etapa.descricao && <span className="mt-0.5 block text-[12px] leading-snug text-muted-fg">{etapa.descricao}</span>}
+            {etapa.descricao && <span className="mt-0.5 block text-[calc(12px*var(--escala-letra))] leading-snug text-muted-fg">{etapa.descricao}</span>}
           </span>
           <span className="sr-only">{etapa.concluida ? "concluída" : "pendente"}</span>
         </li>
@@ -274,16 +274,16 @@ export function Detalhes({
 }) {
   return (
     <details className={cn("group border-t border-pauta", className)}>
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2.5 text-[13px] font-medium sm:min-h-9 [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium sm:min-h-9 [&::-webkit-details-marker]:hidden">
         {titulo}
         <span
           aria-hidden
-          className="text-[16px] leading-none text-muted-fg transition-transform group-open:rotate-45 motion-reduce:transition-none"
+          className="text-[calc(16px*var(--escala-letra))] leading-none text-muted-fg transition-transform group-open:rotate-45 motion-reduce:transition-none"
         >
           +
         </span>
       </summary>
-      <div className="pb-3 text-[13px] leading-relaxed text-muted-fg">{children}</div>
+      <div className="pb-3 text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">{children}</div>
     </details>
   )
 }

@@ -84,7 +84,7 @@ export function Paginacao({
             onClick={() => aoMudar(item)}
             aria-current={item === pagina ? "page" : undefined}
             className={cn(
-              "grid size-8 place-items-center rounded-full text-[13px] tabular-nums transition-colors",
+              "grid size-8 place-items-center rounded-full text-[calc(13px*var(--escala-letra))] tabular-nums transition-colors",
               item === pagina
                 ? "bg-accent font-medium text-accent-foreground"
                 : "text-muted-fg hover:bg-foreground/[0.06] hover:text-foreground",

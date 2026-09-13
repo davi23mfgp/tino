@@ -69,7 +69,7 @@ const AVISO_RISCO: Record<string, { texto: string; tom: string }> = {
   },
 }
 
-const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
 
 const VAZIO = { competencia: competenciaAtual(), comercio: "", servicos: "", dasPago: false, dasValor: "", observacao: "" }
 
@@ -217,7 +217,7 @@ export default function Mei() {
                   <button
                     onClick={() => darBaixa(linha)}
                     disabled={ocupado}
-                    className="flex items-center gap-1.5 rounded-full border border-positivo/40 px-3 py-1 text-[12px] text-positivo disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full border border-positivo/40 px-3 py-1 text-[calc(12px*var(--escala-letra))] text-positivo disabled:opacity-50"
                   >
                     <Check className="size-3.5" /> dar baixa
                   </button>
@@ -257,7 +257,7 @@ export default function Mei() {
       >
         {abrirForm && (
           <form onSubmit={salvar} className="mb-4 grid gap-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               competência
               <input
                 type="month"
@@ -268,7 +268,7 @@ export default function Mei() {
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               receita de comércio
               <input
                 inputMode="decimal"
@@ -279,7 +279,7 @@ export default function Mei() {
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               receita de serviços
               <input
                 inputMode="decimal"
@@ -290,7 +290,7 @@ export default function Mei() {
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               valor do DAS
               <input
                 inputMode="decimal"
@@ -301,7 +301,7 @@ export default function Mei() {
               />
             </label>
 
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg sm:col-span-2">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg sm:col-span-2">
               observação
               <input
                 value={lancamento.observacao}
@@ -310,7 +310,7 @@ export default function Mei() {
               />
             </label>
 
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[calc(13px*var(--escala-letra))]">
               <input
                 type="checkbox"
                 checked={lancamento.dasPago}
@@ -320,19 +320,19 @@ export default function Mei() {
             </label>
 
             <div className="flex items-center justify-end gap-3 sm:col-span-2">
-              <button type="button" onClick={() => setAbrirForm(false)} className="text-[13px] text-muted-fg">
+              <button type="button" onClick={() => setAbrirForm(false)} className="text-[calc(13px*var(--escala-letra))] text-muted-fg">
                 cancelar
               </button>
               <button
                 type="submit"
                 disabled={ocupado}
-                className="rounded-full bg-acao px-4 py-2 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
+                className="rounded-full bg-acao px-4 py-2 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
               >
                 salvar
               </button>
             </div>
 
-            {erro && <p className="text-[13px] text-negativo sm:col-span-2">{erro}</p>}
+            {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo sm:col-span-2">{erro}</p>}
           </form>
         )}
 

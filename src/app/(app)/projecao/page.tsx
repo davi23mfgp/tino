@@ -51,7 +51,7 @@ export default async function Projecao() {
           </p>
         )}
 
-        <p className="mt-4 text-[12px] text-muted-fg">
+        <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-muted-fg">
           Cenário de tudo seguir como está: receita e despesa pela sua média, mais as parcelas já contratadas. Não
           prevê imprevisto nem aumento de renda.
         </p>
@@ -96,7 +96,7 @@ export default async function Projecao() {
                 />
               </div>
 
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-fg">
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[calc(12px*var(--escala-letra))] text-muted-fg">
                 <span>entra <span className="valor-inteiro">{formatarMoeda(linha.receitasCentavos)}</span></span>
                 <span>sai <span className="valor-inteiro">{formatarMoeda(linha.despesasCentavos)}</span></span>
                 {linha.parcelasCentavos > 0 && <span>parcelas <span className="valor-inteiro">{formatarMoeda(linha.parcelasCentavos)}</span></span>}

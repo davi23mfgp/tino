@@ -113,7 +113,7 @@ export function DitarGasto({
         onClick={ouvindo ? parar : ouvir}
         aria-label={ouvindo ? "Parar de gravar" : "Ditar um gasto"}
         className={cn(
-          "toque flex items-center gap-2 rounded-full border px-4 py-2.5 text-[13px] transition-colors",
+          "toque flex items-center gap-2 rounded-full border px-4 py-2.5 text-[calc(13px*var(--escala-letra))] transition-colors",
           ouvindo
             ? "border-negativo bg-negativo/10 text-negativo"
             : "border-pauta text-muted-fg hover:border-positivo/50 hover:text-foreground",
@@ -123,8 +123,8 @@ export function DitarGasto({
         {ouvindo ? "ouvindo… toque para parar" : "ditar"}
       </button>
 
-      {parcial && <p className="mt-2 text-[13px] italic text-muted-fg">“{parcial}”</p>}
-      {erro && <p role="alert" className="mt-2 text-[13px] text-negativo">{erro}</p>}
+      {parcial && <p className="mt-2 text-[calc(13px*var(--escala-letra))] italic text-muted-fg">“{parcial}”</p>}
+      {erro && <p role="alert" className="mt-2 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
     </div>
   )
 }

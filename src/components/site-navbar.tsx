@@ -37,24 +37,24 @@ export function SiteNavbar() {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <TinoMascote estado="tranquilo" animado={false} className="size-7" />
-          <span className="font-display text-[15px] font-semibold">Tino</span>
+          <span className="font-display text-[calc(15px*var(--escala-letra))] font-semibold">Tino</span>
         </Link>
 
         <nav aria-label="Navegação da página" className="hidden items-center gap-6 md:flex">
           {LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="text-[13px] text-muted-fg transition hover:text-foreground">
+            <a key={link.href} href={link.href} className="text-[calc(13px*var(--escala-letra))] text-muted-fg transition hover:text-foreground">
               {link.rotulo}
             </a>
           ))}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link href="/login" className="px-3 py-2 text-[13px] text-muted-fg hover:text-foreground">
+          <Link href="/login" className="px-3 py-2 text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground">
             Entrar
           </Link>
           <Link
             href="/cadastro"
-            className="rounded-full bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground"
+            className="rounded-full bg-primary px-4 py-2 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground"
           >
             Criar conta
           </Link>
@@ -72,7 +72,7 @@ export function SiteNavbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setAberto(false)}
-                className="rounded-xl px-3 py-2.5 text-[14px] text-foreground transition hover:bg-foreground/[0.05]"
+                className="rounded-xl px-3 py-2.5 text-[calc(14px*var(--escala-letra))] text-foreground transition hover:bg-foreground/[0.05]"
               >
                 {link.rotulo}
               </a>
@@ -80,13 +80,13 @@ export function SiteNavbar() {
             <div className="mt-3 flex flex-col gap-2 border-t border-pauta pt-3">
               <Link
                 href="/login"
-                className="rounded-full border border-pauta px-4 py-2.5 text-center text-[14px]"
+                className="rounded-full border border-pauta px-4 py-2.5 text-center text-[calc(14px*var(--escala-letra))]"
               >
                 Entrar
               </Link>
               <Link
                 href="/cadastro"
-                className="rounded-full bg-primary px-4 py-2.5 text-center text-[14px] font-medium text-primary-foreground"
+                className="rounded-full bg-primary px-4 py-2.5 text-center text-[calc(14px*var(--escala-letra))] font-medium text-primary-foreground"
               >
                 Criar conta
               </Link>

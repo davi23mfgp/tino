@@ -44,7 +44,7 @@ export function GrupoAjustes({
   return (
     <Card className={cn("border-pauta bg-papel-1", className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-[15px] font-semibold tracking-tight">{titulo}</CardTitle>
+        <CardTitle className="text-[calc(15px*var(--escala-letra))] font-semibold tracking-tight">{titulo}</CardTitle>
       </CardHeader>
       <CardContent>
         <ItemGroup className="gap-2">{children}</ItemGroup>
@@ -78,10 +78,10 @@ function Miolo({
   return (
     <>
       <ItemContent className="gap-0.5">
-        <ItemTitle className="text-[15px] font-semibold">{titulo}</ItemTitle>
-        {descricao && <ItemDescription className="text-[13px]">{descricao}</ItemDescription>}
+        <ItemTitle className="text-[calc(15px*var(--escala-letra))] font-semibold">{titulo}</ItemTitle>
+        {descricao && <ItemDescription className="text-[calc(13px*var(--escala-letra))]">{descricao}</ItemDescription>}
       </ItemContent>
-      <ItemActions className="shrink-0 gap-1 text-[14px] text-muted-fg">
+      <ItemActions className="shrink-0 gap-1 text-[calc(14px*var(--escala-letra))] text-muted-fg">
         {acao}
         <ChevronRight
           aria-hidden

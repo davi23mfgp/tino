@@ -140,7 +140,7 @@ export default function Assinatura() {
       <Cartao titulo="Sua assinatura">
         {assinatura ? (
           <>
-            <p className="text-[13px]">
+            <p className="text-[calc(13px*var(--escala-letra))]">
               <span className={TOM_STATUS[assinatura.status]}>{ROTULO_STATUS[assinatura.status]}</span>
               {" · "}
               {planos.find((linha) => linha.codigo === assinatura.planoId)?.nome ?? assinatura.planoId}
@@ -150,13 +150,13 @@ export default function Assinatura() {
             </p>
 
             {assinatura.proximaCobrancaEm && assinatura.status !== "CANCELADA" && (
-              <p className="mt-1.5 text-[13px] text-muted-fg">
+              <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg">
                 Próxima cobrança em {new Date(assinatura.proximaCobrancaEm).toLocaleDateString("pt-BR")}.
               </p>
             )}
 
             {assinatura.status === "PENDENTE" && (
-              <p className="mt-1.5 text-[13px] text-muted-fg">
+              <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg">
                 O provedor ainda não confirmou. Isso costuma levar alguns minutos — a tela atualiza sozinha quando você
                 voltar aqui.
               </p>
@@ -172,7 +172,7 @@ export default function Assinatura() {
             )}
 
             {assinatura.canceladaEm && (
-              <p className="mt-1.5 text-[13px] text-muted-fg">
+              <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg">
                 Cancelada em {new Date(assinatura.canceladaEm).toLocaleDateString("pt-BR")}.
               </p>
             )}
@@ -181,7 +181,7 @@ export default function Assinatura() {
               <button
                 onClick={cancelar}
                 disabled={ocupado}
-                className="mt-4 rounded-full border border-pauta px-5 py-2.5 text-[13px] text-muted-fg transition-colors hover:border-negativo/40 hover:text-negativo disabled:opacity-50"
+                className="mt-4 rounded-full border border-pauta px-5 py-2.5 text-[calc(13px*var(--escala-letra))] text-muted-fg transition-colors hover:border-negativo/40 hover:text-negativo disabled:opacity-50"
               >
                 Cancelar assinatura
               </button>
@@ -222,24 +222,24 @@ export default function Assinatura() {
 
               return (
                 <div key={linha.codigo} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-5">
-                  <p className="text-[15px] font-semibold">{linha.nome}</p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-muted-fg">{linha.chamada}</p>
+                  <p className="text-[calc(15px*var(--escala-letra))] font-semibold">{linha.nome}</p>
+                  <p className="mt-1 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{linha.chamada}</p>
 
-                  <p className="numero mt-4 text-[28px] font-bold leading-none">
+                  <p className="numero mt-4 text-[calc(28px*var(--escala-letra))] font-bold leading-none">
                     {formatarMoeda(valorCentavos)}
-                    <span className="ml-1.5 font-sans text-[12px] font-normal text-muted-fg">
+                    <span className="ml-1.5 font-sans text-[calc(12px*var(--escala-letra))] font-normal text-muted-fg">
                       {ciclo === "ANUAL" ? "por ano" : "por mês"}
                     </span>
                   </p>
                   {ciclo === "ANUAL" && (
-                    <p className="mt-1 text-[12px] text-positivo">
+                    <p className="mt-1 text-[calc(12px*var(--escala-letra))] text-positivo">
                       {formatarPercentual(descontoAnualBps(linha), 0)} de desconto sobre o mensal
                     </p>
                   )}
 
                   <ul className="mt-4 space-y-1.5">
                     {linha.inclui.map((item) => (
-                      <li key={item} className="flex gap-2 text-[12px]">
+                      <li key={item} className="flex gap-2 text-[calc(12px*var(--escala-letra))]">
                         <Check className="mt-0.5 size-3.5 shrink-0 text-positivo" />
                         {item}
                       </li>
@@ -248,7 +248,7 @@ export default function Assinatura() {
 
                   <ul className="mt-3 space-y-1">
                     {linha.naoInclui.map((item) => (
-                      <li key={item} className="flex gap-2 text-[12px] text-muted-fg">
+                      <li key={item} className="flex gap-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
                         <Minus className="mt-0.5 size-3.5 shrink-0" />
                         {item}
                       </li>
@@ -261,11 +261,11 @@ export default function Assinatura() {
                         <button
                           onClick={() => contratar(opcao.provedor, linha.codigo)}
                           disabled={!opcao.configurado || ocupado}
-                          className="w-full rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                          className="w-full rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Pagar com {opcao.rotulo}
                         </button>
-                        <p className="mt-1 text-center text-[11px] text-muted-fg">
+                        <p className="mt-1 text-center text-[calc(11px*var(--escala-letra))] text-muted-fg">
                           {opcao.configurado
                             ? opcao.formasDePagamento
                             : `${opcao.rotulo} ainda não está disponível neste app.`}
@@ -285,10 +285,10 @@ export default function Assinatura() {
         <Cartao titulo="Cobranças">
           <div className="divide-y divide-pauta">
             {assinatura.cobrancas.map((cobranca) => (
-              <div key={cobranca.id} className="flex items-start justify-between gap-3 py-2.5 text-[13px]">
+              <div key={cobranca.id} className="flex items-start justify-between gap-3 py-2.5 text-[calc(13px*var(--escala-letra))]">
                 <div>
                   <p>{new Date(cobranca.pagaEm ?? cobranca.criadoEm).toLocaleDateString("pt-BR")}</p>
-                  {cobranca.motivoFalha && <p className="text-[12px] text-negativo">{cobranca.motivoFalha}</p>}
+                  {cobranca.motivoFalha && <p className="text-[calc(12px*var(--escala-letra))] text-negativo">{cobranca.motivoFalha}</p>}
                 </div>
                 <span
                   className={`numero ${cobranca.status === "PAGA" ? "text-positivo" : cobranca.status === "FALHOU" ? "text-negativo" : "text-muted-fg"}`}

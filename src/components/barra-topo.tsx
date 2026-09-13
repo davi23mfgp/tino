@@ -82,7 +82,7 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
             inteiro. */}
         <SheetContent className="flex w-full max-w-[440px] flex-col overflow-hidden p-0">
           <SheetHeader className="mb-0 px-5 pb-3 pr-16 pt-6">
-            <SheetTitle className="text-[26px] font-bold tracking-tight">Notificações</SheetTitle>
+            <SheetTitle className="text-[calc(26px*var(--escala-letra))] font-bold tracking-tight">Notificações</SheetTitle>
             <SheetDescription className="sr-only">Vencimentos, pendências e próximos passos.</SheetDescription>
           </SheetHeader>
 
@@ -113,11 +113,11 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start gap-2">
-                      <h2 className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{a.titulo}</h2>
+                      <h2 className="min-w-0 flex-1 text-[calc(15px*var(--escala-letra))] font-semibold leading-snug">{a.titulo}</h2>
                       <span className="shrink-0 pt-0.5 text-xs text-muted-fg">{new Date(a.criadoEm ?? Date.now()).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</span>
                     </div>
-                    <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-muted-fg">{a.texto}</p>
-                    {a.acaoRota && <Link href={a.acaoRota} onClick={()=>setAberto(false)} className="mt-1 inline-flex min-h-9 items-center text-[13px] text-acao">Ver detalhes</Link>}
+                    <p className="mt-0.5 line-clamp-2 text-[calc(13px*var(--escala-letra))] leading-snug text-muted-fg">{a.texto}</p>
+                    {a.acaoRota && <Link href={a.acaoRota} onClick={()=>setAberto(false)} className="mt-1 inline-flex min-h-9 items-center text-[calc(13px*var(--escala-letra))] text-acao">Ver detalhes</Link>}
                   </div>
                   <button
                     disabled={salvando || a.lido}

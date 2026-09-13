@@ -104,8 +104,8 @@ export default function Fiado() {
               <div key={devedor.id} className="py-4 first:pt-0">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div>
-                    <p className="text-[15px] font-medium">{devedor.nome}</p>
-                    <p className="text-[12px] text-muted-fg">
+                    <p className="text-[calc(15px*var(--escala-letra))] font-medium">{devedor.nome}</p>
+                    <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                       {devedor.telefone ? `${devedor.telefone} · ` : ""}
                       há {devedor.diasDaMaisAntiga} {devedor.diasDaMaisAntiga === 1 ? "dia" : "dias"}
                     </p>
@@ -113,7 +113,7 @@ export default function Fiado() {
 
                   <div className="flex items-center gap-3">
                     <span
-                      className={`numero text-[17px] font-semibold ${
+                      className={`numero text-[calc(17px*var(--escala-letra))] font-semibold ${
                         devedor.diasDaMaisAntiga > 30 ? "text-negativo" : "text-atencao"
                       }`}
                     >
@@ -121,7 +121,7 @@ export default function Fiado() {
                     </span>
                     <button
                       onClick={() => copiarCobranca(devedor)}
-                      className="flex items-center gap-1.5 rounded-full border border-pauta px-3 py-1.5 text-[12px] text-muted-fg hover:text-foreground"
+                      className="flex items-center gap-1.5 rounded-full border border-pauta px-3 py-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg hover:text-foreground"
                     >
                       {copiado === devedor.id ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                       {copiado === devedor.id ? "copiado" : "cobrar"}
@@ -131,7 +131,7 @@ export default function Fiado() {
 
                 <div className="mt-2.5 space-y-1">
                   {devedor.vendas.map((venda) => (
-                    <div key={venda.vendaId} className="flex items-center justify-between gap-3 text-[13px]">
+                    <div key={venda.vendaId} className="flex items-center justify-between gap-3 text-[calc(13px*var(--escala-letra))]">
                       <span className="text-muted-fg">
                         #{venda.numero} · {new Date(venda.criadoEm).toLocaleDateString("pt-BR")}
                       </span>
@@ -139,7 +139,7 @@ export default function Fiado() {
                       <button
                         onClick={() => receber(venda.vendaId)}
                         disabled={ocupado}
-                        className="rounded-full border border-positivo/40 px-3 py-1 text-[12px] text-positivo disabled:opacity-50"
+                        className="rounded-full border border-positivo/40 px-3 py-1 text-[calc(12px*var(--escala-letra))] text-positivo disabled:opacity-50"
                       >
                         recebi
                       </button>
@@ -151,7 +151,7 @@ export default function Fiado() {
           </div>
         )}
 
-        <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">
+        <p className="mt-4 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
           O texto de cobrança é copiado para você mandar — não é enviado sozinho. Quem conhece o cliente sabe o tom
           certo, e mensagem automática em nome da loja azeda relação de bairro.
         </p>

@@ -142,14 +142,14 @@ export function TinoAcompanha() {
       <div className="min-w-0 flex-1">
         {principal ? (
           <>
-            <p className={`text-[13px] font-medium ${rotulo.cor}`}>{rotulo.texto}</p>
+            <p className={`text-[calc(13px*var(--escala-letra))] font-medium ${rotulo.cor}`}>{rotulo.texto}</p>
             {/* `aria-live` educado: o leitor de tela anuncia a troca quando a
                 pessoa terminar o que está lendo, em vez de interromper. */}
             <div aria-live="polite">
-              <p className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">
+              <p className="mt-1 text-[calc(17px*var(--escala-letra))] font-semibold leading-snug tracking-[-0.01em]">
                 {principal.titulo}
               </p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+              <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
                 {principal.texto}
               </p>
             </div>
@@ -173,7 +173,7 @@ export function TinoAcompanha() {
                     )}
                   />
                 ))}
-                <span className="ml-1 text-[12px] text-[color:var(--texto-3)]">
+                <span className="ml-1 text-[calc(12px*var(--escala-letra))] text-[color:var(--texto-3)]">
                   {indice + 1} de {fila.length}
                 </span>
               </div>
@@ -181,11 +181,11 @@ export function TinoAcompanha() {
           </>
         ) : (
           <>
-            <p className="text-[13px] font-medium text-acao">Recado do Tino</p>
-            <p className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">
+            <p className="text-[calc(13px*var(--escala-letra))] font-medium text-acao">Recado do Tino</p>
+            <p className="mt-1 text-[calc(17px*var(--escala-letra))] font-semibold leading-snug tracking-[-0.01em]">
               {alertas === null ? "Ainda não li seus números." : "Nada exigindo decisão hoje."}
             </p>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+            <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
               {alertas === null
                 ? "A conexão falhou. Recarregue a página para eu tentar de novo."
                 : "Volto a avisar quando algum limite se aproximar."}
@@ -197,7 +197,7 @@ export function TinoAcompanha() {
       {principal?.acaoRota && (
         <Link
           href={principal.acaoRota}
-          className="ios-tap shrink-0 rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-center text-[14px] font-medium text-primary-foreground"
+          className="ios-tap shrink-0 rounded-[var(--raio-pilula)] bg-primary px-5 py-2.5 text-center text-[calc(14px*var(--escala-letra))] font-medium text-primary-foreground"
         >
           Resolver agora
         </Link>

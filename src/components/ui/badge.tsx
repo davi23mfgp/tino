@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
   // Base Apple: pill arredondado, sem borda grossa, cor suave
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium transition-colors focus:outline-none",
+  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[calc(12px*var(--escala-letra))] font-medium transition-colors focus:outline-none",
   {
     variants: {
       variant: {

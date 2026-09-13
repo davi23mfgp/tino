@@ -74,8 +74,8 @@ export default function Cadastro() {
             >
               <Wallet className="mt-0.5 size-6 shrink-0 text-positivo" />
               <span>
-                <span className="font-display block text-[16px] font-semibold">Meu dinheiro</span>
-                <span className="mt-1 block text-[13px] leading-relaxed text-muted-fg">
+                <span className="font-display block text-[calc(16px*var(--escala-letra))] font-semibold">Meu dinheiro</span>
+                <span className="mt-1 block text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
                   Contas, cartões, dívidas e metas. Para quem quer saber onde o dinheiro está indo e o que fazer com o
                   que sobra.
                 </span>
@@ -88,8 +88,8 @@ export default function Cadastro() {
             >
               <ShoppingBag className="mt-0.5 size-6 shrink-0 text-positivo" />
               <span>
-                <span className="font-display block text-[16px] font-semibold">Meu dinheiro e minha loja</span>
-                <span className="mt-1 block text-[13px] leading-relaxed text-muted-fg">
+                <span className="font-display block text-[calc(16px*var(--escala-letra))] font-semibold">Meu dinheiro e minha loja</span>
+                <span className="mt-1 block text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
                   Tudo o que está acima, mais venda no balcão, estoque, limite do MEI e DAS — com o dinheiro do CNPJ
                   separado do seu.
                 </span>
@@ -97,7 +97,7 @@ export default function Cadastro() {
             </button>
           </div>
 
-          <p className="mt-6 text-center text-[13px] text-muted-fg">
+          <p className="mt-6 text-center text-[calc(13px*var(--escala-letra))] text-muted-fg">
             Dá para mudar depois, em Configurações.
             <br />
             Já tem conta?{" "}
@@ -116,7 +116,7 @@ export default function Cadastro() {
       <div className="w-full max-w-sm">
         <button
           onClick={() => setModoMei(null)}
-          className="flex items-center gap-1.5 text-[13px] text-muted-fg hover:text-foreground"
+          className="flex items-center gap-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground"
         >
           <ArrowLeft className="size-4" /> voltar
         </button>
@@ -124,7 +124,7 @@ export default function Cadastro() {
         <h1 className="font-display mt-4 text-3xl font-bold tracking-tight">
           {modoMei ? "Sua conta e sua loja" : "Criar sua conta"}
         </h1>
-        <p className="mt-1.5 text-[13px] text-muted-fg">
+        <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg">
           {modoMei
             ? "Você vai ter o balcão, a prateleira e o acompanhamento do limite do MEI."
             : "Contas, cartões, dívidas e metas em um lugar só."}
@@ -171,7 +171,7 @@ export default function Cadastro() {
                 )}
               >
                 <span className="font-medium">{tipo.rotulo}</span>
-                <span className="block text-[12px] text-muted-fg">{tipo.texto}</span>
+                <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">{tipo.texto}</span>
               </button>
             ))}
           </div>

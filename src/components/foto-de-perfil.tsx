@@ -93,7 +93,7 @@ export function FotoDePerfil() {
       <div className="relative">
         <Avatar className="size-16 border border-pauta">
           {previewUrl && <AvatarImage src={previewUrl} alt="" />}
-          <AvatarFallback className="bg-primary text-[20px] font-semibold text-primary-foreground">
+          <AvatarFallback className="bg-primary text-[calc(20px*var(--escala-letra))] font-semibold text-primary-foreground">
             {nome.trim().charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -125,8 +125,8 @@ export function FotoDePerfil() {
             </Button>
           )}
         </div>
-        <p className="text-[11px] text-muted-fg">JPG, PNG ou WebP. Até 10 MB.</p>
-        {(erroLocal || erro) && <p className="text-[11px] text-negativo" role="alert">{erroLocal || erro}</p>}
+        <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">JPG, PNG ou WebP. Até 10 MB.</p>
+        {(erroLocal || erro) && <p className="text-[calc(11px*var(--escala-letra))] text-negativo" role="alert">{erroLocal || erro}</p>}
       </div>
 
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={!perfilCarregado || carregando || processando || ocupado} aria-label="Escolher foto de perfil" className="sr-only" onChange={aoEscolher} />

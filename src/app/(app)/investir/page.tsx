@@ -47,7 +47,7 @@ interface Resposta {
   reserva: { idealCentavos: number; atualCentavos: number; percentual: number; mesesDeFolga: number } | null
 }
 
-const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[13px] outline-none focus:border-positivo/50"
+const campo = "rounded-xl border border-pauta bg-background px-3 py-2 text-[calc(13px*var(--escala-letra))] outline-none focus:border-positivo/50"
 
 /** Rendimento real, já líquido de inflação. Conservador de propósito. */
 const RENDIMENTO_REAL_ANUAL_BPS = 400
@@ -98,7 +98,7 @@ export default function Investir() {
 
       <Cartao titulo="E se eu cortar um pouco por mês?">
         <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+          <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             cortar por mês
             <input
               inputMode="decimal"
@@ -113,7 +113,7 @@ export default function Investir() {
               <button
                 key={valor}
                 onClick={() => setCorte(valor)}
-                className={`rounded-full border px-3 py-1.5 text-[12px] ${
+                className={`rounded-full border px-3 py-1.5 text-[calc(12px*var(--escala-letra))] ${
                   corte === valor ? "border-positivo text-positivo" : "border-pauta text-muted-fg"
                 }`}
               >
@@ -153,7 +153,7 @@ export default function Investir() {
         </div>
 
         {dados?.corte.mesQueSaiDoVermelho && (
-          <p className="mt-3 rounded-xl border border-positivo/40 bg-positivo/10 p-3 text-[13px] text-positivo">
+          <p className="mt-3 rounded-xl border border-positivo/40 bg-positivo/10 p-3 text-[calc(13px*var(--escala-letra))] text-positivo">
             Cortando {formatarMoeda(corteCentavos)} por mês, o caixa deixa de ficar negativo no mês{" "}
             {dados.corte.mesQueSaiDoVermelho}.
           </p>
@@ -163,7 +163,7 @@ export default function Investir() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="O mesmo corte, guardado">
           <div className="flex items-end gap-3">
-            <label className="flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               por quantos anos
               <input
                 inputMode="numeric"
@@ -176,7 +176,7 @@ export default function Investir() {
 
           <Valor tom="positivo" className="mt-4">{formatarMoeda(futuro.patrimonioCentavos)}</Valor>
 
-          <div className="mt-3 space-y-1 text-[13px]">
+          <div className="mt-3 space-y-1 text-[calc(13px*var(--escala-letra))]">
             <p className="flex justify-between">
               <span className="text-muted-fg">o que você guardou</span>
               <span className="numero">{formatarMoeda(futuro.aportadoCentavos)}</span>
@@ -187,7 +187,7 @@ export default function Investir() {
             </p>
           </div>
 
-          <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">
+          <p className="mt-4 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
             Conta feita a {formatarPercentual(RENDIMENTO_REAL_ANUAL_BPS, 0)} ao ano <strong>acima da inflação</strong>.
             É uma hipótese conservadora, não uma promessa: rendimento passado não garante rendimento futuro, e nenhum
             investimento é obrigado a entregar isso.
@@ -195,7 +195,7 @@ export default function Investir() {
         </Cartao>
 
         <Cartao titulo="Para onde esse dinheiro poderia ir">
-          <p className="text-[13px] leading-relaxed text-muted-fg">
+          <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
             O método <strong>ARCA</strong>, divulgado por Thiago Nigro, divide o aporte em quatro partes iguais e
             reequilibra pelo aporte seguinte, em vez de vender o que subiu.
           </p>
@@ -203,21 +203,21 @@ export default function Investir() {
           <div className="mt-4 space-y-2">
             {partesDoArca.map((parte, indice) => (
               <div key={indice} className="flex items-center gap-3 rounded-xl border border-pauta bg-papel-2 px-3 py-2.5">
-                <span className="font-display grid size-8 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-[15px] font-semibold">
+                <span className="font-display grid size-8 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-[calc(15px*var(--escala-letra))] font-semibold">
                   {parte.letra}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-medium">{parte.rotulo}</p>
-                  <p className="text-[11px] text-muted-fg">{parte.explicacao}</p>
+                  <p className="text-[calc(13px*var(--escala-letra))] font-medium">{parte.rotulo}</p>
+                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">{parte.explicacao}</p>
                 </div>
-                <span className="numero text-[13px]">{formatarMoeda(parte.valorCentavos)}</span>
+                <span className="numero text-[calc(13px*var(--escala-letra))]">{formatarMoeda(parte.valorCentavos)}</span>
               </div>
             ))}
           </div>
 
           <div className="mt-4 flex gap-2.5 rounded-xl border border-atencao/40 bg-atencao/10 p-3">
             <TinoMascote estado="atento" animado={false} className="size-8 shrink-0" />
-            <p className="text-[12px] leading-relaxed text-atencao">
+            <p className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-atencao">
               <strong>Não sou consultor de investimentos.</strong> Isto é uma conta de dividir, feita sobre o método de
               outra pessoa, e não uma indicação do que comprar. Escolher onde colocar dinheiro depende do seu prazo, da
               sua tolerância a perda e da sua situação — coisas que um profissional autorizado avalia com você.
@@ -237,10 +237,10 @@ export default function Investir() {
 
               <div className="mt-3 space-y-1.5">
                 {dados.divisaoSugerida.map((fatia) => (
-                  <div key={fatia.nome} className="flex items-baseline justify-between gap-3 text-[13px]">
+                  <div key={fatia.nome} className="flex items-baseline justify-between gap-3 text-[calc(13px*var(--escala-letra))]">
                     <span>
                       {fatia.rotulo}
-                      <span className="ml-1.5 text-[11px] text-muted-fg">
+                      <span className="ml-1.5 text-[calc(11px*var(--escala-letra))] text-muted-fg">
                         {formatarPercentual(fatia.percentualBps, 0)}
                       </span>
                     </span>
@@ -249,7 +249,7 @@ export default function Investir() {
                 ))}
               </div>
 
-              <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">
+              <p className="mt-4 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
                 Divisão de referência publicada pelo Grão, do Grupo Primo. É parâmetro de comparação, não regra: quem
                 mora em capital cara estoura os 60% de necessidades sem estar fazendo nada de errado. Serve para
                 enxergar a distância entre o que você gasta e essa referência.

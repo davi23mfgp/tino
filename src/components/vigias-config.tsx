@@ -51,7 +51,7 @@ export function VigiasConfig({ semMoldura }: { semMoldura?: boolean } = {}) {
 
   return (
     <Moldura titulo="Vigias" semMoldura={semMoldura}>
-      <p className="mb-4 text-[13px] text-muted-fg">
+      <p className="mb-4 text-[calc(13px*var(--escala-letra))] text-muted-fg">
         O que o Tino observa sozinho e avisa sem você perguntar. Desligue o que não interessa — os outros continuam
         de olho.
       </p>
@@ -60,10 +60,10 @@ export function VigiasConfig({ semMoldura }: { semMoldura?: boolean } = {}) {
         {(vigias ?? []).map((vigia) => (
           <div key={vigia.tipo} className="flex items-center justify-between gap-4 rounded-2xl px-2 py-3">
             <div className="min-w-0">
-              <p className="text-[14px] font-medium">{vigia.nome}</p>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-muted-fg">{vigia.frase}</p>
+              <p className="text-[calc(14px*var(--escala-letra))] font-medium">{vigia.nome}</p>
+              <p className="mt-0.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{vigia.frase}</p>
               {vigia.disparos30dias > 0 && (
-                <p className="mt-1 text-[11px] text-[color:var(--texto-3)]">
+                <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-3)]">
                   {vigia.disparos30dias === 1
                     ? "disparou 1 vez nos últimos 30 dias"
                     : `disparou ${vigia.disparos30dias} vezes nos últimos 30 dias`}

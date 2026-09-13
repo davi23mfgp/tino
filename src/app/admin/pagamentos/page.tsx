@@ -73,16 +73,16 @@ export default async function PagamentosAdmin() {
             {falhas.map((falha) => (
               <div key={falha.id} className="flex flex-wrap items-start justify-between gap-3 py-2.5">
                 <div className="min-w-0">
-                  <p className="text-[13px]">{falha.assinatura.usuario.nome}</p>
-                  <p className="text-[12px] text-muted-fg">
+                  <p className="text-[calc(13px*var(--escala-letra))]">{falha.assinatura.usuario.nome}</p>
+                  <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                     {falha.assinatura.usuario.email} · {ROTULO_PROVEDOR[falha.provedor]} ·{" "}
                     {falha.criadoEm.toLocaleDateString("pt-BR")}
                   </p>
-                  <p className="mt-0.5 text-[12px] text-negativo">
+                  <p className="mt-0.5 text-[calc(12px*var(--escala-letra))] text-negativo">
                     {falha.motivoFalha ?? "O provedor não informou o motivo."}
                   </p>
                 </div>
-                <span className="numero text-[13px] text-negativo">{formatarMoeda(falha.valorCentavos)}</span>
+                <span className="numero text-[calc(13px*var(--escala-letra))] text-negativo">{formatarMoeda(falha.valorCentavos)}</span>
               </div>
             ))}
           </div>
@@ -97,9 +97,9 @@ export default async function PagamentosAdmin() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-[13px]">
+            <table className="w-full min-w-[720px] text-[calc(13px*var(--escala-letra))]">
               <thead>
-                <tr className="border-b border-pauta text-left text-[11px] uppercase tracking-widest text-muted-fg">
+                <tr className="border-b border-pauta text-left text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">
                   <th className="py-2 pr-3 font-normal">Data</th>
                   <th className="py-2 pr-3 font-normal">Cliente</th>
                   <th className="py-2 pr-3 font-normal">Plano</th>
@@ -114,7 +114,7 @@ export default async function PagamentosAdmin() {
                     <td className="py-2.5 pr-3 text-muted-fg">{cobranca.criadoEm.toLocaleDateString("pt-BR")}</td>
                     <td className="py-2.5 pr-3">
                       <p>{cobranca.assinatura.usuario.nome}</p>
-                      <p className="text-[12px] text-muted-fg">{cobranca.assinatura.usuario.email}</p>
+                      <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">{cobranca.assinatura.usuario.email}</p>
                     </td>
                     <td className="py-2.5 pr-3 text-muted-fg">{cobranca.assinatura.planoId}</td>
                     <td className="py-2.5 pr-3 text-muted-fg">{ROTULO_PROVEDOR[cobranca.provedor]}</td>
