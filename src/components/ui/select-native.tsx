@@ -27,12 +27,15 @@ export const SelectNative = React.forwardRef<
       <select
         ref={ref}
         className={cn(
-          "peer min-h-12 min-w-0 w-full appearance-none bg-papel-2 pr-8 text-base outline-none transition-colors",
+          // Mesma altura responsiva do Input, e 16px de texto no celular pelo
+          // mesmo motivo (zoom automatico do Safari ao focar).
+          "peer h-11 min-w-0 w-full appearance-none bg-papel-2 pr-8 text-base outline-none transition-colors",
+          "sm:h-9 sm:text-sm",
           "border border-pauta focus:border-acao/50 focus:bg-background",
           "disabled:cursor-not-allowed disabled:opacity-50",
           tamanho === "pilula"
-            ? "rounded-[var(--raio-pilula)] px-4 py-2"
-            : "rounded-[var(--raio-campo)] px-3.5 py-2.5",
+            ? "rounded-[var(--raio-pilula)] px-4"
+            : "rounded-[var(--raio-campo)] px-3.5 sm:px-3",
           className,
         )}
         {...props}
