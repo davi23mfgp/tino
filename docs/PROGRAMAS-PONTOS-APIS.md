@@ -24,14 +24,18 @@ ou a gente mantém um catálogo). A segunda é saldo e regra do programa.
 
 ## Situação por programa
 
-| Programa | Dono | API pública documentada? | O que existe |
-|---|---|---|---|
-| **Livelo** | Bradesco + Banco do Brasil (joint venture) | **Não localizada** | Plataforma de API interna para parceiros comerciais (registrada em estudo de caso público da Axway). Integração acontece via contrato de parceria, não por portal aberto. |
-| **Esfera** | Santander | **Não localizada** | Sem portal de desenvolvedor público encontrado. Parcerias de acúmulo/transferência são comerciais. |
-| **Smiles** | GOL | **Não localizada** | Sem portal público. Existem serviços de terceiros que expõem consulta de passagem em milhas por HTTP, mas são raspagem ou acordo próprio deles — não é API oficial. |
-| **LATAM Pass** | LATAM | **Não localizada** | Mesma situação. |
-| **Azul Fidelidade** | Azul (antigo TudoAzul, renomeado em fev/2024) | **Não localizada** | Mesma situação. |
-| **Programas próprios dos bancos** (Itaú Sempre Presente, Bradesco Pontos Cartões, C6 Átomos, Inter Loop, Nubank Rewards) | cada banco | **Não localizada para pontos** | Portais de desenvolvedor de banco existem (o Banco do Brasil publica um em `developers.bb.com.br`), mas o catálogo deles é cobrança, Pix e Open Finance — não saldo de fidelidade. |
+Colunas conforme pedido: nome, URL oficial, se há API pública documentada,
+quais recursos existiriam (saldo, extrato, transferência, catálogo),
+autenticação e necessidade de parceria.
+
+| Programa | URL oficial | Dono | API pública documentada? | Recursos disponíveis | Autenticação | Parceria |
+|---|---|---|---|---|---|---|
+| **Livelo** | `livelo.com.br` | Bradesco + Banco do Brasil | **Não localizada** | Nenhum para terceiros. Saldo, extrato, transferência e catálogo existem no app/site deles, não expostos publicamente | Não documentada | Sim, comercial |
+| **Esfera** | `esfera.com.vc` | Santander | **Não localizada** | Idem | Não documentada | Sim, comercial |
+| **Smiles** | `smiles.com.br` | GOL | **Não localizada** | Idem. Serviços de terceiros que anunciam "API de milhas" não são oficiais | Não documentada | Sim, comercial |
+| **LATAM Pass** | `latampass.latam.com` | LATAM | **Não localizada** | Idem | Não documentada | Sim, comercial |
+| **Azul Fidelidade** | `voeazul.com.br` | Azul (ex-TudoAzul, renomeado fev/2024) | **Não localizada** | Idem | Não documentada | Sim, comercial |
+| **Programas dos bancos** (Itaú Sempre Presente, Bradesco Pontos, C6 Átomos, Inter Loop, Nubank Rewards) | portal de cada banco | cada banco | **Não localizada para pontos** | Os portais de desenvolvedor que existem (ex.: `developers.bb.com.br`) publicam cobrança, Pix e Open Finance — não saldo de fidelidade | OAuth 2.0 nos portais de banco, para os produtos que eles publicam | Sim, para produção |
 
 ### O que foi tentado, para ninguém repetir
 
@@ -82,7 +86,13 @@ pelo app.
   terceiros que oferecem "API de milhas" costumam fazer exatamente isso.
 - **Nunca pedir senha de banco ou de programa de fidelidade.**
 - **Custo só quando documentado.** Nenhum dos programas acima publica preço
-  de API — então este documento não estima nenhum.
+  de API. Este documento não estima nenhum valor — a ausência de número aqui
+  significa "não publicado", nunca "de graça".
+- **Sem API, o cadastro manual precisa funcionar de verdade** e dizer que é
+  manual: saldo informado pela pessoa, com a data em que ela informou. Nunca
+  apresentar número digitado como se fosse sincronizado.
+- **Não exibir botão "Conectar" sem integração real.** Botão que abre um
+  formulário de espera é pior que a ausência dele.
 
 ## Próximo passo, se o Davi quiser integração de verdade
 
