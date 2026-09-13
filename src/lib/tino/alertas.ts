@@ -326,10 +326,20 @@ export async function atualizarAlertas(larId: string) {
       acaoRota: alerta.acaoRota,
       dados: (alerta.dados ?? {}) as object,
     }
+    // `dispensadoEm` fica de fora do `update` quando o texto nao mudou: quem
+    // limpou a lista nao quer o mesmo aviso de volta no proximo carregamento.
+    // Quando o MOTIVO muda (o texto recalculado e outro), o aviso reabre --
+    // e correto, porque ai e outra informacao, nao a mesma repetida.
+    const existente = await prisma.alerta.findUnique({
+      where: { larId_chave: { larId, chave: alerta.chave } },
+      select: { texto: true, dispensadoEm: true },
+    })
+    const mudouOMotivo = existente ? existente.texto !== alerta.texto : false
+
     await prisma.alerta.upsert({
       where: { larId_chave: { larId, chave: alerta.chave } },
       create: { larId, chave: alerta.chave, ...conteudo },
-      update: conteudo,
+      update: mudouOMotivo ? { ...conteudo, dispensadoEm: null } : conteudo,
     })
   }
 
@@ -338,8 +348,10 @@ export async function atualizarAlertas(larId: string) {
   // também. Não lido primeiro (é o que importa agora), depois mais recente;
   // `lido` já existe no schema desde a migration inicial, só não era lido
   // por nenhuma tela até esta rodada.
+  // Dispensado nao aparece. O registro continua no banco -- "Limpar tudo"
+  // arquiva o aviso, nunca apaga transacao nem o historico dele.
   return prisma.alerta.findMany({
-    where: { larId },
+    where: { larId, dispensadoEm: null },
     orderBy: [{ lido: "asc" }, { severidade: "desc" }, { criadoEm: "desc" }],
     take: 30,
   })
