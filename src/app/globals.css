@@ -582,3 +582,16 @@
     min-height: 44px;
   }
 }
+
+/* --- controles nativos seguem o tema ---
+   Defeito visto em 13/09 na Ajuda dos cartoes: a lista aberta de um
+   `<select>` vinha com fundo branco e texto claro -- so a opcao destacada
+   era legivel. O popup do `<select>` e desenhado pelo sistema, nao pelo
+   nosso CSS: ele so obedece `color-scheme`. Sem esta declaracao o Chrome
+   assume claro, mesmo com a pagina escura.
+
+   O Tino e escuro por padrao e claro via `.light`, entao a raiz e escura e
+   a excecao inverte. Vale para select, date picker, barra de rolagem e
+   campo de autopreenchimento -- todos nativos. */
+:root { color-scheme: dark }
+.light { color-scheme: light }
