@@ -181,10 +181,10 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
             className={cn(
               "ios-tap flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-alta motion-reduce:!transform-none motion-reduce:!transition-none",
               focoVisivel,
-              compacto ? "min-h-11 px-4 py-2 text-sm font-medium" : ancorado ? "size-12" : "size-14",
+              compacto ? "min-h-11 px-4 py-2 text-sm font-medium" : ancorado ? "size-11 sm:size-10" : "size-14",
             )}
           >
-            <Plus aria-hidden="true" className="size-6 shrink-0" />
+            <Plus aria-hidden="true" strokeWidth={2} className="size-5 shrink-0" />
             {compacto && <span>Adicionar</span>}
           </button>
         </DialogTrigger>

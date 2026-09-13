@@ -66,10 +66,13 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
   return <header className="app-header">
     <div className="app-header-title"><h1>{caminho==="/painel" ? "Olá, "+nome.split(" ")[0]+"." : titulo}</h1><p>{apenasLoja ? "Sua loja, organizada." : competencia}</p></div>
     <div className="app-header-actions">
-      {!apenasLoja && <div className="hidden sm:block"><GatilhoBuscaPaginas /></div>}
+      {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
+          que existe atalho. A forma de barra e a mesma do resto do app e ja
+          carrega o rotulo e a pista `Ctrl K`. */}
+      {!apenasLoja && <div className="hidden sm:block"><GatilhoBuscaPaginas variant="barra" /></div>}
       {!apenasLoja && <FabAdicionar ancorado />}
       {!apenasLoja && <Sheet open={aberto} onOpenChange={setAberto}>
-        <SheetTrigger asChild><button aria-label="Notificações" className="relative grid size-11 place-items-center rounded-full border border-pauta"><Bell className="size-5" aria-hidden/>{novas.length>0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-acao" />}</button></SheetTrigger>
+        <SheetTrigger asChild><button aria-label="Notificações" className="relative grid size-11 place-items-center rounded-full border border-pauta sm:size-10"><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{novas.length>0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-acao" />}</button></SheetTrigger>
         {/* Painel na forma da referência aprovada (13/09): título forte,
             segmentado Todas/Não lidas com a contagem, cartões compactos com
             ícone circular, e o rodapé fixo com as duas ações em texto.
@@ -138,7 +141,7 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
           </footer>
         </SheetContent>
       </Sheet>}
-      <DropdownMenu><DropdownMenuTrigger asChild><button aria-label="Minha conta" className="grid size-11 place-items-center rounded-full border border-pauta"><Avatar className="size-8">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
+      <DropdownMenu><DropdownMenuTrigger asChild><button aria-label="Minha conta" className="grid size-11 place-items-center rounded-full border border-pauta sm:size-10"><Avatar className="size-8 sm:size-7">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60"><DropdownMenuLabel>{nome}</DropdownMenuLabel><DropdownMenuSeparator/>
           {!apenasLoja && <DropdownMenuItem asChild><Link href="/configuracoes"><Settings className="mr-2 size-4"/>Minha conta</Link></DropdownMenuItem>}
           {admin && !apenasLoja && <DropdownMenuItem asChild><Link href="/admin"><ShieldCheck className="mr-2 size-4"/>Administração</Link></DropdownMenuItem>}

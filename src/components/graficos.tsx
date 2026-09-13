@@ -295,9 +295,17 @@ export function GraficoCategorias({
 export function RoscaCategorias({
   dados,
   altura = 200,
+  legenda = true,
 }: {
   dados: { nome: string; totalCentavos: number }[]
   altura?: number
+  /**
+   * A rosca traz a propria legenda para quem a usa sozinha. No painel isso
+   * virava DUAS listas das mesmas categorias, uma por cima da outra --
+   * ilegivel, foi o que o Davi apontou em 13/09. Quem ja desenha a propria
+   * lista (com orcamento e barra) passa `legenda={false}`.
+   */
+  legenda?: boolean
 }) {
   const cores = useCores()
   const paleta = ORDEM_DA_PALETA.map((nome) => cores[nome])
@@ -341,7 +349,7 @@ export function RoscaCategorias({
         </div>
       </div>
 
-      <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
+      {legenda && <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
         {serie.map((linha, indice) => (
           <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[calc(13px*var(--escala-letra))] sm:w-full">
             <span
@@ -355,7 +363,7 @@ export function RoscaCategorias({
             </span>
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   )
 }

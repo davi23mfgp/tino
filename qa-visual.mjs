@@ -23,21 +23,14 @@ const navegador = await chromium.launch({ channel: "chrome" })
 const contexto = await navegador.newContext()
 const pagina = await contexto.newPage()
 
-// Login real: a conta de demonstracao existe local e em producao.
-await pagina.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" })
-await pagina.fill('input[type="email"]', "demo@tino.local")
-await pagina.fill('input[type="password"]', "demo12345")
-// O primeiro envio se perde quando o Turbopack ainda esta compilando a rota:
-// o clique acontece antes do handler do formulario existir. Reenviar ate a
-// navegacao valer e mais barato que esperar um seletor que nunca aparece.
-for (let tentativa = 0; tentativa < 6 && !pagina.url().includes("/painel"); tentativa++) {
-  await pagina.click('button[type="submit"]').catch(() => {})
-  await pagina.waitForTimeout(5000)
-}
-if (!pagina.url().includes("/painel")) throw new Error("login nao concluiu: " + pagina.url())
-// O login redireciona por router do cliente, nao por navegacao completa --
-// esperar "load" nunca resolve. Espera-se a barra do app aparecer.
-await pagina.waitForSelector(".app-header", { state: "attached", timeout: 120000 })
+// Login pela API, nao pelo formulario: o clique em `submit` se perde quando
+// o Turbopack ainda esta compilando a rota, e o sintoma era uma espera de
+// dois minutos por um seletor que nunca aparecia. A sessao e a mesma; o que
+// muda e que aqui ela nao depende de hidratacao.
+const resposta = await contexto.request.post(`${BASE}/api/auth/login`, {
+  data: { email: "demo@tino.local", senha: "demo12345" },
+})
+if (!resposta.ok()) throw new Error(`login falhou: ${resposta.status()}`)
 
 const achados = []
 const erros = []

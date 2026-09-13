@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle2, CreditCard, ReceiptText, WalletCards } from "
 import estilos from "./painel.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
+import { corDoBanco } from "@/lib/bancos-perfil"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
@@ -60,12 +61,14 @@ export default async function Painel() {
       <Cabecalho rotulo="Crédito" titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
       {cartoes.length ? <div className={estilos.listaCartoes}>{cartoes.map((cartao) => {
         const atual = valorDoMes(cartao.transacoes, competencia)
-        const futuras = mesesFuturos.slice(1).map((mes) => {
-          const confirmado = valorDoMes(cartao.transacoes, mes)
-          const previsto = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === mes).reduce((soma, p) => soma + p.valorCentavos, 0)
-          return { mes, valor: confirmado || previsto }
-        })
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco}><span className={estilos.iconeBanco}><CreditCard /></span><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}>{futuras.map((fatura) => <span key={fatura.mes}><small>{rotuloCompetencia(fatura.mes, true)}</small><b>{formatarMoeda(Math.max(0, fatura.valor))}</b></span>)}</span><ArrowRight className={estilos.seta} /></Link>
+        // Dois meses futuros lado a lado diziam menos do que a pergunta real de
+        // quem olha um cartao: quando fecha, quando vence, e quanto vem na
+        // proxima. Guarda so a proxima competencia.
+        const proximaCompetencia = mesesFuturos[1]
+        const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
+        const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
+        const proxima = confirmadoProximo || previstoProximo
+        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco}><span className={estilos.iconeBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><CreditCard /></span><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}><span><small>Fecha</small><b>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "—"}</b></span><span><small>Vence</small><b>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "—"}</b></span><span><small>{rotuloCompetencia(proximaCompetencia, true)}</small><b>{formatarMoeda(Math.max(0, proxima))}</b></span></span><ArrowRight className={estilos.seta} /></Link>
       })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
@@ -77,7 +80,7 @@ export default async function Painel() {
 
     <div className={estilos.duasColunas}>
       <section className={estilos.painel}><Cabecalho rotulo="Este mês" titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
-        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={categorias} /></div><ul>{categorias.map((linha, indice) => {
+        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={categorias} legenda={false} /></div><ul>{categorias.map((linha, indice) => {
           const orcamento = panorama.orcamento.linhas.find((item) => item.categoriaId === linha.categoriaId)
           const percentual = orcamento ? Math.round(linha.totalCentavos / Math.max(1, orcamento.limiteCentavos) * 100) : Math.round(linha.totalCentavos / maiorCategoria * 100)
           return <li key={linha.categoriaId ?? linha.nome}><Link href={`/transacoes?categoriaId=${linha.categoriaId ?? "sem"}`}><span className={estilos.cor} style={{ background: CORES[indice % CORES.length] }} /><span className={estilos.dadosLinha}><strong>{linha.nome}</strong><small>{orcamento ? `${percentual}% do orçamento` : "Definir orçamento"}</small></span><b>{formatarMoeda(linha.totalCentavos)}</b></Link><Barra percentual={percentual} /></li>

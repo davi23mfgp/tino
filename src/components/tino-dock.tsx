@@ -112,7 +112,13 @@ export function TinoDock() {
           <TinoMascote estado={estado} className="size-8" />
         </button>
       </DialogTrigger>
-      <DialogContent className="flex h-[min(640px,85dvh)] flex-col overflow-hidden">
+      {/* Cantinho direito no desktop, nao no centro da tela: o assistente
+          acompanha a leitura dos numeros, e um modal centralizado tapava
+          justamente o que a pessoa quer conferir enquanto pergunta. O
+          `ml-auto`/`mt-auto` vence o alinhamento do envolucro do Dialog sem
+          reposicionar por `fixed`, que quebraria a area segura do celular.
+          No celular continua subindo de baixo, ocupando a largura toda. */}
+      <DialogContent className="flex h-[min(640px,85dvh)] flex-col overflow-hidden sm:ml-auto sm:mt-auto sm:max-w-[420px]">
         <DialogHeader><DialogTitle>Tino</DialogTitle><DialogDescription>{FRASE[estado]}</DialogDescription></DialogHeader>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {turnos.length === 0 && (
