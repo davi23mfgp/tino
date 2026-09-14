@@ -219,30 +219,16 @@ export default function OrcamentoPagina() {
 
         <div className="space-y-2">
           {dados?.linhas.map((linha) => (
-            <div key={linha.categoriaId} className="rounded-2xl border border-pauta bg-papel-2 p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <SimboloCategoria categoria={linha.categoria}/><span className="min-w-0 flex-1 text-sm font-semibold">{linha.categoria.nome}</span>
-                <span className={cn("text-right text-sm tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
-                  <b className="block text-[calc(15px*var(--escala-letra))] font-semibold text-foreground">{formatarMoeda(linha.gastoCentavos)}</b>
-                  <small className="text-[calc(11px*var(--escala-letra))]">gastos</small>
-                </span>
-                <label className="flex items-center gap-1.5 rounded-[var(--raio-campo)] border border-pauta bg-background px-3 focus-within:border-acao">
-                  <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">limite R$</span>
-                  <input
-                    aria-label={`Orçamento de ${linha.categoria.nome}`}
-                    value={rascunho[linha.categoriaId] ?? ""}
-                    onChange={(evento) =>
-                      setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))
-                    }
-                    className="h-11 w-24 border-0 bg-transparent text-right text-[calc(15px*var(--escala-letra))] font-semibold tabular-nums outline-none sm:h-10"
-                    inputMode="decimal"
-                  />
-                </label>
+            <div key={linha.categoriaId} className="vidro-menu rounded-2xl p-3">
+              {/* Era um flex de cinco itens que embaralhava no celular: nome e
+                  valor se sobrepunham e a lixeira caia sozinha numa linha.
+                  Agora e grade: identidade em cima, numeros embaixo. */}
+              <div className="flex items-center gap-2.5">
+                <SimboloCategoria categoria={linha.categoria} />
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{linha.categoria.nome}</span>
                 <button
-                  onClick={() =>
-                    setRascunho((atual) => ({ ...atual, [linha.categoriaId]: "0" }))
-                  }
-                  className="grid size-11 place-items-center text-muted-fg transition hover:text-negativo"
+                  onClick={() => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: "0" }))}
+                  className="grid size-8 shrink-0 place-items-center rounded-full text-muted-fg transition hover:text-negativo"
                   aria-label={`Zerar orçamento de ${linha.categoria.nome}`}
                   title="zerar limite"
                 >
@@ -250,13 +236,34 @@ export default function OrcamentoPagina() {
                 </button>
               </div>
 
+              <div className="mt-2 flex items-center gap-3">
+                <span className="min-w-0 flex-1">
+                  <b className={cn("numero block text-[calc(15px*var(--escala-letra))] font-semibold", linha.estourou && "text-negativo")}>
+                    {formatarMoeda(linha.gastoCentavos)}
+                  </b>
+                  <small className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">gastos</small>
+                </span>
+                <label className="flex shrink-0 items-center gap-1 rounded-full border border-pauta bg-background px-3 focus-within:border-acao">
+                  <span className="text-[calc(11px*var(--escala-letra))] text-muted-fg">limite</span>
+                  <input
+                    aria-label={`Orçamento de ${linha.categoria.nome}`}
+                    value={rascunho[linha.categoriaId] ?? ""}
+                    onChange={(evento) => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))}
+                    className="h-10 w-20 border-0 bg-transparent text-right text-[calc(14px*var(--escala-letra))] font-semibold tabular-nums outline-none"
+                    inputMode="decimal"
+                    placeholder="0,00"
+                  />
+                </label>
+              </div>
+
               <div className="mt-2">
                 <Barra percentual={linha.percentual} />
               </div>
-              <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+              {/* Etiqueta, nao frase: "restam X" e "passou X" dizem tudo. */}
+              <p className={cn("mt-1 text-[calc(11px*var(--escala-letra))]", linha.estourou ? "text-negativo" : "text-muted-fg")}>
                 {linha.estourou
-                  ? `Passou ${formatarMoeda(-linha.restanteCentavos)} do limite.`
-                  : `Restam ${formatarMoeda(linha.restanteCentavos)}. ${linha.percentual}% usado.`}
+                  ? `passou ${formatarMoeda(-linha.restanteCentavos)}`
+                  : `restam ${formatarMoeda(linha.restanteCentavos)} · ${linha.percentual}%`}
               </p>
             </div>
           ))}
