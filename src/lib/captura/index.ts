@@ -7,6 +7,8 @@ import { createHash, randomBytes } from "crypto"
 
 import { prisma } from "@/lib/prisma"
 import { competenciaDe } from "@/lib/datas"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
+import { ErroDeUso } from "@/lib/api"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 import { lerNotificacao, lerTextoLivre, type NotificacaoLida } from "@/lib/captura/notificacao"
 import type { OrigemCaptura } from "@prisma/client"
@@ -206,7 +208,8 @@ export async function confirmarCaptura(params: {
   const contaId = params.contaId ?? captura.contaId
   if (!contaId) throw new Error("Escolha em qual conta esse gasto entra.")
 
-  if(!await prisma.conta.findFirst({where:{id:contaId,larId:params.larId,arquivada:false}}))throw new Error("Conta inválida.")
+  const conta = await prisma.conta.findFirst({where:{id:contaId,larId:params.larId,arquivada:false}})
+  if(!conta)throw new ErroDeUso("Conta inválida.")
   const categoriaId=params.categoriaId??captura.categoriaId
   if(categoriaId&&!await prisma.categoria.findFirst({where:{id:categoriaId,larId:params.larId}}))throw new Error("Categoria inválida.")
   const valorCentavos = params.valorCentavos ?? captura.valorCentavos ?? 0
@@ -230,6 +233,7 @@ export async function confirmarCaptura(params: {
         valorCentavos,
         tipo: "DESPESA",
         competencia: competenciaDe(data),
+        competenciaFatura: competenciaDoCartao(data, conta),
         origem: "MANUAL",
         observacao: `Capturado do celular (${captura.origem.toLowerCase()}).`,
       },

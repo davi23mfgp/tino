@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
 import { competenciaDe, janelaDoMes } from "@/lib/datas"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 
@@ -76,6 +77,9 @@ interface NovaTransacao {
   observacao?: string
   tags?: string[]
   meiFaturamento?: boolean
+  /// Mês da fatura escolhido à mão ("AAAA-MM"), quando a regra do cartão não
+  /// dá a resposta certa (compra lançada em data diferente da que o banco viu).
+  competenciaFatura?: string
   /// Transferência precisa da conta de destino: sem ela o dinheiro sumiria
   /// de uma conta sem aparecer na outra.
   contaDestinoId?: string
@@ -94,6 +98,14 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   const conta = await prisma.conta.findFirst({ where: { id: contaId, larId: sessao.larId } })
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
+
+  // O mês de fatura escolhido à mão só faz sentido em cartão de crédito, e só
+  // no formato que o resto do app entende — aceitar qualquer texto aqui é
+  // deixar uma compra sumir de todas as telas de fatura.
+  if (dados.competenciaFatura) {
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(dados.competenciaFatura)) throw new ErroDeUso("Mês de fatura inválido.")
+    if (conta.tipo !== "CARTAO_CREDITO") throw new ErroDeUso("Só compra em cartão de crédito tem mês de fatura.")
+  }
 
   if(dados.categoriaId && !await prisma.categoria.findFirst({where:{id:dados.categoriaId,larId:sessao.larId}})) throw new ErroDeUso("Categoria inválida.")
   if(dados.membroId && !await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}})) throw new ErroDeUso("Membro inválido.")
@@ -170,6 +182,9 @@ export const POST = comSessao(async (sessao, requisicao) => {
       tipo: dados.tipo,
       pago: dados.pago ?? true,
       competencia: competenciaDe(data),
+      // A contábil diz quando gastou; a de fatura, quando paga. Ver
+      // `lib/competencia-cartao.ts`.
+      competenciaFatura: dados.competenciaFatura ?? competenciaDoCartao(data, conta),
       observacao: dados.observacao,
       tags: dados.tags ?? [],
       meiFaturamento: dados.meiFaturamento ?? false,

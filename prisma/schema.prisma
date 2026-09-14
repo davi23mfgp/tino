@@ -441,6 +441,12 @@ model Transacao {
 
   /// Competência (YYYY-MM) — separa quando gastou de quando pagou.
   competencia String
+  /// Competência da FATURA (YYYY-MM), só para compra em cartão de crédito.
+  /// Não é a mesma coisa que `competencia`: uma compra no dia 29 num cartão
+  /// que fecha dia 28 aconteceu em setembro e é paga em novembro. `null`
+  /// quando a pergunta não se aplica (débito) ou quando o cartão não tem
+  /// fechamento e vencimento cadastrados — ver `lib/competencia-cartao.ts`.
+  competenciaFatura String?
 
   transferenciaParId String?    @unique
   transferenciaPar   Transacao? @relation("ParTransferencia", fields: [transferenciaParId], references: [id])
