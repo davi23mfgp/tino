@@ -47,7 +47,7 @@ function centavosDoValor(valor: string): number | null {
 }
 
 const focoVisivel = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acao focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-const acaoMenu = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[14px] transition-colors hover:bg-foreground/[0.05] motion-reduce:transition-none ${focoVisivel}`
+const acaoMenu = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[calc(14px*var(--escala-letra))] transition-colors hover:bg-foreground/[0.05] motion-reduce:transition-none ${focoVisivel}`
 
 export function FabAdicionar({ ancorado = false, inline: compacto = false, onSaved }: FabAdicionarProps) {
   const router = useRouter()
@@ -181,10 +181,10 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
             className={cn(
               "ios-tap flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-alta motion-reduce:!transform-none motion-reduce:!transition-none",
               focoVisivel,
-              compacto ? "min-h-11 px-4 py-2 text-sm font-medium" : ancorado ? "size-12" : "size-14",
+              compacto ? "min-h-11 px-4 py-2 text-sm font-medium" : ancorado ? "size-11 sm:size-10" : "size-14",
             )}
           >
-            <Plus aria-hidden="true" className="size-6 shrink-0" />
+            <Plus aria-hidden="true" strokeWidth={2} className="size-5 shrink-0" />
             {compacto && <span>Adicionar</span>}
           </button>
         </DialogTrigger>
@@ -202,7 +202,7 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
                 <Receipt aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
                 <span className="flex flex-col gap-0.5">
                   <span className="font-medium">Registrar gasto</span>
-                  <span className="text-[13px] text-muted-fg">Preencha os dados manualmente.</span>
+                  <span className="text-[calc(13px*var(--escala-letra))] text-muted-fg">Preencha os dados manualmente.</span>
                 </span>
               </button>
               <Link href="/capturas" onClick={() => setAberto(false)} className={acaoMenu}>
@@ -248,7 +248,7 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
                         <option value="">{estadoContas === "carregando" ? "Carregando contas…" : "Nenhuma conta disponível"}</option>
                       ) : contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}
                     </SelectNative>
-                    <p id={`${id}-estado-contas`} role="status" className="text-[13px] text-muted-fg">
+                    <p id={`${id}-estado-contas`} role="status" className="text-[calc(13px*var(--escala-letra))] text-muted-fg">
                       {estadoContas === "carregando" ? "Carregando suas contas…"
                         : estadoContas === "erro" ? "Não foi possível carregar suas contas. Tente novamente ou gerencie suas contas nas configurações."
                           : contas.length === 0 ? "Cadastre uma conta nas configurações para registrar seu primeiro gasto."
@@ -296,7 +296,7 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
                         className="motion-reduce:transition-none"
                         required
                       />
-                      <p id={`${id}-valor-ajuda`} className="text-[13px] text-muted-fg">Ex.: 52,30 ou 1.234,56.</p>
+                      <p id={`${id}-valor-ajuda`} className="text-[calc(13px*var(--escala-letra))] text-muted-fg">Ex.: 52,30 ou 1.234,56.</p>
                     </div>
                     <div className="flex min-w-0 flex-col gap-2">
                       <Label htmlFor={`${id}-data`}>Data</Label>

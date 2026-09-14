@@ -47,8 +47,8 @@ export function Cartao({
           {/* 15px seminegrito — número do spec (PARTE 2, "título de card").
               No Calen o título do card É lido: ele diz de que assunto é o
               bloco, e o número embaixo responde. Em 13px cinza ele sumia. */}
-          {titulo && <h2 className="text-[15px] font-semibold tracking-tight">{titulo}</h2>}
-          {acao && <div className="shrink-0 text-[13px] text-acao">{acao}</div>}
+          {titulo && <h2 className="text-[calc(15px*var(--escala-letra))] font-semibold tracking-tight">{titulo}</h2>}
+          {acao && <div className="shrink-0 text-[calc(13px*var(--escala-letra))] text-acao">{acao}</div>}
         </header>
       )}
       {children}
@@ -80,7 +80,7 @@ export function Rotulo({ children, className }: { children: React.ReactNode; cla
         // 11px / peso 600 / tracking 0.14em — número do spec (PARTE 2). O
         // espaçamento largo é o que faz a caixa alta virar rótulo em vez de
         // grito: em 0.06em ele ainda lia como texto normal em maiúscula.
-        "text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]",
+        "text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]",
         className,
       )}
     >
@@ -121,10 +121,10 @@ export function Valor({
   // pelo motivo inverso — a grade de quatro números do mês é o segundo lugar
   // onde o olho para, e em 24px ela lia como legenda.
   const escala = {
-    heroi: "text-[30px] leading-none tracking-tight sm:text-[36px]",
-    cartao: "text-[28px] leading-[1.1] tracking-[-0.03em]",
-    medio: "text-[30px] leading-none tracking-tight",
-    linha: "text-[15px] leading-snug tracking-[-0.01em]",
+    heroi: "text-[calc(30px*var(--escala-letra))] leading-none tracking-tight sm:text-[calc(36px*var(--escala-letra))]",
+    cartao: "text-[calc(28px*var(--escala-letra))] leading-[1.1] tracking-[-0.03em]",
+    medio: "text-[calc(30px*var(--escala-letra))] leading-none tracking-tight",
+    linha: "text-[calc(15px*var(--escala-letra))] leading-snug tracking-[-0.01em]",
   }[tamanho]
 
   // A cor sozinha nunca é o sinal (chroma zero no app inteiro): positivo e
@@ -186,7 +186,7 @@ export function Metrica({
         {valor}
       </Valor>
       {variacao && (
-        <p className="mt-2 flex items-center gap-1 text-[12px] leading-snug text-[color:var(--texto-2)]">
+        <p className="mt-2 flex items-center gap-1 text-[calc(12px*var(--escala-letra))] leading-snug text-[color:var(--texto-2)]">
           {variacao.sentido === "sobe" ? (
             <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
           ) : variacao.sentido === "desce" ? (
@@ -197,7 +197,7 @@ export function Metrica({
           {variacao.texto}
         </p>
       )}
-      {detalhe && <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">{detalhe}</p>}
+      {detalhe && <p className="mt-2 text-[calc(12px*var(--escala-letra))] leading-snug text-[color:var(--texto-2)]">{detalhe}</p>}
     </div>
   )
 }
@@ -234,7 +234,7 @@ export function Heroi({
       <Valor tom={tom} className="mt-2">
         {valor}
       </Valor>
-      {apoio && <p className="mt-2 text-[12px] leading-snug text-[color:var(--texto-2)]">{apoio}</p>}
+      {apoio && <p className="mt-2 text-[calc(12px*var(--escala-letra))] leading-snug text-[color:var(--texto-2)]">{apoio}</p>}
       {acao && <div className="mt-4">{acao}</div>}
     </section>
   )
@@ -291,14 +291,14 @@ export function LinhaLista({
       )}
 
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[14px] font-medium">{nome}</span>
+        <span className="block truncate text-[calc(14px*var(--escala-letra))] font-medium">{nome}</span>
         {detalhe && (
-          <span className="block truncate text-[12px] text-[color:var(--texto-2)]">{detalhe}</span>
+          <span className="block truncate text-[calc(12px*var(--escala-letra))] text-[color:var(--texto-2)]">{detalhe}</span>
         )}
       </span>
 
       {valor && (
-        <span className={cn("numero shrink-0 text-[14px] font-semibold", TOM[tomValor])}>{valor}</span>
+        <span className={cn("numero shrink-0 text-[calc(14px*var(--escala-letra))] font-semibold", TOM[tomValor])}>{valor}</span>
       )}
     </Raiz>
   )
@@ -327,7 +327,7 @@ export function Pilula({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-[var(--raio-pilula)] px-2.5 py-1 text-[12px] leading-none",
+        "inline-flex items-center rounded-[var(--raio-pilula)] px-2.5 py-1 text-[calc(12px*var(--escala-letra))] leading-none",
         estilo,
         className,
       )}
@@ -389,8 +389,8 @@ export function BarrasCategorias({
                 virava legenda do valor; em preto os dois pesam igual, que é o
                 certo — "Mercado" e "R$ 1.120,00" são a mesma informação lida
                 de dois jeitos. */}
-            <span className="min-w-0 truncate text-[13px] text-foreground">{linha.nome}</span>
-            <span className="numero shrink-0 text-[13px] font-medium">
+            <span className="min-w-0 truncate text-[calc(13px*var(--escala-letra))] text-foreground">{linha.nome}</span>
+            <span className="numero shrink-0 text-[calc(13px*var(--escala-letra))] font-medium">
               {formatarMoeda(linha.totalCentavos)}
             </span>
           </div>
@@ -437,8 +437,8 @@ export function Vazio({
           opacity="0.55"
         />
       </svg>
-      <p className="text-[14px] font-medium text-foreground">{titulo}</p>
-      {texto && <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-[color:var(--texto-2)]">{texto}</p>}
+      <p className="text-[calc(14px*var(--escala-letra))] font-medium text-foreground">{titulo}</p>
+      {texto && <p className="mx-auto mt-1.5 max-w-sm text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">{texto}</p>}
       {acao && <div className="mt-4">{acao}</div>}
     </div>
   )
@@ -468,7 +468,7 @@ export function Aviso({
   return (
     <div
       className={cn(
-        "rounded-[var(--raio-campo)] border-l-[3px] py-3.5 pl-4 pr-4 text-[13px] leading-relaxed",
+        "rounded-[var(--raio-campo)] border-l-[3px] py-3.5 pl-4 pr-4 text-[calc(13px*var(--escala-letra))] leading-relaxed",
         estilo,
       )}
     >

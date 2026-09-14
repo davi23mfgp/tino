@@ -22,7 +22,7 @@ export function PricingToggle({
   rotuloDesconto?: string
 }) {
   return (
-    <div className="relative inline-flex rounded-[var(--raio-pilula)] bg-foreground/[0.06] p-1 text-[12px]">
+    <div className="relative inline-flex rounded-[var(--raio-pilula)] bg-foreground/[0.06] p-1 text-[calc(12px*var(--escala-letra))]">
       <div
         aria-hidden
         className={cn(
@@ -55,7 +55,7 @@ export function PricingToggle({
         {rotuloDesconto && (
           <span
             className={cn(
-              "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+              "rounded-full px-1.5 py-0.5 text-[calc(10px*var(--escala-letra))] font-semibold",
               valor === "ANUAL" ? "bg-white/20 text-white" : "bg-positivo/15 text-positivo",
             )}
           >

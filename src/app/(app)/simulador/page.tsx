@@ -96,7 +96,7 @@ const MODELOS: { tipo: TipoAjuste; titulo: string; texto: string }[] = [
   { tipo: "RECEITA_UNICA", titulo: "Entrada única", texto: "13º, bônus, venda" },
 ]
 
-const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
 
 export default function Simulador() {
   const [comparacao, setComparacao] = useState<Comparacao | null>(null)
@@ -225,7 +225,7 @@ export default function Simulador() {
               setMeses(janela)
               rodar(hipoteses, janela)
             }}
-            className="rounded-full border border-pauta bg-background px-3 py-1.5 text-[12px]"
+            className="rounded-full border border-pauta bg-background px-3 py-1.5 text-[calc(12px*var(--escala-letra))]"
           >
             {[12, 24, 36, 60].map((opcao) => (
               <option key={opcao} value={opcao}>
@@ -235,7 +235,7 @@ export default function Simulador() {
           </select>
         }
       >
-        <p className="text-[13px] leading-relaxed text-muted-fg">
+        <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
           Monte hipóteses e veja o efeito no seu caixa mês a mês. Tudo parte dos seus números reais: renda de{" "}
           <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.rendaMensalCentavos ?? 0)}</span>, custo de vida de{" "}
           <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.custoDeVidaMensalCentavos ?? 0)}</span> e saldo de{" "}
@@ -243,7 +243,7 @@ export default function Simulador() {
         </p>
 
         {comparacao && comparacao.entrada.rendaMensalCentavos === 0 && (
-          <p className="mt-3 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[13px] text-atencao">
+          <p className="mt-3 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[calc(13px*var(--escala-letra))] text-atencao">
             Sem renda cadastrada. Complete seu perfil ou importe um extrato para simular com seus dados.
           </p>
         )}
@@ -271,7 +271,7 @@ export default function Simulador() {
                   <input
                     value={hipotese.rotulo}
                     onChange={(evento) => atualizar(hipotese.id, { rotulo: evento.target.value })}
-                    className="min-w-0 flex-1 bg-transparent text-[14px] font-medium outline-none"
+                    className="min-w-0 flex-1 bg-transparent text-[calc(14px*var(--escala-letra))] font-medium outline-none"
                   />
                   <button
                     onClick={() => setHipoteses((atual) => atual.filter((item) => item.id !== hipotese.id))}
@@ -352,7 +352,7 @@ export default function Simulador() {
             <button
               onClick={() => rodar(hipoteses, meses)}
               disabled={carregando}
-              className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+              className="rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
             >
               {carregando ? "Calculando…" : "Simular"}
             </button>
@@ -361,7 +361,7 @@ export default function Simulador() {
                 setHipoteses([])
                 rodar([], meses)
               }}
-              className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2.5 text-[13px] text-muted-fg transition hover:text-foreground"
+              className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2.5 text-[calc(13px*var(--escala-letra))] text-muted-fg transition hover:text-foreground"
             >
               <RotateCcw className="size-3.5" />
               limpar
@@ -370,7 +370,7 @@ export default function Simulador() {
         </Cartao>
       )}
 
-      {erro && <Cartao><p className="text-[13px] text-negativo">{erro}</p></Cartao>}
+      {erro && <Cartao><p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p></Cartao>}
 
       {comparacao && cenario && base && (
         <>
@@ -410,7 +410,7 @@ export default function Simulador() {
             {temHipotese && (
               <div className="mt-4 space-y-1.5">
                 {comparacao.veredito.map((frase) => (
-                  <p key={frase} className="text-[13px] leading-relaxed">
+                  <p key={frase} className="text-[calc(13px*var(--escala-letra))] leading-relaxed">
                     {frase}
                   </p>
                 ))}
@@ -418,7 +418,7 @@ export default function Simulador() {
             )}
 
             {cenario.primeiroMesNegativo && (
-              <p className="mt-4 rounded-2xl border border-negativo/40 bg-negativo/10 p-3 text-[13px] text-negativo">
+              <p className="mt-4 rounded-2xl border border-negativo/40 bg-negativo/10 p-3 text-[calc(13px*var(--escala-letra))] text-negativo">
                 O caixa fica negativo em {rotuloCompetencia(cenario.primeiroMesNegativo)} — é quando a conta entra no
                 cheque especial.
               </p>
@@ -432,7 +432,7 @@ export default function Simulador() {
               comparar={temHipotese ? base.meses : undefined}
             />
             {temHipotese && (
-              <p className="mt-1 text-[11px] text-muted-fg">
+              <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
                 A linha cinza é o seu cenário de hoje; a área azul é com as hipóteses.
               </p>
             )}
@@ -447,8 +447,8 @@ export default function Simulador() {
                 return (
                   <div key={mes.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
                     <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-[13px] font-medium">{rotuloCompetencia(mes.competencia)}</span>
-                      <span className={cn("text-[15px] font-semibold", negativo ? "text-negativo" : "text-foreground")}>
+                      <span className="text-[calc(13px*var(--escala-letra))] font-medium">{rotuloCompetencia(mes.competencia)}</span>
+                      <span className={cn("text-[calc(15px*var(--escala-letra))] font-semibold", negativo ? "text-negativo" : "text-foreground")}>
                         <span className="valor-inteiro">{formatarMoeda(mes.saldoAcumuladoCentavos)}</span>
                       </span>
                     </div>
@@ -471,7 +471,7 @@ export default function Simulador() {
                       )}
                     </div>
 
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-fg">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
                       <span>entra {formatarMoedaCurta(mes.receitasCentavos)}</span>
                       <span>vida {formatarMoedaCurta(mes.custoDeVidaCentavos)}</span>
                       {mes.parcelasCentavos > 0 && <span>parcelas {formatarMoedaCurta(mes.parcelasCentavos)}</span>}
@@ -487,7 +487,7 @@ export default function Simulador() {
                     </div>
 
                     {mes.eventos.length > 0 && (
-                      <p className="mt-2 text-[11px] text-acao">{mes.eventos.join(" · ")}</p>
+                      <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-acao">{mes.eventos.join(" · ")}</p>
                     )}
                   </div>
                 )

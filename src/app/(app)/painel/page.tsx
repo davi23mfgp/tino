@@ -6,15 +6,17 @@ import { ArrowRight, CheckCircle2, ReceiptText, WalletCards } from "lucide-react
 import estilos from "./painel.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
+import { corDoBanco } from "@/lib/bancos-perfil"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { GraficoEvolucao, RoscaCategorias } from "@/components/graficos"
+import { FluxoDeCaixaNoTempo, RoscaCategorias } from "@/components/graficos"
+import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
+import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
 import { IdentidadeBanco } from "@/components/banco-perfil"
-import { corDoBanco } from "@/lib/bancos-perfil"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
@@ -46,6 +48,10 @@ export default async function Painel() {
     }),
     compromissosFuturos(sessao.larId, 36), resumoParcelamentos(sessao.larId),
   ])
+
+  // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
+  // passar pelo mesmo numero que aparece no topo da tela.
+  const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos))
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
   const categorias = panorama.mes.despesasPorCategoria.slice(0, 5)
   const maiorCategoria = Math.max(1, ...categorias.map((linha) => linha.totalCentavos))
@@ -65,13 +71,14 @@ export default async function Painel() {
       <Cabecalho rotulo="Crédito" titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
       {cartoes.length ? <div className={estilos.listaCartoes}>{cartoes.map((cartao) => {
         const atual = valorDoMes(cartao.transacoes, competencia)
-        const futuras = mesesFuturos.slice(1).map((mes) => {
-          const confirmado = valorDoMes(cartao.transacoes, mes)
-          const previsto = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === mes).reduce((soma, p) => soma + p.valorCentavos, 0)
-          // Lançado e parcela ainda não lançada somam, mas o mês avisa quando há previsão.
-          return { mes, valor: confirmado + previsto, previsto }
-        })
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}>{futuras.map((fatura) => <span key={fatura.mes}><small title={fatura.previsto ? `Inclui ${formatarMoeda(fatura.previsto)} em parcelas previstas` : undefined}>{rotuloCompetencia(fatura.mes, true)}{fatura.previsto ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, fatura.valor))}</b></span>)}</span><ArrowRight className={estilos.seta} /></Link>
+        // Fecha, vence e a proxima fatura: as tres perguntas de quem olha um
+        // cartao. Lancado e parcela ainda nao lancada somam, e o rotulo avisa
+        // quando ha previsao no meio — antes um escondia o outro.
+        const proximaCompetencia = mesesFuturos[1]
+        const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
+        const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
+        const proxima = confirmadoProximo + previstoProximo
+        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}><span><small>Fecha</small><b>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "—"}</b></span><span><small>Vence</small><b>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "—"}</b></span><span><small title={previstoProximo ? `Inclui ${formatarMoeda(previstoProximo)} em parcelas previstas` : undefined}>{rotuloCompetencia(proximaCompetencia, true)}{previstoProximo ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, proxima))}</b></span></span><ArrowRight className={estilos.seta} /></Link>
       })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
@@ -83,7 +90,7 @@ export default async function Painel() {
 
     <div className={estilos.duasColunas}>
       <section className={estilos.painel}><Cabecalho rotulo="Este mês" titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
-        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={categorias} /></div><ul>{categorias.map((linha, indice) => {
+        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={categorias} legenda={false} /></div><ul>{categorias.map((linha, indice) => {
           const orcamento = panorama.orcamento.linhas.find((item) => item.categoriaId === linha.categoriaId)
           const percentual = orcamento ? Math.round(linha.totalCentavos / Math.max(1, orcamento.limiteCentavos) * 100) : Math.round(linha.totalCentavos / maiorCategoria * 100)
           return <li key={linha.categoriaId ?? linha.nome}><Link href={`/transacoes?categoriaId=${linha.categoriaId ?? "sem"}`}><span className={estilos.cor} style={{ background: CORES[indice % CORES.length] }} /><span className={estilos.dadosLinha}><strong>{linha.nome}</strong><small>{orcamento ? `${percentual}% do orçamento` : "Definir orçamento"}</small></span><b>{formatarMoeda(linha.totalCentavos)}</b></Link><Barra percentual={percentual} /></li>
@@ -95,7 +102,7 @@ export default async function Painel() {
     </div>
 
     <div className={estilos.duasColunas}>
-      <section className={estilos.painel}><Cabecalho rotulo="Últimos seis meses" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" /><GraficoEvolucao dados={panorama.historico.slice(-6)} altura={190} /></section>
+      <section className={estilos.painel}><Cabecalho rotulo="O que entra, o que sai e o que sobra" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" /><FluxoDeCaixaNoTempo series={fluxo} altura={230} /></section>
       <section className={estilos.painel}><Cabecalho rotulo="O que você tem e deve" titulo="Balanço" href="/analise" acao="Ver análise" />
         <dl className={estilos.balanco}><div><dt>Ativos</dt><dd>{formatarMoeda(diagnostico.balanco.ativoTotalCentavos)}</dd></div><div><dt>Dívidas</dt><dd>{formatarMoeda(diagnostico.balanco.passivoTotalCentavos)}</dd></div><div><dt>Patrimônio</dt><dd className={diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(diagnostico.balanco.patrimonioLiquidoCentavos)}</dd></div></dl>
         <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.prioridades[0]?.titulo ?? "Continue acompanhando seu mês."}</p><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>

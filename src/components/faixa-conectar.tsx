@@ -56,17 +56,17 @@ export function FaixaConectar({ conectado }: { conectado: boolean }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-[14px] font-medium leading-snug text-foreground">
+        <p className="text-[calc(14px*var(--escala-letra))] font-medium leading-snug text-foreground">
           Seu mês fecha sozinho quando o banco está conectado
         </p>
-        <p className="mt-0.5 hidden text-[12px] text-[color:var(--texto-3)] sm:block">
+        <p className="mt-0.5 hidden text-[calc(12px*var(--escala-letra))] text-[color:var(--texto-3)] sm:block">
           O Open Finance traz cada gasto por você.
         </p>
       </div>
 
       <Link
         href="/conectar"
-        className="ios-tap inline-flex min-h-[44px] shrink-0 items-center rounded-[var(--raio-pilula)] bg-primary px-5 text-[14px] font-semibold text-primary-foreground"
+        className="ios-tap inline-flex min-h-[44px] shrink-0 items-center rounded-[var(--raio-pilula)] bg-primary px-5 text-[calc(14px*var(--escala-letra))] font-semibold text-primary-foreground"
       >
         Conectar
       </Link>

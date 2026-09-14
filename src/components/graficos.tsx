@@ -22,6 +22,8 @@ import {
 } from "recharts"
 
 import { formatarMoeda, formatarMoedaCurta } from "@/lib/dinheiro"
+import { cn } from "@/lib/utils"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { rotuloCompetencia } from "@/lib/datas"
 
 /**
@@ -116,9 +118,9 @@ function Dica({
 
   return (
     <div className="rounded-xl border border-pauta bg-papel-1 px-3 py-2 shadow-alta">
-      {label && <p className="mb-1 text-[11px] uppercase tracking-widest text-muted-fg">{label}</p>}
+      {label && <p className="mb-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{label}</p>}
       {payload.map((linha, indice) => (
-        <p key={indice} className="flex items-center gap-2 text-[12px]">
+        <p key={indice} className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))]">
           <span className="size-2 rounded-full" style={{ background: linha.color }} />
           <span className="text-muted-fg">{linha.name}</span>
           <span className="font-medium">{formatarMoeda(Number(linha.value ?? 0))}</span>
@@ -264,7 +266,7 @@ export function GraficoCategorias({
 
       <ul className="w-full space-y-1.5">
         {serie.map((linha, indice) => (
-          <li key={linha.name} className="flex items-center gap-2 text-[13px]">
+          <li key={linha.name} className="flex items-center gap-2 text-[calc(13px*var(--escala-letra))]">
             <span className="size-2.5 shrink-0 rounded-full" style={{ background: paleta[indice % paleta.length] }} />
             <span className="min-w-0 flex-1 truncate">{linha.name}</span>
             <span className="text-muted-fg">{total > 0 ? `${Math.round((linha.value / total) * 100)}%` : "0%"}</span>
@@ -295,9 +297,17 @@ export function GraficoCategorias({
 export function RoscaCategorias({
   dados,
   altura = 200,
+  legenda = true,
 }: {
   dados: { nome: string; totalCentavos: number }[]
   altura?: number
+  /**
+   * A rosca traz a propria legenda para quem a usa sozinha. No painel isso
+   * virava DUAS listas das mesmas categorias, uma por cima da outra --
+   * ilegivel, foi o que o Davi apontou em 13/09. Quem ja desenha a propria
+   * lista (com orcamento e barra) passa `legenda={false}`.
+   */
+  legenda?: boolean
 }) {
   const cores = useCores()
   const paleta = ORDEM_DA_PALETA.map((nome) => cores[nome])
@@ -334,28 +344,28 @@ export function RoscaCategorias({
         {/* Total no buraco do meio. `pointer-events-none` porque a rosca por
             baixo continua sendo o alvo do toque de cada fatia. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="numero text-[20px] font-semibold leading-none tracking-tight">
+          <span className="numero text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">
             {formatarMoeda(total)}
           </span>
-          <span className="mt-1.5 text-[11px] text-[color:var(--texto-2)]">gasto até hoje</span>
+          <span className="mt-1.5 text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-2)]">gasto até hoje</span>
         </div>
       </div>
 
-      <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
+      {legenda && <ul className="flex w-full flex-wrap gap-x-4 gap-y-2.5 sm:flex-col sm:flex-nowrap">
         {serie.map((linha, indice) => (
-          <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[13px] sm:w-full">
+          <li key={linha.name} className="flex min-w-0 items-center gap-2 text-[calc(13px*var(--escala-letra))] sm:w-full">
             <span
               aria-hidden
               className="size-2.5 shrink-0 rounded-full"
               style={{ background: paleta[indice % paleta.length] }}
             />
             <span className="min-w-0 truncate sm:flex-1">{linha.name}</span>
-            <span className="numero shrink-0 text-[13px] font-medium sm:text-right">
+            <span className="numero shrink-0 text-[calc(13px*var(--escala-letra))] font-medium sm:text-right">
               {formatarMoeda(linha.value)}
             </span>
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   )
 }
@@ -474,8 +484,8 @@ export function GraficoAnel({
       </ResponsiveContainer>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[20px] font-semibold leading-none tracking-tight">{valor}</span>
-        <span className="mt-1 text-[11px] uppercase tracking-widest text-muted-fg">{rotulo}</span>
+        <span className="text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">{valor}</span>
+        <span className="mt-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{rotulo}</span>
       </div>
     </div>
   )
@@ -589,8 +599,8 @@ export function GraficoDaDivisao({
       </ResponsiveContainer>
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="numero text-[19px] font-semibold leading-none">{total}</span>
-        <span className="mt-1 text-[11px] uppercase tracking-widest text-muted-fg">por mês</span>
+        <span className="numero text-[calc(19px*var(--escala-letra))] font-semibold leading-none">{total}</span>
+        <span className="mt-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">por mês</span>
       </div>
     </div>
   )
@@ -654,4 +664,125 @@ export function GraficoBalanco({
       </ComposedChart>
     </ResponsiveContainer>
   )
+}
+
+// ============================================================
+// FLUXO DE CAIXA AO LONGO DO TEMPO
+// ============================================================
+
+/**
+ * Quando o caixa fica como, ao longo do tempo.
+ *
+ * Pedido do Davi em 13/09, com as palavras dele: "baseado no que esta entrando
+ * e vai entrar e no que saiu e vai sair, quando que vai ficar meu caixa ao
+ * longo do tempo, filtro dias mes e ano. deixe o grafico mais claro possivel
+ * com retangulos junto com as linhas".
+ *
+ * Retângulo e linha respondem coisas diferentes e por isso convivem: a barra é
+ * o movimento do período (entrou, saiu), a linha é o saldo que sobra depois
+ * dele. Sem a barra, a linha sobe e desce sem dizer por quê; sem a linha, as
+ * barras não somam para lugar nenhum.
+ *
+ * O futuro aparece com traço pontilhado e barra mais apagada. Desenhar o que
+ * ainda não aconteceu igual ao que já aconteceu é prometer certeza que não
+ * existe — a legenda diz isso por escrito, não só pela cor.
+ */
+export function FluxoDeCaixaNoTempo({
+  series,
+  altura = 260,
+}: {
+  series: Record<"dia" | "mes" | "ano", PontoFluxoGrafico[]>
+  altura?: number
+}) {
+  const cores = useCores()
+  const [granularidade, setGranularidade] = useState<"dia" | "mes" | "ano">("mes")
+  const serie = series[granularidade]
+
+  const dados = serie.map((ponto) => ({
+    rotulo: ponto.rotulo,
+    entrou: ponto.entrouCentavos / 100,
+    saiu: ponto.saiuCentavos / 100,
+    // Duas chaves para a MESMA linha: o Recharts não sabe pontilhar metade de
+    // uma série. O ponto de virada entra nas duas, senão a linha nasce com um
+    // buraco entre o último dia realizado e o primeiro previsto.
+    caixaRealizado: ponto.futuro ? null : ponto.caixaCentavos / 100,
+    caixaPrevisto: ponto.futuro || ponto.viradaDoFuturo ? ponto.caixaCentavos / 100 : null,
+    futuro: ponto.futuro,
+  }))
+
+  const virada = dados.findIndex((ponto) => ponto.futuro)
+  const fim = serie[serie.length - 1]
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ToggleGroup
+          type="single"
+          value={granularidade}
+          onValueChange={(valor) => { if (valor) setGranularidade(valor as "dia" | "mes" | "ano") }}
+          aria-label="Período do fluxo de caixa"
+        >
+          <ToggleGroupItem value="dia">Dias</ToggleGroupItem>
+          <ToggleGroupItem value="mes">Meses</ToggleGroupItem>
+          <ToggleGroupItem value="ano">Anos</ToggleGroupItem>
+        </ToggleGroup>
+        <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
+          No fim de {fim?.rotulo}:{" "}
+          <span className={cn("numero font-semibold", (fim?.caixaCentavos ?? 0) < 0 && "text-negativo")}>
+            {formatarMoeda(fim?.caixaCentavos ?? 0)}
+          </span>
+        </p>
+      </div>
+
+      <div style={{ height: altura }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+            <XAxis dataKey="rotulo" tick={eixo} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={12} />
+            <YAxis tick={eixo} tickLine={false} axisLine={false} width={58} tickFormatter={(valor) => formatarMoedaCurta(valor * 100)} />
+            <Tooltip content={<Dica />} cursor={{ fill: "currentColor", opacity: 0.06 }} />
+            {/* Zero marcado sempre: sem ele, "caixa negativo" vira só uma
+                linha mais baixa que as outras. */}
+            <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.35} />
+            {virada > 0 && (
+              <ReferenceLine
+                x={dados[virada]?.rotulo}
+                stroke="currentColor"
+                strokeOpacity={0.35}
+                strokeDasharray="3 3"
+                label={{ value: "hoje", position: "insideTopLeft", fill: "currentColor", fontSize: 10, opacity: 0.6 }}
+              />
+            )}
+            <Bar dataKey="entrou" name="Entrou" fill={cores.positivo} radius={[4, 4, 0, 0]} maxBarSize={18}>
+              {dados.map((ponto, indice) => (
+                <Cell key={indice} fillOpacity={ponto.futuro ? 0.42 : 1} />
+              ))}
+            </Bar>
+            <Bar dataKey="saiu" name="Saiu" fill={cores.negativo} radius={[4, 4, 0, 0]} maxBarSize={18}>
+              {dados.map((ponto, indice) => (
+                <Cell key={indice} fillOpacity={ponto.futuro ? 0.42 : 1} />
+              ))}
+            </Bar>
+            <Line type="monotone" dataKey="caixaRealizado" name="Caixa" stroke={cores.dado} strokeWidth={2.4} dot={false} connectNulls={false} />
+            <Line type="monotone" dataKey="caixaPrevisto" name="Caixa previsto" stroke={cores.dado} strokeWidth={2.4} strokeDasharray="5 4" dot={false} connectNulls={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+        Barra cheia e linha contínua: o que já aconteceu. Barra apagada e linha pontilhada: o que está agendado —
+        lançamento com data futura e parcela de cartão já contratada. Não prevê imprevisto nem aumento de renda.
+      </p>
+    </div>
+  )
+}
+
+export interface PontoFluxoGrafico {
+  chave: string
+  rotulo: string
+  entrouCentavos: number
+  saiuCentavos: number
+  caixaCentavos: number
+  futuro: boolean
+  /** Último ponto realizado, que também inicia a linha pontilhada. */
+  viradaDoFuturo?: boolean
 }

@@ -7,7 +7,8 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { Cartao, Metrica } from "@/components/ui/painel"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
-import { GraficoFluxo } from "@/components/graficos"
+import { FluxoDeCaixaNoTempo } from "@/components/graficos"
+import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 
 export const dynamic = "force-dynamic"
 
@@ -21,6 +22,7 @@ export default async function Projecao() {
   ])
 
   const comAcumulado = projetarComParcelas(panorama, compromissos)
+  const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, comAcumulado)
 
   const primeiroNegativo = comAcumulado.find((linha) => linha.acumuladoCentavos < 0)
   const maiorSaida = Math.max(...comAcumulado.map((linha) => linha.despesasCentavos + linha.parcelasCentavos), 1)
@@ -51,19 +53,17 @@ export default async function Projecao() {
           </p>
         )}
 
-        <p className="mt-4 text-[12px] text-muted-fg">
+        <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-muted-fg">
           Cenário de tudo seguir como está: receita e despesa pela sua média, mais as parcelas já contratadas. Não
           prevê imprevisto nem aumento de renda.
         </p>
       </Cartao>
 
-      <Cartao titulo="Saldo projetado">
-        <GraficoFluxo
-          dados={comAcumulado.map((linha) => ({
-            competencia: linha.competencia,
-            saldoAcumuladoCentavos: linha.acumuladoCentavos,
-          }))}
-        />
+      {/* Mesmo grafico do inicio, com a janela maior: quem clica em "Ver
+          projecao" quer o mesmo desenho que viu no painel, nao outro. Aqui ele
+          vem com 300px de altura porque a tela e dedicada a isso. */}
+      <Cartao titulo="Quando o caixa fica assim">
+        <FluxoDeCaixaNoTempo series={fluxo} altura={300} />
       </Cartao>
 
       <Cartao titulo="Mês a mês">
@@ -96,7 +96,7 @@ export default async function Projecao() {
                 />
               </div>
 
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-fg">
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[calc(12px*var(--escala-letra))] text-muted-fg">
                 <span>entra <span className="valor-inteiro">{formatarMoeda(linha.receitasCentavos)}</span></span>
                 <span>sai <span className="valor-inteiro">{formatarMoeda(linha.despesasCentavos)}</span></span>
                 {linha.parcelasCentavos > 0 && <span>parcelas <span className="valor-inteiro">{formatarMoeda(linha.parcelasCentavos)}</span></span>}

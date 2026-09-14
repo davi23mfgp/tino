@@ -137,7 +137,7 @@ export default function OrcamentoPagina() {
           <select
             value={competencia}
             onChange={(evento) => setCompetencia(evento.target.value)}
-            className="rounded-full border border-pauta bg-background px-3 py-1.5 text-[12px]"
+            className="rounded-full border border-pauta bg-background px-3 py-1.5 text-[calc(12px*var(--escala-letra))]"
           >
             {ultimasCompetencias(6)
               .concat([1, 2, 3].map((n) => competenciaMaisMeses(competenciaAtual(), n)))
@@ -174,18 +174,18 @@ export default function OrcamentoPagina() {
           <button
             onClick={sugerir}
             disabled={ocupado}
-            className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2 text-[12px] transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2 text-[calc(12px*var(--escala-letra))] transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
           >
             <Sparkles className="size-3.5" />
             Usar meu histórico
           </button>
 
-          <label className="flex items-center gap-2 text-[12px] text-muted-fg">
+          <label className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             Repetir por
             <select
               value={repetir}
               onChange={(evento) => setRepetir(Number(evento.target.value))}
-              className="rounded-full border border-pauta bg-background px-2.5 py-1.5 text-[12px]"
+              className="rounded-full border border-pauta bg-background px-2.5 py-1.5 text-[calc(12px*var(--escala-letra))]"
             >
               {[0, 2, 5, 11].map((n) => (
                 <option key={n} value={n}>
@@ -198,13 +198,13 @@ export default function OrcamentoPagina() {
           <button
             onClick={salvar}
             disabled={ocupado}
-            className="ml-auto rounded-full bg-primary px-5 py-2 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+            className="ml-auto rounded-full bg-primary px-5 py-2 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
           >
             {ocupado ? "Salvando…" : "Salvar orçamento"}
           </button>
         </div>
 
-        {mensagem && <p className="mt-3 text-[12px] text-acao">{mensagem}</p>}
+        {mensagem && <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-acao">{mensagem}</p>}
       </Cartao>
 
       <Cartao titulo="Plano por categoria">
@@ -223,7 +223,7 @@ export default function OrcamentoPagina() {
                 <span className={cn("text-sm tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
                   {formatarMoeda(linha.gastoCentavos)}
                 </span>
-                <span className="text-[12px] text-muted-fg">de</span>
+                <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">de</span>
                 <input
                   aria-label={`Orçamento de ${linha.categoria.nome}`}
                   value={rascunho[linha.categoriaId] ?? ""}
@@ -248,7 +248,7 @@ export default function OrcamentoPagina() {
               <div className="mt-2">
                 <Barra percentual={linha.percentual} />
               </div>
-              <p className="mt-1 text-[11px] text-muted-fg">
+              <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
                 {linha.estourou
                   ? `Passou ${formatarMoeda(-linha.restanteCentavos)} do limite.`
                   : `Restam ${formatarMoeda(linha.restanteCentavos)}. ${linha.percentual}% usado.`}
@@ -259,7 +259,7 @@ export default function OrcamentoPagina() {
 
         {dados && dados.semOrcamento.length > 0 && (
           <div className="mt-5">
-            <p className="text-[11px] uppercase tracking-widest text-muted-fg">
+            <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">
               Gastou e não estava no plano
             </p>
             <div className="mt-2 space-y-2">
@@ -284,7 +284,7 @@ export default function OrcamentoPagina() {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-[11px] text-muted-fg">
+            <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">
               São as categorias em que o estouro nasce: dinheiro saiu sem limite definido.
             </p>
           </div>

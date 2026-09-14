@@ -71,7 +71,7 @@ const FORMAS: { valor: FormaPagamento; rotulo: string }[] = [
   { valor: "FIADO", rotulo: "Fiado" },
 ]
 
-const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
 
 export default function Loja() {
   const [dados, setDados] = useState<Estado | null>(null)
@@ -223,7 +223,7 @@ export default function Loja() {
                 <button
                   key={produto.id}
                   onClick={() => adicionar(produto)}
-                  className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[13px]"
+                  className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[calc(13px*var(--escala-letra))]"
                 >
                   <span className="block font-medium">{produto.nome}</span>
                   <span className="text-muted-fg">{formatarMoeda(produto.precoCentavos)}</span>
@@ -238,7 +238,7 @@ export default function Loja() {
           )}
 
           <form onSubmit={adicionarAvulso} className="mt-4 flex flex-wrap items-end gap-2">
-            <label className="flex flex-1 flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex flex-1 flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               item avulso
               <input
                 value={avulso.descricao}
@@ -247,7 +247,7 @@ export default function Loja() {
                 className={campo}
               />
             </label>
-            <label className="flex w-32 flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="flex w-32 flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               preço
               <input
                 inputMode="decimal"
@@ -257,7 +257,7 @@ export default function Loja() {
                 className={campo}
               />
             </label>
-            <button type="submit" className="rounded-full border border-pauta px-4 py-2.5 text-[13px]">
+            <button type="submit" className="rounded-full border border-pauta px-4 py-2.5 text-[calc(13px*var(--escala-letra))]">
               incluir
             </button>
           </form>
@@ -293,7 +293,7 @@ export default function Loja() {
               <button
                 key={opcao.valor}
                 onClick={() => setForma(opcao.valor)}
-                className={`rounded-full border px-3.5 py-2 text-[13px] ${
+                className={`rounded-full border px-3.5 py-2 text-[calc(13px*var(--escala-letra))] ${
                   forma === opcao.valor ? "border-acao text-acao" : "border-pauta text-muted-fg"
                 }`}
               >
@@ -303,7 +303,7 @@ export default function Loja() {
           </div>
 
           {forma === "DINHEIRO" && (
-            <label className="mt-3 flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="mt-3 flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               recebeu quanto
               <input
                 inputMode="decimal"
@@ -316,7 +316,7 @@ export default function Loja() {
           )}
 
           {forma === "FIADO" && (
-            <label className="mt-3 flex flex-col gap-1.5 text-[12px] text-muted-fg">
+            <label className="mt-3 flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
               quem levou
               <input value={cliente} onChange={(evento) => setCliente(evento.target.value)} className={campo} />
             </label>
@@ -329,13 +329,13 @@ export default function Loja() {
           <button
             onClick={fechar}
             disabled={ocupado || carrinho.length === 0}
-            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[15px] font-medium text-primary-foreground disabled:opacity-50"
+            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[calc(15px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
           >
             fechar venda
           </button>
 
-          {erro && <p className="mt-3 text-[13px] text-negativo">{erro}</p>}
-          {aviso && <p className="mt-3 text-[13px] text-positivo">{aviso}</p>}
+          {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
+          {aviso && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-positivo">{aviso}</p>}
         </Cartao>
       </div>
 
@@ -370,10 +370,10 @@ export default function Loja() {
 
             {dados.aCair.length > 0 && (
               <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
-                <p className="text-[12px] uppercase tracking-widest text-muted-fg">Próximos dias</p>
+                <p className="text-[calc(12px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Próximos dias</p>
                 <div className="mt-2 space-y-1">
                   {dados.aCair.slice(0, 6).map((linha) => (
-                    <div key={linha.dia} className="flex items-center justify-between text-[13px]">
+                    <div key={linha.dia} className="flex items-center justify-between text-[calc(13px*var(--escala-letra))]">
                       <span className="text-muted-fg">
                         {new Date(`${linha.dia}T12:00:00Z`).toLocaleDateString("pt-BR", {
                           day: "2-digit",
@@ -404,11 +404,11 @@ export default function Loja() {
                 <span>{formatarMoeda(venda.totalCentavos)}</span>
 
                 {venda.notaFiscal?.status === "EMITIDA" ? (
-                  <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-[11px] text-positivo">
+                  <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-[calc(11px*var(--escala-letra))] text-positivo">
                     nota emitida
                   </span>
                 ) : venda.notaFiscal?.status === "CANCELADA" ? (
-                  <span className="rounded-full bg-muted-fg/10 px-2.5 py-1 text-[11px] text-muted-fg">
+                  <span className="rounded-full bg-muted-fg/10 px-2.5 py-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
                     nota cancelada
                   </span>
                 ) : (
@@ -420,7 +420,7 @@ export default function Loja() {
                         ? "A tentativa anterior foi rejeitada. Corrija o que faltar e tente de novo."
                         : undefined
                     }
-                    className="rounded-full border border-pauta px-2.5 py-1 text-[11px] text-muted-fg hover:border-acao/40 disabled:opacity-50"
+                    className="rounded-full border border-pauta px-2.5 py-1 text-[calc(11px*var(--escala-letra))] text-muted-fg hover:border-acao/40 disabled:opacity-50"
                   >
                     {notaEmOperacao === venda.id
                       ? "emitindo…"
@@ -433,7 +433,7 @@ export default function Loja() {
             ))}
           </div>
         )}
-        {notaErro && <p className="mt-3 text-[13px] text-negativo">{notaErro}</p>}
+        {notaErro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{notaErro}</p>}
       </Cartao>
     </div>
   )

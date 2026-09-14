@@ -81,8 +81,8 @@ export function Toaster() {
             )}>
             <Icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", ACCENT[t.variant])} strokeWidth={2.2} />
             <div className="min-w-0 flex-1 break-words">
-              <p className="text-[14px] font-medium text-foreground leading-snug">{t.title}</p>
-              {t.description && <p className="text-[13px] text-muted-fg mt-0.5">{t.description}</p>}
+              <p className="text-[calc(14px*var(--escala-letra))] font-medium text-foreground leading-snug">{t.title}</p>
+              {t.description && <p className="text-[calc(13px*var(--escala-letra))] text-muted-fg mt-0.5">{t.description}</p>}
             </div>
             {t.action && (
               <button
@@ -90,7 +90,7 @@ export function Toaster() {
                   t.action?.onClick()
                   setToasts(prev => prev.filter(x => x.id !== t.id))
                 }}
-                className="min-h-11 shrink-0 text-[13px] font-semibold text-acao hover:underline"
+                className="min-h-11 shrink-0 text-[calc(13px*var(--escala-letra))] font-semibold text-acao hover:underline"
               >
                 {t.action.label}
               </button>

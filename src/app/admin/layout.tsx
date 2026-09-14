@@ -28,7 +28,7 @@ export default async function LayoutAdmin({ children }: { children: React.ReactN
             <TrilhaAdmin />
             <h1 className="text-xl font-semibold tracking-tight">{sessao.nome.split(" ")[0]}, o negócio</h1>
           </div>
-          <Link href="/painel" className="text-[13px] text-muted-fg hover:text-foreground">
+          <Link href="/painel" className="text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground">
             voltar ao app
           </Link>
         </header>

@@ -20,7 +20,21 @@ const TIPOS = [
   { valor: "COBRANCA", rotulo: "É sobre cobrança" },
 ] as const
 
-export function RelatarProblema() {
+
+/**
+ * Moldura opcional.
+ *
+ * Dentro de Configuracoes este bloco vive DENTRO de uma linha de ajuste, que
+ * ja e um cartao -- cartao dentro de cartao desenha duas bordas e dois
+ * recheios, que e parte do peso visual que Davi rejeitou. Com `semMoldura`
+ * o conteudo entra solto e herda o espacamento de quem o abriu.
+ */
+function Moldura({ titulo, semMoldura, children }: { titulo: string; semMoldura?: boolean; children: React.ReactNode }) {
+  if (semMoldura) return <>{children}</>
+  return <Cartao titulo={titulo} estatico>{children}</Cartao>
+}
+
+export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
   const rota = usePathname()
   const [tipo, setTipo] = useState<(typeof TIPOS)[number]["valor"]>("BUG")
   const [mensagem, setMensagem] = useState("")
@@ -44,7 +58,7 @@ export function RelatarProblema() {
   }
 
   return (
-    <Cartao titulo="Falar com o suporte">
+    <Moldura titulo="Falar com o suporte" semMoldura={semMoldura}>
       <form onSubmit={mandar} className="space-y-2">
         <div className="flex flex-wrap gap-1.5">
           {TIPOS.map((opcao) => (
@@ -52,7 +66,7 @@ export function RelatarProblema() {
               key={opcao.valor}
               type="button"
               onClick={() => setTipo(opcao.valor)}
-              className={`rounded-full border px-3.5 py-1.5 text-[12px] ${tipo === opcao.valor ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
+              className={`rounded-full border px-3.5 py-1.5 text-[calc(12px*var(--escala-letra))] ${tipo === opcao.valor ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
             >
               {opcao.rotulo}
             </button>
@@ -75,14 +89,14 @@ export function RelatarProblema() {
 
         <button
           disabled={enviando}
-          className="rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
+          className="rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
         >
           {enviando ? "Enviando…" : "Enviar"}
         </button>
       </form>
 
-      {retorno && <p className="mt-3 text-[13px] text-positivo">{retorno}</p>}
-      {erro && <p className="mt-3 text-[13px] text-negativo">{erro}</p>}
-    </Cartao>
+      {retorno && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-positivo">{retorno}</p>}
+      {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
+    </Moldura>
   )
 }

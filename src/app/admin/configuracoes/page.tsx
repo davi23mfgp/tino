@@ -105,16 +105,16 @@ export default function ConfiguracoesAdmin() {
         agora. Quem já assinou continua no valor que contratou — o preço fica congelado na assinatura.
       </Aviso>
 
-      {mensagem && <p className="text-[13px] text-positivo">{mensagem}</p>}
-      {erro && <p className="text-[13px] text-negativo">{erro}</p>}
+      {mensagem && <p className="text-[calc(13px*var(--escala-letra))] text-positivo">{mensagem}</p>}
+      {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
 
       <Cartao titulo="Parâmetros do sistema">
         <div className="divide-y divide-pauta">
           {parametros.map((parametro) => (
             <div key={parametro.chave} className="py-4 first:pt-0">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="text-[14px] font-medium">{parametro.rotulo}</p>
-                <p className="text-[12px] text-muted-fg">
+                <p className="text-[calc(14px*var(--escala-letra))] font-medium">{parametro.rotulo}</p>
+                <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                   em vigor: <span className="numero">{mostrar(parametro, parametro.valor)}</span>
                   {parametro.editado && (
                     <>
@@ -124,7 +124,7 @@ export default function ConfiguracoesAdmin() {
                 </p>
               </div>
 
-              <p className="mt-1 text-[12px] leading-relaxed text-muted-fg">{parametro.descricao}</p>
+              <p className="mt-1 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{parametro.descricao}</p>
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <input
@@ -133,13 +133,13 @@ export default function ConfiguracoesAdmin() {
                   inputMode="decimal"
                   className="numero w-40 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-2 text-sm"
                 />
-                <span className="text-[12px] text-muted-fg">
+                <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                   {parametro.unidade === "centavos" ? "reais" : parametro.unidade === "bps" ? "% ao mês" : "dias"}
                 </span>
                 <button
                   onClick={() => gravar(parametro)}
                   disabled={ocupado === parametro.chave}
-                  className="rounded-full bg-primary px-5 py-2 text-[13px] font-medium text-primary-foreground disabled:opacity-50"
+                  className="rounded-full bg-primary px-5 py-2 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
                 >
                   Gravar
                 </button>
@@ -147,7 +147,7 @@ export default function ConfiguracoesAdmin() {
                   <button
                     onClick={() => restaurar(parametro)}
                     disabled={ocupado === parametro.chave}
-                    className="rounded-full border border-pauta px-4 py-2 text-[13px] text-muted-fg disabled:opacity-50"
+                    className="rounded-full border border-pauta px-4 py-2 text-[calc(13px*var(--escala-letra))] text-muted-fg disabled:opacity-50"
                   >
                     Voltar ao padrão
                   </button>

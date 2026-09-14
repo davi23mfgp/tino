@@ -4,11 +4,10 @@ import { useEffect, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
-import Link from "next/link"
-
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Vazio } from "@/components/ui/painel"
+import { GrupoAjustes, LinhaAjuste } from "@/components/ui/ajustes"
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
@@ -170,179 +169,254 @@ export default function Configuracoes() {
     }
   }
 
+
+  const totalContas = contas.reduce((soma, conta) => soma + conta.saldoCentavos, 0)
+  const conectados = openFinance?.conexoes.length ?? 0
+
   return (
-    <div className="space-y-4">
-      <Cartao titulo="Seu perfil">
-        <FotoDePerfil />
-        <Button variant="ghost" size="sm" className="mt-3" onClick={completarPerfil} disabled={completando}>{completando ? "Abrindo…" : "Completar perfil"}</Button>
-      </Cartao>
+    // Dois grupos lado a lado no desktop, empilhados no celular — a
+    // anatomia da referência aprovada em 13/09. `items-start` impede que o
+    // grupo mais curto estique até a altura do outro e crie o espaço vazio
+    // que Davi apontou.
+    <div className="grid items-start gap-4 lg:grid-cols-2">
+      <GrupoAjustes titulo="Conta">
+        <LinhaAjuste titulo="Seu perfil" descricao="Foto e nome que aparecem no app" acao="Editar">
+          <FotoDePerfil />
+          <Button variant="ghost" size="sm" className="mt-3" onClick={completarPerfil} disabled={completando}>
+            {completando ? "Abrindo…" : "Completar perfil"}
+          </Button>
+        </LinhaAjuste>
 
-      <Cartao titulo="Assinatura">
-        <p className="text-[13px] leading-relaxed text-muted-fg">
-          Plano contratado, situação do pagamento, próxima cobrança e cancelamento ficam numa tela só.
-        </p>
-        <Link
-          href="/assinatura"
-          className="mt-3 inline-block rounded-full border border-pauta px-5 py-2.5 text-[13px] transition-colors hover:border-acao/40"
+        <LinhaAjuste
+          titulo="Contas e cartões"
+          descricao={
+            contas.length
+              ? `${contas.length} ${contas.length === 1 ? "cadastrada" : "cadastradas"} · ${formatarMoeda(totalContas)}`
+              : "Nenhuma cadastrada"
+          }
+          acao="Gerenciar"
         >
-          Ver minha assinatura
-        </Link>
-      </Cartao>
-
-      <Cartao titulo="Contas e cartões">
-        <div className="divide-y divide-pauta">
-          {contas.map((conta) => (
-            <div key={conta.id} className="grid grid-cols-[40px_minmax(0,1fr)] items-center gap-x-3 gap-y-1 py-3 sm:grid-cols-[40px_minmax(0,1fr)_auto]">
-              <IdentidadeBanco instituicao={conta.instituicao} nome={conta.nome} />
-              <div className="min-w-0 flex-1 break-words">
-                <p className="text-sm">{conta.nome}</p>
-                <p className="text-[12px] text-muted-fg">
-                  {TIPOS_CONTA.find((tipo) => tipo.valor === conta.tipo)?.rotulo ?? conta.tipo}
-                  {conta.instituicao && ` · ${conta.instituicao}`}
-                  {conta.limiteCentavos ? ` · limite ${formatarMoeda(conta.limiteCentavos)}` : ""}
-                </p>
+          <div className="divide-y divide-pauta">
+            {contas.map((conta) => (
+              <div key={conta.id} className="flex items-center gap-3 py-2.5">
+                <IdentidadeBanco instituicao={conta.instituicao} nome={conta.nome} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm">{conta.nome}</p>
+                  <p className="truncate text-[calc(12px*var(--escala-letra))] text-muted-fg">
+                    {TIPOS_CONTA.find((tipo) => tipo.valor === conta.tipo)?.rotulo ?? conta.tipo}
+                    {conta.instituicao && ` · ${conta.instituicao}`}
+                    {conta.limiteCentavos ? ` · limite ${formatarMoeda(conta.limiteCentavos)}` : ""}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums ${conta.saldoCentavos < 0 ? "text-negativo" : ""}`}
+                >
+                  {formatarMoeda(conta.saldoCentavos)}
+                </span>
               </div>
-              <span className={`col-start-2 whitespace-nowrap text-sm font-semibold tabular-nums sm:col-start-3 ${conta.saldoCentavos < 0 ? "text-negativo" : ""}`}>
-                {formatarMoeda(conta.saldoCentavos)}
-              </span>
-            </div>
-          ))}
-          {contas.length === 0 && <Vazio titulo="Nenhuma conta cadastrada" />}
-        </div>
-
-        <Dialog open={cadastroAberto} onOpenChange={(aberto) => { if (!salvandoConta) setCadastroAberto(aberto) }}>
-          <DialogTrigger asChild><Button variant="outline" size="sm" className="mt-3">Adicionar conta ou cartão</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Adicionar conta ou cartão</DialogTitle><DialogDescription>Informe os dados da sua conta.</DialogDescription></DialogHeader>
-            <DialogBody>
-        <form onSubmit={criarConta} className="grid gap-3">
-<fieldset disabled={salvandoConta} className="min-w-0">
-<FieldGroup>
-          <Field><FieldLabel htmlFor="conta-nome">Nome da conta</FieldLabel><Input id="conta-nome" value={nova.nome}
-            onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
-            placeholder="nome da conta"
-            required
-          /></Field>
-          <Field><FieldLabel htmlFor="conta-tipo">Tipo</FieldLabel><SelectNative id="conta-tipo" value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
-            {TIPOS_CONTA.map((tipo) => (
-              <option key={tipo.valor} value={tipo.valor}>
-                {tipo.rotulo}
-              </option>
             ))}
-          </SelectNative></Field>
-          <Field><FieldLabel htmlFor="conta-instituicao">Banco ou instituição</FieldLabel>
-            <BuscaBancoPerfil valor={nova.instituicao} aoMudar={(instituicao) => setNova({ ...nova, instituicao })}
-              nomesExistentes={contas.flatMap((conta) => conta.instituicao ? [conta.instituicao] : [])} desabilitado={salvandoConta} />
-          </Field>
-          <Field><FieldLabel htmlFor="conta-saldo">Saldo atual (R$)</FieldLabel><Input inputMode="decimal" id="conta-saldo" value={nova.saldo}
-            onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
-            placeholder="saldo atual (ex.: -6.582,74)"
-          /></Field>
-          {nova.tipo === "CARTAO_CREDITO" && (
-            <>
-              <Field><FieldLabel htmlFor="conta-limite">Limite total (R$)</FieldLabel><Input inputMode="decimal" id="conta-limite" value={nova.limite}
-                onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
-                placeholder="limite total"
-              /></Field>
-              <Field><FieldLabel htmlFor="conta-venc">Dia do vencimento</FieldLabel><Input id="conta-venc" value={nova.venc}
-                onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
-                type="number" min={1} max={31} step={1}
-                placeholder="dia do vencimento"
-              /></Field>
-            </>
-          )}
-</FieldGroup>
-</fieldset>
-          {erroConta && <p role="alert" className="text-sm text-negativo">{erroConta}</p>}
-          <Button disabled={salvandoConta}>{salvandoConta ? "Salvando…" : "Adicionar"}</Button>
-          <Button type="button" variant="ghost" disabled={salvandoConta} onClick={() => setCadastroAberto(false)}>Cancelar</Button>
-        </form>
-            </DialogBody>
-          </DialogContent>
-        </Dialog>
-      </Cartao>
+            {contas.length === 0 && (
+              <Empty className="py-6">
+                <EmptyHeader>
+                  <EmptyTitle className="text-sm">Nenhuma conta cadastrada</EmptyTitle>
+                  <EmptyDescription className="text-[calc(13px*var(--escala-letra))]">
+                    Cadastre a primeira para o Tino acompanhar saldo e fatura.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
+          </div>
 
-      <Cartao titulo="Conexão com o banco (Open Finance)">
-        {openFinance?.sandbox && (
-          <p className="mb-3 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-xs text-atencao">
-            Modo de demonstração: os dados desta conexão são fictícios, gerados localmente. Para conectar bancos de
-            verdade é preciso contratar um agregador autorizado pelo Banco Central (Pluggy, Belvo ou equivalente) e
-            preencher as credenciais no arquivo <code>.env</code>.
-          </p>
-        )}
+          <Dialog
+            open={cadastroAberto}
+            onOpenChange={(aberto) => {
+              if (!salvandoConta) setCadastroAberto(aberto)
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="mt-3">
+                Adicionar conta ou cartão
+              </Button>
+            </DialogTrigger>
+            {/* Formulário longo: duas colunas no desktop, uma no celular.
+                Antes era coluna única de 480px com campos de 60px de altura,
+                o que produzia a rolagem dupla da captura de 13/09. */}
+            <DialogContent className="sm:max-w-[620px]">
+              <DialogHeader>
+                <DialogTitle>Adicionar conta ou cartão</DialogTitle>
+                <DialogDescription>Informe os dados da sua conta.</DialogDescription>
+              </DialogHeader>
+              <DialogBody>
+                <form onSubmit={criarConta} className="grid gap-3">
+                  <fieldset disabled={salvandoConta} className="min-w-0">
+                    <FieldGroup className="sm:grid sm:grid-cols-2 sm:gap-x-4">
+                      <Field>
+                        <FieldLabel htmlFor="conta-nome">Nome da conta</FieldLabel>
+                        <Input
+                          id="conta-nome"
+                          value={nova.nome}
+                          onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
+                          placeholder="Ex.: Conta corrente"
+                          required
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="conta-tipo">Tipo</FieldLabel>
+                        <SelectNative
+                          id="conta-tipo"
+                          value={nova.tipo}
+                          onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}
+                        >
+                          {TIPOS_CONTA.map((tipo) => (
+                            <option key={tipo.valor} value={tipo.valor}>
+                              {tipo.rotulo}
+                            </option>
+                          ))}
+                        </SelectNative>
+                      </Field>
+                      <Field className="sm:col-span-2">
+                        <FieldLabel htmlFor="conta-instituicao">Banco ou instituição</FieldLabel>
+                        <BuscaBancoPerfil
+                          valor={nova.instituicao}
+                          aoMudar={(instituicao) => setNova({ ...nova, instituicao })}
+                          nomesExistentes={contas.flatMap((conta) => (conta.instituicao ? [conta.instituicao] : []))}
+                          desabilitado={salvandoConta}
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="conta-saldo">Saldo atual (R$)</FieldLabel>
+                        <Input
+                          inputMode="decimal"
+                          id="conta-saldo"
+                          value={nova.saldo}
+                          onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
+                          placeholder="-6.582,74"
+                        />
+                      </Field>
+                      {nova.tipo === "CARTAO_CREDITO" && (
+                        <>
+                          <Field>
+                            <FieldLabel htmlFor="conta-limite">Limite total (R$)</FieldLabel>
+                            <Input
+                              inputMode="decimal"
+                              id="conta-limite"
+                              value={nova.limite}
+                              onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
+                              placeholder="6.000,00"
+                            />
+                          </Field>
+                          <Field>
+                            <FieldLabel htmlFor="conta-venc">Dia do vencimento</FieldLabel>
+                            <Input
+                              id="conta-venc"
+                              value={nova.venc}
+                              onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
+                              type="number"
+                              min={1}
+                              max={31}
+                              step={1}
+                              placeholder="10"
+                            />
+                          </Field>
+                        </>
+                      )}
+                    </FieldGroup>
+                  </fieldset>
+                  {erroConta && (
+                    <p role="alert" className="text-sm text-negativo">
+                      {erroConta}
+                    </p>
+                  )}
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="ghost" disabled={salvandoConta} onClick={() => setCadastroAberto(false)}>
+                      Cancelar
+                    </Button>
+                    <Button disabled={salvandoConta}>{salvandoConta ? "Salvando…" : "Adicionar"}</Button>
+                  </div>
+                </form>
+              </DialogBody>
+            </DialogContent>
+          </Dialog>
+        </LinhaAjuste>
 
-        <p className="text-sm text-muted-fg">
-          A autenticação acontece no site do seu banco. O app nunca recebe sua senha — recebe apenas uma permissão de
-          leitura, com prazo definido, que você pode revogar a qualquer momento aqui ou no aplicativo da instituição.
-        </p>
-
-        <div className="mt-4 space-y-2">
-          {openFinance?.conexoes.map((conexao) => (
-            <div key={conexao.id} className="flex items-center justify-between rounded-[var(--raio-cartao)] border border-pauta p-3">
-              <div>
-                <p className="text-sm">{conexao.instituicao}</p>
-                <p className="text-[12px] text-muted-fg">
-                  {conexao.status.toLowerCase()}
-                  {conexao.ultimaSync && ` · última sincronização ${new Date(conexao.ultimaSync).toLocaleString("pt-BR")}`}
-                  {conexao.diasParaExpirar !== null && ` · consentimento expira em ${conexao.diasParaExpirar} dias`}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => sincronizar(conexao.id)}
-                  className="rounded-full border border-pauta px-3 py-1.5 text-xs hover:border-acao/40"
-                >
-                  sincronizar
-                </button>
-                <button
-                  onClick={() => revogarConexao(conexao)}
-                  className="rounded-full border border-pauta px-3 py-1.5 text-xs hover:border-negativo/40"
-                >
-                  revogar
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={conectarBanco}
-          className="mt-4 rounded-full border border-acao/40 bg-acao/10 px-5 py-2.5 text-sm text-acao"
+        <LinhaAjuste
+          titulo="Conexão com o banco"
+          descricao={conectados ? `Open Finance · ${conectados} conectado(s)` : "Open Finance · nenhum conectado"}
+          acao="Configurar"
         >
-          Conectar um banco
-        </button>
-
-        {mensagem && <p className="mt-3 text-sm text-muted-fg">{mensagem}</p>}
-      </Cartao>
-
-      <VigiasConfig />
-
-      {/* Regras e Assinatura saíram da navegação principal em 07/09/2026:
-          são manutenção, não uso do dia a dia — ninguém abre o app de manhã
-          para mexer em regra de categorização ou trocar de plano. Nenhuma
-          das duas telas foi removida, só o link mudou de lugar. */}
-      <Cartao titulo="Preferências">
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Link
-            href="/regras"
-            className="rounded-[var(--raio-cartao)] border border-pauta p-4 text-sm transition hover:border-acao/40"
-          >
-            <p className="font-medium">Regras de categorização</p>
-            <p className="mt-1 text-[13px] text-muted-fg">
-              Como o Tino decide sozinho a categoria de um lançamento novo.
+          {openFinance?.sandbox && (
+            <p className="mb-3 rounded-[12px] border border-atencao/40 bg-atencao/10 p-3 text-xs text-atencao">
+              Modo de demonstração: os dados desta conexão são fictícios. Conectar bancos de verdade exige um agregador
+              autorizado pelo Banco Central com credenciais no <code>.env</code>.
             </p>
-          </Link>
-          <Link
-            href="/assinatura"
-            className="rounded-[var(--raio-cartao)] border border-pauta p-4 text-sm transition hover:border-acao/40"
-          >
-            <p className="font-medium">Assinatura do Tino</p>
-            <p className="mt-1 text-[13px] text-muted-fg">Seu plano, cobrança e cancelamento.</p>
-          </Link>
-        </div>
-      </Cartao>
+          )}
 
-      <RelatarProblema />
+          <p className="text-[calc(13px*var(--escala-letra))] text-muted-fg">
+            A autenticação acontece no site do seu banco. O app nunca recebe sua senha — só permissão de leitura, com
+            prazo, que você revoga quando quiser.
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {openFinance?.conexoes.map((conexao) => (
+              <div key={conexao.id} className="flex items-center justify-between gap-2 rounded-[12px] border border-pauta p-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm">{conexao.instituicao}</p>
+                  <p className="truncate text-[calc(12px*var(--escala-letra))] text-muted-fg">
+                    {conexao.status.toLowerCase()}
+                    {conexao.ultimaSync && ` · sincronizado ${new Date(conexao.ultimaSync).toLocaleDateString("pt-BR")}`}
+                    {conexao.diasParaExpirar !== null && ` · expira em ${conexao.diasParaExpirar} dias`}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => sincronizar(conexao.id)}>
+                    Sincronizar
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => revogarConexao(conexao)}>
+                    Revogar
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Button size="sm" variant="outline" className="mt-3" onClick={conectarBanco}>
+            Conectar um banco
+          </Button>
+
+          {mensagem && <p className="mt-2 text-[calc(13px*var(--escala-letra))] text-muted-fg">{mensagem}</p>}
+        </LinhaAjuste>
+
+        <LinhaAjuste
+          titulo="Assinatura"
+          descricao="Plano, cobrança e cancelamento"
+          href="/assinatura"
+          acao="Ver"
+        />
+      </GrupoAjustes>
+
+      <GrupoAjustes titulo="Sistema">
+        <LinhaAjuste
+          titulo="Categorias e ícones"
+          descricao="Nome, emoji e logos de estabelecimento"
+          href="/categorias"
+          acao="Abrir"
+        />
+
+        <LinhaAjuste
+          titulo="Regras de categorização"
+          descricao="Como o Tino decide a categoria sozinho"
+          href="/regras"
+          acao="Abrir"
+        />
+
+        <LinhaAjuste titulo="Avisos do Tino" descricao="O que ele observa e avisa sem você pedir" acao="Configurar">
+          <VigiasConfig semMoldura />
+        </LinhaAjuste>
+
+        <LinhaAjuste titulo="Falar com o suporte" descricao="Relatar um problema ou pedir ajuda" acao="Abrir">
+          <RelatarProblema semMoldura />
+        </LinhaAjuste>
+      </GrupoAjustes>
     </div>
   )
 }

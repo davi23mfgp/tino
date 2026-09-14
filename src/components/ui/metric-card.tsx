@@ -24,8 +24,8 @@ export function MetricCard({ label, value, dot = "blue", className }: MetricCard
   return (
     <div className={cn("ios-card px-4 py-4", className)}>
       <div className={cn("h-2.5 w-2.5 rounded-full mb-3", DOT[dot])} />
-      <p className="text-[10px] uppercase tracking-widest text-muted-fg mb-1">{label}</p>
-      <p className="text-[26px] font-bold leading-none tracking-tight text-foreground">{value}</p>
+      <p className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg mb-1">{label}</p>
+      <p className="text-[calc(26px*var(--escala-letra))] font-bold leading-none tracking-tight text-foreground">{value}</p>
     </div>
   )
 }

@@ -39,8 +39,8 @@ export function FilesystemItem({ arquivo, aoRemover }: { arquivo: File; aoRemove
         <Icone className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium">{arquivo.name}</p>
-        <p className="text-[11px] text-muted-fg">{formatarTamanho(arquivo.size)}</p>
+        <p className="truncate text-[calc(13px*var(--escala-letra))] font-medium">{arquivo.name}</p>
+        <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">{formatarTamanho(arquivo.size)}</p>
       </div>
       <button
         type="button"
@@ -101,7 +101,7 @@ export function ZonaDeArquivo({
       )}
     >
       <Upload className="size-5 text-muted-fg" />
-      <p className="text-[13px] text-muted-fg">{rotulo}</p>
+      <p className="text-[calc(13px*var(--escala-letra))] text-muted-fg">{rotulo}</p>
       <input
         ref={inputRef}
         type="file"

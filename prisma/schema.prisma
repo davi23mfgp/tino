@@ -841,6 +841,13 @@ model Alerta {
   chave    String
   criadoEm DateTime @default(now())
 
+  /// Quando a pessoa usou "Limpar tudo". Aviso dispensado sai da lista e NÃO
+  /// volta enquanto o conteúdo dele não mudar — `atualizarAlertas` compara o
+  /// texto recalculado com o guardado e só reabre quando o motivo é outro.
+  /// Sem este campo, "Limpar tudo" apagava a linha e o próximo GET recriava
+  /// tudo pela chave: o botão parecia quebrado.
+  dispensadoEm DateTime?
+
   @@unique([larId, chave])
   @@index([larId, lido])
 }

@@ -15,6 +15,25 @@ const config: Config = {
   theme: {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
+      /**
+       * A escala nomeada passa pelo mesmo fator de `--escala-letra`.
+       *
+       * Sem isto, `text-sm` e `text-xs` (308 usos nas telas) ficariam no
+       * tamanho antigo enquanto `text-[13px]` encolhia -- metade da interface
+       * num tamanho e metade noutro. A altura de linha continua em `rem`
+       * relativa, entao acompanha sozinha.
+       */
+      fontSize: {
+        xs: ["calc(0.75rem * var(--escala-letra))", { lineHeight: "1.4" }],
+        sm: ["calc(0.875rem * var(--escala-letra))", { lineHeight: "1.45" }],
+        base: ["calc(1rem * var(--escala-letra))", { lineHeight: "1.5" }],
+        lg: ["calc(1.125rem * var(--escala-letra))", { lineHeight: "1.45" }],
+        xl: ["calc(1.25rem * var(--escala-letra))", { lineHeight: "1.35" }],
+        "2xl": ["calc(1.5rem * var(--escala-letra))", { lineHeight: "1.25" }],
+        "3xl": ["calc(1.875rem * var(--escala-letra))", { lineHeight: "1.2" }],
+        "4xl": ["calc(2.25rem * var(--escala-letra))", { lineHeight: "1.15" }],
+        "5xl": ["calc(3rem * var(--escala-letra))", { lineHeight: "1.05" }],
+      },
       // Uma família só, a do sistema. Os três nomes continuam apontando para
       // ela para não quebrar as classes já escritas nas telas: `font-numero`
       // ainda existe, só que hoje o algarismo tabular vem de

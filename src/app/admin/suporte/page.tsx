@@ -42,13 +42,13 @@ export default async function SuporteAdmin({ searchParams }: { searchParams: Pro
       <div className="flex gap-2">
         <Link
           href="/admin/suporte"
-          className={`rounded-full border px-4 py-1.5 text-[13px] ${mostrarResolvidos ? "border-pauta text-muted-fg" : "border-acao/40 bg-acao/10 text-acao"}`}
+          className={`rounded-full border px-4 py-1.5 text-[calc(13px*var(--escala-letra))] ${mostrarResolvidos ? "border-pauta text-muted-fg" : "border-acao/40 bg-acao/10 text-acao"}`}
         >
           Abertos
         </Link>
         <Link
           href="/admin/suporte?status=resolvido"
-          className={`rounded-full border px-4 py-1.5 text-[13px] ${mostrarResolvidos ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
+          className={`rounded-full border px-4 py-1.5 text-[calc(13px*var(--escala-letra))] ${mostrarResolvidos ? "border-acao/40 bg-acao/10 text-acao" : "border-pauta text-muted-fg"}`}
         >
           Resolvidos
         </Link>

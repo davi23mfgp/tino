@@ -112,12 +112,18 @@ export function TinoDock() {
           <TinoMascote estado={estado} className="size-8" />
         </button>
       </DialogTrigger>
-      <DialogContent className="flex h-[min(640px,85dvh)] flex-col overflow-hidden">
+      {/* Cantinho direito no desktop, nao no centro da tela: o assistente
+          acompanha a leitura dos numeros, e um modal centralizado tapava
+          justamente o que a pessoa quer conferir enquanto pergunta. O
+          `ml-auto`/`mt-auto` vence o alinhamento do envolucro do Dialog sem
+          reposicionar por `fixed`, que quebraria a area segura do celular.
+          No celular continua subindo de baixo, ocupando a largura toda. */}
+      <DialogContent className="flex h-[min(640px,85dvh)] flex-col overflow-hidden sm:ml-auto sm:mt-auto sm:max-w-[420px]">
         <DialogHeader><DialogTitle>Tino</DialogTitle><DialogDescription>{FRASE[estado]}</DialogDescription></DialogHeader>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {turnos.length === 0 && (
           <div>
-            <p className="text-[13px] text-[color:var(--texto-2)]">
+            <p className="text-[calc(13px*var(--escala-letra))] text-[color:var(--texto-2)]">
               Trabalho com os seus números. Pergunte à vontade:
             </p>
             {/* Pílulas que quebram linha, não botões de largura cheia
@@ -129,7 +135,7 @@ export function TinoDock() {
                 <button
                   key={sugestao}
                   onClick={() => perguntar(sugestao)}
-                  className="ios-tap rounded-[var(--raio-pilula)] bg-foreground/[0.06] px-3.5 py-2 text-left text-[13px] leading-snug transition-colors hover:bg-accent hover:text-accent-foreground"
+                  className="ios-tap rounded-[var(--raio-pilula)] bg-foreground/[0.06] px-3.5 py-2 text-left text-[calc(13px*var(--escala-letra))] leading-snug transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   {sugestao}
                 </button>
@@ -152,7 +158,7 @@ export function TinoDock() {
           </div>
         ))}
 
-        {pensando && <p className="text-[12px] text-muted-fg">Tino está calculando…</p>}
+        {pensando && <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Tino está calculando…</p>}
         <div ref={fim} />
       </div>
 

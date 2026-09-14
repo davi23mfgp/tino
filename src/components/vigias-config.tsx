@@ -22,7 +22,21 @@ interface Vigia {
  * contagem de disparos dos últimos 30 dias como histórico. Sem marketplace,
  * sem plano pago por vigia — o brief foi explícito nisso.
  */
-export function VigiasConfig() {
+
+/**
+ * Moldura opcional.
+ *
+ * Dentro de Configuracoes este bloco vive DENTRO de uma linha de ajuste, que
+ * ja e um cartao -- cartao dentro de cartao desenha duas bordas e dois
+ * recheios, que e parte do peso visual que Davi rejeitou. Com `semMoldura`
+ * o conteudo entra solto e herda o espacamento de quem o abriu.
+ */
+function Moldura({ titulo, semMoldura, children }: { titulo: string; semMoldura?: boolean; children: React.ReactNode }) {
+  if (semMoldura) return <>{children}</>
+  return <Cartao titulo={titulo} estatico>{children}</Cartao>
+}
+
+export function VigiasConfig({ semMoldura }: { semMoldura?: boolean } = {}) {
   const [vigias, setVigias] = useState<Vigia[] | null>(null)
 
   useEffect(() => {
@@ -36,8 +50,8 @@ export function VigiasConfig() {
   }
 
   return (
-    <Cartao titulo="Vigias" estatico>
-      <p className="mb-4 text-[13px] text-muted-fg">
+    <Moldura titulo="Vigias" semMoldura={semMoldura}>
+      <p className="mb-4 text-[calc(13px*var(--escala-letra))] text-muted-fg">
         O que o Tino observa sozinho e avisa sem você perguntar. Desligue o que não interessa — os outros continuam
         de olho.
       </p>
@@ -46,10 +60,10 @@ export function VigiasConfig() {
         {(vigias ?? []).map((vigia) => (
           <div key={vigia.tipo} className="flex items-center justify-between gap-4 rounded-2xl px-2 py-3">
             <div className="min-w-0">
-              <p className="text-[14px] font-medium">{vigia.nome}</p>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-muted-fg">{vigia.frase}</p>
+              <p className="text-[calc(14px*var(--escala-letra))] font-medium">{vigia.nome}</p>
+              <p className="mt-0.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{vigia.frase}</p>
               {vigia.disparos30dias > 0 && (
-                <p className="mt-1 text-[11px] text-[color:var(--texto-3)]">
+                <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-3)]">
                   {vigia.disparos30dias === 1
                     ? "disparou 1 vez nos últimos 30 dias"
                     : `disparou ${vigia.disparos30dias} vezes nos últimos 30 dias`}
@@ -66,6 +80,6 @@ export function VigiasConfig() {
 
         {vigias === null && <p className="px-2 py-3 text-sm text-muted-fg">Carregando...</p>}
       </div>
-    </Cartao>
+    </Moldura>
   )
 }

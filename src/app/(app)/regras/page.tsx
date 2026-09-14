@@ -48,7 +48,7 @@ interface Regra {
   categoria: { nome: string; cor: string; icone: string }
 }
 
-const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "w-full rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
 
 export default function Regras() {
   const [regras, setRegras] = useState<Regra[]>([])
@@ -181,7 +181,7 @@ export default function Regras() {
                     className={campo}
                   />
                   <div>
-                    <p className="mb-1.5 text-[12px] text-muted-fg">categoria</p>
+                    <p className="mb-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">categoria</p>
                     <TagsSelector
                       opcoes={categorias}
                       valor={nova.categoriaId || null}
@@ -199,7 +199,7 @@ export default function Regras() {
                 <DialogFooter>
                   <button
                     disabled={ocupado || !nova.categoriaId}
-                    className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+                    className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
                   >
                     Criar regra
                   </button>
@@ -215,7 +215,7 @@ export default function Regras() {
           <Metrica rotulo="Lançamentos classificados" valor={String(totalAcertos)} tom="positivo" />
         </div>
 
-        <p className="mt-3 text-[12px] leading-relaxed text-muted-fg">
+        <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
           Toda vez que você corrige a categoria de um lançamento, o Tino cria uma regra aqui. Quanto mais regras, menos
           trabalho no mês seguinte.
         </p>
@@ -224,7 +224,7 @@ export default function Regras() {
           <button
             onClick={reprocessar}
             disabled={ocupado}
-            className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2 text-[12px] transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2 text-[calc(12px*var(--escala-letra))] transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
           >
             <RefreshCw className={cn("size-3.5", ocupado && "animate-spin")} />
             aplicar nas transações antigas
@@ -238,12 +238,12 @@ export default function Regras() {
         </div>
 
         {incluirCategorizados && (
-          <p className="mt-2 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[12px] text-atencao">
+          <p className="mt-2 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[calc(12px*var(--escala-letra))] text-atencao">
             Isso sobrescreve categorias que você escolheu à mão.
           </p>
         )}
 
-        {mensagem && <p className="mt-3 text-[12px] text-acao">{mensagem}</p>}
+        {mensagem && <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-acao">{mensagem}</p>}
       </Cartao>
 
       <Cartao titulo="Regras">
@@ -266,12 +266,12 @@ export default function Regras() {
               )}
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px]">
-                  <code className="rounded bg-papel-2 px-1.5 py-0.5 text-[12px]">{regra.padrao}</code>
+                <p className="truncate text-[calc(14px*var(--escala-letra))]">
+                  <code className="rounded bg-papel-2 px-1.5 py-0.5 text-[calc(12px*var(--escala-letra))]">{regra.padrao}</code>
                   <span className="mx-2 text-muted-fg">vira</span>
                   {regra.categoria.nome}
                 </p>
-                <p className="text-[11px] text-muted-fg">
+                <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                   {regra.acertos > 0 ? `${regra.acertos} lançamento(s) classificados` : "ainda não pegou nenhum"}
                   {regra.renomearPara && ` · renomeia para "${regra.renomearPara}"`}
                   {regra.regex && " · expressão regular"}

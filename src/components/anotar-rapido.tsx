@@ -46,7 +46,7 @@ export function AnotarRapido({ aoRegistrar }: { aoRegistrar?: () => void }) {
         onChange={(e) => setTexto(e.target.value)}
         placeholder="mercado 52,30"
         aria-label="Anotar um gasto ou entrada"
-        className="flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
+        className="flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[calc(14px*var(--escala-letra))] outline-none focus:border-acao/50"
       />
       <DitarGasto aoTranscrever={anotar} />
       <button

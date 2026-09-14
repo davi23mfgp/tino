@@ -200,18 +200,18 @@ export default function Capturas() {
             value={rapido}
             onChange={(evento) => setRapido(evento.target.value)}
             placeholder="mercado 52,30"
-            className="min-w-0 flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[14px] outline-none focus:border-acao/50"
+            className="min-w-0 flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[calc(14px*var(--escala-letra))] outline-none focus:border-acao/50"
           />
           <button
             type="submit"
             disabled={ocupado || !rapido.trim()}
-            className="rounded-[var(--raio-pilula)] bg-primary px-5 text-[13px] font-medium text-primary-foreground disabled:opacity-40"
+            className="rounded-[var(--raio-pilula)] bg-primary px-5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
           >
             <Send className="size-4" />
           </button>
         </form>
         <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-          <p className="max-w-md text-[12px] leading-relaxed text-muted-fg">
+          <p className="max-w-md text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
             Informe nome e valor: <b>Uber 18</b>, <b>farmácia 38,90</b> ou <b>almoço 45</b>. Confira a categoria sugerida.
           </p>
 
@@ -255,14 +255,14 @@ export default function Capturas() {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <MarcaPersonalizada nome={captura.estabelecimento??""}/><p className="truncate text-[14px] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
-                    <p className="text-[11px] text-muted-fg">
+                    <MarcaPersonalizada nome={captura.estabelecimento??""}/><p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
+                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                       {captura.instituicao ?? captura.origem.toLowerCase()}
                       {captura.cartaoFinal && ` · final ${captura.cartaoFinal}`}
                       {captura.confianca < 70 && " · confira o valor"}
                     </p>
                   </div>
-                  <span className="whitespace-nowrap text-[16px] font-semibold">
+                  <span className="whitespace-nowrap text-[calc(16px*var(--escala-letra))] font-semibold">
                     {formatarMoeda(captura.valorCentavos ?? 0)}
                   </span>
                 </div>
@@ -278,7 +278,7 @@ export default function Capturas() {
                         ),
                       )
                     }
-                    className="w-auto text-[13px]"
+                    className="w-auto text-[calc(13px*var(--escala-letra))]"
                   >
                     {contas.map((conta) => (
                       <option key={conta.id} value={conta.id}>
@@ -337,7 +337,7 @@ export default function Capturas() {
           <div className="space-y-2">
             {naoEntendidas.map((captura) => (
               <div key={captura.id} className="flex items-start justify-between gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
-                <p className="min-w-0 flex-1 text-[12px] text-muted-fg">{captura.textoBruto}</p>
+                <p className="min-w-0 flex-1 text-[calc(12px*var(--escala-letra))] text-muted-fg">{captura.textoBruto}</p>
                 <button
                   onClick={() => descartar(captura.id)}
                   className="shrink-0 text-muted-fg transition hover:text-negativo"
@@ -351,7 +351,7 @@ export default function Capturas() {
       )}
 
       <Cartao titulo="Ligar o celular ao Tino">
-        <p className="text-[13px] leading-relaxed text-muted-fg">
+        <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
           A ideia de o app anotar sozinho as notificações do banco funciona — mas um site não consegue ler notificações
           do celular. Quem lê é um aplicativo de automação no seu aparelho, que repassa o texto para cá. Você escolhe
           quais aplicativos podem ser lidos, e revoga quando quiser.
@@ -359,11 +359,11 @@ export default function Capturas() {
 
         {chaveNova && (
           <div className="mt-4 rounded-2xl border border-acao/40 bg-acao/10 p-3">
-            <p className="text-[12px] text-acao">
+            <p className="text-[calc(12px*var(--escala-letra))] text-acao">
               Esta chave aparece uma única vez. Copie agora — depois só dá para gerar outra.
             </p>
             <div className="mt-2 flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded-xl bg-background px-3 py-2 text-[12px]">{chaveNova}</code>
+              <code className="min-w-0 flex-1 truncate rounded-xl bg-background px-3 py-2 text-[calc(12px*var(--escala-letra))]">{chaveNova}</code>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(chaveNova)
@@ -379,27 +379,27 @@ export default function Capturas() {
 
         <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
           <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-            <p className="flex items-center gap-2 text-[14px] font-medium">
+            <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
               <Share2 className="size-4" /> Compartilhar do celular (Android)
             </p>
-            <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
+            <ol className="mt-2 space-y-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
               <li>1. Instale o Tino na tela de início pelo menu do navegador.</li>
               <li>
                 2. Chegou o aviso de compra? Toque em <b>Compartilhar</b> e escolha o Tino.
               </li>
               <li>3. Pronto. A compra cai na fila acima esperando um toque.</li>
             </ol>
-            <p className="mt-2 text-[12px] leading-relaxed text-muted-fg">
+            <p className="mt-2 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
               Não precisa de chave nem de programa nenhum. Cobra um toque por compra — o jeito abaixo
               captura sozinho, mas só depois de você configurar.
             </p>
           </div>
 
           <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-            <p className="flex items-center gap-2 text-[14px] font-medium">
+            <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
               <Smartphone className="size-4" /> Compras pelo aviso do banco
             </p>
-            <ol className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-muted-fg">
+            <ol className="mt-2 space-y-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
               <li>1. No Android, instale um encaminhador como MacroDroid ou Tasker e permita o acesso às notificações.</li>
               <li>2. Gatilho: <b>Notificação recebida</b>, filtrando o app do seu banco.</li>
               <li>
@@ -413,7 +413,7 @@ export default function Capturas() {
             </ol>
             <button
               onClick={() => criarChave("NOTIFICACAO")}
-              className="mt-3 flex items-center gap-1.5 rounded-full border border-acao/40 bg-acao/10 px-4 py-2 text-[12px] text-acao"
+              className="mt-3 flex items-center gap-1.5 rounded-full border border-acao/40 bg-acao/10 px-4 py-2 text-[calc(12px*var(--escala-letra))] text-acao"
             >
               <Plus className="size-3.5" /> gerar chave do celular
             </button>
@@ -427,10 +427,10 @@ export default function Capturas() {
             {chaves.map((chave) => (
               <div key={chave.id} className="flex items-center justify-between rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <div>
-                  <p className="text-[13px]">
+                  <p className="text-[calc(13px*var(--escala-letra))]">
                     {chave.nome} <span className="text-muted-fg">···{chave.sufixo}</span>
                   </p>
-                  <p className="text-[11px] text-muted-fg">
+                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                     {chave.ativa ? "ativa" : "revogada"} · {chave.usos} envio(s)
                     {chave.ultimoUso && ` · último em ${new Date(chave.ultimoUso).toLocaleString("pt-BR")}`}
                   </p>
@@ -438,7 +438,7 @@ export default function Capturas() {
                 {chave.ativa && (
                   <button
                     onClick={() => revogarChave(chave)}
-                    className="rounded-full border border-pauta px-3 py-1.5 text-[11px] text-muted-fg transition hover:border-negativo/40 hover:text-negativo"
+                    className="rounded-full border border-pauta px-3 py-1.5 text-[calc(11px*var(--escala-letra))] text-muted-fg transition hover:border-negativo/40 hover:text-negativo"
                   >
                     revogar
                   </button>
@@ -495,7 +495,7 @@ function AvisoCompartilhado({ resultado }: { resultado: string }) {
     <div
       role="status"
       className={cn(
-        "rounded-2xl border p-3 text-[13px] leading-relaxed",
+        "rounded-2xl border p-3 text-[calc(13px*var(--escala-letra))] leading-relaxed",
         aviso.atencao ? "border-atencao/40 bg-atencao/10 text-atencao" : "border-pauta text-muted-fg",
       )}
     >

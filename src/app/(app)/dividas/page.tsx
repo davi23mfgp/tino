@@ -68,7 +68,7 @@ const TIPOS = [
   { valor: "OUTRO", rotulo: "Outro" },
 ]
 
-const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[13px] outline-none focus:border-acao/50"
+const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
 
 const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", parcela: "", parcelasTotal: "", pagas: "0", dia: "10" }
 
@@ -244,7 +244,7 @@ export default function Dividas() {
               <Button
                 type="button"
                 onClick={interpretarFrase}
-                className="shrink-0 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[13px] text-acao"
+                className="shrink-0 rounded-[var(--raio-pilula)] border border-acao/40 bg-acao/10 px-4 py-2.5 text-[calc(13px*var(--escala-letra))] text-acao"
               >
                 Preencher
               </Button>
@@ -309,7 +309,7 @@ export default function Dividas() {
             />
             <Button
               disabled={ocupado}
-              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
+              className="rounded-[var(--raio-pilula)] bg-primary px-4 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40 sm:col-span-3"
             >
               Adicionar dívida
             </Button>
@@ -321,17 +321,17 @@ export default function Dividas() {
         <Cartao titulo="Compare formas de pagar">
           <Accordion type="single" collapsible><AccordionItem value="estrategias"><AccordionTrigger>Maior juro ou menor saldo?</AccordionTrigger><AccordionContent><div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-acao/40 bg-acao/10 p-4">
-              <p className="text-[13px] font-medium text-acao">Maior juro primeiro</p>
-              <p className="mt-1.5 text-[20px] font-semibold">{comparativo.avalanche.meses} meses</p>
-              <p className="text-[12px] text-muted-fg">
+              <p className="text-[calc(13px*var(--escala-letra))] font-medium text-acao">Maior juro primeiro</p>
+              <p className="mt-1.5 text-[calc(20px*var(--escala-letra))] font-semibold">{comparativo.avalanche.meses} meses</p>
+              <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                 <span className="valor-inteiro">{formatarMoeda(comparativo.avalanche.totalJurosCentavos)}</span> de juros
               </p>
             </div>
 
             <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-              <p className="text-[13px] font-medium">Menor saldo primeiro</p>
-              <p className="mt-1.5 text-[20px] font-semibold">{comparativo.bolaDeNeve.meses} meses</p>
-              <p className="text-[12px] text-muted-fg">
+              <p className="text-[calc(13px*var(--escala-letra))] font-medium">Menor saldo primeiro</p>
+              <p className="mt-1.5 text-[calc(20px*var(--escala-letra))] font-semibold">{comparativo.bolaDeNeve.meses} meses</p>
+              <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                 <span className="valor-inteiro">{formatarMoeda(comparativo.bolaDeNeve.totalJurosCentavos)}</span> de juros
               </p>
             </div>
@@ -348,17 +348,17 @@ export default function Dividas() {
               const quitacao = dados.plano?.quitacoes.find((linha) => linha.id === divida.id)
               return (
                 <li key={divida.id} className="flex items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[calc(12px*var(--escala-letra))] font-semibold">
                     {indice + 1}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px]">{divida.credor}</p>
-                    <p className="text-[11px] text-muted-fg">
+                    <p className="truncate text-[calc(14px*var(--escala-letra))]">{divida.credor}</p>
+                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                       {divida.jurosMensalBps > 0 ? `${formatarPercentual(divida.jurosMensalBps)} ao mês` : "sem juros informados"}
                       {quitacao && ` · quita no mês ${quitacao.mes}`}
                     </p>
                   </div>
-                  <span className="whitespace-nowrap text-[14px] tabular-nums">
+                  <span className="whitespace-nowrap text-[calc(14px*var(--escala-letra))] tabular-nums">
                     <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
                   </span>
                 </li>
@@ -380,8 +380,8 @@ export default function Dividas() {
               <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
                 <div className="linha-financeira">
                   <div className="min-w-0">
-                    <p className="truncate text-[14px] font-medium">{divida.credor}</p>
-                    <p className="text-[11px] text-muted-fg">
+                    <p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{divida.credor}</p>
+                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                       {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
                       {divida.parcelaCentavos > 0 && ` · $<span className="valor-inteiro">{formatarMoeda(divida.parcelaCentavos)}</span>/mês`}
                       {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
@@ -389,11 +389,11 @@ export default function Dividas() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="whitespace-nowrap text-[16px] font-semibold tabular-nums">
+                    <p className="whitespace-nowrap text-[calc(16px*var(--escala-letra))] font-semibold tabular-nums">
                       <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
                     </p>
                     {divida.jurosMensalBps > 0 && (
-                      <p className={cn("text-[11px]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
+                      <p className={cn("text-[calc(11px*var(--escala-letra))]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
                         {formatarPercentual(divida.jurosMensalBps)} ao mês
                       </p>
                     )}
@@ -406,14 +406,14 @@ export default function Dividas() {
                   </div>
                 ) : null}
 
-                {divida.observacao && <p className="mt-2 text-[11px] text-muted-fg">{divida.observacao}</p>}
+                {divida.observacao && <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">{divida.observacao}</p>}
               </div>
             )
           })}
         </div>
 
         {quitadas.length > 0 && (
-          <p className="mt-4 text-[12px] text-positivo">{quitadas.length} dívida(s) já quitada(s).</p>
+          <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-positivo">{quitadas.length} dívida(s) já quitada(s).</p>
         )}
       </Cartao>
     </div>

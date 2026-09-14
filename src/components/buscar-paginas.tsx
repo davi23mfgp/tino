@@ -105,7 +105,7 @@ export function BuscaPaginasProvider({ mei, apenasLoja = false, children }: { me
                 value={termo}
                 onChange={(e) => setTermo(e.target.value)}
                 placeholder="Ir para..."
-                className="w-full bg-transparent text-[15px] outline-none placeholder:text-muted-fg"
+                className="w-full bg-transparent text-[calc(15px*var(--escala-letra))] outline-none placeholder:text-muted-fg"
                 onKeyDown={(e) => {
                   if (e.key === "ArrowDown") {
                     e.preventDefault()
@@ -139,7 +139,7 @@ export function BuscaPaginasProvider({ mei, apenasLoja = false, children }: { me
                   >
                     <Icone className="size-4 shrink-0" />
                     <span className="flex-1 truncate">{item.rotulo}</span>
-                    <span className="text-[12px] text-muted-fg">{item.grupo}</span>
+                    <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">{item.grupo}</span>
                   </button>
                 )
               })
@@ -176,13 +176,13 @@ export function GatilhoBuscaPaginas({
       <button
         onClick={abrir}
         aria-label="Buscar uma tela"
-        className="flex h-11 w-full max-w-[220px] items-center gap-2 rounded-[var(--raio-pilula)] border border-pauta bg-papel-2 px-4 text-left text-[13px] text-muted-fg transition hover:border-acao/40 hover:text-foreground"
+        className="flex h-11 w-full max-w-[220px] items-center gap-2 rounded-[var(--raio-pilula)] border border-pauta bg-papel-2 px-4 text-left text-[calc(13px*var(--escala-letra))] text-muted-fg transition hover:border-acao/40 hover:text-foreground"
       >
         <Search className="size-[15px] shrink-0" />
         <span className="flex-1 truncate">Buscar...</span>
         {/* Só a pista visual — o atalho de verdade já existe (`Ctrl/Cmd+K`
             no Provider), não é implementado de novo aqui. */}
-        <kbd className="shrink-0 rounded-md border border-pauta bg-papel-1 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-muted-fg">
+        <kbd className="shrink-0 rounded-md border border-pauta bg-papel-1 px-1.5 py-0.5 text-[calc(10px*var(--escala-letra))] font-medium tracking-wide text-muted-fg">
           Ctrl K
         </kbd>
       </button>
@@ -201,7 +201,7 @@ export function GatilhoBuscaPaginas({
         className="toque flex w-full flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[color:var(--texto-2)] transition-colors hover:bg-foreground/[0.06] hover:text-foreground"
       >
         <Search className="size-[18px]" />
-        <span className="text-[12px] font-medium leading-none">Buscar</span>
+        <span className="text-[calc(12px*var(--escala-letra))] font-medium leading-none">Buscar</span>
       </button>
     )
   }

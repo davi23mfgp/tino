@@ -89,8 +89,8 @@ export default async function VisaoGeralAdmin() {
             { rotulo: "Canceladas", valor: porStatus.CANCELADA },
           ].map((linha) => (
             <div key={linha.rotulo} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-4 py-3">
-              <p className="text-[11px] uppercase tracking-widest text-muted-fg">{linha.rotulo}</p>
-              <p className="numero mt-1 text-[22px] font-semibold leading-none">{linha.valor}</p>
+              <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</p>
+              <p className="numero mt-1 text-[calc(22px*var(--escala-letra))] font-semibold leading-none">{linha.valor}</p>
             </div>
           ))}
         </div>
@@ -106,7 +106,7 @@ export default async function VisaoGeralAdmin() {
       </Cartao>
 
       <Cartao titulo="O que precisa de você">
-        <ul className="space-y-2 text-[13px]">
+        <ul className="space-y-2 text-[calc(13px*var(--escala-letra))]">
           <li className="flex items-center justify-between gap-3 border-b border-pauta pb-2">
             <span>Chamados abertos no suporte</span>
             <Link href="/admin/suporte" className="numero text-acao">

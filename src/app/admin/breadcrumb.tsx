@@ -72,7 +72,7 @@ export function AbasAdmin() {
             href={aba.rota}
             aria-current={ativa ? "page" : undefined}
             className={cn(
-              "rounded-full border px-3.5 py-1.5 text-[13px] transition-colors",
+              "rounded-full border px-3.5 py-1.5 text-[calc(13px*var(--escala-letra))] transition-colors",
               ativa
                 ? "border-acao/40 bg-acao/10 text-acao"
                 : "border-pauta text-muted-fg hover:border-acao/40 hover:text-foreground",

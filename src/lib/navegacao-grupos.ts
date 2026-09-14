@@ -8,9 +8,13 @@ import {
   NotebookPen,
   Package,
   PieChart,
+  ListChecks,
+  PiggyBank,
   Receipt,
   Repeat,
   Settings,
+  TrendingDown,
+  Tags,
   ShoppingBag,
   Sprout,
   Store,
@@ -54,7 +58,14 @@ export interface ItemNav {
 export interface GrupoNav {
   chave: string
   titulo: string
-  /** A pergunta que o grupo responde — usada como subtítulo/tooltip. */
+  /**
+   * O que existe dentro do grupo, em uma linha.
+   *
+   * Era uma PERGUNTA generica ("Quanto eu posso gastar?", "Como eu estou?").
+   * Quatro perguntas retoricas empilhadas na gaveta nao ajudam a escolher --
+   * quem abriu o menu ja sabe que quer decidir alguma coisa, precisa saber
+   * qual tela tem o que procura. Agora a linha lista os destinos.
+   */
   pergunta: string
   itens: ItemNav[]
 }
@@ -70,13 +81,13 @@ export const NUCLEO: GrupoNav[] = [
   {
     chave: "inicio",
     titulo: "Início",
-    pergunta: "O que eu faço agora?",
+    pergunta: "Saldo, resultado do mes e o que decidir",
     itens: [{ rota: "/painel", rotulo: "Início", Icone: BarChart3 }],
   },
   {
     chave: "movimento",
     titulo: "Extrato",
-    pergunta: "Para onde foi meu dinheiro?",
+    pergunta: "Extrato, anotar e importar",
     itens: [
       { rota: "/transacoes", rotulo: "Transações", Icone: Receipt },
       // Conectar banco vem antes de Anotar e Importar por ser o caminho em
@@ -90,13 +101,13 @@ export const NUCLEO: GrupoNav[] = [
   {
     chave: "cartoes",
     titulo: "Cartões",
-    pergunta: "Como estão meus cartões?",
+    pergunta: "Faturas, limites e parcelas",
     itens: [{ rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard }],
   },
   {
     chave: "perfil",
     titulo: "Perfil",
-    pergunta: "Sua conta",
+    pergunta: "Seus dados e preferencias",
     itens: [{ rota: "/configuracoes", rotulo: "Perfil", Icone: User }],
   },
 ]
@@ -111,31 +122,31 @@ export const GRUPOS_NAV: GrupoNav[] = [
   {
     chave: "planejar",
     titulo: "Planejar",
-    pergunta: "Quanto eu posso gastar?",
+    pergunta: "Orcamento, contas fixas, metas e reserva",
     itens: [
-      { rota: "/orcamento", rotulo: "Orçamento", Icone: Target },
+      { rota: "/orcamento", rotulo: "Orçamento", Icone: PiggyBank },
       { rota: "/recorrencias", rotulo: "Contas fixas", Icone: Repeat },
-      { rota: "/metas", rotulo: "Metas", Icone: Flag },
+      { rota: "/metas", rotulo: "Metas", Icone: Target },
       { rota: "/reserva", rotulo: "Reserva de emergência", Icone: Wallet },
     ],
   },
   {
     chave: "dividas",
     titulo: "Dívidas",
-    pergunta: "Como eu saio disso?",
+    pergunta: "Dividas, plano de pagamento e emprestimo",
     itens: [
-      { rota: "/dividas", rotulo: "Dívidas", Icone: Flag },
-      { rota: "/plano", rotulo: "Plano de pagamento", Icone: Flag },
+      { rota: "/dividas", rotulo: "Dívidas", Icone: TrendingDown },
+      { rota: "/plano", rotulo: "Plano de pagamento", Icone: ListChecks },
       { rota: "/emprestimos", rotulo: "Empréstimo", Icone: CreditCard },
     ],
   },
   {
     chave: "analisar",
     titulo: "Analisar",
-    pergunta: "Como eu estou?",
+    pergunta: "Analise, fluxo de caixa, simulador e investimentos",
     itens: [
       { rota: "/analise", rotulo: "Análise", Icone: PieChart },
-      { rota: "/projecao", rotulo: "Projeção", Icone: LineChart },
+      { rota: "/projecao", rotulo: "Fluxo de caixa", Icone: LineChart },
       { rota: "/simulador", rotulo: "Simulador", Icone: Wand2 },
       { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     ],
@@ -143,8 +154,8 @@ export const GRUPOS_NAV: GrupoNav[] = [
   {
     chave: "ajustes",
     titulo: "Ajustes",
-    pergunta: "Configurar o app",
-    itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }, { rota: "/categorias", rotulo: "Categorias e ícones", Icone: PieChart }],
+    pergunta: "Configuracoes e categorias",
+    itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }, { rota: "/categorias", rotulo: "Categorias e ícones", Icone: Tags }],
   },
 ]
 
@@ -161,7 +172,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
 export const GRUPO_LOJA: GrupoNav = {
   chave: "loja",
   titulo: "Loja",
-  pergunta: "Como vai o negócio?",
+  pergunta: "Balcao, prateleira, fiado e MEI",
   itens: [
     { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
     { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },

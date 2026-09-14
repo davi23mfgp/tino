@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 .vercel
 
 .design-reference/
+.qa-visual/

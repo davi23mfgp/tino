@@ -95,8 +95,8 @@ export default async function Analise() {
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className={cn("text-[13px] font-medium uppercase tracking-widest", situacao.tom)}>{situacao.texto}</p>
-            <p className="mt-2 text-[15px] leading-relaxed">{diagnostico.parecer}</p>
+            <p className={cn("text-[calc(13px*var(--escala-letra))] font-medium uppercase tracking-widest", situacao.tom)}>{situacao.texto}</p>
+            <p className="mt-2 text-[calc(15px*var(--escala-letra))] leading-relaxed">{diagnostico.parecer}</p>
           </div>
         </div>
       </Cartao>
@@ -108,19 +108,19 @@ export default async function Analise() {
           {diagnostico.indicadores.map((indicador) => (
             <div key={indicador.chave} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
               <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[13px] font-medium">{indicador.nome}</p>
+                <p className="text-[calc(13px*var(--escala-letra))] font-medium">{indicador.nome}</p>
                 <div className="text-right">
-                  <p className={cn("text-[20px] font-semibold leading-none", COR_FAIXA[indicador.faixa])}>
+                  <p className={cn("text-[calc(20px*var(--escala-letra))] font-semibold leading-none", COR_FAIXA[indicador.faixa])}>
                     {indicador.valor}
                   </p>
-                  <p className={cn("mt-1 text-[10px] uppercase tracking-widest", COR_FAIXA[indicador.faixa])}>
+                  <p className={cn("mt-1 text-[calc(10px*var(--escala-letra))] uppercase tracking-widest", COR_FAIXA[indicador.faixa])}>
                     {ROTULO_FAIXA[indicador.faixa]}
                   </p>
                 </div>
               </div>
 
-              <p className="mt-2 text-[12px] leading-relaxed text-muted-fg">{indicador.leitura}</p>
-              <p className="mt-1.5 text-[11px] text-muted-fg opacity-70">Referência: {indicador.referencia}</p>
+              <p className="mt-2 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{indicador.leitura}</p>
+              <p className="mt-1.5 text-[calc(11px*var(--escala-letra))] text-muted-fg opacity-70">Referência: {indicador.referencia}</p>
             </div>
           ))}
         </div>
@@ -131,15 +131,15 @@ export default async function Analise() {
         <ol className="space-y-3">
           {diagnostico.prioridades.map((prioridade) => (
             <li key={prioridade.ordem} className="flex gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[12px] font-semibold">
+              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[calc(12px*var(--escala-letra))] font-semibold">
                 {prioridade.ordem}
               </span>
               <div className="min-w-0">
-                <p className="text-[14px] font-medium">{prioridade.titulo}</p>
-                <p className="mt-1 text-[12px] leading-relaxed text-muted-fg">{prioridade.porque}</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed">{prioridade.acao}</p>
+                <p className="text-[calc(14px*var(--escala-letra))] font-medium">{prioridade.titulo}</p>
+                <p className="mt-1 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{prioridade.porque}</p>
+                <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] leading-relaxed">{prioridade.acao}</p>
                 {prioridade.impactoMensalCentavos ? (
-                  <p className="mt-1.5 text-[12px] text-positivo">
+                  <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] text-positivo">
                     Efeito estimado: <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span> por mês.
                   </p>
                 ) : null}
@@ -182,7 +182,7 @@ export default async function Analise() {
           <div className="mt-4 space-y-2.5">
             {dre.grupos.map((grupo) => (
               <div key={grupo.grupo}>
-                <div className="flex items-center justify-between text-[13px]">
+                <div className="flex items-center justify-between text-[calc(13px*var(--escala-letra))]">
                   <span>{NOME_GRUPO[grupo.grupo] ?? grupo.grupo}</span>
                   <span className="text-muted-fg">
                     <span className="valor-inteiro">{formatarMoeda(grupo.totalCentavos)}</span>
@@ -203,12 +203,12 @@ export default async function Analise() {
         {/* ── Balanço ─────────────────────────────────── */}
         <Cartao titulo="Balanço">
           <div className="space-y-1">
-            <p className="text-[11px] uppercase tracking-widest text-muted-fg">Ativo</p>
+            <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Ativo</p>
             <Linha rotulo="Disponível em conta" valor={balanco.ativoCirculanteCentavos} />
             <Linha rotulo="Guardado em metas" valor={balanco.ativoAplicadoCentavos} />
             <Linha rotulo="Total" valor={balanco.ativoTotalCentavos} forte />
 
-            <p className="pt-3 text-[11px] uppercase tracking-widest text-muted-fg">Passivo</p>
+            <p className="pt-3 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Passivo</p>
             <Linha rotulo="Curto prazo (até 12 meses)" valor={-balanco.passivoCurtoPrazoCentavos} tom="negativo" />
             <Linha rotulo="Longo prazo" valor={-balanco.passivoLongoPrazoCentavos} tom="negativo" />
             <Linha rotulo="Total" valor={-balanco.passivoTotalCentavos} tom="negativo" forte />
@@ -223,7 +223,7 @@ export default async function Analise() {
             />
           </div>
 
-          <p className="mt-3 text-[12px] leading-relaxed text-muted-fg">
+          <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
             Patrimônio líquido é o número que diz se você avançou: dá para terminar o mês com mais dinheiro em conta e
             mesmo assim mais pobre, se a dívida cresceu mais que o saldo.
           </p>
@@ -231,9 +231,9 @@ export default async function Analise() {
           {mensal.serie.length > 1 && (
             <div className="mt-5 border-t border-pauta pt-4">
               <div className="mb-3 flex items-baseline justify-between gap-3">
-                <p className="text-[13px] font-medium">Como andou nos últimos meses</p>
+                <p className="text-[calc(13px*var(--escala-letra))] font-medium">Como andou nos últimos meses</p>
                 <p
-                  className={`numero inline-flex items-center gap-0.5 text-[13px] ${
+                  className={`numero inline-flex items-center gap-0.5 text-[calc(13px*var(--escala-letra))] ${
                     mensal.variacaoCentavos >= 0 ? "text-positivo" : "text-negativo"
                   }`}
                 >
@@ -248,7 +248,7 @@ export default async function Analise() {
 
               <GraficoBalanco dados={mensal.serie} />
 
-              <p className="mt-3 text-[12px] leading-relaxed text-muted-fg">
+              <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
                 A série usa saldo em conta e parcelamentos, que têm data em cada lançamento. Fica de fora{" "}
                 {mensal.foraDaSerie.join(", ")} — esses só têm o valor de hoje no banco, e repeti-lo para trás faria o
                 gráfico mostrar uma melhora que não houve.
@@ -260,10 +260,10 @@ export default async function Analise() {
             <div className="mt-4 space-y-3">
               {diagnostico.riscos.length > 0 && (
                 <div>
-                  <p className="text-[11px] uppercase tracking-widest text-negativo">Riscos</p>
+                  <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-negativo">Riscos</p>
                   <ul className="mt-1.5 space-y-1.5">
                     {diagnostico.riscos.map((risco) => (
-                      <li key={risco} className="text-[12px] leading-relaxed text-muted-fg">
+                      <li key={risco} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
                         {risco}
                       </li>
                     ))}
@@ -273,10 +273,10 @@ export default async function Analise() {
 
               {diagnostico.pontosFortes.length > 0 && (
                 <div>
-                  <p className="text-[11px] uppercase tracking-widest text-positivo">Pontos fortes</p>
+                  <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-positivo">Pontos fortes</p>
                   <ul className="mt-1.5 space-y-1.5">
                     {diagnostico.pontosFortes.map((ponto) => (
-                      <li key={ponto} className="text-[12px] leading-relaxed text-muted-fg">
+                      <li key={ponto} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
                         {ponto}
                       </li>
                     ))}
@@ -302,7 +302,7 @@ export default async function Analise() {
 
         <Cartao titulo="Como cada mês fechou">
           <GraficoDozeMeses dados={panorama.historico} competenciaDestacada={competencia} />
-          <p className="mt-3 text-[13px] leading-relaxed text-[color:var(--texto-2)]">
+          <p className="mt-3 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
             Barra para cima é mês que sobrou; para baixo, mês que faltou. O mês atual vai cheio e os anteriores em
             meio-tom, porque ele ainda não terminou — comparar mês pela metade com mês fechado engana.
           </p>
@@ -324,7 +324,7 @@ export default async function Analise() {
       </div>
 
       </details>
-      <p className="px-1 text-[11px] leading-relaxed text-muted-fg">
+      <p className="px-1 text-[calc(11px*var(--escala-letra))] leading-relaxed text-muted-fg">
         Este parecer lê os seus próprios lançamentos contra faixas de referência de mercado. Não é recomendação de
         investimento nem substitui contador para questão tributária.
       </p>
@@ -347,8 +347,8 @@ function Linha({
 
   return (
     <div className={cn("flex items-baseline justify-between gap-3 py-1", forte && "font-semibold")}>
-      <span className={cn("text-[13px]", !forte && "text-muted-fg")}>{rotulo}</span>
-      <span className={cn("text-[14px] tabular-nums", cor)}><span className="valor-inteiro">{formatarMoeda(valor)}</span></span>
+      <span className={cn("text-[calc(13px*var(--escala-letra))]", !forte && "text-muted-fg")}>{rotulo}</span>
+      <span className={cn("text-[calc(14px*var(--escala-letra))] tabular-nums", cor)}><span className="valor-inteiro">{formatarMoeda(valor)}</span></span>
     </div>
   )
 }

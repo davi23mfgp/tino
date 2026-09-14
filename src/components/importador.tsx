@@ -221,17 +221,17 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
                 className={`flex items-center gap-3 py-2.5 text-sm ${lancamento.duplicada ? "opacity-40" : ""}`}
               >
                 {lancamento.possivelDuplicada&&<Checkbox aria-label={`Incluir ${lancamento.descricaoSugerida} mesmo com possível repetição`} checked={!lancamento.duplicada} onChange={e=>{const incluir=e.target.checked;setPrevia(atual=>{if(!atual)return atual;const lancamentos=atual.lancamentos.map(l=>l.hashImport===lancamento.hashImport?{...l,duplicada:!incluir}:l);return {...atual,lancamentos,novas:lancamentos.filter(l=>!l.duplicada).length,duplicadas:lancamentos.filter(l=>l.duplicada).length}})}}/>}
-                <span className="w-20 shrink-0 text-[12px] text-muted-fg">
+                <span className="w-20 shrink-0 text-[calc(12px*var(--escala-letra))] text-muted-fg">
                   {new Date(lancamento.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                 </span>
                 <span className="min-w-0 flex-1 truncate">
                   {lancamento.descricaoSugerida}
                   {lancamento.categoriaNome && (
-                    <span className="ml-2 rounded-full bg-papel-2 px-2 py-0.5 text-[10px]">
+                    <span className="ml-2 rounded-full bg-papel-2 px-2 py-0.5 text-[calc(10px*var(--escala-letra))]">
                       {lancamento.categoriaNome}
                     </span>
                   )}
-                  {lancamento.duplicada && <span className="ml-2 text-[10px] text-muted-fg">{lancamento.possivelDuplicada?"Possível repetição do celular":"Já importado"}</span>}
+                  {lancamento.duplicada && <span className="ml-2 text-[calc(10px*var(--escala-letra))] text-muted-fg">{lancamento.possivelDuplicada?"Possível repetição do celular":"Já importado"}</span>}
                 </span>
                 <span className={lancamento.tipo === "RECEITA" ? "text-positivo" : ""}>
                   {lancamento.tipo === "RECEITA" ? "+" : "-"}
@@ -258,7 +258,7 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
             banco nunca passa por aqui: a autenticação acontece no site da instituição e o app recebe só a permissão de
             leitura, que você pode revogar quando quiser.
           </p>
-          <p className="mt-2 text-[12px] text-muted-fg">
+          <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
             Configure as credenciais do agregador no arquivo <code>.env</code> para habilitar.
           </p>
         </Cartao>

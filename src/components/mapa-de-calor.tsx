@@ -60,7 +60,7 @@ export function MapaDeCalor({
         {/* Coluna de iniciais dos dias da semana */}
         <div className="flex flex-col gap-1 pr-1">
           {INICIAIS.map((inicial, indice) => (
-            <span key={indice} className="flex h-7 items-center text-[10px] text-muted-fg">
+            <span key={indice} className="flex h-7 items-center text-[calc(10px*var(--escala-letra))] text-muted-fg">
               {inicial}
             </span>
           ))}
@@ -81,7 +81,7 @@ export function MapaDeCalor({
                     key={posicao}
                     title={`Dia ${dia.dia}: ${formatarMoeda(dia.totalCentavos)}`}
                     className={cn(
-                      "flex h-7 items-center justify-center rounded-md text-[10px] tabular-nums transition-colors",
+                      "flex h-7 items-center justify-center rounded-md text-[calc(10px*var(--escala-letra))] tabular-nums transition-colors",
                       dia.totalCentavos === 0 ? "bg-foreground/[0.04] text-muted-fg" : "text-white",
                       eHoje && "ring-1 ring-inset ring-acao",
                     )}
@@ -115,7 +115,7 @@ export function MapaDeCalor({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-fg">
+        <div className="flex items-center gap-1.5 text-[calc(10px*var(--escala-letra))] text-muted-fg">
           menos
           {[0.1, 0.3, 0.55, 0.8, 1].map((nivel) => (
             <span
@@ -127,7 +127,7 @@ export function MapaDeCalor({
           mais
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-fg">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
           <span>
             média por dia com gasto: <span className="text-foreground">{formatarMoeda(mediaDiariaCentavos)}</span>
           </span>

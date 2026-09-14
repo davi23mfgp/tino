@@ -66,7 +66,7 @@ export function EditavelTexto({
           }
         }}
         className={cn(
-          "-mx-2 -my-1 w-[calc(100%+1rem)] rounded-[var(--raio-campo)] border border-acao/50 bg-background/70 backdrop-blur-vidro px-2 py-1 text-[14px] outline-none",
+          "-mx-2 -my-1 w-[calc(100%+1rem)] rounded-[var(--raio-campo)] border border-acao/50 bg-background/70 backdrop-blur-vidro px-2 py-1 text-[calc(14px*var(--escala-letra))] outline-none",
           className,
         )}
       />
@@ -79,7 +79,7 @@ export function EditavelTexto({
       onClick={abrir}
       title="clique para editar"
       className={cn(
-        "-mx-2 -my-1 max-w-full truncate rounded-[var(--raio-campo)] px-2 py-1 text-left text-[14px] transition-colors",
+        "-mx-2 -my-1 max-w-full truncate rounded-[var(--raio-campo)] px-2 py-1 text-left text-[calc(14px*var(--escala-letra))] transition-colors",
         "cursor-text hover:bg-foreground/[0.05]",
         className,
       )}
@@ -130,7 +130,7 @@ export function EditavelMoeda({
           }
         }}
         className={cn(
-          "numero w-28 rounded-[var(--raio-campo)] border border-acao/50 bg-background/70 backdrop-blur-vidro px-2 py-1 text-right text-[14px] outline-none",
+          "numero w-28 rounded-[var(--raio-campo)] border border-acao/50 bg-background/70 backdrop-blur-vidro px-2 py-1 text-right text-[calc(14px*var(--escala-letra))] outline-none",
           className,
         )}
       />
@@ -143,7 +143,7 @@ export function EditavelMoeda({
       onClick={abrir}
       title="clique para editar"
       className={cn(
-        "numero w-28 rounded-[var(--raio-campo)] px-2 py-1 text-right text-[14px] font-medium transition-colors",
+        "numero w-28 rounded-[var(--raio-campo)] px-2 py-1 text-right text-[calc(14px*var(--escala-letra))] font-medium transition-colors",
         "cursor-text hover:bg-foreground/[0.05]",
         className,
       )}

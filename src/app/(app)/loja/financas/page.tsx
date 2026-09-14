@@ -75,7 +75,7 @@ export default function FinancasDaLoja() {
           />
         </div>
 
-        <p className="mt-4 text-[12px] leading-relaxed text-muted-fg">
+        <p className="mt-4 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
           Receita líquida já descontada a taxa da maquininha (mesma conta do Balcão). Custo da mercadoria vendida usa
           o custo médio atual de cada produto — não o custo exato do dia da venda, mesma referência que a Prateleira
           usa na margem. Despesa é o que foi marcado como pago em{" "}
