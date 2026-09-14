@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { competenciaAtual } from "@/lib/datas"
+import { orcamentoInicialCentavos } from "@/lib/orcamento-cartao"
 
 type Contexto = { params: Promise<{ id: string }> }
 type Linha = { categoriaId: string; limiteCentavos: number }
@@ -17,7 +18,18 @@ export const GET = comSessao<Contexto>(async (sessao, req, contexto) => {
   if (!conta) throw new ErroDeUso("Cartão não encontrado.", 404)
   const plano = await prisma.orcamentoCartao.findUnique({ where: { contaId_competencia: { contaId: id, competencia } }, include: { categorias: true } })
   const possuiPlanos = plano ? true : await prisma.orcamentoCartao.count({ where: { contaId: id } }) > 0
-  return ok(plano ?? { totalCentavos: !possuiPlanos && competencia === competenciaAtual() ? conta.orcamentoMensalCentavos : 0, categorias: [] })
+  // A mesma regra que a tela usa, para os dois não discordarem sobre um mês
+  // sem plano. Ver `lib/orcamento-cartao.ts`.
+  return ok(
+    plano ?? {
+      totalCentavos: orcamentoInicialCentavos({
+        possuiPlanos,
+        mesCorrente: competencia === competenciaAtual(),
+        orcamentoMensalCentavos: conta.orcamentoMensalCentavos,
+      }),
+      categorias: [],
+    },
+  )
 })
 
 export const PUT = comSessao<Contexto>(async (sessao, req, contexto) => {

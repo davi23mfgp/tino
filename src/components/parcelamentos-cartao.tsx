@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Pencil, Trash2 } from "lucide-react"
 import { rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -56,7 +56,15 @@ function Parcelado({
   aoExcluir: (alvo: { id: string; nome: string; tipo: "parcelamentos" }) => void
 }) {
   const temNoMes = parcelamento.parcelas.some((parcela) => parcela.competencia === mes)
-  const [competencia, setCompetencia] = useState(temNoMes ? mes : parcelamento.parcelas[0]?.competencia ?? "")
+  const doMesOuPrimeira = temNoMes ? mes : parcelamento.parcelas[0]?.competencia ?? ""
+  const [competencia, setCompetencia] = useState(doMesOuPrimeira)
+
+  // O detalhe acompanha o mês da tela. Sem isto ele ficava no mês em que foi
+  // montado: trocar o mês no cabeçalho deixava o resumo falando de setembro e a
+  // parcela ao lado falando de agosto, sem nada indicando a diferença. Quem
+  // quiser ver outro mês continua escolhendo no seletor abaixo — a escolha vale
+  // até o mês da tela mudar de novo.
+  useEffect(() => { setCompetencia(doMesOuPrimeira) }, [doMesOuPrimeira])
   const escolhida = parcelamento.parcelas.find((parcela) => parcela.competencia === competencia)
   const restantes = parcelamento.parcelasTotal - parcelamento.parcelasPagas
   const faltaCentavos = restantes * parcelamento.parcelaCentavos
@@ -78,6 +86,7 @@ function Parcelado({
 
       <footer className={estilos.rodapeParcela}>
         <span>Faltam <b>{restantes}</b> {restantes === 1 ? "parcela" : "parcelas"} · <b>{formatarMoeda(faltaCentavos)}</b></span>
+        {!temNoMes && <small>fora de {rotuloCompetencia(mes, true)}</small>}
         <Select value={competencia} onValueChange={setCompetencia}>
           <SelectTrigger aria-label={`Ver parcela de qual mês em ${parcelamento.descricao}`} className="h-10 w-[168px]">
             <SelectValue />

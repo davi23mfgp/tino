@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState, type CSSProperties } from "react"
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-react"
 
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import estilos from "./central-cartoes.module.css"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
+import { orcamentoInicialCentavos } from "@/lib/orcamento-cartao"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { AjudaCartao } from "@/components/ajuda-cartao"
@@ -20,7 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { enviar } from "@/lib/cliente"
 import { mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
-import { rotuloCompetencia } from "@/lib/datas"
+import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
@@ -162,24 +163,80 @@ function Cabecalho({ titulo, apoio }: { titulo: string; apoio: string }) {
   return <header className={estilos.cabecalho}><div><h2>{titulo}</h2><p>{apoio}</p></div></header>
 }
 
+/**
+ * Campo de dinheiro que não briga com quem digita.
+ *
+ * O valor era reformatado a cada tecla: apagar para trocar "1.234,56" por
+ * "1.200" reescrevia o texto no meio da digitação e jogava o cursor para o
+ * fim. Aqui o texto digitado é preservado enquanto o campo tem foco, e só
+ * vira centavos quando a pessoa sai dele.
+ */
+function CampoDinheiro({ valorCentavos, aoMudar, rotulo }: { valorCentavos: number; aoMudar: (centavos: number) => void; rotulo: string }) {
+  const [texto, setTexto] = useState(formatarDecimal(valorCentavos / 100, 2))
+  const [editando, setEditando] = useState(false)
+  useEffect(() => { if (!editando) setTexto(formatarDecimal(valorCentavos / 100, 2)) }, [valorCentavos, editando])
+  return (
+    <input
+      aria-label={rotulo}
+      inputMode="decimal"
+      value={texto}
+      onFocus={() => setEditando(true)}
+      onChange={(evento) => setTexto(evento.target.value)}
+      onBlur={() => { aoMudar(Math.max(0, paraCentavos(texto))); setEditando(false) }}
+      onKeyDown={(evento) => { if (evento.key === "Enter") evento.currentTarget.blur() }}
+    />
+  )
+}
+
 function OrcamentoDoCartao({ cartao, mes, categorias, gastos, aoSalvar }: { cartao: DadosCartao; mes: string; categorias: { id: string; nome: string }[]; gastos: { id: string; nome: string; totalCentavos: number }[]; aoSalvar: () => void }) {
-  const existente = cartao.orcamentos?.find((plano) => plano.competencia === mes)
-  const inicial = existente?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0
-  const [total, setTotal] = useState(inicial)
-  const [linhas, setLinhas] = useState<Record<string, number>>(() => Object.fromEntries(existente?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? []))
+  // Mês sem plano só herda o valor legado da conta sob a mesma regra da API —
+  // ver `lib/orcamento-cartao.ts`. Antes a tela herdava em qualquer mês, e
+  // navegar para um mês futuro mostrava um teto que ninguém tinha definido.
+  const inicialDoMes = useCallback((competencia: string) => {
+    const plano = cartao.orcamentos?.find((item) => item.competencia === competencia)
+    return {
+      total: orcamentoInicialCentavos({
+        planoDoMesCentavos: plano?.totalCentavos,
+        possuiPlanos: Boolean(cartao.orcamentos?.length),
+        mesCorrente: competencia === competenciaAtual(),
+        orcamentoMensalCentavos: cartao.orcamentoMensalCentavos,
+      }),
+      linhas: Object.fromEntries(plano?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? []),
+    }
+  }, [cartao])
+
+  const [total, setTotal] = useState(() => inicialDoMes(mes).total)
+  const [linhas, setLinhas] = useState<Record<string, number>>(() => inicialDoMes(mes).linhas)
   const [erro, setErro] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [novaCategoria, setNovaCategoria] = useState("")
-  useEffect(() => { const plano = cartao.orcamentos?.find((item) => item.competencia === mes); setTotal(plano?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0); setLinhas(Object.fromEntries(plano?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? [])); setErro("") }, [cartao, mes])
+  useEffect(() => { const inicio = inicialDoMes(mes); setTotal(inicio.total); setLinhas(inicio.linhas); setErro("") }, [inicialDoMes, mes])
+
   const distribuido = Object.values(linhas).reduce((soma, valor) => soma + valor, 0)
-  const categoriasAtivas = useMemo(() => categorias.filter((linha) => gastos.some((gasto) => gasto.id === linha.id) || (linhas[linha.id] ?? 0) > 0), [categorias, gastos, linhas])
-  async function salvar() { setErro(""); if (distribuido > total) { setErro("As categorias ultrapassam o orçamento total."); return } setSalvando(true); try { await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos: total, categorias: Object.entries(linhas).filter(([, valor]) => valor > 0).map(([categoriaId, limiteCentavos]) => ({ categoriaId, limiteCentavos })) }, "PUT"); aoSalvar() } catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível salvar.") } finally { setSalvando(false) } }
+  // Categoria presente no plano continua na lista mesmo valendo zero: zerar um
+  // limite não pode fazer a linha desaparecer de quem está editando.
+  const categoriasAtivas = useMemo(
+    () => categorias.filter((linha) => linha.id in linhas || gastos.some((gasto) => gasto.id === linha.id)),
+    [categorias, gastos, linhas],
+  )
+  async function salvar() {
+    setErro("")
+    if (distribuido > total) { setErro("As categorias ultrapassam o total."); return }
+    setSalvando(true)
+    try {
+      await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos: total, categorias: Object.entries(linhas).map(([categoriaId, limiteCentavos]) => ({ categoriaId, limiteCentavos })) }, "PUT")
+      aoSalvar()
+    } catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível salvar.") }
+    finally { setSalvando(false) }
+  }
   const gastoTotal = gastos.reduce((soma, linha) => soma + linha.totalCentavos, 0)
   const maximo = Math.max(10000, cartao.limiteCentavos ?? 0, gastoTotal * 2)
-  return <section className={estilos.painel}><Cabecalho titulo="Orçamento do cartão" apoio={`Plano de ${rotuloCompetencia(mes, true)} · limite bancário separado`} /><div className={estilos.resumoOrcamento}><div><small>Planejado</small><strong>{total ? formatarMoeda(total) : "Definir orçamento"}</strong></div><div><small>Utilizado</small><strong>{formatarMoeda(gastoTotal)}</strong></div><div><small>Restante</small><strong>{total ? formatarMoeda(total - gastoTotal) : "—"}</strong></div><div><small>Não distribuído</small><strong>{formatarMoeda(Math.max(0, total - distribuido))}</strong></div></div>
-    <label className={estilos.slider}><span><b>Total do mês</b><input aria-label="Valor exato do orçamento total" value={formatarDecimal(total / 100, 2)} onChange={(e) => setTotal(paraCentavos(e.target.value))} inputMode="decimal" /></span><input type="range" min="0" max={maximo} step="5000" value={Math.min(total, maximo)} onChange={(e) => setTotal(Number(e.target.value))} /></label>
-    <div className={estilos.adicionarCategoria}><select aria-label="Adicionar categoria ao orçamento" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)}><option value="">Adicionar categoria</option>{categorias.filter((linha) => !categoriasAtivas.some((ativa) => ativa.id === linha.id)).map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select><Button type="button" variant="outline" disabled={!novaCategoria} onClick={() => { setLinhas((atual) => ({ ...atual, [novaCategoria]: 1000 })); setNovaCategoria("") }}>Adicionar</Button></div>
-    <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)} utilizado</small><input aria-label={`Orçamento de ${linha.nome}`} value={formatarDecimal(limite / 100, 2)} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: paraCentavos(e.target.value) }))} inputMode="decimal" /></span><input type="range" min="0" max={Math.max(total, 10000)} step="1000" value={Math.min(limite, Math.max(total, 10000))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
+  const disponiveis = categorias.filter((linha) => !categoriasAtivas.some((ativa) => ativa.id === linha.id))
+
+  return <section className={estilos.painel}><Cabecalho titulo="Orçamento do cartão" apoio={rotuloCompetencia(mes, true)} /><div className={estilos.resumoOrcamento}><div><small>Planejado</small><strong>{total ? formatarMoeda(total) : "—"}</strong></div><div><small>Utilizado</small><strong>{formatarMoeda(gastoTotal)}</strong></div><div><small>Restante</small><strong>{total ? formatarMoeda(total - gastoTotal) : "—"}</strong></div><div><small>Sem destino</small><strong>{formatarMoeda(Math.max(0, total - distribuido))}</strong></div></div>
+    <label className={estilos.slider}><span><b>Total do mês</b><CampoDinheiro valorCentavos={total} aoMudar={setTotal} rotulo="Total do mês" /></span><input type="range" aria-label="Ajustar o total do mês" min="0" max={maximo} step="5000" value={Math.min(total, maximo)} onChange={(e) => setTotal(Number(e.target.value))} /></label>
+    {disponiveis.length > 0 && <div className={estilos.adicionarCategoria}><select aria-label="Adicionar categoria ao orçamento" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)}><option value="">Adicionar categoria</option>{disponiveis.map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select><Button type="button" variant="outline" disabled={!novaCategoria} onClick={() => { setLinhas((atual) => ({ ...atual, [novaCategoria]: 0 })); setNovaCategoria("") }}>Adicionar</Button></div>}
+    <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id} data-estourou={limite > 0 && gasto > limite}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)}{limite > 0 ? ` de ${formatarMoeda(limite)}` : ""}{limite > 0 && gasto > limite ? ` · passou ${formatarMoeda(gasto - limite)}` : ""}</small><CampoDinheiro valorCentavos={limite} aoMudar={(centavos) => setLinhas((atual) => ({ ...atual, [linha.id]: centavos }))} rotulo={`Limite de ${linha.nome}`} /></span><input type="range" aria-label={`Ajustar limite de ${linha.nome}`} min="0" max={Math.max(total, 10000, limite)} step="1000" value={Math.min(limite, Math.max(total, 10000, limite))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
     {erro && <p className={estilos.erro} role="alert">{erro}</p>}<Button disabled={salvando} onClick={() => void salvar()}>Salvar orçamento</Button>
   </section>
 }

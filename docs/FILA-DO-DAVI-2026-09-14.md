@@ -11,9 +11,9 @@ nenhuma peça se perder quando o terminal fechar.
 | 3 | Compra de cartão sem competência de fatura | **feito** — regra ligada nas duas entradas, com ajuste manual no formulário |
 | 1 | Captura confirmada pode ser descartada | **feito** — `lib/captura/transicoes.ts`, 6 testes |
 | 2 | Dedup engole compra legítima | **feito** — identidade de evento nos três transportes |
-| 5 | Orçamento herda valor legado em mês sem plano | a fazer |
-| 6 | Categoria entra com R$ 10; campo reformata a cada tecla | a fazer |
-| 7 | Detalhe de parcela não acompanha o mês | a fazer |
+| 5 | Orçamento herda valor legado em mês sem plano | **feito** — `lib/orcamento-cartao.ts`, regra única com a API, 4 testes |
+| 6 | Categoria entra com R$ 10; campo reformata a cada tecla | **feito** — entra com zero, continua editável em zero, campo preserva o texto digitado |
+| 7 | Detalhe de parcela não acompanha o mês | **feito** — o detalhe segue o mês da tela e marca o que está fora dele |
 
 ## 2. Mobile — em andamento
 
