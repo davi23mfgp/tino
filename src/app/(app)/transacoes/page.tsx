@@ -19,6 +19,7 @@ import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "
 import { Button } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { porDia, rotuloDia } from "@/lib/extrato-dias"
+import { FaixaDeDias, type DiaComMovimento } from "@/components/faixa-de-dias"
 import estilos from "./extrato.module.css"
 
 interface Transacao {
@@ -49,6 +50,10 @@ export default function Transacoes() {
   const [contaFiltro,setContaFiltro]=useState("")
   const [contas,setContas]=useState<{id:string;nome:string}[]>([])
   useEffect(()=>{buscar<{id:string;nome:string}[]>("/api/contas").then(setContas).catch(()=>showToast("Não foi possível carregar contas.",{variant:"error"}))},[])
+  // "mes" mostra o período inteiro; "dia" prende a lista ao dia da faixa.
+  const [modo, setModo] = useState<"mes" | "dia">("mes")
+  const [dia, setDia] = useState(() => new Date().toISOString().slice(0, 10))
+  const [dias, setDias] = useState<DiaComMovimento[]>([])
   const [busca, setBusca] = useState("")
   const [semCategoria, setSemCategoria] = useState(false)
   const [tipo, setTipo] = useState("todos")
@@ -84,7 +89,26 @@ export default function Transacoes() {
   if (tipo !== "todos") parametros.set("tipo", tipo)
   if (categoriaFiltro && !semCategoria) parametros.set("categoriaId", categoriaFiltro)
   if(contaFiltro)parametros.set("contaId",contaFiltro)
+  if (modo === "dia") parametros.set("dia", dia)
   const filtro = parametros.toString()
+
+  // Os pontos da faixa vêm de uma consulta agregada do mês inteiro: montá-los
+  // a partir da lista deixaria metade do mês sem ponto, porque ela é paginada.
+  useEffect(() => {
+    let ativo = true
+    buscar<DiaComMovimento[]>(`/api/transacoes/dias?competencia=${competencia}`)
+      .then((linhas) => { if (ativo) setDias(linhas) })
+      .catch(() => { if (ativo) setDias([]) })
+    return () => { ativo = false }
+  }, [competencia, atualizacao])
+
+  // Trocar o mês leva a faixa junto; sem isto ela ficaria no mês anterior
+  // mostrando dias que a lista não tem.
+  useEffect(() => {
+    if (dia.slice(0, 7) === competencia) return
+    const hoje = new Date().toISOString().slice(0, 10)
+    setDia(hoje.slice(0, 7) === competencia ? hoje : `${competencia}-01`)
+  }, [competencia, dia])
 
   const carregar = useCallback(async (cursor: string | null = null) => {
     requisicao.current?.abort()
@@ -235,6 +259,23 @@ export default function Transacoes() {
               className="min-h-11 w-full min-w-0 rounded-full border border-pauta bg-background px-4 py-2 text-sm outline-none focus:border-acao/50"
             />
           </label>
+        </div>
+        <div className={estilos.calendario}>
+          <FaixaDeDias
+            diaSelecionado={dia}
+            dias={dias}
+            aoEscolher={(escolhido) => {
+              setDia(escolhido)
+              // Escolher um dia é pedir aquele dia: alternar à mão depois de
+              // tocar no número seria um passo a mais para o óbvio.
+              setModo("dia")
+              if (escolhido.slice(0, 7) !== competencia) setCompetencia(escolhido.slice(0, 7))
+            }}
+          />
+          <ToggleGroup type="single" value={modo} onValueChange={(valor) => { if (valor) setModo(valor as "mes" | "dia") }} aria-label="Ver por dia ou pelo mês">
+            <ToggleGroupItem value="dia">Dia</ToggleGroupItem>
+            <ToggleGroupItem value="mes">Mês</ToggleGroupItem>
+          </ToggleGroup>
         </div>
         <div className={estilos.filtros}>
           <ToggleGroup type="single" value={tipo} onValueChange={valor => {if(valor) setTipo(valor)}} aria-label="Tipo de movimento">

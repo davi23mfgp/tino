@@ -1,0 +1,28 @@
+.faixa { display: flex; align-items: center; gap: 4px; }
+.faixa > button { display: grid; place-items: center; width: 32px; height: 44px; flex-shrink: 0; border-radius: 12px; color: var(--texto-2); }
+.faixa > button:hover { background: var(--papel-1); }
+
+.faixa ol { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; flex: 1; margin: 0; padding: 0; list-style: none; }
+
+/* O dia é um alvo de toque inteiro, não só o número: no celular acertar um
+   círculo de 28px é o que faz a pessoa desistir da faixa. */
+.faixa li > button { display: grid; justify-items: center; gap: 2px; width: 100%; min-height: 56px; padding: 6px 0; border-radius: 14px; color: var(--texto-2); }
+.faixa li > button:hover { background: var(--papel-1); }
+.faixa li > button small { font-size: calc(10px * var(--escala-letra)); text-transform: lowercase; }
+.faixa li > button b { font-size: calc(16px * var(--escala-letra)); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--foreground); }
+
+/* Hoje é sublinhado; o dia escolhido é preenchido. Dois sinais diferentes
+   porque os dois podem acontecer no mesmo dia. */
+.faixa li > button[data-hoje="true"] b { text-decoration: underline; text-underline-offset: 3px; }
+.faixa li > button[aria-pressed="true"] { background: var(--acao); }
+.faixa li > button[aria-pressed="true"] b,
+.faixa li > button[aria-pressed="true"] small { color: var(--primary-foreground, #000); }
+
+.faixa li i { display: block; width: 4px; height: 4px; border-radius: 50%; background: transparent; }
+.faixa li i[data-tem="true"] { background: var(--acao); }
+.faixa li > button[aria-pressed="true"] i[data-tem="true"] { background: var(--primary-foreground, #000); }
+
+@media (max-width: 380px) {
+  .faixa li > button b { font-size: calc(14px * var(--escala-letra)); }
+  .faixa > button { width: 26px; }
+}

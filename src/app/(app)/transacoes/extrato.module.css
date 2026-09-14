@@ -14,6 +14,8 @@
 .busca { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 12px; }
 .busca label>span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .busca input,.busca select { height: 44px; border-radius: 12px; font-size: 13px; background: var(--papel-1); }
+.calendario { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 12px; }
+@media(max-width:560px) { .calendario { grid-template-columns: 1fr; } }
 .filtros { display: grid; grid-template-columns: auto minmax(160px,1fr) minmax(140px,1fr); gap: 10px; align-items: center; }
 .filtros>div { min-width: 0; }
 .filtros button,.filtros select { font-size: 12px; }

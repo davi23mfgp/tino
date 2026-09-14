@@ -19,6 +19,9 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const tipo = url.searchParams.get("tipo")
   const busca = url.searchParams.get("busca")
   const semCategoria = url.searchParams.get("semCategoria") === "1"
+  // Um dia só, para a faixa de calendário do extrato. Vem depois da janela do
+  // mês de propósito: dia escolhido manda, e mês vira só o contexto da faixa.
+  const dia = url.searchParams.get("dia")
   const cursor = url.searchParams.get("cursor")
   const limite = Math.min(Number(url.searchParams.get("limite") ?? 50), 200)
 
@@ -28,6 +31,10 @@ export const GET = comSessao(async (sessao, requisicao) => {
     const lar = await prisma.lar.findUniqueOrThrow({ where: { id: sessao.larId }, select: { diaInicioMes: true } })
     const janela = janelaDoMes(competencia, lar.diaInicioMes)
     onde.data = { gte: janela.de, lte: janela.ate }
+  }
+  if (dia) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) throw new ErroDeUso("Dia inválido.")
+    onde.data = { gte: new Date(`${dia}T00:00:00.000Z`), lte: new Date(`${dia}T23:59:59.999Z`) }
   }
   if (contaId) onde.contaId = contaId
   if (categoriaId) onde.categoriaId = categoriaId

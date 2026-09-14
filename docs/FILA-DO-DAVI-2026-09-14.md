@@ -26,13 +26,27 @@ nenhuma peça se perder quando o terminal fechar.
   está atrás do local. Parte do que aparece nela pode já não existir no código
   de hoje. Falta comparar depois de publicar.
 
-## 3. Calendário na tela de transações — a fazer
+## 3. Calendário na tela de transações — feito em 14/09
 
-Pedido em 14/09 com captura de referência (app roxo): faixa de dias da semana
-com o dia selecionado em destaque e um ponto marcando os dias que têm
-lançamento, alternância Dia/Mês, e a lista abaixo respondendo ao dia escolhido.
-O extrato já agrupa por dia desde hoje — o calendário é a navegação que falta
-por cima desse agrupamento.
+Pedido em 14/09 com captura de referência (app roxo). Entregue:
+
+- Faixa de sete dias (domingo a sábado) com setas de semana, o dia escolhido
+  preenchido e hoje sublinhado — dois sinais diferentes porque podem coincidir.
+- Ponto sob o número nos dias que têm lançamento. Os pontos vêm de uma consulta
+  agregada do mês (`GET /api/transacoes/dias`), não da lista: a lista é paginada
+  de 25 em 25 e metade do mês ficaria sem ponto até alguém rolar.
+- Alternância Dia/Mês. Tocar num número já entra no modo Dia — alternar à mão
+  depois de escolher o dia seria um passo a mais para o óbvio.
+- `GET /api/transacoes` passou a aceitar `dia=AAAA-MM-DD`.
+- Trocar o mês leva a faixa junto, e escolher um dia de outro mês troca o mês.
+
+Sete dias por vez, e não o mês inteiro em grade: no celular 35 células empurram
+os lançamentos para fora da tela, que é o que a pessoa veio ver.
+
+`lib/semana.ts` com 6 testes (virada de mês, virada de ano, bissexto). A SQL
+agregada foi executada contra o banco real: 6 dias com movimento em setembro.
+
+**Não conferido em tela** — o Davi pediu para não abrir o navegador.
 
 ## 4. Lista de recursos das imagens 1 e 3 — a decidir
 
