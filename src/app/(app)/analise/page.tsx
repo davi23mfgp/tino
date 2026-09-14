@@ -13,6 +13,7 @@ import { GraficoAnel, GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { cn } from "@/lib/utils"
+import { AbasInternas } from "@/components/abas-internas"
 
 export const dynamic = "force-dynamic"
 
@@ -123,14 +124,14 @@ export default async function Analise() {
         )}
       </Cartao>
 
-      <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Indicadores e prioridades</h3>
+      <AbasInternas abas={[{ chave: "indicadores", titulo: "Indicadores", conteudo: (<>
       {/* ── Indicadores ───────────────────────────────── */}
       <Cartao titulo="Indicadores">
         <div className="grid gap-3 lg:grid-cols-2">
           {diagnostico.indicadores.map((indicador) => (
-            <div key={indicador.chave} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
+            <div key={indicador.chave} title={`Referência: ${indicador.referencia}`} className="rounded-2xl border border-pauta bg-papel-2 p-3">
               <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[calc(13px*var(--escala-letra))] font-medium">{indicador.nome}</p>
+                <p className="min-w-0 text-[calc(13px*var(--escala-letra))] font-medium">{indicador.nome}</p>
                 <div className="text-right">
                   <p className={cn("text-[calc(20px*var(--escala-letra))] font-semibold leading-none", COR_FAIXA[indicador.faixa])}>
                     {indicador.valor}
@@ -141,8 +142,10 @@ export default async function Analise() {
                 </div>
               </div>
 
-              <p className="mt-2 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{indicador.leitura}</p>
-              <p className="mt-1.5 text-[calc(11px*var(--escala-letra))] text-muted-fg opacity-70">Referência: {indicador.referencia}</p>
+              {/* A leitura em prosa e a referencia saíram: o numero e a faixa
+                  ja dizem onde a pessoa esta, e as duas frases por indicador
+                  somavam meia tela em cinco indicadores. A referencia fica no
+                  title, para quem quiser conferir de onde vem a faixa. */}
             </div>
           ))}
         </div>
@@ -170,8 +173,7 @@ export default async function Analise() {
         </ol>
       </Cartao>
 
-      </section>
-      <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Entradas, saídas e patrimônio</h3>
+      </>) }, { chave: "entradas", titulo: "Entradas e saídas", conteudo: (<>
       {/* ── DRE ───────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Demonstrativo do mês">
@@ -310,8 +312,7 @@ export default async function Analise() {
       </div>
 
       {/* ── Gráficos ──────────────────────────────────── */}
-      </section>
-      <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Categorias e evolução</h3>
+      </>) }, { chave: "categorias", titulo: "Categorias", conteudo: (<>
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Para onde foi o dinheiro">
           {panorama.mes.despesasPorCategoria.length > 0 ? (
@@ -344,7 +345,7 @@ export default async function Analise() {
         </Cartao>
       </div>
 
-      </section>
+      </>) }]} />
       <p className="px-1 text-[calc(11px*var(--escala-letra))] leading-relaxed text-muted-fg">
         Leitura dos seus lançamentos. Não é recomendação nem substitui contador.
       </p>
