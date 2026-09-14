@@ -184,6 +184,8 @@
     /* CSS modules consomem cores completas; o Tailwind usa os trios --lch. */
     --acao: oklch(var(--lch-acao));
     --negativo: oklch(var(--lch-negativo));
+    --positivo: oklch(var(--lch-positivo));
+    --atencao: oklch(var(--lch-atencao));
 
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);

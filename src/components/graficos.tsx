@@ -709,8 +709,7 @@ export function FluxoDeCaixaNoTempo({
     // Duas chaves para a MESMA linha: o Recharts não sabe pontilhar metade de
     // uma série. O ponto de virada entra nas duas, senão a linha nasce com um
     // buraco entre o último dia realizado e o primeiro previsto.
-    caixaRealizado: ponto.futuro ? null : ponto.caixaCentavos / 100,
-    caixaPrevisto: ponto.futuro || ponto.viradaDoFuturo ? ponto.caixaCentavos / 100 : null,
+    caixa: ponto.caixaCentavos / 100,
     futuro: ponto.futuro,
   }))
 
@@ -778,29 +777,25 @@ export function FluxoDeCaixaNoTempo({
                 label={{ value: "hoje", position: "insideTopLeft", fill: "currentColor", fontSize: 10, opacity: 0.6 }}
               />
             )}
-            {/* Declaradas primeiro para encabeçar a dica: o caixa é a resposta,
-                entrada e saída são o detalhe. */}
-            <Area type="monotone" dataKey="caixaRealizado" name="Vou ter" stroke={cores.neutro} strokeWidth={2.6} fill="url(#caixa)" dot={false} connectNulls={false} />
-            <Line type="monotone" dataKey="caixaPrevisto" name="Vou ter (previsto)" stroke={cores.neutro} strokeWidth={2.6} strokeDasharray="5 4" dot={false} connectNulls={false} />
-            {mostrarMovimento && <Bar dataKey="entrou" name="Entrou" fill={cores.positivo} radius={[4, 4, 0, 0]} maxBarSize={14}>
+            {/* O caixa é bloco: cada mês tem uma altura, e a comparação entre
+                meses é a leitura direta. Entrada e saída, quando ligadas, são
+                linhas por cima — fluxo, não empilhamento. */}
+            <Bar dataKey="caixa" name="Vou ter" radius={[6, 6, 0, 0]} maxBarSize={38}>
               {dados.map((ponto, indice) => (
-                <Cell key={indice} fillOpacity={ponto.futuro ? 0.3 : 0.7} />
+                <Cell
+                  key={indice}
+                  fill={ponto.caixa < 0 ? cores.negativo : cores.neutro}
+                  fillOpacity={ponto.futuro ? 0.42 : 1}
+                />
               ))}
-            </Bar>}
-            {mostrarMovimento && <Bar dataKey="saiu" name="Saiu" fill={cores.negativo} radius={[4, 4, 0, 0]} maxBarSize={14}>
-              {dados.map((ponto, indice) => (
-                <Cell key={indice} fillOpacity={ponto.futuro ? 0.3 : 0.7} />
-              ))}
-            </Bar>}
+            </Bar>
+            {mostrarMovimento && <Line type="monotone" dataKey="entrou" name="Entrou" stroke={cores.positivo} strokeWidth={2} dot={false} />}
+            {mostrarMovimento && <Line type="monotone" dataKey="saiu" name="Saiu" stroke={cores.negativo} strokeWidth={2} dot={false} />}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-[52ch] text-[calc(11px*var(--escala-letra))] text-muted-fg">
-          Linha contínua: o que já aconteceu. Linha pontilhada: o que está agendado — lançamento com data futura e
-          parcela de cartão já contratada. Não prevê imprevisto nem aumento de renda.
-        </p>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           aria-pressed={mostrarMovimento}

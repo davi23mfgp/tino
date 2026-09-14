@@ -105,7 +105,38 @@ export default async function Painel() {
       <section className={estilos.painel}><Cabecalho rotulo="O que entra, o que sai e o que sobra" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" /><FluxoDeCaixaNoTempo series={fluxo} altura={230} /></section>
       <section className={estilos.painel}><Cabecalho rotulo="O que você tem e deve" titulo="Balanço" href="/analise" acao="Ver análise" />
         <dl className={estilos.balanco}><div><dt>Ativos</dt><dd>{formatarMoeda(diagnostico.balanco.ativoTotalCentavos)}</dd></div><div><dt>Dívidas</dt><dd>{formatarMoeda(diagnostico.balanco.passivoTotalCentavos)}</dd></div><div><dt>Patrimônio</dt><dd className={diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(diagnostico.balanco.patrimonioLiquidoCentavos)}</dd></div></dl>
-        <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.prioridades[0]?.titulo ?? "Continue acompanhando seu mês."}</p><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>
+        <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.parecer}</p><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>
+
+        {/* O espaço abaixo da nota ficava vazio enquanto a explicação de onde
+            ela vem estava escondida em outra tela. Aqui entram os indicadores
+            que sustentam a nota — o que já está bom e o que puxa para baixo,
+            cada um com a referência que o classifica. */}
+        <div className={estilos.indicadores}>
+          {diagnostico.indicadores.filter((linha) => linha.faixa !== "SEM_DADO").slice(0, 4).map((linha) => (
+            <div key={linha.chave} data-faixa={linha.faixa}>
+              <span className={estilos.pilulaFaixa}>{linha.faixa === "BOM" ? "está bom" : linha.faixa === "CRITICO" ? "precisa melhorar" : "dá para melhorar"}</span>
+              <dt>{linha.nome}</dt>
+              <dd>{linha.valor}</dd>
+              <p>{linha.leitura}</p>
+              <small>{linha.referencia}</small>
+            </div>
+          ))}
+        </div>
+
+        {diagnostico.prioridades.length > 0 && (
+          <ol className={estilos.proximosPassos}>
+            {diagnostico.prioridades.slice(0, 3).map((passo) => (
+              <li key={passo.ordem}>
+                <span className={estilos.numeroEtapa}>{passo.ordem}</span>
+                <span>
+                  <strong>{passo.titulo}</strong>
+                  <small>{passo.porque}</small>
+                </span>
+                {passo.impactoMensalCentavos ? <b>{formatarMoeda(passo.impactoMensalCentavos)}<small>por mês</small></b> : null}
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
     </div>
 

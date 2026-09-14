@@ -2,3 +2,24 @@
 @media(max-width:900px){.resumo{align-items:start;flex-direction:column}.metricas{width:100%}.duasColunas{grid-template-columns:1fr}.categorias{grid-template-columns:160px 1fr}.dividas{grid-template-columns:1fr}}
 @media(max-width:640px){.pagina{gap:12px}.resumo,.painel{padding:16px;border-radius:18px}.metricas{grid-template-columns:repeat(3,1fr)}.metricas>div{padding:10px}.metricas dd{font-size:14px}.cartaoBanco{grid-template-columns:36px 1fr auto}.faturaAtual{grid-column:2}.proximas{grid-column:2/-1}.seta{grid-row:1;grid-column:3}.listaCompacta{grid-template-columns:1fr}.categorias{grid-template-columns:1fr}.rosca{max-width:220px;margin:auto}.movimentos{grid-template-columns:1fr}.balanco{grid-template-columns:1fr}.cabecalhoSecao{align-items:flex-start}}
 @media(prefers-reduced-motion:reduce){.cartaoBanco{transition:none}.cartaoBanco:hover{transform:none}}
+
+/* Indicadores que sustentam a nota de saúde. Cada um diz o valor, o que
+   significa e contra qual referência foi classificado — a cor da pílula é a
+   faixa, então a varredura vertical mostra onde dói sem ler tudo. */
+.indicadores{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:16px}
+.indicadores>div{padding:14px;border:1px solid var(--pauta);border-radius:16px;background:var(--papel-2)}
+.indicadores>div[data-faixa="BOM"]{border-color:color-mix(in oklab,var(--positivo),transparent 70%);background:color-mix(in oklab,var(--papel-2),var(--positivo) 8%)}
+.indicadores>div[data-faixa="CRITICO"]{border-color:color-mix(in oklab,var(--negativo),transparent 70%);background:color-mix(in oklab,var(--papel-2),var(--negativo) 8%)}
+.pilulaFaixa{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--papel-3);font-size:calc(10px * var(--escala-letra));text-transform:uppercase;letter-spacing:.08em;font-weight:640;color:var(--texto-2)}
+.indicadores>div[data-faixa="BOM"] .pilulaFaixa{background:color-mix(in oklab,var(--positivo),transparent 78%);color:var(--positivo)}
+.indicadores>div[data-faixa="CRITICO"] .pilulaFaixa{background:color-mix(in oklab,var(--negativo),transparent 78%);color:var(--negativo)}
+.indicadores dt{margin-top:10px;font-size:calc(12px * var(--escala-letra));color:var(--texto-2)}
+.indicadores dd{margin-top:2px;font-size:calc(22px * var(--escala-letra));font-weight:660;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.indicadores p{margin-top:6px;font-size:calc(12px * var(--escala-letra));color:var(--texto-2);line-height:1.45}
+.indicadores small{display:block;margin-top:6px;font-size:calc(11px * var(--escala-letra));color:var(--texto-3)}
+.proximosPassos{display:grid;gap:10px;margin-top:14px;list-style:none}
+.proximosPassos li{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--papel-2)}
+.proximosPassos strong{display:block;font-size:calc(14px * var(--escala-letra));font-weight:620}
+.proximosPassos span small{display:block;margin-top:2px;font-size:calc(12px * var(--escala-letra));color:var(--texto-2)}
+.proximosPassos b{font-size:calc(16px * var(--escala-letra));font-weight:650;font-variant-numeric:tabular-nums;text-align:right;color:var(--acao)}
+.proximosPassos b small{display:block;font-size:calc(10px * var(--escala-letra));font-weight:500;color:var(--texto-3)}

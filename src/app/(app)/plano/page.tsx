@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import estilos from "./plano.module.css"
+import { RoteiroMeses } from "./roteiro"
 
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
@@ -123,37 +124,7 @@ export default async function Plano() {
           <h2>Mês a mês até o fim</h2>
           <p>O que sai em cada mês e quanto sobra de dívida depois dele.</p>
           <div id="roteiro" className="scroll-mt-28" />
-          <Accordion type="single" collapsible defaultValue={plano.passos[0]?.competencia} className="mt-2">
-            {plano.passos.map((passo) => (
-              <AccordionItem key={passo.competencia} value={passo.competencia} className={estilos.mes}>
-                <AccordionTrigger className="py-0 hover:no-underline">
-                  <span className={estilos.mesTopo}>
-                    <span>{rotuloCompetencia(passo.competencia)}</span>
-                    <span className={estilos.mesValor}>
-                      {formatarMoeda(passo.dividaRestanteCentavos)}
-                      <small>ainda devendo</small>
-                    </span>
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  {passo.pagamentos.length > 0 && (
-                    <ul className={estilos.pagamentos}>
-                      {passo.pagamentos.map((pagamento) => (
-                        <li key={pagamento.id}>
-                          <span>{pagamento.nome}<small>{pagamento.motivo}</small></span>
-                          <b>{formatarMoeda(pagamento.valorCentavos)}</b>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <p className={estilos.restante}>
-                    <span>Sobra no mês</span>
-                    <b className={passo.sobraCentavos < 0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(passo.sobraCentavos)}</b>
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <RoteiroMeses passos={plano.passos} />
         </section>
       </div>
 

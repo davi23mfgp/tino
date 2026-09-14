@@ -81,3 +81,13 @@
   .alvo { grid-template-columns:minmax(0,1fr); padding:20px; }
   .alvoValor { text-align:left; }
 }
+
+/* Filtro de ano do roteiro: plano longo vira lista innavegável sem recorte. */
+.filtroAnos { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.filtroAnos button {
+  min-height:44px; padding:6px 14px; border:1px solid var(--pauta); border-radius:var(--raio-pilula);
+  background:transparent; color:var(--texto-2); font-size:calc(13px * var(--escala-letra)); text-align:left;
+  transition:background var(--tempo) var(--curva),color var(--tempo) var(--curva);
+}
+.filtroAnos button small { display:block; font-size:calc(10px * var(--escala-letra)); opacity:.75; }
+.filtroAnos button[aria-pressed="true"] { background:var(--acao); border-color:transparent; color:var(--background); font-weight:640; }

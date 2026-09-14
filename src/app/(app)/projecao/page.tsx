@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
-import estilos from "../analise/avancadas.module.css"
+import avancadas from "../analise/avancadas.module.css"
+import estilos from "./projecao.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -28,7 +29,7 @@ export default async function Projecao() {
   const maiorSaida = Math.max(...comAcumulado.map((linha) => linha.despesasCentavos + linha.parcelasCentavos), 1)
 
   return (
-    <div className={cn(estilos.pagina, "space-y-4")}>
+    <div className={cn(avancadas.pagina, "space-y-4")}>
       <Cartao titulo="Projeção de 12 meses">
         <div className="grade-valores">
           <Metrica
@@ -67,46 +68,38 @@ export default async function Projecao() {
       </Cartao>
 
       <Cartao titulo="Mês a mês">
-        <div className="space-y-3">
-          {comAcumulado.map((linha) => (
-            <div key={linha.competencia} className="rounded-[var(--raio-cartao)] border border-pauta p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{rotuloCompetencia(linha.competencia)}</span>
-                <span
-                  className={`text-sm font-semibold ${
-                    linha.acumuladoCentavos < 0 ? "text-negativo" : "text-positivo"
-                  }`}
-                >
-                  <span className="valor-inteiro">{formatarMoeda(linha.acumuladoCentavos)}</span>
-                </span>
-              </div>
-
-              <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-papel-2">
-                <div
-                  className="h-full bg-primary"
-                  style={{ width: `${(linha.receitasCentavos / maiorSaida) * 50}%` }}
-                />
-                <div
-                  className="h-full bg-negativo/70"
-                  style={{ width: `${(linha.despesasCentavos / maiorSaida) * 50}%` }}
-                />
-                <div
-                  className="h-full bg-atencao/70"
-                  style={{ width: `${(linha.parcelasCentavos / maiorSaida) * 50}%` }}
-                />
-              </div>
-
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                <span>entra <span className="valor-inteiro">{formatarMoeda(linha.receitasCentavos)}</span></span>
-                <span>sai <span className="valor-inteiro">{formatarMoeda(linha.despesasCentavos)}</span></span>
-                {linha.parcelasCentavos > 0 && <span>parcelas <span className="valor-inteiro">{formatarMoeda(linha.parcelasCentavos)}</span></span>}
-                <span className={linha.saldoComParcelas < 0 ? "text-negativo" : "text-positivo"}>
-                  resultado <span className="valor-inteiro">{formatarMoeda(linha.saldoComParcelas)}</span>
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ul className={estilos.meses}>
+          {comAcumulado.map((linha) => {
+            const saiTotal = linha.despesasCentavos + linha.parcelasCentavos
+            const base = Math.max(1, linha.receitasCentavos, saiTotal)
+            return (
+              <li key={linha.competencia} className={estilos.mes} data-negativo={linha.acumuladoCentavos < 0}>
+                <div className={estilos.mesCabecalho}>
+                  <span className={estilos.mesNome}>{rotuloCompetencia(linha.competencia)}</span>
+                  <span className={estilos.mesSaldo}>
+                    {formatarMoeda(linha.acumuladoCentavos)}
+                    <small>no fim do mês</small>
+                  </span>
+                </div>
+                {/* Duas barras espelhadas na mesma escala: entra em cima, sai
+                    embaixo. A barra tricolor anterior somava receita, despesa e
+                    parcela na mesma linha, então o comprimento não significava
+                    nada — não dava para ver qual lado era maior. */}
+                <div className={estilos.balanca}>
+                  <span className={estilos.entra}><i style={{ width: `${(linha.receitasCentavos / base) * 100}%` }} /></span>
+                  <span className={estilos.sai}><i style={{ width: `${(saiTotal / base) * 100}%` }} /></span>
+                </div>
+                <div className={estilos.mesDetalhe}>
+                  <span><b className="text-positivo">{formatarMoeda(linha.receitasCentavos)}</b> entra</span>
+                  <span><b className="text-negativo">{formatarMoeda(saiTotal)}</b> sai{linha.parcelasCentavos > 0 ? `, com ${formatarMoeda(linha.parcelasCentavos)} de parcelas` : ""}</span>
+                  <span className={linha.saldoComParcelas < 0 ? "text-negativo" : "text-positivo"}>
+                    {linha.saldoComParcelas < 0 ? "falta " : "sobra "}<b>{formatarMoeda(Math.abs(linha.saldoComParcelas))}</b> no mês
+                  </span>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
       </Cartao>
     </div>
   )

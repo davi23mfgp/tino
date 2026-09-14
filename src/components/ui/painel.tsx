@@ -168,8 +168,20 @@ export function Metrica({
   // (spec, PARTE 4.1 item 4). A borda existia pra separar os quatro tiles
   // entre si, mas o `gap-4` já faz isso; somada à borda do cartão que os
   // contém ela virava listra dupla, que é o que dava aspecto técnico.
+  // O tom que já colore o número também tinge o fundo do tile e a borda: um
+  // quadro cinza com um número verde dentro não diz nada de longe, e essas
+  // métricas existem justamente para serem lidas de relance. A tinta é fraca
+  // (8%) — o texto continua sobre superfície neutra o bastante para manter o
+  // contraste calculado.
+  const fundoPorTom: Record<Tom, string> = {
+    neutro: "bg-papel-2 border-transparent",
+    positivo: "bg-[color-mix(in_oklab,var(--papel-2),var(--positivo)_10%)] border-[color-mix(in_oklab,var(--positivo),transparent_72%)]",
+    negativo: "bg-[color-mix(in_oklab,var(--papel-2),var(--negativo)_10%)] border-[color-mix(in_oklab,var(--negativo),transparent_72%)]",
+    atencao: "bg-[color-mix(in_oklab,var(--papel-2),var(--atencao)_10%)] border-[color-mix(in_oklab,var(--atencao),transparent_72%)]",
+  }
+
   return (
-    <div className="tino-metrica ios-tap relative min-w-0 rounded-[var(--raio-cartao)] bg-papel-2 p-4">
+    <div className={cn("tino-metrica ios-tap relative min-w-0 rounded-[var(--raio-cartao)] border p-4", fundoPorTom[tom] ?? fundoPorTom.neutro)}>
       {Icone && (
         // Círculo sólido — bg-card (não papel translúcido, pra destacar do
         // fundo do tile) + borda de 1px, ícone em foreground. Chroma zero:
