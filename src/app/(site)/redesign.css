@@ -91,8 +91,15 @@
 .vitrine .landing-footer p,.vitrine .landing-footer small { font-size: calc(12px * var(--escala-letra));color:var(--creme-3); }
 .vitrine .landing-footer nav { margin-left:auto;display:flex;gap:24px;font-size: calc(13px * var(--escala-letra)); }
 .vitrine .landing-footer nav a { display:flex;min-height:44px;align-items:center; }
-.vitrine [data-reveal] { transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1); }
-.vitrine [data-reveal=pending] { opacity:0;transform:translateY(24px); }
+.vitrine [data-reveal] { transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1),filter .7s ease; }
+.vitrine [data-reveal=pending] { opacity:0;transform:translateY(24px);filter:blur(8px); }
+/* O conteudo de dentro do cartao chega depois do cartao, escalonado: e o
+   cartao que aparece primeiro, vazio, e so entao o que mora nele. */
+.vitrine [data-reveal] > * { transition:opacity .6s ease .12s,transform .6s cubic-bezier(.2,.7,.2,1) .12s; }
+.vitrine [data-reveal=pending] > * { opacity:0;transform:translateY(10px); }
+.vitrine [data-reveal=pending] > *:nth-child(2) { transition-delay:.2s; }
+.vitrine [data-reveal=pending] > *:nth-child(3) { transition-delay:.28s; }
+.vitrine [data-reveal=pending] > *:nth-child(n+4) { transition-delay:.36s; }
 @media (max-width:1050px) {
  .vitrine .landing-menu nav { display:none; }
  .vitrine .product-float-left { left:0;transform:scale(.8) translateY(calc(var(--product-travel)*-65px)) rotate(-5deg);transform-origin:left; }
@@ -203,4 +210,18 @@
   .vitrine .product-phone { transform:none;will-change:auto; }
   .vitrine .product-float { opacity:1; }
   .vitrine .cel-camada { transition:none; }
+}
+
+/* --- o titulo chega palavra por palavra --------------------- */
+/* Desfoque e o que diferencia de um fade comum: a palavra parece se formar,
+   nao so surgir. O `will-change` fica de fora de proposito — sao muitos nos
+   ao mesmo tempo, e promover todos custa mais do que economiza. */
+.vitrine .palavra { display:inline-block; }
+.vitrine .palavras[data-estado=fora] .palavra { opacity:0;filter:blur(12px);transform:translateY(.32em); }
+.vitrine .palavras .palavra { transition:opacity .62s ease var(--atraso,0ms),filter .62s ease var(--atraso,0ms),transform .62s cubic-bezier(.2,.7,.2,1) var(--atraso,0ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vitrine [data-reveal=pending] { filter:none; }
+  .vitrine [data-reveal=pending] > * { opacity:1;transform:none; }
+  .vitrine .palavras[data-estado=fora] .palavra,.vitrine .palavras .palavra { opacity:1;filter:none;transform:none;transition:none; }
 }

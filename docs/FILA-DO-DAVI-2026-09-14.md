@@ -222,3 +222,36 @@ caber em janela baixa (0,678 numa janela de 611px).
 
 **Para o Davi conferir:** abrir a janela do Chrome (nao minimizada) em
 localhost:3000 deslogado e rolar. E o unico ponto sem prova visual.
+
+## Movimento da vitrine na linha do shot "Samurai" (14/09) — FEITO
+
+Davi mandou o video do shot do Dribbble (fintech, claro, indigo). O que
+carrega aquele video nao e a paleta, e o movimento — tres coisas:
+
+1. **O titulo chega desfocado, palavra por palavra.** Nao e fade: a palavra
+   parece se formar. `PalavrasQueChegam` quebra o titulo em palavras no DOM
+   depois da montagem, e nao no JSX, porque os titulos da vitrine tem `<br/>`
+   e `<span>` no meio — assim nenhum deles precisou ser reescrito, e sem
+   JavaScript o titulo continua inteiro e legivel.
+2. **O cartao entra vazio e o conteudo materializa depois**, escalonado.
+   Virou regra do `[data-reveal]` que ja existia, entao valeu para a vitrine
+   toda de uma vez.
+3. **O numero rola ate o valor.** `NumeroQueSobe`, nos precos dos planos.
+   Comeca renderizado com o valor certo e so entao anima: sem JavaScript, o
+   que fica na tela e o preco, nao um zero.
+
+A conta esta em `src/lib/animacao-de-entrada.ts` com 8 testes. Dois detalhes
+que so aparecem em uso: o atraso por palavra tem teto (titulo longo teria a
+ultima palavra chegando depois que a pessoa ja rolou embora) e o contador
+fecha no alvo exato (parar em "R$ 8.599,98" por arredondamento e pior que
+nao animar).
+
+**Bug pego no caminho:** em desenvolvimento o React monta o efeito duas
+vezes, e a segunda passada quebrava em palavras o que a primeira ja tinha
+quebrado, aninhando caixa dentro de caixa. Travado.
+
+**Sem prova visual de novo, e pela mesma razao:** a janela do Chrome desta
+maquina so existe minimizada, e aba oculta nao roda transicao, nem
+`IntersectionObserver`, nem `setTimeout`. Provado no DOM: o estado "fora" da
+blur(12px) e opacidade 0, o estado "dentro" da texto limpo, os atrasos saem
+escalonados (135ms na quarta palavra) e nao ha mais aninhamento.
