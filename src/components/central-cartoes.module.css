@@ -34,3 +34,14 @@
   content:""; position:absolute; left:17px; right:0; bottom:4px; height:3px;
   border-radius:999px; background:color-mix(in oklab,var(--acao),transparent 84%);
 }
+
+/* Linha de tendência sobre as barras de fatura. O SVG cobre só a faixa das
+   colunas (as duas linhas de rótulo abaixo ficam de fora, senão a linha
+   desceria junto com elas). */
+.areaBarras { position:relative; }
+.tendencia {
+  position:absolute; inset:0 0 32px 0; width:100%; height:calc(100% - 32px);
+  color:color-mix(in oklab,var(--acao),var(--foreground) 25%); pointer-events:none; z-index:1; overflow:visible;
+}
+.tendencia circle { fill:var(--acao); stroke:var(--papel-1); stroke-width:2; }
+.areaBarras .barras { position:relative; z-index:2; }

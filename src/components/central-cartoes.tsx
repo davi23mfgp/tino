@@ -93,10 +93,36 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
         </div>
         <div className={estilos.faturas}>
           <header><div><p className={estilos.sobretitulo}>Confirmado e previsto</p><h2>Faturas por mês</h2></div><div><button aria-label="Meses anteriores" disabled={inicio === 0} onClick={() => setMes(meses[Math.max(0, inicio - 1)])}><ChevronLeft /></button><button aria-label="Próximos meses" disabled={inicio + porJanela >= meses.length} onClick={() => setMes(meses[Math.min(meses.length - 1, inicio + porJanela)])}><ChevronRight /></button></div></header>
-          <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
-            <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
-            <small>{rotuloCompetencia(barra.competencia, true)}</small><b>{mes === barra.competencia ? formatarMoeda(barra.saldo) : ""}</b>
-          </button>)}</div>
+          {/* A linha liga os topos do que já foi confirmado, com um ponto no
+              mês aberto: a barra diz o tamanho de cada fatura, a linha diz para
+              onde a fatura está indo. Sem ela é preciso comparar seis alturas
+              de olho. O traço não escala junto com o viewBox achatado. */}
+          <div className={estilos.areaBarras}>
+            <svg className={estilos.tendencia} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden focusable="false">
+              <polyline
+                points={barras.map((barra, indice) => `${((indice + 0.5) / barras.length) * 100},${100 - Math.max(4, (barra.gastos / maximo) * 100)}`).join(" ")}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+              {barras.map((barra, indice) => mes === barra.competencia ? (
+                <circle
+                  key={barra.competencia}
+                  cx={((indice + 0.5) / barras.length) * 100}
+                  cy={100 - Math.max(4, (barra.gastos / maximo) * 100)}
+                  r={4}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : null)}
+            </svg>
+            <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
+              <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
+              <small>{rotuloCompetencia(barra.competencia, true)}</small><b>{mes === barra.competencia ? formatarMoeda(barra.saldo) : ""}</b>
+            </button>)}</div>
+          </div>
           <p className={estilos.legenda}><span />Confirmado <span />Parcelas previstas</p>
         </div>
       </div>

@@ -56,3 +56,13 @@
   .resultado { grid-template-columns:minmax(0,1fr); }
   .campos { grid-template-columns:minmax(0,1fr); }
 }
+
+/* Campo que ocupa a linha inteira na grade de dois, e o bloco do câmbio
+   buscado sozinho. */
+.campoLargo { grid-column:1/-1; }
+.cambio { grid-column:1/-1; padding:14px; border-radius:14px; background:var(--papel-1); border:1px solid var(--pauta); }
+.cambio p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.cambio p b { color:var(--foreground); font-variant-numeric:tabular-nums; }
+.cambio p small { display:block; margin-top:2px; font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.cambio label { display:block; margin-top:12px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.cambio input { width:100%; min-height:44px; margin-top:6px; padding:0 12px; border:1px solid var(--pauta); border-radius:var(--raio-campo); background:var(--papel-2); color:inherit; }
