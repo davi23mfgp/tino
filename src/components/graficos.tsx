@@ -714,6 +714,7 @@ export function FluxoDeCaixaNoTempo({
   }))
 
   const virada = dados.findIndex((ponto) => ponto.futuro)
+  const primeiroNegativo = dados.findIndex((ponto) => ponto.caixa < 0)
   const fim = serie[serie.length - 1]
   const hoje = serie.find((ponto) => ponto.viradaDoFuturo) ?? serie.filter((ponto) => !ponto.futuro).at(-1)
   const agora = hoje?.caixaCentavos ?? 0
@@ -732,7 +733,7 @@ export function FluxoDeCaixaNoTempo({
           <p className="text-[calc(10px*var(--escala-letra))] uppercase tracking-[.12em] text-muted-fg">
             Quanto você vai ter em {fim?.rotulo}
           </p>
-          <p className={cn("numero text-[calc(24px*var(--escala-letra))] font-semibold leading-tight tracking-tight", depois < 0 && "text-negativo")}>
+          <p className={cn("numero text-[calc(19px*var(--escala-letra))] font-semibold leading-tight tracking-tight sm:text-[calc(24px*var(--escala-letra))]", depois < 0 && "text-negativo")}>
             {formatarMoeda(depois)}
           </p>
           <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
@@ -770,6 +771,18 @@ export function FluxoDeCaixaNoTempo({
             {/* Zero marcado sempre: sem ele, "caixa negativo" vira só uma
                 linha mais baixa que as outras. */}
             <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.35} />
+            {/* O mes em que o caixa vira negativo ganha marca propria. Sem
+                ela, "fica no vermelho em junho" so aparecia se a barra
+                descesse abaixo do zero — e, quando descia, era uma barra
+                curtinha facil de nao ver. */}
+            {primeiroNegativo >= 0 && (
+              <ReferenceLine
+                x={dados[primeiroNegativo]?.rotulo}
+                stroke={cores.negativo}
+                strokeOpacity={0.8}
+                label={{ value: "no vermelho", position: "insideTopRight", fill: cores.negativo, fontSize: 10 }}
+              />
+            )}
             {virada > 0 && (
               <ReferenceLine
                 x={dados[virada]?.rotulo}
@@ -787,7 +800,7 @@ export function FluxoDeCaixaNoTempo({
                 <Cell
                   key={indice}
                   fill={ponto.caixa < 0 ? cores.negativo : cores.positivo}
-                  fillOpacity={ponto.futuro ? 0.42 : 1}
+                  fillOpacity={ponto.futuro ? 0.58 : 1}
                 />
               ))}
             </Bar>

@@ -22,6 +22,27 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 16px;
 }
+
+/* No celular os tiles caiam um por linha, cada um com 96px de altura: quatro
+   metricas viravam meia tela de rolagem antes do grafico que elas resumem.
+   Dois por linha, menores, e com o vidro do app em vez do bloco chapado. */
+@media (max-width: 640px) {
+  .pagina :global(.grade-valores) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .pagina :global(.tino-metrica) {
+    padding: 12px;
+    border-radius: 16px;
+    backdrop-filter: blur(var(--desfoque)) saturate(1.6);
+  }
+  .pagina :global(.tino-metrica .numero) { font-size: calc(17px * var(--escala-letra)); }
+  .pagina :global(.tino-metrica) :global(.rotulo),
+  .pagina :global(.tino-metrica) small { font-size: calc(9px * var(--escala-letra)); }
+  /* O circulo de icone some: ocupa 36px de altura para repetir o que o rotulo
+     ja diz, e e o que mais engorda o tile no celular. */
+  .pagina :global(.tino-metrica) > span[aria-hidden]:first-child { display: none; }
+}
 .pagina :global(.tino-metrica) { min-width: 0; }
 .pagina :global(.tino-metrica .numero) { font-size: calc(26px * var(--escala-letra)); }
 .pagina button, .pagina input, .pagina select, .pagina summary { min-height: 44px; }
