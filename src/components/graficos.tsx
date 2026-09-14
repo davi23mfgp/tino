@@ -117,7 +117,10 @@ function Dica({
   if (!active || !payload?.length) return null
 
   return (
-    <div className="rounded-xl border border-pauta bg-papel-1 px-3 py-2 shadow-alta">
+    /* `papel-1` e translucido: sobre as barras a caixa ficava transparente e o
+       valor sumia. Fundo solido aqui, que e o unico lugar do app em que algo
+       flutua por cima de cor cheia. */
+    <div className="rounded-xl border border-pauta bg-[color:var(--papel-solido)] px-3 py-2 shadow-alta">
       {label && <p className="mb-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{label}</p>}
       {payload.map((linha, indice) => (
         <p key={indice} className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))]">
@@ -758,7 +761,7 @@ export function FluxoDeCaixaNoTempo({
 
       <div style={{ height: altura }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+          <ComposedChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barCategoryGap="28%">
             <defs>
               <linearGradient id="caixa" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={cores.neutro} stopOpacity={0.35} />
@@ -795,7 +798,7 @@ export function FluxoDeCaixaNoTempo({
             {/* O caixa é bloco: cada mês tem uma altura, e a comparação entre
                 meses é a leitura direta. Entrada e saída, quando ligadas, são
                 linhas por cima — fluxo, não empilhamento. */}
-            <Bar dataKey="caixa" name="Vou ter" radius={[6, 6, 0, 0]} maxBarSize={38}>
+            <Bar dataKey="caixa" name="Vou ter" radius={[4, 4, 0, 0]} maxBarSize={18}>
               {dados.map((ponto, indice) => (
                 <Cell
                   key={indice}
