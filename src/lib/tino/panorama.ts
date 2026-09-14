@@ -7,7 +7,6 @@
  */
 
 import { prisma } from "@/lib/prisma"
-import { saldoDisponivel } from "@/lib/saldo-disponivel"
 import {
   competenciaAtual,
   competenciaMaisMeses,
@@ -182,7 +181,9 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
 
   // Cartão de crédito é dívida, não dinheiro disponível: somá-lo ao caixa
   // mostraria um saldo que a pessoa não tem.
-  const saldoTotalCentavos = saldoDisponivel(saldoPorConta)
+  const saldoTotalCentavos = saldoPorConta
+    .filter((conta) => conta.tipo !== "CARTAO_CREDITO")
+    .reduce((soma, conta) => soma + conta.saldoCentavos, 0)
 
   // ── Mês corrente ──────────────────────────────────────────
   const doMes = transacoesMes.filter((t) => t.tipo !== "TRANSFERENCIA")

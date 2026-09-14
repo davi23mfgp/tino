@@ -44,7 +44,6 @@ export async function baixarArquivo(fileId: string): Promise<{ nome: string; con
 }
 
 export interface AtualizacaoTelegram {
-  update_id?: number
   message?: {
     chat: { id: number }
     from?: { first_name?: string }

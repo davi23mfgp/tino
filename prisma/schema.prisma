@@ -447,7 +447,6 @@ model Transacao {
   transferenciaDe    Transacao? @relation("ParTransferencia")
 
   faturaId String?
-  competenciaFatura String?
   fatura   Fatura? @relation(fields: [faturaId], references: [id])
 
   metaId String?
@@ -945,7 +944,6 @@ model ChaveCaptura {
 /// histórico é pior que um lançamento faltando.
 model Captura {
   id      String        @id @default(cuid())
-  eventoId String?       @unique
   larId   String
   lar     Lar           @relation(fields: [larId], references: [id], onDelete: Cascade)
   chaveId String?

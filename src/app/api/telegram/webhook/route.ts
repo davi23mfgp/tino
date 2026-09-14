@@ -187,7 +187,6 @@ export async function POST(requisicao: Request) {
   const pareceNotificacao = /R\$|compra|aprovad|cart[aã]o|d[eé]bito|pagamento/i.test(texto) && texto.length > 25
 
   const resultado = await registrarCaptura({
-    eventoId: atualizacao.update_id === undefined ? null : `telegram:${atualizacao.update_id}`,
     larId: chave.larId,
     chaveId: chave.id,
     texto,

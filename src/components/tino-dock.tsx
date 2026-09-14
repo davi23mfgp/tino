@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Send } from "lucide-react"
-import { TinoLeao } from "./tino-leao"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 import { cn } from "@/lib/utils"
@@ -113,10 +112,10 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
           // Na barra lateral ele é um item de navegação como os outros: o
           // mascote renderizado em miniatura virava um borrão dentro do
           // círculo, e o rótulo não dizia que ali se conversa com ele.
-          <button className="app-nav-item"><TinoLeao className="size-7" retrato /><span>Seu assistente Tino</span></button>
+          <button className="app-nav-item"><span aria-hidden className="text-lg leading-none">🐷</span><span>Seu assistente Tino</span></button>
         ) : (
           <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
-            <TinoLeao className="size-8" retrato />
+            <TinoMascote estado={estado} className="size-8" />
           </button>
         )}
       </DialogTrigger>

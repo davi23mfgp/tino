@@ -193,7 +193,7 @@ export function montarDiagnostico(
 
   // ── Balanço ─────────────────────────────────────────────
   const disponivel = panorama.saldoPorConta
-    .filter((conta) => conta.tipo !== "CARTAO_CREDITO" && conta.tipo !== "INVESTIMENTO")
+    .filter((conta) => conta.tipo !== "CARTAO_CREDITO")
     .reduce((soma, conta) => soma + Math.max(0, conta.saldoCentavos), 0)
 
   const negativoEmConta = panorama.saldoPorConta
@@ -205,7 +205,6 @@ export function montarDiagnostico(
     .reduce((soma, conta) => soma + Math.abs(Math.min(0, conta.saldoCentavos)), 0)
 
   const aplicado = panorama.metas.reduce((soma, meta) => soma + meta.saldoCentavos, 0)
-    + panorama.saldoPorConta.filter((conta) => conta.tipo === "INVESTIMENTO").reduce((soma, conta) => soma + Math.max(0, conta.saldoCentavos), 0)
 
   // Parcela que vence dentro de 12 meses é passivo circulante; o resto é longo
   // prazo. A separação é o que mostra o aperto do ano contra a dívida total.

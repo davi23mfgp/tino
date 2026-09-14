@@ -90,6 +90,45 @@ export function OrcamentoDoCartao({
     }
   }
 
+  // Sem plano ainda: a tela faz uma pergunta e oferece pontos de partida, em
+  // vez de abrir com quatro números zerados e um slider sem referência.
+  if (total === 0) {
+    const sugestoes = [gastoTotal, Math.round(gastoTotal * 1.1), cartao.limiteCentavos ? Math.round(cartao.limiteCentavos * 0.3) : 0]
+      .filter((valor, indice, lista) => valor > 0 && lista.indexOf(valor) === indice)
+
+    return (
+      <section className={estilos.painel}>
+        <header className={estilos.cabecalho}>
+          <div>
+            <h2>Quanto você quer gastar neste cartão em {rotuloCompetencia(mes)}?</h2>
+            <p>Isto é um teto seu, para o mês. Não muda o limite que o banco te deu.</p>
+          </div>
+        </header>
+
+        <div className={estilos.definir}>
+          <CampoValor valor={total} aoMudar={alterarTotal} rotulo="Total do mês" />
+          <Button onClick={() => void salvar()} disabled={total === 0 || estado === "salvando"}>
+            {estado === "salvando" ? "Salvando…" : "Definir orçamento"}
+          </Button>
+        </div>
+
+        {sugestoes.length > 0 && (
+          <div className={estilos.sugestoes}>
+            <span>Pontos de partida:</span>
+            {sugestoes.map((valor, indice) => (
+              <button key={valor} type="button" onClick={() => alterarTotal(valor)}>
+                {formatarMoeda(valor)}
+                <small>{indice === 0 ? "o que você já gastou" : indice === 1 ? "com 10% de folga" : "30% do limite do banco"}</small>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
+      </section>
+    )
+  }
+
   return (
     <section className={estilos.painel}>
       <header className={estilos.cabecalho}>
@@ -97,13 +136,13 @@ export function OrcamentoDoCartao({
           <h2>Seu plano de {rotuloCompetencia(mes)}</h2>
           <p>Teto que você definiu para este cartão. O limite do banco não muda.</p>
         </div>
-        <span className={estilos.etiqueta}>{total > 0 ? `${Math.round((gastoTotal / total) * 100)}% usado` : "Sem plano"}</span>
+        <span className={estilos.etiqueta}>{Math.round((gastoTotal / total) * 100)}% usado</span>
       </header>
 
       {/* Uma frase responde a pergunta do mês; a barra mostra onde ela está. */}
       <p className={estilos.frasePlano}>
         Você já usou <b>{formatarMoeda(gastoTotal)}</b> de {formatarMoeda(total)}.{" "}
-        {total === 0 ? <span>Defina o teto do mês abaixo.</span> : gastoTotal > total
+        {gastoTotal > total
           ? <span className={estilos.estourou}>Passou {formatarMoeda(gastoTotal - total)} do que planejou.</span>
           : <>Ainda cabem <b>{formatarMoeda(total - gastoTotal)}</b> neste mês.</>}
       </p>
@@ -113,7 +152,6 @@ export function OrcamentoDoCartao({
         <span>Mudar o teto do mês</span>
         <CampoValor valor={total} aoMudar={alterarTotal} rotulo="Total do mês" />
       </div>
-      <input className={estilos.controleSlider} type="range" aria-label="Ajustar orçamento total" min={0} max={Math.max(10000, total, cartao.limiteCentavos ?? 0, gastoTotal * 2)} step={1} value={total} onChange={(e) => alterarTotal(Number(e.target.value))} />
 
       <div className={estilos.cabecalhoCategorias}>
         <h3>Limite por categoria <small>{formatarMoeda(Math.max(0, total - distribuido))} ainda sem destino</small></h3>
@@ -142,7 +180,6 @@ export function OrcamentoDoCartao({
               <CampoValor valor={limite} aoMudar={(valor) => alterarCategoria(categoria.id, valor)} rotulo={`Limite de ${categoria.nome}`} />
               <button type="button" aria-label={`Tirar ${categoria.nome} do plano`} onClick={() => removerCategoria(categoria.id)} className={estilos.tirar}><X size={15} /></button>
               <span className={estilos.trilhoLimite}><i style={{ width: `${proporcao}%` }} /></span>
-              <input className={estilos.controleSlider} type="range" aria-label={`Ajustar limite de ${categoria.nome}`} min={0} max={Math.max(10000, total, limite)} step={1} value={limite} onChange={(e) => alterarCategoria(categoria.id, Number(e.target.value))} />
             </li>
           )
         })}
@@ -162,4 +199,3 @@ export function OrcamentoDoCartao({
     </section>
   )
 }
-

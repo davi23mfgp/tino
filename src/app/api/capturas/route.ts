@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
-import { confirmarCaptura, descartarCaptura, gerarChave } from "@/lib/captura"
+import { confirmarCaptura, gerarChave } from "@/lib/captura"
 import { regraAPartirDeCorrecao } from "@/lib/categorizar"
 
 export const dynamic = "force-dynamic"
@@ -73,7 +73,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
 export const PATCH = comSessao(async (sessao, requisicao) => {
   const dados = await corpo<{ capturaId: string }>(requisicao)
 
-  await descartarCaptura(sessao.larId, dados.capturaId)
+  await prisma.captura.updateMany({
+    where: { id: dados.capturaId, larId: sessao.larId },
+    data: { status: "DESCARTADA", decididoEm: new Date() },
+  })
 
   return ok({ descartada: true })
 })

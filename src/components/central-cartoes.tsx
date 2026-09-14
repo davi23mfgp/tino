@@ -7,7 +7,6 @@ import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
-import { OrcamentoDoCartao } from "./orcamento-cartao"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
@@ -28,9 +27,9 @@ import { useJanela } from "@/lib/usar-largura"
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
-export function CentralCartoes({ cartoes, categorias, mesAtual, cartaoInicial }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string; cartaoInicial?: string }) {
+export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string }) {
   const router = useRouter()
-  const [id, setId] = useState(cartaoInicial ?? cartoes[0]?.id ?? "")
+  const [id, setId] = useState(cartoes[0]?.id ?? "")
   const [mes, setMes] = useState(mesAtual)
   const [categoria, setCategoria] = useState("")
   const [busca, setBusca] = useState("")
@@ -106,7 +105,6 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, cartaoInicial }:
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={1.5}
-                strokeDasharray="4 5"
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
@@ -150,7 +148,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, cartaoInicial }:
 
       <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
 
-      <TabsContent value="orcamento"><OrcamentoDoCartao key={`${cartao.id}-${mes}`} cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
+      <TabsContent value="orcamento"><OrcamentoDoCartao cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
       <TabsContent value="ajuda"><AjudaCartao cartao={cartao} mes={mes} aoAbrir={setAba} /></TabsContent>
       <TabsContent value="importar"><Importador contaInicial={cartao.id} aoConcluir={() => router.refresh()} /></TabsContent>
     </Tabs>
@@ -164,6 +162,28 @@ function Cabecalho({ titulo, apoio }: { titulo: string; apoio: string }) {
   return <header className={estilos.cabecalho}><div><h2>{titulo}</h2><p>{apoio}</p></div></header>
 }
 
+function OrcamentoDoCartao({ cartao, mes, categorias, gastos, aoSalvar }: { cartao: DadosCartao; mes: string; categorias: { id: string; nome: string }[]; gastos: { id: string; nome: string; totalCentavos: number }[]; aoSalvar: () => void }) {
+  const existente = cartao.orcamentos?.find((plano) => plano.competencia === mes)
+  const inicial = existente?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0
+  const [total, setTotal] = useState(inicial)
+  const [linhas, setLinhas] = useState<Record<string, number>>(() => Object.fromEntries(existente?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? []))
+  const [erro, setErro] = useState("")
+  const [salvando, setSalvando] = useState(false)
+  const [novaCategoria, setNovaCategoria] = useState("")
+  useEffect(() => { const plano = cartao.orcamentos?.find((item) => item.competencia === mes); setTotal(plano?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0); setLinhas(Object.fromEntries(plano?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? [])); setErro("") }, [cartao, mes])
+  const distribuido = Object.values(linhas).reduce((soma, valor) => soma + valor, 0)
+  const categoriasAtivas = useMemo(() => categorias.filter((linha) => gastos.some((gasto) => gasto.id === linha.id) || (linhas[linha.id] ?? 0) > 0), [categorias, gastos, linhas])
+  async function salvar() { setErro(""); if (distribuido > total) { setErro("As categorias ultrapassam o orçamento total."); return } setSalvando(true); try { await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos: total, categorias: Object.entries(linhas).filter(([, valor]) => valor > 0).map(([categoriaId, limiteCentavos]) => ({ categoriaId, limiteCentavos })) }, "PUT"); aoSalvar() } catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível salvar.") } finally { setSalvando(false) } }
+  const gastoTotal = gastos.reduce((soma, linha) => soma + linha.totalCentavos, 0)
+  const maximo = Math.max(10000, cartao.limiteCentavos ?? 0, gastoTotal * 2)
+  return <section className={estilos.painel}><Cabecalho titulo="Orçamento do cartão" apoio={`Plano de ${rotuloCompetencia(mes, true)} · limite bancário separado`} /><div className={estilos.resumoOrcamento}><div><small>Planejado</small><strong>{total ? formatarMoeda(total) : "Definir orçamento"}</strong></div><div><small>Utilizado</small><strong>{formatarMoeda(gastoTotal)}</strong></div><div><small>Restante</small><strong>{total ? formatarMoeda(total - gastoTotal) : "—"}</strong></div><div><small>Não distribuído</small><strong>{formatarMoeda(Math.max(0, total - distribuido))}</strong></div></div>
+    <label className={estilos.slider}><span><b>Total do mês</b><input aria-label="Valor exato do orçamento total" value={formatarDecimal(total / 100, 2)} onChange={(e) => setTotal(paraCentavos(e.target.value))} inputMode="decimal" /></span><input type="range" min="0" max={maximo} step="5000" value={Math.min(total, maximo)} onChange={(e) => setTotal(Number(e.target.value))} /></label>
+    <div className={estilos.adicionarCategoria}><select aria-label="Adicionar categoria ao orçamento" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)}><option value="">Adicionar categoria</option>{categorias.filter((linha) => !categoriasAtivas.some((ativa) => ativa.id === linha.id)).map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select><Button type="button" variant="outline" disabled={!novaCategoria} onClick={() => { setLinhas((atual) => ({ ...atual, [novaCategoria]: 1000 })); setNovaCategoria("") }}>Adicionar</Button></div>
+    <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)} utilizado</small><input aria-label={`Orçamento de ${linha.nome}`} value={formatarDecimal(limite / 100, 2)} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: paraCentavos(e.target.value) }))} inputMode="decimal" /></span><input type="range" min="0" max={Math.max(total, 10000)} step="1000" value={Math.min(limite, Math.max(total, 10000))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
+    {erro && <p className={estilos.erro} role="alert">{erro}</p>}<Button disabled={salvando} onClick={() => void salvar()}>Salvar orçamento</Button>
+  </section>
+}
+
 /**
  * Ícone da categoria, atrás da marca personalizada.
  *
@@ -175,4 +195,3 @@ function IconeCategoria({ compra }: { compra: CompraCartao }) {
   const Icone = iconeDaCategoria(compra.categoria, compra.tipo === "RECEITA" ? "RECEITA" : "DESPESA")
   return <Icone aria-hidden />
 }
-

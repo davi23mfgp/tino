@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { competenciaDe } from "@/lib/datas"
-import { competenciaDoCartao } from "@/lib/competencia-cartao"
 import { regraAPartirDeCorrecao } from "@/lib/categorizar"
 
 type Contexto = { params: Promise<{ id: string }> }
@@ -34,9 +33,6 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
   if(dados.membroId && !await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}}))throw new ErroDeUso("Membro inválido.")
   const data = dados.data ? new Date(dados.data) : undefined
   if (data && Number.isNaN(data.getTime())) throw new ErroDeUso("Data inválida.")
-  const conta = await prisma.conta.findFirst({ where: { id: dados.contaId ?? atual.contaId, larId: sessao.larId, arquivada: false } })
-  if (!conta) throw new ErroDeUso("Conta inválida.")
-  if (atual.faturaId && dados.contaId && dados.contaId !== atual.contaId) throw new ErroDeUso("Este lançamento pertence a uma fatura. Mantenha o cartão de origem.")
 
   const transacao = await prisma.transacao.update({
     where: { id },
@@ -44,7 +40,6 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
       ...(dados.descricao !== undefined ? { descricao: dados.descricao.trim() } : {}),
       ...(dados.valorCentavos !== undefined ? { valorCentavos: Math.abs(dados.valorCentavos) } : {}),
       ...(data ? { data, competencia: competenciaDe(data) } : {}),
-      ...(!atual.faturaId && (data || dados.contaId) ? { competenciaFatura: competenciaDoCartao(data ?? atual.data, conta) } : {}),
       ...(dados.categoriaId !== undefined ? { categoriaId: dados.categoriaId } : {}),
       ...(dados.membroId !== undefined ? { membroId: dados.membroId } : {}),
       ...(dados.contaId !== undefined ? { contaId: dados.contaId } : {}),

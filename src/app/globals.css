@@ -626,5 +626,3 @@
 @media (prefers-reduced-motion: no-preference) {
   .valor-sensivel { transition: filter .18s var(--curva); }
 }
-/* Meia face encosta no nome: o corte do desenho parece esconder-se atrás do t. */
-.app-brand{gap:0;isolation:isolate}.app-brand>[role="img"]{width:38px;height:54px;margin-right:-13px;color:var(--texto-1);position:relative;z-index:-1}.app-brand>span:last-child{position:relative;letter-spacing:-.065em}

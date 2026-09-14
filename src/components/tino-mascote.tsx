@@ -1,4 +1,3 @@
-import { TinoLeao } from "./tino-leao"
 import { cn } from "@/lib/utils"
 
 /**
@@ -341,6 +340,26 @@ export function estadoPorAlertas(alertas: { severidade: string }[]): EstadoTino 
  * acessório. O que fica é a silhueta com orelha, o focinho e a fresta da
  * moeda — os três traços que identificam o cofrinho de longe.
  */
-export function TinoMarca({ className }: { aparencia?: AparenciaTino; className?: string }) {
-  return <TinoLeao className={className} retrato />
+export function TinoMarca({
+  aparencia = APARENCIA_PADRAO,
+  className,
+}: {
+  aparencia?: AparenciaTino
+  className?: string
+}) {
+  const pele = PELE[aparencia.cor] ?? PELE.rosa
+
+  return (
+    <svg viewBox="0 0 64 74" role="img" aria-label="Tino" className={className}>
+      <path d="M13.5 26 q-2.5 -10 5.5 -11.5 q3.5 4.2 3 10.5 Z" fill={pele.sombra} />
+      <path d="M50.5 26 q2.5 -10 -5.5 -11.5 q-3.5 4.2 -3 10.5 Z" fill={pele.sombra} />
+      <ellipse cx="32" cy="40" rx="25.5" ry="23" fill={pele.corpo} />
+      <rect x="25" y="18.4" width="14" height="3.4" rx="1.7" fill="oklch(0.2 0 0)" opacity="0.7" />
+      <circle cx="23" cy="34" r="3.6" fill="oklch(0.18 0 0)" />
+      <circle cx="41" cy="34" r="3.6" fill="oklch(0.18 0 0)" />
+      <ellipse cx="32" cy="46.5" rx="10.5" ry="8" fill={pele.sombra} />
+      <ellipse cx="28.4" cy="46.4" rx="1.8" ry="2.4" fill="oklch(0.2 0 0)" opacity="0.75" />
+      <ellipse cx="35.6" cy="46.4" rx="1.8" ry="2.4" fill="oklch(0.2 0 0)" opacity="0.75" />
+    </svg>
+  )
 }

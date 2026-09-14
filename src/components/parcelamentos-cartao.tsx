@@ -33,7 +33,7 @@ export function ParcelamentosDoCartao({
     <div className={estilos.parcelamentos}>
       {parcelamentos.map((parcelamento) => (
         <Parcelado
-          key={`${parcelamento.id}-${mes}`}
+          key={parcelamento.id}
           parcelamento={parcelamento}
           mes={mes}
           aoEditar={aoEditar}
@@ -78,7 +78,6 @@ function Parcelado({
 
       <footer className={estilos.rodapeParcela}>
         <span>Faltam <b>{restantes}</b> {restantes === 1 ? "parcela" : "parcelas"} · <b>{formatarMoeda(faltaCentavos)}</b></span>
-        {!temNoMes && <small>Sem parcela no mês selecionado</small>}
         <Select value={competencia} onValueChange={setCompetencia}>
           <SelectTrigger aria-label={`Ver parcela de qual mês em ${parcelamento.descricao}`} className="h-10 w-[168px]">
             <SelectValue />

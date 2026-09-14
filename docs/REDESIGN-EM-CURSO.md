@@ -1299,12 +1299,3 @@ Valores cortados nos cartões corrigidos, formulário de contas fixas em diálog
 ### 09/09/2026 — iOS com shadcn
 
 Pedido do usuário implementado na estrutura principal: abas Agora/Futuro/Categorias, Drawer e Accordion no menu, controles shadcn, previsão compartilhada e capturas reais atualizadas. Detalhes e verificações em CONTINUAR-NO-OUTRO-NOTEBOOK.md.
-
-## 14/09 — Leão e revisão sênior
-Pedido atual autoriza implementar os achados do relatório após refinar o dashboard. Mascote: leão antropomórfico sóbrio, substituindo a marca de cofrinho na navegação. Dashboard com vidro sutil, próxima ação destacada e explicações recolhidas. Preservar os dados financeiros; validar tipos, testes e visual ao final. Imagem original salva em public/mascote/tino-leao.png.
-
-## Decisões de consistência — 14/09
-- Face final solicitada: meia face de leão com óculos, traço solto preto e branco, referência do usuário. Arquivo usado: public/mascote/tino-meia-face.png. Demais estudos ficam no diretório original de imagens geradas.
-- Caixa exclui contas INVESTIMENTO: resgatar por transferência para conta disponível antes de usá-lo na projeção. Patrimônio mantém esses valores. Não inferir liquidez por instituição.
-- Novas compras guardam competenciaFatura separada da contábil. Fechamento inclusivo, competência pelo vencimento; sem datas completas mantém mês da compra. Histórico permanece intacto; fatura importada continua prioritária.
-- Capturas só deduplicam por identificador de transporte; sem identificador, preservam compras potencialmente distintas para conferência. API aceita Idempotency-Key; Telegram/WhatsApp usam identificador do evento. Migrações aditivas, sem exclusão de registros.

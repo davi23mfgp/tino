@@ -43,11 +43,11 @@
   position:absolute; inset:0 0 32px 0; width:100%; height:calc(100% - 32px);
   /* Traço discreto: a leitura principal é a altura das barras, a linha só
      mostra a direção. Grosso, ele cortava as colunas. */
-  color:color-mix(in oklab,var(--acao),transparent 62%); pointer-events:none; z-index:3; overflow:visible;
+  color:color-mix(in oklab,var(--acao),transparent 42%); pointer-events:none; z-index:3; overflow:visible;
 }
 .marcaTendencia { position:absolute; inset:0 0 32px 0; pointer-events:none; z-index:4; }
 .marcaTendencia span {
-  position:absolute; width:7px; height:7px; margin:0 0 -3.5px -3.5px;
+  position:absolute; width:9px; height:9px; margin:0 0 -4.5px -4.5px;
   border-radius:50%; background:var(--acao); box-shadow:0 0 0 2px var(--papel-1);
 }
 .areaBarras .barras { position:relative; z-index:2; }
@@ -108,9 +108,3 @@
 .marca36 img { width:100%; height:100%; object-fit:contain; }
 .marca36 svg { width:17px; height:17px; }
 .marca36 > :first-child:not(svg) ~ svg { display:none; }
-.controleSlider{grid-column:1/-1;width:100%;height:44px;appearance:none;background:transparent;cursor:pointer;accent-color:var(--acao)}
-.controleSlider::-webkit-slider-runnable-track{height:4px;border-radius:8px;background:var(--papel-3)}
-.controleSlider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;background:var(--acao);border:2px solid var(--papel-1);box-shadow:0 1px 5px #0003}
-.controleSlider::-moz-range-track{height:4px;border-radius:8px;background:var(--papel-3)}
-.controleSlider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--acao);border:2px solid var(--papel-1)}
-.controleSlider:focus-visible{outline:2px solid var(--acao);outline-offset:2px;border-radius:12px}.tirar{width:44px;height:44px}.listaLimites li{grid-template-columns:minmax(0,1fr) auto 44px}
