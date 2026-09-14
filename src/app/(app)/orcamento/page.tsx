@@ -9,6 +9,7 @@ import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
 import { SimboloCategoria } from "@/components/seletor-categoria"
+import { OrcamentoCasal } from "@/components/orcamento-casal"
 import { cn } from "@/lib/utils"
 
 /**
@@ -208,6 +209,8 @@ export default function OrcamentoPagina() {
 
         {mensagem && <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-acao">{mensagem}</p>}
       </Cartao>
+
+      <OrcamentoCasal gastoComumCentavos={dados?.linhas.reduce((soma, linha) => soma + linha.gastoCentavos, 0) ?? 0} />
 
       <Cartao titulo="Plano por categoria">
         {dados && dados.linhas.length === 0 && Object.keys(rascunho).length === 0 && (

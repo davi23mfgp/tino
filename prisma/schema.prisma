@@ -270,6 +270,7 @@ model Lar {
   orcamentos      Orcamento[]
   orcamentosCartao OrcamentoCartao[]
   metas           Meta[]
+  casal           Casal?
   objetivoDeAporte ObjetivoDeAporte?
   dividas         Divida[]
   simulacoes      SimulacaoEmprestimo[]
@@ -345,6 +346,7 @@ model Membro {
   regras     RegraCategorizacao[]
 
   @@index([larId])
+  pessoaDoCasal       PessoaDoCasal[]
 }
 
 // ============================================================
@@ -428,6 +430,8 @@ model Categoria {
 
   @@unique([larId, nome, paiId])
   @@index([larId])
+  /// Como esta categoria se divide entre o casal. `null` usa a do casal.
+  modalidadeCasal ModalidadeCasal?
 }
 
 model Transacao {
@@ -1534,4 +1538,50 @@ model ObjetivoDeAporte {
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
+}
+
+/// Como as duas pessoas do lar dividem o que é do casal.
+///
+/// Fica atrás de um interruptor: casal é uma escolha, não o padrão de todo
+/// lar. Desligado, nada muda no app.
+enum ModalidadeCasal {
+  METADE
+  PROPORCIONAL
+  MESADA
+  PERSONALIZADA
+}
+
+model Casal {
+  id    String @id @default(cuid())
+  larId String @unique
+  lar   Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+
+  ativo      Boolean         @default(false)
+  /// Vale para as categorias que não escolherem a sua própria.
+  modalidade ModalidadeCasal @default(METADE)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  pessoas PessoaDoCasal[]
+}
+
+/// Uma das duas pessoas, com o que a divisão precisa saber sobre ela.
+model PessoaDoCasal {
+  id      String @id @default(cuid())
+  casalId String
+  casal   Casal  @relation(fields: [casalId], references: [id], onDelete: Cascade)
+
+  membroId String?
+  membro   Membro? @relation(fields: [membroId], references: [id], onDelete: SetNull)
+
+  nome           String
+  /// Renda mensal, usada só na divisão proporcional.
+  rendaCentavos  Int @default(0)
+  /// Teto imaginário de gasto individual. Não move dinheiro de conta nenhuma.
+  mesadaCentavos Int @default(0)
+  /// Quota combinada à mão, em pontos-base. Só na modalidade personalizada.
+  quotaBps       Int @default(0)
+
+  @@index([casalId])
 }
