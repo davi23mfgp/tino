@@ -129,3 +129,43 @@ objetivo, gravado), **onde entra** (o ARCA reequilibrando pela carteira real) e
 
 API em `/api/investir/objetivo`, com GET, PUT e DELETE — desistir do objetivo é
 uma decisão como qualquer outra e precisa de saída.
+
+## 7. Orçamento de casal — pedido em 14/09, a fazer
+
+Pedido do Davi, com as três modalidades que ele conhece:
+
+> "Crie uma parte para casais fazerem os orçamentos, normal e de cartão, dos
+> gastos que combinarem. Tem a modalidade que paga proporcional ao salário,
+> outra metade/metade, e outra que eu uso: tem a mesada de cada um e o gasto do
+> casal. Entra como categoria."
+
+### As três formas de dividir
+
+1. **Metade/metade** — cada um paga 50% do gasto combinado.
+2. **Proporcional à renda** — quem ganha mais paga mais, na proporção das
+   rendas. Já existe `ratearPorPeso` em `lib/dinheiro.ts`, que é exatamente
+   essa conta e já tem teste.
+3. **Mesada + gasto do casal** — a que o Davi usa. Cada um tem um valor livre
+   ("mesada") e o resto é pote comum. O gasto do casal **entra como categoria**,
+   e não como pessoa: é isso que faz a divisão funcionar no extrato que já
+   existe.
+
+### O que ainda não existe no app
+
+- Quem é o casal. Hoje há `Membro` dentro do `Lar`, mas não há "estes dois
+  dividem despesa" nem a renda de cada um guardada para a proporcional.
+- A marcação do que é combinado. Pela frase do Davi, a saída é **categoria**:
+  uma categoria (ou marca) "casal" separa o gasto compartilhado do individual,
+  sem inventar entidade nova.
+- O acerto do mês: quanto cada um pôs, quanto devia pôr, quem deve a quem.
+
+### Decisões que dependem do Davi
+
+- A divisão vale para **o lar inteiro** ou é escolhida **por categoria** (ex.:
+  mercado metade/metade, aluguel proporcional)?
+- A **mesada** é um limite de gasto individual ou uma transferência de verdade
+  entre as contas?
+- O acerto é **mensal** (fecha e alguém paga a diferença) ou **contínuo** (o
+  saldo entre os dois vai rolando)?
+
+Sem isso, qualquer implementação vira chute sobre como o casal dele vive.
