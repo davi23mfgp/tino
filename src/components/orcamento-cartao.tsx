@@ -113,7 +113,7 @@ export function OrcamentoDoCartao({
         <span>Mudar o teto do mês</span>
         <CampoValor valor={total} aoMudar={alterarTotal} rotulo="Total do mês" />
       </div>
-      <input className={estilos.controleSlider} type="range" aria-label="Ajustar orçamento total" min={0} max={Math.max(10000, total, cartao.limiteCentavos ?? 0, gastoTotal * 2)} step={100} value={total} onChange={(e) => alterarTotal(Number(e.target.value))} />
+      <input className={estilos.controleSlider} type="range" aria-label="Ajustar orçamento total" min={0} max={Math.max(10000, total, cartao.limiteCentavos ?? 0, gastoTotal * 2)} step={1} value={total} onChange={(e) => alterarTotal(Number(e.target.value))} />
 
       <div className={estilos.cabecalhoCategorias}>
         <h3>Limite por categoria <small>{formatarMoeda(Math.max(0, total - distribuido))} ainda sem destino</small></h3>
@@ -142,7 +142,7 @@ export function OrcamentoDoCartao({
               <CampoValor valor={limite} aoMudar={(valor) => alterarCategoria(categoria.id, valor)} rotulo={`Limite de ${categoria.nome}`} />
               <button type="button" aria-label={`Tirar ${categoria.nome} do plano`} onClick={() => removerCategoria(categoria.id)} className={estilos.tirar}><X size={15} /></button>
               <span className={estilos.trilhoLimite}><i style={{ width: `${proporcao}%` }} /></span>
-              <input className={estilos.controleSlider} type="range" aria-label={`Ajustar limite de ${categoria.nome}`} min={0} max={Math.max(10000, total, limite)} step={100} value={limite} onChange={(e) => alterarCategoria(categoria.id, Number(e.target.value))} />
+              <input className={estilos.controleSlider} type="range" aria-label={`Ajustar limite de ${categoria.nome}`} min={0} max={Math.max(10000, total, limite)} step={1} value={limite} onChange={(e) => alterarCategoria(categoria.id, Number(e.target.value))} />
             </li>
           )
         })}
@@ -162,3 +162,4 @@ export function OrcamentoDoCartao({
     </section>
   )
 }
+

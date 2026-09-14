@@ -18,6 +18,7 @@ import Link from "next/link"
 import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { Button } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { porDia, rotuloDia } from "@/lib/extrato-dias"
 import estilos from "./extrato.module.css"
 
 interface Transacao {
@@ -306,50 +307,62 @@ export default function Transacoes() {
           />
         )}
 
-        <ul className={estilos.lista} aria-label="Lançamentos" aria-busy={ocupado}>
-          {transacoes.map((transacao) => {
-            const transferencia = transacao.tipo === "TRANSFERENCIA"
-            return (
-              <li key={transacao.id} className={estilos.linha}>
-                <span className={estilos.simbolo}><MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} /></span>
-                <div className="min-w-0">
-                  <EditavelTexto
-                    valor={transacao.descricao}
-                    aoSalvar={(descricao) => salvarEdicao(transacao.id, { descricao })}
-                    desabilitado={ocupado}
-                    className="block w-full whitespace-normal break-words"
-                  />
-                  <p className="mt-1 break-words text-xs text-muted-fg">
-                    {new Date(transacao.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })} · {transacao.conta.nome}
-                  </p>
-                </div>
-                <div className={estilos.categoria}>
-                  {transferencia ? <span className="flex min-h-9 items-center text-sm text-muted-fg">Transferência</span> : <SeletorCategoria
-                    opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`}
-                    desabilitado={ocupado || carregandoCategorias || erroCategorias} className="w-full justify-start"
-                    aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
-                  />}
-                </div>
-                <div className={cn(estilos.valor, transacao.tipo === "RECEITA" && "text-positivo")}>
-                  {transferencia ? (
-                    <span className="numero break-words text-sm text-muted-fg">{formatarMoeda(transacao.valorCentavos)}</span>
-                  ) : (
-                    <>
-                      <span aria-label={transacao.tipo === "RECEITA" ? "Entrada" : "Saída"}>{transacao.tipo === "RECEITA" ? "+" : "−"}</span>
-                      <EditavelMoeda
-                        valorCentavos={transacao.valorCentavos}
-                        aoSalvar={(valorCentavos) => salvarEdicao(transacao.id, { valorCentavos })}
-                        desabilitado={ocupado}
-                        className="min-h-11"
-                      />
-                    </>
-                  )}
-                  {salvando === transacao.id && <span role="status" className="text-xs text-muted-fg">Salvando…</span>}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+        <div className={estilos.lista}>
+          {porDia(transacoes).map((grupo) => (
+            <section key={grupo.dia} className={estilos.grupoDia}>
+              <h3>
+                <span>{rotuloDia(grupo.dia)}</span>
+                <b className={cn("numero valor-sensivel", grupo.totalCentavos < 0 ? "text-negativo" : "text-positivo")}>
+                  {grupo.totalCentavos < 0 ? "−" : "+"}{formatarMoeda(Math.abs(grupo.totalCentavos))}
+                </b>
+              </h3>
+              <ul aria-label={`Lançamentos de ${rotuloDia(grupo.dia)}`} aria-busy={ocupado}>
+            {grupo.itens.map((transacao) => {
+              const transferencia = transacao.tipo === "TRANSFERENCIA"
+              return (
+                <li key={transacao.id} className={estilos.linha}>
+                  <span className={estilos.simbolo}><MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} /></span>
+                  <div className="min-w-0">
+                    <EditavelTexto
+                      valor={transacao.descricao}
+                      aoSalvar={(descricao) => salvarEdicao(transacao.id, { descricao })}
+                      desabilitado={ocupado}
+                      className="block w-full whitespace-normal break-words"
+                    />
+                    <p className="mt-1 break-words text-xs text-muted-fg">
+                      {transacao.conta.nome}
+                    </p>
+                  </div>
+                  <div className={estilos.categoria}>
+                    {transferencia ? <span className="flex min-h-9 items-center text-sm text-muted-fg">Transferência</span> : <SeletorCategoria
+                      opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`}
+                      desabilitado={ocupado || carregandoCategorias || erroCategorias} className="w-full justify-start"
+                      aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
+                    />}
+                  </div>
+                  <div className={cn(estilos.valor, transacao.tipo === "RECEITA" && "text-positivo")}>
+                    {transferencia ? (
+                      <span className="numero break-words text-sm text-muted-fg">{formatarMoeda(transacao.valorCentavos)}</span>
+                    ) : (
+                      <>
+                        <span aria-label={transacao.tipo === "RECEITA" ? "Entrada" : "Saída"}>{transacao.tipo === "RECEITA" ? "+" : "−"}</span>
+                        <EditavelMoeda
+                          valorCentavos={transacao.valorCentavos}
+                          aoSalvar={(valorCentavos) => salvarEdicao(transacao.id, { valorCentavos })}
+                          desabilitado={ocupado}
+                          className="min-h-11"
+                        />
+                      </>
+                    )}
+                    {salvando === transacao.id && <span role="status" className="text-xs text-muted-fg">Salvando…</span>}
+                  </div>
+                </li>
+              )
+            })}
+              </ul>
+            </section>
+          ))}
+        </div>
 
         {erro && (
           <div role="alert" className="mt-4 rounded-xl bg-papel-2 p-3 text-sm">

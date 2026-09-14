@@ -84,14 +84,14 @@ export default async function Painel() {
       <Cabecalho rotulo="Crédito" titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
       {cartoes.length ? <div className={estilos.listaCartoes}>{cartoes.map((cartao) => {
         const atual = valorDoMes(cartao.transacoes, competencia)
-        // Fecha, vence e a proxima fatura: as tres perguntas de quem olha um
-        // cartao. Lancado e parcela ainda nao lancada somam, e o rotulo avisa
-        // quando ha previsao no meio — antes um escondia o outro.
+        // Fecha, vence e os valores do próximo mês orientam a consulta do
+        // cartão. Parcelas previstas podem já existir nos lançamentos:
+        // mostrar separadamente até existir reconciliação entre os registros.
         const proximaCompetencia = mesesFuturos[1]
         const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
         const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
-        const proxima = confirmadoProximo + previstoProximo
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}><span><small>Fecha</small><b>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "—"}</b></span><span><small>Vence</small><b>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "—"}</b></span><span><small title={previstoProximo ? `Inclui ${formatarMoeda(previstoProximo)} em parcelas previstas` : undefined}>{rotuloCompetencia(proximaCompetencia, true)}{previstoProximo ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, proxima))}</b></span></span><ArrowRight className={estilos.seta} /></Link>
+        // Sem vínculo entre parcela e lançamento, exibir os valores separados evita duplicação.
+        return <Link href={`/cartoes?cartao=${cartao.id}`} key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}><span><small>Fecha</small><b>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "—"}</b></span><span><small>Vence</small><b>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "—"}</b></span><span><small title={previstoProximo ? `${formatarMoeda(previstoProximo)} em parcelas previstas, sem somar aos lançamentos` : undefined}>{rotuloCompetencia(proximaCompetencia, true)}{previstoProximo ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, confirmadoProximo))}</b>{previstoProximo > 0 && <small>Previstas: {formatarMoeda(previstoProximo)}</small>}</span></span><ArrowRight className={estilos.seta} /></Link>
       })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
@@ -163,4 +163,6 @@ export default async function Painel() {
 function Cabecalho({ rotulo, titulo, id, href, acao }: { rotulo: string; titulo: string; id?: string; href: string; acao: string }) {
   return <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>{rotulo}</p><h2 id={id}>{titulo}</h2></div><Link href={href}>{acao} <ArrowRight /></Link></header>
 }
+
+
 

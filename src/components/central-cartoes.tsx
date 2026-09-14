@@ -28,9 +28,9 @@ import { useJanela } from "@/lib/usar-largura"
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
-export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string }) {
+export function CentralCartoes({ cartoes, categorias, mesAtual, cartaoInicial }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string; cartaoInicial?: string }) {
   const router = useRouter()
-  const [id, setId] = useState(cartoes[0]?.id ?? "")
+  const [id, setId] = useState(cartaoInicial ?? cartoes[0]?.id ?? "")
   const [mes, setMes] = useState(mesAtual)
   const [categoria, setCategoria] = useState("")
   const [busca, setBusca] = useState("")
