@@ -6,7 +6,8 @@ import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
 import { Leao } from "./leao"
 import { FitaDoTempo } from "./fita-do-tempo"
 import { TelaNoCelular } from "./tela-no-celular"
-import { PalcoDoProduto, Revelar } from "@/components/landing/movimento"
+import { Revelar } from "@/components/landing/movimento"
+import { CenaFinanceira } from "@/components/landing/cena-financeira"
 import { PalavrasQueChegam } from "@/components/landing/palavras-que-chegam"
 import { NumeroQueSobe } from "@/components/landing/numero-que-sobe"
 
@@ -52,14 +53,7 @@ export default async function Vitrine() {
       <div className="landing-menu-actions"><Link href="/login">Entrar</Link><Link href="/cadastro" className="botao botao--pequeno">Testar {dias} dias <ArrowRight size={15} aria-hidden /></Link></div>
     </header>
     <main id="conteudo">
-      <section className="landing-hero cerca">
-        <p className="eyebrow">Contador pessoal · pessoa física e MEI</p>
-        <PalavrasQueChegam><h1 className="display">Seu dinheiro tem<br />uma <span>data de virada.</span></h1></PalavrasQueChegam>
-        <p className="landing-lead">Saiba o que sobra hoje.<br />Entenda o que vem amanhã.</p>
-        <div className="landing-cta-row"><Link href="/cadastro" className="botao">Testar {dias} dias de graça <ArrowRight size={18} aria-hidden /></Link><a href="#no-seu-bolso" className="landing-secondary">Conhecer o Tino <span aria-hidden>↘</span></a></div>
-        <p className="landing-note">Sem cartão para começar. No celular e no computador.</p>
-        <PalcoDoProduto />
-      </section>
+      <CenaFinanceira dias={dias} />
       <section className="landing-manifesto cerca" id="no-seu-bolso">
         <Revelar><p className="eyebrow">Menos planilha. Mais vida.</p><PalavrasQueChegam><h2 className="display">Abre.<br />Olha.<br /><span className="em-alta">Entende.</span></h2></PalavrasQueChegam><p>Seu dinheiro não precisa de mais complicação.<br />Precisa de um lugar que faça sentido.</p></Revelar>
       </section>

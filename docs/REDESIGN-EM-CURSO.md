@@ -1312,3 +1312,26 @@ invisível. `prefers-reduced-motion` continua removendo todo movimento.
 
 Verificado em navegador real no desktop, incluindo entrada e rolagem do palco;
 TypeScript limpo, 368 testes aprovados e build de produção com 63 páginas.
+
+### 14/09/2026 — refação após rejeição da primeira animação
+
+O usuário rejeitou a rodada acima por ficar abaixo das referências. Os vídeos
+originais Finzy (25315037) e Framer/RYLO (25405021) foram abertos no navegador:
+o ponto útil é o enquadramento do produto, a profundidade e a transição da
+composição inteira, além de pequenos fades.
+
+A abertura agora usa `CenaFinanceira`: texto editorial à esquerda e uma cena
+financeira em perspectiva à direita. Saldo, gráfico, cartão e categorias
+entram com tempos diferentes; o gráfico é desenhado, e a rolagem aproxima,
+alinha e encaixa as peças em uma janela. O celular isolado deixou o hero;
+as demonstrações móveis continuam na seção de recursos. O movimento usa
+transformações de CSS e uma atualização por frame de scroll, sem biblioteca
+adicional e sem capturar a rolagem. Cores da cena: preto #080d0c, branco
+#f3f5f2, prata verde #bfe9d5 e cinza #a7b4ae; tipografia Space Grotesk/Manrope.
+
+Em telas pequenas a cena cabe abaixo do título sem exigir um trilho longo.
+Pausa, repetição e movimento reduzido têm tratamento próprio. Conferidos no
+navegador: abertura, composição durante scroll, repetição, pausa/retomada e
+viewport de 390px (391px internos / 376px de conteúdo, sem overflow horizontal).
+Fechamento: TypeScript e build aprovados; 368 testes passaram. A cena foi
+reaberta após restaurar o viewport desktop para conferir também a primeira dobra.
