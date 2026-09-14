@@ -272,12 +272,15 @@ export default function Transacoes() {
               if (escolhido.slice(0, 7) !== competencia) setCompetencia(escolhido.slice(0, 7))
             }}
           />
+        </div>
+        <div className={estilos.filtros}>
+          {/* Os dois alternadores dividem a mesma linha: sozinhos, cada um
+              ocupava uma faixa inteira da tela do celular para oferecer duas
+              e três opções. */}
           <ToggleGroup type="single" value={modo} onValueChange={(valor) => { if (valor) setModo(valor as "mes" | "dia") }} aria-label="Ver por dia ou pelo mês">
             <ToggleGroupItem value="dia">Dia</ToggleGroupItem>
             <ToggleGroupItem value="mes">Mês</ToggleGroupItem>
           </ToggleGroup>
-        </div>
-        <div className={estilos.filtros}>
           <ToggleGroup type="single" value={tipo} onValueChange={valor => {if(valor) setTipo(valor)}} aria-label="Tipo de movimento">
             <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
             <ToggleGroupItem value="RECEITA">Entradas</ToggleGroupItem>
