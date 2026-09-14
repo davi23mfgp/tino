@@ -161,3 +161,46 @@
  .vitrine .landing-feature-copy { min-height:0;padding:26px 6px; }
  .vitrine .landing-feature-grid { gap:32px; }
 }
+
+/* --- o palco do produto preso ao scroll -------------------- */
+/* O trilho e so altura: quem aparece e o `.product-sticky` dentro dele. Tres
+   telas, mais a entrada do aparelho, cabem em 320vh sem que nenhuma passe
+   rapido demais para ser lida. */
+.vitrine .product-scroller { position:relative;height:320vh;margin-top:4px; }
+.vitrine .product-sticky { position:sticky;top:0;height:100vh;display:grid;place-items:center;overflow:hidden; }
+.vitrine .product-showcase { padding-top:0;margin-top:0;width:100%;transform:scale(var(--ajuste,1));transform-origin:center; }
+.vitrine .product-phone {
+  /* Entra deitado e de longe, e vai levantando conforme a pessoa rola. */
+  transform:perspective(1100px) rotateX(calc(16deg - var(--entrada,0)*16deg)) scale(calc(0.86 + var(--entrada,0)*0.14)) translateY(calc((1 - var(--entrada,0))*34px));
+  transform-origin:center;will-change:transform;
+}
+.vitrine .product-phone .celular { width:min(300px,72vw);height:650px;aspect-ratio:auto; }
+.vitrine .product-float { opacity:var(--entrada,0);transition:opacity .3s linear; }
+.vitrine .product-legenda { text-align:center;margin-top:26px;max-width:420px; }
+.vitrine .product-legenda-titulo { font-family:var(--fonte-display),sans-serif;font-size: calc(26px * var(--escala-letra));letter-spacing:-.04em;margin:6px 0 8px; }
+.vitrine .product-controls { margin-top:18px; }
+.vitrine .product-caption { margin-top:12px; }
+
+/* As telas empilhadas dentro do aparelho. */
+.vitrine .cel-pilha { position:relative;flex:1;overflow:hidden; }
+.vitrine .cel-camada {
+  position:absolute;inset:0;display:flex;flex-direction:column;gap:7px;padding:7px 10px 0;
+  opacity:0;transform:translateY(16px) scale(.98);pointer-events:none;
+  transition:opacity .45s cubic-bezier(.2,.7,.2,1),transform .45s cubic-bezier(.2,.7,.2,1);
+}
+.vitrine .cel-camada--ativa { opacity:1;transform:none; }
+
+@media (max-width:900px) {
+  .vitrine .product-scroller { height:280vh; }
+  .vitrine .product-legenda-titulo { font-size: calc(21px * var(--escala-letra)); }
+}
+
+/* Quem pediu menos movimento nao ganha trilho: a secao volta a ser um bloco
+   comum, com uma tela so, e a troca fica por conta dos botoes. */
+@media (prefers-reduced-motion: reduce) {
+  .vitrine .product-scroller { height:auto; }
+  .vitrine .product-sticky { position:static;height:auto;padding-block:40px; }
+  .vitrine .product-phone { transform:none;will-change:auto; }
+  .vitrine .product-float { opacity:1; }
+  .vitrine .cel-camada { transition:none; }
+}

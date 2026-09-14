@@ -193,3 +193,32 @@ janela nao muda o viewport de verdade (ja registrado na memoria), e o
 renderizador travou/caiu nas tentativas de capturar o app dentro de um
 iframe de 390px — a maquina esta com pouca memoria livre. O HTML resolve
 isso de vez: nao ha mais imagem para reatualizar a cada mudanca de tela.
+
+## O celular anima com o scroll (14/09) — FEITO
+
+Pedido: animacao no celular da landing que envolvesse a pessoa enquanto ela
+rola, na linha do shot do Dribbble "Landing Page Animation for AI Video
+Production Platform".
+
+Como ficou: o celular fica preso na tela (trilho de 320vh com `sticky`) e a
+rolagem e que conduz. Ela entra deitado e de longe e vai levantando; os
+cartoes flutuantes aparecem; e cada terco do trilho troca a tela do app
+(inicio, extrato, cartoes), junto com a legenda ao lado e o item aceso na
+barra de baixo. Os botoes continuam funcionando: clicar leva a rolagem ate o
+trecho daquela tela, em vez de brigar com o scroll um passo depois.
+
+Sem biblioteca de animacao: uma variavel de CSS atualizada dentro de
+`requestAnimationFrame`. Quem pediu `prefers-reduced-motion` nao ganha
+trilho nenhum — a secao vira um bloco comum e a troca fica so nos botoes.
+
+A conta toda vive em `src/lib/palco-do-produto.ts`, com 11 testes. Ficou
+fora do componente de proposito: **nao deu para ver a animacao rodando**. O
+Chrome desta maquina so tem janela minimizada, e janela minimizada nao
+recebe evento de scroll nem `requestAnimationFrame` (`visibilityState:
+"hidden"`), entao o unico jeito de provar a regra era testando ela sozinha.
+Provado no navegador, isso sim: o `transform` de entrada interpola, o clique
+troca tela, legenda, aba acesa e `aria-pressed`, e o palco encolhe para
+caber em janela baixa (0,678 numa janela de 611px).
+
+**Para o Davi conferir:** abrir a janela do Chrome (nao minimizada) em
+localhost:3000 deslogado e rolar. E o unico ponto sem prova visual.

@@ -158,6 +158,29 @@ const MIOLO: Record<QualTela, {conteudo:()=>React.JSX.Element;aba:string}> = {
   cartoes: {conteudo:Cartoes,aba:"Cartões"},
 }
 
+export const ORDEM_DAS_TELAS: QualTela[] = ["inicio","movimento","cartoes"]
+
+/** O mesmo celular, com as tres telas empilhadas e so uma visivel.
+ *
+ * Empilhadas, e nao trocadas, por dois motivos: a troca fica instantanea (o
+ * HTML ja esta montado, nada remonta no meio do scroll) e a altura do
+ * aparelho nao pula quando uma tela tem mais conteudo que a outra.
+ */
+export function TelasEmpilhadas({ativa}:{ativa:QualTela}) {
+  return <div className="celular" role="img" aria-label={ROTULO[ativa]}>
+    <div className="celular-tela">
+      <Sistema />
+      <div className="cel-pilha">
+        {ORDEM_DAS_TELAS.map(tela=>{
+          const {conteudo:Conteudo}=MIOLO[tela]
+          return <div key={tela} className={`cel-camada ${tela===ativa?"cel-camada--ativa":""}`} aria-hidden={tela!==ativa}><Conteudo /></div>
+        })}
+      </div>
+      <Barra ativo={MIOLO[ativa].aba} />
+    </div>
+  </div>
+}
+
 export function TelaNoCelular({tela="inicio"}:{tela?:QualTela}) {
   const {conteudo:Conteudo,aba}=MIOLO[tela]
   return <div className="celular" role="img" aria-label={ROTULO[tela]}>
