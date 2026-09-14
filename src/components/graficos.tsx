@@ -715,10 +715,11 @@ export function FluxoDeCaixaNoTempo({
 }) {
   const cores = useCores()
   const [granularidade, setGranularidade] = useState<"dia" | "mes" | "ano">("mes")
-  // A pergunta desta tela é "quanto eu vou ter", não "quanto entrou e saiu".
-  // O caixa é a série principal; entrada e saída ficam atrás de um botão,
-  // desligadas, para quem quiser abrir a conta que produziu a linha.
-  const [mostrarMovimento, setMostrarMovimento] = useState(false)
+  // O Davi pediu o fluxo do mês, não o patrimônio: "só com o que ganho e o
+  // que gasto". Entrada e saída passam a ser o desenho principal, e o saldo
+  // acumulado — que é o que o caixa vira ao longo do tempo — fica atrás de um
+  // botão, para quem quiser ver aonde a soma leva.
+  const [mostrarSaldo, setMostrarSaldo] = useState(false)
   const serie = series[granularidade]
 
   const dados = serie.map((ponto) => ({
@@ -736,10 +737,12 @@ export function FluxoDeCaixaNoTempo({
   const primeiroNegativo = dados.findIndex((ponto) => ponto.caixa < 0)
   const fim = serie[serie.length - 1]
   const hoje = serie.find((ponto) => ponto.viradaDoFuturo) ?? serie.filter((ponto) => !ponto.futuro).at(-1)
-  const agora = hoje?.caixaCentavos ?? 0
-  const depois = fim?.caixaCentavos ?? 0
-  const variacao = depois - agora
-  const horizonte = granularidade === "dia" ? "no fim do período" : granularidade === "mes" ? "no fim do período" : "no fim do período"
+
+  // Médias do período mostrado, que é o que as barras contam.
+  const meses = Math.max(1, dados.length)
+  const entradaMedia = Math.round(dados.reduce((soma, ponto) => soma + ponto.entrou, 0) / meses) * 100
+  const saidaMedia = Math.round(dados.reduce((soma, ponto) => soma + ponto.saiu, 0) / meses) * 100
+  const sobraMedia = entradaMedia - saidaMedia
 
   return (
     <div className="flex flex-col gap-2">
@@ -748,19 +751,20 @@ export function FluxoDeCaixaNoTempo({
           altura que o próprio gráfico no celular — agora é 24px e as duas
           partes dividem a linha quando cabe. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        {/* O topo responde a mesma pergunta do gráfico: quanto entra e quanto
+            sai por mês. O saldo acumulado saiu daqui junto com as barras — ele
+            é outra conta, e continua disponível no botão abaixo. */}
         <div>
           <p className="text-[calc(10px*var(--escala-letra))] uppercase tracking-[.12em] text-muted-fg">
-            Quanto você vai ter em {fim?.rotulo}
+            Sobra por mês, na média
           </p>
-          <p className={cn("numero text-[calc(19px*var(--escala-letra))] font-semibold leading-tight tracking-tight sm:text-[calc(24px*var(--escala-letra))]", depois < 0 && "text-negativo")}>
-            {formatarMoeda(depois)}
+          <p className={cn("numero text-[calc(19px*var(--escala-letra))] font-semibold leading-tight tracking-tight sm:text-[calc(24px*var(--escala-letra))]", sobraMedia < 0 && "text-negativo")}>
+            {sobraMedia < 0 ? "−" : ""}{formatarMoeda(Math.abs(sobraMedia))}
           </p>
           <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
-            Hoje: <span className="numero">{formatarMoeda(agora)}</span>
+            <span className="numero text-positivo">{formatarMoeda(entradaMedia)}</span> entram
             {" · "}
-            <span className={cn("numero", variacao < 0 ? "text-negativo" : "text-positivo")}>
-              {variacao < 0 ? "−" : "+"}{formatarMoeda(Math.abs(variacao))}
-            </span>{" "}{horizonte}
+            <span className="numero text-negativo">{formatarMoeda(saidaMedia)}</span> saem
           </p>
         </div>
         <ToggleGroup
@@ -814,17 +818,21 @@ export function FluxoDeCaixaNoTempo({
             {/* O caixa é bloco: cada mês tem uma altura, e a comparação entre
                 meses é a leitura direta. Entrada e saída, quando ligadas, são
                 linhas por cima — fluxo, não empilhamento. */}
-            <Bar dataKey="caixa" name="Vou ter" radius={[4, 4, 0, 0]} maxBarSize={18}>
+            {/* Duas barras por mês, lado a lado: o que entrou em verde e o que
+                saiu em vermelho. É a leitura que responde "eu gasto mais do
+                que ganho?" — a barra única do saldo acumulado respondia outra
+                pergunta, e escondia essa. */}
+            <Bar dataKey="entrou" name="Entrou" radius={[3, 3, 0, 0]} maxBarSize={14}>
               {dados.map((ponto, indice) => (
-                <Cell
-                  key={indice}
-                  fill={ponto.caixa < 0 ? cores.negativo : cores.positivo}
-                  fillOpacity={ponto.futuro ? 0.58 : 1}
-                />
+                <Cell key={`e-${indice}`} fill={cores.positivo} fillOpacity={ponto.futuro ? 0.5 : 1} />
               ))}
             </Bar>
-            {mostrarMovimento && <Line type="monotone" dataKey="entrou" name="Entrou" stroke={cores.positivo} strokeWidth={2} dot={false} />}
-            {mostrarMovimento && <Line type="monotone" dataKey="saiu" name="Saiu" stroke={cores.negativo} strokeWidth={2} dot={false} />}
+            <Bar dataKey="saiu" name="Saiu" radius={[3, 3, 0, 0]} maxBarSize={14}>
+              {dados.map((ponto, indice) => (
+                <Cell key={`s-${indice}`} fill={cores.negativo} fillOpacity={ponto.futuro ? 0.5 : 1} />
+              ))}
+            </Bar>
+            {mostrarSaldo && <Line type="monotone" dataKey="caixa" name="Saldo acumulado" stroke={cores.dado} strokeWidth={2} dot={false} />}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -832,11 +840,11 @@ export function FluxoDeCaixaNoTempo({
       <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
-          aria-pressed={mostrarMovimento}
-          onClick={() => setMostrarMovimento((atual) => !atual)}
+          aria-pressed={mostrarSaldo}
+          onClick={() => setMostrarSaldo((atual) => !atual)}
           className="min-h-9 shrink-0 rounded-full border border-pauta px-3 text-[calc(12px*var(--escala-letra))] text-muted-fg transition-colors hover:text-foreground"
         >
-          {mostrarMovimento ? "Ocultar entradas e saídas" : "Ver entradas e saídas"}
+          {mostrarSaldo ? "Ocultar saldo acumulado" : "Ver saldo acumulado"}
         </button>
       </div>
     </div>
