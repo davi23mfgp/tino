@@ -14,8 +14,6 @@
  * cai no preenchimento manual.
  */
 
-const FONTE = "AwesomeAPI · Banco Central"
-const ENDERECO = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 const VALIDADE_MS = 60 * 60 * 1000
 
 export interface Cotacao {
@@ -26,32 +24,61 @@ export interface Cotacao {
   fonte: string
 }
 
+/**
+ * Duas fontes, nesta ordem.
+ *
+ * A AwesomeAPI publica o câmbio do Banco Central e é a melhor referência para
+ * o real, mas recusou as chamadas vindas da Vercel — em produção a rota
+ * respondia vazio em 0,3s, rápido demais para ser tempo esgotado. A segunda
+ * fonte cobre esse caso. Nenhuma das duas exige chave.
+ */
+const FONTES: { nome: string; endereco: string; ler: (corpo: unknown) => Cotacao | null }[] = [
+  {
+    nome: "AwesomeAPI · Banco Central",
+    endereco: "https://economia.awesomeapi.com.br/json/last/USD-BRL",
+    ler: (corpo) => {
+      const dados = (corpo as { USDBRL?: { bid?: string; create_date?: string } }).USDBRL
+      const valor = Number(dados?.bid)
+      if (!Number.isFinite(valor) || valor <= 0) return null
+      return { valor, data: (dados?.create_date ?? "").slice(0, 10), fonte: "AwesomeAPI · Banco Central" }
+    },
+  },
+  {
+    nome: "exchangerate-api",
+    endereco: "https://open.er-api.com/v6/latest/USD",
+    ler: (corpo) => {
+      const dados = corpo as { rates?: { BRL?: number }; time_last_update_unix?: number }
+      const valor = Number(dados.rates?.BRL)
+      if (!Number.isFinite(valor) || valor <= 0) return null
+      const quando = dados.time_last_update_unix ? new Date(dados.time_last_update_unix * 1000) : new Date()
+      return { valor, data: quando.toISOString().slice(0, 10), fonte: "exchangerate-api" }
+    },
+  },
+]
+
 let cache: { em: number; cotacao: Cotacao } | null = null
 
 export async function cotacaoDoDolar(): Promise<Cotacao | null> {
   if (cache && Date.now() - cache.em < VALIDADE_MS) return cache.cotacao
 
-  try {
-    const controle = new AbortController()
-    const prazo = setTimeout(() => controle.abort(), 6000)
-    const resposta = await fetch(ENDERECO, { signal: controle.signal, cache: "no-store" })
-    clearTimeout(prazo)
-    if (!resposta.ok) return cache?.cotacao ?? null
+  for (const fonte of FONTES) {
+    try {
+      const controle = new AbortController()
+      const prazo = setTimeout(() => controle.abort(), 6000)
+      const resposta = await fetch(fonte.endereco, { signal: controle.signal, cache: "no-store" })
+      clearTimeout(prazo)
+      if (!resposta.ok) continue
 
-    const corpo = (await resposta.json()) as { USDBRL?: { bid?: string; create_date?: string } }
-    const valor = Number(corpo.USDBRL?.bid)
-    if (!Number.isFinite(valor) || valor <= 0) return cache?.cotacao ?? null
-
-    const cotacao: Cotacao = {
-      valor,
-      data: (corpo.USDBRL?.create_date ?? "").slice(0, 10),
-      fonte: FONTE,
+      const cotacao = fonte.ler(await resposta.json())
+      if (!cotacao) continue
+      cache = { em: Date.now(), cotacao }
+      return cotacao
+    } catch {
+      // Fonte fora do ar ou recusando a chamada: tenta a próxima.
     }
-    cache = { em: Date.now(), cotacao }
-    return cotacao
-  } catch {
-    // Rede fora ou fonte lenta: o último valor bom ainda serve, e a interface
-    // mostra a data dele. Sem nenhum valor, quem chama pede à mão.
-    return cache?.cotacao ?? null
   }
+
+  // Sem nenhuma fonte: devolve o último valor bom, que a tela mostra com a
+  // data dele. Sem valor nenhum, quem chama pede à mão.
+  return cache?.cotacao ?? null
 }
