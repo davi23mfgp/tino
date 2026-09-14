@@ -169,3 +169,27 @@ Pedido do Davi, com as três modalidades que ele conhece:
   saldo entre os dois vai rolando)?
 
 Sem isso, qualquer implementação vira chute sobre como o casal dele vive.
+
+## Landing refeita (14/09, fim do dia) — FEITO
+
+Pedido: "refaca a landpage, com os celulares com as imagens atualizadas. e
+tire o leao do lado do celular."
+
+Feito em `29526fe`, no ar em https://tino-kappa.vercel.app.
+
+- O celular deixou de mostrar PNG. Os tres prints eram de 09/09, de antes de
+  todo o redesign — mostravam telas que o app nao tem mais. Print tambem
+  borra em tela densa e envelhece na proxima mudanca de skin.
+- O miolo agora e HTML (`src/app/(site)/tela-no-celular.tsx`), montado sobre o
+  bloco `.cel-*` de `vitrine.css`, que ja existia completo e estava sem
+  nenhum consumidor (o TSX tinha sumido em alguma reversao).
+- Tres telas: inicio, extrato e cartoes, com os numeros da conta de
+  demonstracao.
+- O leao ao lado do celular saiu, com as regras de CSS dele. O leao da marca
+  (cabecalho, rodape, CTA final) continua.
+
+Nao foi possivel tirar screenshot de 390px nesta maquina: redimensionar a
+janela nao muda o viewport de verdade (ja registrado na memoria), e o
+renderizador travou/caiu nas tentativas de capturar o app dentro de um
+iframe de 390px — a maquina esta com pouca memoria livre. O HTML resolve
+isso de vez: nao ha mais imagem para reatualizar a cada mudanca de tela.
