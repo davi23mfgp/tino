@@ -15,14 +15,41 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Button } from "@/components/ui/button"
 import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA_FUNCIONARIO, NUCLEO, todosOsGrupos, type GrupoNav } from "@/lib/navegacao-grupos"
 
+/**
+ * Abas do grupo em que a tela está (Análise, Fluxo, Simulador, Investir).
+ *
+ * Compacta de propósito: eram quatro pílulas soltas de 44px com rótulo por
+ * extenso, ocupando uma faixa inteira antes do conteúdo — no celular isso
+ * empurrava o primeiro número para fora da tela. Agora é um trilho único de
+ * vidro, com ícone e rótulo curto, e só a aba ativa fica preenchida.
+ *
+ * O ícone é o que permite encurtar o rótulo sem perder o sentido: "Fluxo" ao
+ * lado de uma linha ascendente não vira adivinhação.
+ */
 export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
   const caminho = usePathname()
   const grupo = grupoDoCaminho(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei)), caminho)
   if (!grupo || grupo.itens.length < 2 || grupo.chave === "movimento" || apenasLoja) return null
-  return <nav aria-label={grupo.titulo} className="mb-5 flex gap-1 overflow-x-auto pb-1">
-    {grupo.itens.map(({ rota, rotulo }) => <Link key={rota} href={rota} aria-current={estaAtivo(caminho, rota) ? "page" : undefined}
-      className={cn("flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm", estaAtivo(caminho, rota) ? "bg-accent text-accent-foreground" : "text-muted-fg hover:bg-papel-2")}>{rotulo}</Link>)}
-  </nav>
+  return (
+    <nav aria-label={grupo.titulo} className="app-subabas vidro-menu mb-4">
+      {grupo.itens.map(({ rota, rotulo, rotuloCurto, Icone }) => {
+        const ativo = estaAtivo(caminho, rota)
+        return (
+          <Link
+            key={rota}
+            href={rota}
+            aria-current={ativo ? "page" : undefined}
+            aria-label={rotulo}
+            data-ativo={ativo}
+            className="spring-press"
+          >
+            {Icone && <Icone aria-hidden />}
+            <span>{rotuloCurto ?? rotulo}</span>
+          </Link>
+        )
+      })}
+    </nav>
+  )
 }
 
 function Mais({ grupos, ativo, desktop = false }: { grupos: GrupoNav[]; ativo: boolean; desktop?: boolean }) {
