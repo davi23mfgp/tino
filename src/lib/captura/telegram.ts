@@ -44,6 +44,9 @@ export async function baixarArquivo(fileId: string): Promise<{ nome: string; con
 }
 
 export interface AtualizacaoTelegram {
+  /** Número que o Telegram dá a cada atualização. É único por bot e é o que
+   *  identifica o mesmo aviso reentregue depois de um erro de rede. */
+  update_id?: number
   message?: {
     chat: { id: number }
     from?: { first_name?: string }

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
-import { confirmarCaptura, gerarChave } from "@/lib/captura"
+import { confirmarCaptura, descartarCaptura, gerarChave } from "@/lib/captura"
 import { regraAPartirDeCorrecao } from "@/lib/categorizar"
 
 export const dynamic = "force-dynamic"
@@ -73,12 +73,9 @@ export const POST = comSessao(async (sessao, requisicao) => {
 export const PATCH = comSessao(async (sessao, requisicao) => {
   const dados = await corpo<{ capturaId: string }>(requisicao)
 
-  await prisma.captura.updateMany({
-    where: { id: dados.capturaId, larId: sessao.larId },
-    data: { status: "DESCARTADA", decididoEm: new Date() },
-  })
-
-  return ok({ descartada: true })
+  // A regra de quais estados podem ser descartados vive em `lib/captura`, com
+  // a trava por captura. Aqui não há UPDATE solto.
+  return ok(await descartarCaptura(sessao.larId, dados.capturaId))
 })
 
 /**

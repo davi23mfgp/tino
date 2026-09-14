@@ -153,6 +153,8 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
     texto,
     origem: "TELEGRAM",
     textoLivre: !pareceNotificacao,
+    // A Meta reentrega a mesma mensagem quando o webhook falha.
+    eventoId: mensagem.id ? `whatsapp:${mensagem.id}` : null,
   })
 
   await responder(telefone, resultado.resposta)

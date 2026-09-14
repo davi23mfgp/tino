@@ -192,6 +192,8 @@ export async function POST(requisicao: Request) {
     texto,
     origem: "TELEGRAM",
     textoLivre: !pareceNotificacao,
+    // O Telegram reentrega a mesma atualização quando não recebe o 200.
+    eventoId: atualizacao.update_id ? `telegram:${atualizacao.update_id}` : null,
   })
 
   await responder(chatId, resultado.resposta)

@@ -9,12 +9,42 @@ import { prisma } from "@/lib/prisma"
 import { competenciaDe } from "@/lib/datas"
 import { competenciaDoCartao } from "@/lib/competencia-cartao"
 import { ErroDeUso } from "@/lib/api"
+import { podeConfirmar, podeDescartar } from "@/lib/captura/transicoes"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 import { lerNotificacao, lerTextoLivre, type NotificacaoLida } from "@/lib/captura/notificacao"
 import type { OrigemCaptura } from "@prisma/client"
 
 /// Confiança mínima para o app propor o lançamento já pronto para um toque.
 export const CONFIANCA_MINIMA = 70
+
+
+
+/**
+ * Descarta uma captura pendente.
+ *
+ * Roda dentro de transação com trava por captura: sem ela, dois toques
+ * simultâneos em "descartar" e "confirmar" passariam os dois pela checagem
+ * antes de qualquer um gravar, e a captura terminaria descartada com
+ * lançamento criado.
+ */
+export async function descartarCaptura(larId: string, capturaId: string): Promise<{ descartada: boolean }> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${capturaId}))`
+
+    const captura = await tx.captura.findFirst({ where: { id: capturaId, larId } })
+    if (!captura) throw new ErroDeUso("Captura não encontrada.", 404)
+
+    const veredito = podeDescartar(captura.status, Boolean(captura.transacaoId))
+    if (!veredito.permite) throw new ErroDeUso(veredito.motivo, veredito.status)
+    if (veredito.jaFeito) return { descartada: true }
+
+    await tx.captura.update({
+      where: { id: captura.id },
+      data: { status: "DESCARTADA", decididoEm: new Date() },
+    })
+    return { descartada: true }
+  })
+}
 
 /** A chave viaja em claro só uma vez; no banco fica o hash. */
 export function gerarChave(): { valor: string; hash: string; sufixo: string } {
@@ -65,8 +95,33 @@ export async function registrarCaptura(params: {
   origem: OrigemCaptura
   /// Texto digitado pela pessoa aceita formato livre ("mercado 52,30").
   textoLivre?: boolean
+  /// Identidade do evento no transporte (`update_id` do Telegram, id da
+  /// mensagem do WhatsApp, `Idempotency-Key` da API). Quando vem, é ela que
+  /// decide se o aviso é repetido.
+  eventoId?: string | null
 }): Promise<ResultadoCaptura> {
   const leitura = params.textoLivre ? lerTextoLivre(params.texto) : lerNotificacao(params.texto)
+
+  // O índice de evento é único no banco inteiro, então um id que já pertence a
+  // OUTRO lar não pode ser gravado de novo nem devolvido: a captura é criada
+  // sem identidade, e o pior caso vira "uma conferência a mais", não o gasto
+  // de um lar aparecendo no outro.
+  let eventoParaGravar = params.eventoId ?? null
+  if (params.eventoId) {
+    const mesmoEvento = await prisma.captura.findUnique({ where: { eventoId: params.eventoId } })
+    if (mesmoEvento) {
+      if (mesmoEvento.larId === params.larId) {
+        return {
+          id: mesmoEvento.id,
+          status: mesmoEvento.status as ResultadoCaptura["status"],
+          leitura,
+          resposta: "Esse aviso já tinha chegado — não dupliquei.",
+        }
+      }
+      eventoParaGravar = null
+    }
+  }
+
 
   if (leitura.ignorar) {
     const captura = await prisma.captura.create({
@@ -77,6 +132,7 @@ export async function registrarCaptura(params: {
         status: "DESCARTADA",
         textoBruto: params.texto,
         confianca: leitura.confianca,
+        eventoId: eventoParaGravar,
         decididoEm: new Date(),
       },
     })
@@ -97,6 +153,7 @@ export async function registrarCaptura(params: {
         status: "NAO_ENTENDIDA",
         textoBruto: params.texto,
         confianca: 0,
+        eventoId: eventoParaGravar,
       },
     })
     return {
@@ -107,10 +164,16 @@ export async function registrarCaptura(params: {
     }
   }
 
-  // Duplicata é comum: o mesmo aviso chega no celular e no relógio, e a pessoa
-  // repassa dois. Mesmo valor e estabelecimento em 10 minutos é a mesma compra.
+  // Reenvio do MESMO aviso e duas compras iguais são coisas diferentes, e a
+  // regra antiga não sabia separar: valor + estabelecimento nos últimos dez
+  // minutos engolia a segunda passada no mesmo posto, o segundo café, a mesma
+  // compra em dois cartões. Agora só o identificador do transporte decide
+  // repetição — ele é a única prova de que é o mesmo evento.
+  // Sem identificador não dá para afirmar nada: a captura é criada, e o aviso
+  // de semelhança vai no texto da resposta para a pessoa conferir. Guardar a
+  // compra e avisar é recuperável; engolir a compra não é.
   const dezMinutosAtras = new Date(Date.now() - 10 * 60_000)
-  const repetida = await prisma.captura.findFirst({
+  const parecida = await prisma.captura.findFirst({
     where: {
       larId: params.larId,
       valorCentavos: leitura.valorCentavos,
@@ -119,15 +182,6 @@ export async function registrarCaptura(params: {
       status: { in: ["PENDENTE", "CONFIRMADA"] },
     },
   })
-
-  if (repetida) {
-    return {
-      id: repetida.id,
-      status: repetida.status as ResultadoCaptura["status"],
-      leitura,
-      resposta: "Esse lançamento já tinha chegado agora há pouco — não dupliquei.",
-    }
-  }
 
   const [contas, regras, categorias] = await Promise.all([
     prisma.conta.findMany({ where: { larId: params.larId, arquivada: false } }),
@@ -174,6 +228,7 @@ export async function registrarCaptura(params: {
       contaId: conta?.id ?? null,
       categoriaId: sugestao?.categoriaId ?? null,
       confianca: leitura.confianca,
+      eventoId: eventoParaGravar,
     },
   })
 
@@ -187,7 +242,7 @@ export async function registrarCaptura(params: {
     leitura,
     resposta: `Anotei ${valorFormatado}${captura.estabelecimento ? ` em ${captura.estabelecimento}` : ""}${
       sugestao?.categoriaNome || sugestao?.categoriaId ? "" : " — falta a categoria"
-    }.`,
+    }.${parecida ? " Chegou uma igual a essa agora há pouco: confira se não são a mesma." : ""}`,
   }
 }
 
@@ -219,8 +274,15 @@ export async function confirmarCaptura(params: {
 
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${captura.id}))`
-    const atual=await tx.captura.findUniqueOrThrow({where:{id:captura.id}})
-    if(atual.transacaoId)return tx.transacao.findUniqueOrThrow({where:{id:atual.transacaoId}})
+    const atual = await tx.captura.findUniqueOrThrow({ where: { id: captura.id } })
+
+    const veredito = podeConfirmar(atual.status, Boolean(atual.transacaoId))
+    if (!veredito.permite) throw new ErroDeUso(veredito.motivo, veredito.status)
+    // Confirmar de novo devolve o mesmo lançamento em vez de criar outro: é o
+    // toque repetido, não uma segunda compra.
+    if (veredito.jaFeito && atual.transacaoId) {
+      return tx.transacao.findUniqueOrThrow({ where: { id: atual.transacaoId } })
+    }
     const transacao = await tx.transacao.create({
       data: {
         larId: params.larId,

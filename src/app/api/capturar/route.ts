@@ -54,12 +54,17 @@ export async function POST(requisicao: Request) {
   texto = texto.trim()
   if (!texto) return NextResponse.json({ erro: "Nada para ler." }, { status: 400 })
 
+  const chaveDeIdempotencia = requisicao.headers.get("idempotency-key")?.trim().slice(0, 120) || null
+
   const resultado = await registrarCaptura({
     larId: chave.larId,
     chaveId: chave.id,
     texto,
     origem: chave.origem,
     textoLivre,
+    // Atalho do celular sem rede reenvia a mesma captura. Quem mandar o
+    // cabeçalho ganha idempotência; quem não mandar, a captura é criada.
+    eventoId: chaveDeIdempotencia ? `api:${chaveDeIdempotencia}` : null,
   })
 
   return NextResponse.json({

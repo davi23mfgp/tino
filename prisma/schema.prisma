@@ -975,6 +975,11 @@ model Captura {
   confianca   Int     @default(0)
 
   transacaoId String?   @unique
+  /// Identidade do evento no transporte que trouxe a captura: `update_id` do
+  /// Telegram, id da mensagem do WhatsApp, `Idempotency-Key` da API. É o que
+  /// permite reconhecer o MESMO aviso chegando duas vezes sem confundi-lo com
+  /// duas compras iguais de verdade. `null` quando o transporte não oferece um.
+  eventoId    String?   @unique
   criadoEm    DateTime  @default(now())
   decididoEm  DateTime?
 
