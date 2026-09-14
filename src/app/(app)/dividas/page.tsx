@@ -188,7 +188,7 @@ export default function Dividas() {
           <Metrica
             rotulo="Livre em"
             valor={dados?.plano ? dados.plano.quitacoes.length === abertas.length ? dados.plano.meses + " meses" : "Além de 50 anos" : "—"}
-            detalhe={dados?.plano ? `$<span className="valor-inteiro">{formatarMoeda(dados.plano.totalJurosCentavos)}</span> de juros no caminho` : undefined}
+            detalhe={dados?.plano ? `${formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho` : undefined}
             tom={dados?.plano ? "atencao" : "neutro"}
           />
         </div>
@@ -383,7 +383,7 @@ export default function Dividas() {
                     <p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{divida.credor}</p>
                     <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
                       {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
-                      {divida.parcelaCentavos > 0 && ` · $<span className="valor-inteiro">{formatarMoeda(divida.parcelaCentavos)}</span>/mês`}
+                      {divida.parcelaCentavos > 0 && ` · ${formatarMoeda(divida.parcelaCentavos)}/mês`}
                       {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
                       {` · vence dia ${divida.diaVencimento}`}
                     </p>
