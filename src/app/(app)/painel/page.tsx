@@ -7,6 +7,7 @@ import estilos from "./painel.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { corDoBanco } from "@/lib/bancos-perfil"
+import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
@@ -43,7 +44,7 @@ export default async function Painel() {
       },
     }),
     prisma.transacao.findMany({
-      where: { larId: sessao.larId, pago: true, tipo: "DESPESA", competencia }, orderBy: [{ data: "desc" }, { criadoEm: "desc" }], take: 8,
+      where: { larId: sessao.larId, pago: true, tipo: "DESPESA", competencia }, orderBy: [{ data: "desc" }, { criadoEm: "desc" }], take: 24,
       include: { conta: { select: { nome: true, tipo: true } }, categoria: { select: { nome: true, icone: true } } },
     }),
     compromissosFuturos(sessao.larId, 36), resumoParcelamentos(sessao.larId),
@@ -58,8 +59,8 @@ export default async function Painel() {
   // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
   const quantidadePendente = totaisPendentes._count._all
   const totalPendente = totaisPendentes._sum.valorCentavos ?? 0
-  const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 4)
-  const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 4)
+  const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 6)
+  const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
     <section className={estilos.resumo} aria-labelledby="resumo-mes">
@@ -84,7 +85,7 @@ export default async function Painel() {
 
     {pendentes.length > 0 && <section className={estilos.painel} aria-labelledby="conferir-titulo">
       <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>Antes de entrar no saldo</p><h2 id="conferir-titulo">{quantidadePendente} {quantidadePendente === 1 ? "compra para conferir" : "compras para conferir"}</h2></div><div className={estilos.totalPendente}><small>Total</small><strong>{formatarMoeda(totalPendente)}</strong></div></header>
-      <div className={estilos.listaCompacta}>{pendentes.map((linha) => <Link href="/capturas" key={linha.id}><span className={estilos.iconeLinha}><ReceiptText /></span><span className={estilos.dadosLinha}><strong>{linha.estabelecimento ?? "Sem descrição"}</strong><small>Notificação bancária</small></span><b>{formatarMoeda(linha.valorCentavos ?? 0)}</b><ArrowRight /></Link>)}</div>
+      <div className={estilos.listaCompacta}>{pendentes.map((linha) => <Link href="/capturas" key={linha.id}><span className={estilos.iconeLinha}><ReceiptText /></span><span className={estilos.dadosLinha}><strong>{linha.estabelecimento ?? "Sem descrição"}</strong><small>{new Date(linha.criadoEm).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · notificação do banco</small></span><b>{formatarMoeda(linha.valorCentavos ?? 0)}</b><ArrowRight /></Link>)}</div>
       <Link href="/capturas" className={estilos.acaoSecundaria}>{quantidadePendente > pendentes.length ? `Conferir as ${quantidadePendente}` : "Conferir agora"} <ArrowRight /></Link>
     </section>}
 
@@ -97,16 +98,21 @@ export default async function Painel() {
         })}</ul></div> : <p className={estilos.vazio}>Os gastos do mês aparecem aqui.</p>}
       </section>
       <section className={estilos.painel}><Cabecalho rotulo="Últimos movimentos" titulo="Compras recentes" href="/transacoes" acao="Ver todas" />
-        <div className={estilos.movimentos}>{[{ titulo: "No crédito", linhas: comprasCredito }, { titulo: "Em conta", linhas: despesasConta }].map((grupo) => <div key={grupo.titulo}><h3>{grupo.titulo}</h3>{grupo.linhas.length ? grupo.linhas.map((linha) => <Link href="/transacoes" key={linha.id}><span className={estilos.iconeLinha}>{linha.categoria?.icone && !linha.categoria.icone.includes("circle") ? linha.categoria.icone : <WalletCards />}</span><span className={estilos.dadosLinha}><strong>{linha.descricao}</strong><small>{linha.conta.nome}</small></span><b>{formatarMoeda(linha.valorCentavos)}</b></Link>) : <p>Nenhuma compra no período.</p>}</div>)}</div>
+        <div className={estilos.movimentos}>{[{ titulo: "No crédito", linhas: comprasCredito }, { titulo: "Em conta", linhas: despesasConta }].map((grupo) => <div key={grupo.titulo}><h3>{grupo.titulo}</h3>{grupo.linhas.length ? grupo.linhas.map((linha) => { const Icone = iconeDaCategoria(linha.categoria, "DESPESA"); return <Link href="/transacoes" key={linha.id}><span className={estilos.iconeLinha}><Icone /></span><span className={estilos.dadosLinha}><strong>{linha.descricao}</strong><small>{new Date(linha.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })} · {linha.conta.nome}</small></span><b>{formatarMoeda(linha.valorCentavos)}</b></Link> }) : <p>Nenhuma compra no período.</p>}</div>)}</div>
       </section>
     </div>
 
-    <div className={estilos.duasColunas}>
+    <>
       <section className={estilos.painel}><Cabecalho rotulo="O que entra, o que sai e o que sobra" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" /><FluxoDeCaixaNoTempo series={fluxo} altura={230} /></section>
       <section className={estilos.painel}><Cabecalho rotulo="O que você tem e deve" titulo="Balanço" href="/analise" acao="Ver análise" />
         <dl className={estilos.balanco}><div><dt>Ativos</dt><dd>{formatarMoeda(diagnostico.balanco.ativoTotalCentavos)}</dd></div><div><dt>Dívidas</dt><dd>{formatarMoeda(diagnostico.balanco.passivoTotalCentavos)}</dd></div><div><dt>Patrimônio</dt><dd className={diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(diagnostico.balanco.patrimonioLiquidoCentavos)}</dd></div></dl>
         <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.parecer}</p><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>
 
+      </section>
+    </>
+
+    <section className={estilos.painel}>
+      <Cabecalho rotulo="Por que a nota é essa" titulo="O que está bom e o que precisa melhorar" href="/analise" acao="Ver análise" />
         {/* O espaço abaixo da nota ficava vazio enquanto a explicação de onde
             ela vem estava escondida em outra tela. Aqui entram os indicadores
             que sustentam a nota — o que já está bom e o que puxa para baixo,
@@ -137,8 +143,7 @@ export default async function Painel() {
             ))}
           </ol>
         )}
-      </section>
-    </div>
+    </section>
 
     {panorama.dividas.lista.length > 0 && <section className={estilos.painel}><Cabecalho rotulo="Plano de saída" titulo="Dívidas" href="/dividas" acao="Organizar dívidas" /><div className={estilos.dividas}>{panorama.dividas.lista.slice(0, 3).map((divida, indice) => <Link href="/dividas" key={divida.id}><span className={estilos.numeroEtapa}>{indice + 1}</span><span className={estilos.dadosLinha}><strong>{divida.credor}</strong><small>Parcela {formatarMoeda(divida.parcelaCentavos)}</small></span><b>{formatarMoeda(divida.saldoDevedorCentavos)}</b>{indice === 0 ? <span className={estilos.proxima}><CheckCircle2 /> Próxima ação</span> : <ArrowRight />}</Link>)}</div></section>}
   </div>

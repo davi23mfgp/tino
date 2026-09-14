@@ -1,6 +1,8 @@
 "use client"
 
+import Link from "next/link"
 import estilos from "../analise/avancadas.module.css"
+import topo from "./dividas.module.css"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { useCallback, useEffect, useState } from "react"
@@ -174,6 +176,83 @@ export default function Dividas() {
   return (
     <div className={cn(estilos.pagina, "space-y-4")}>
       {erro && <Cartao><p role="alert" className="text-sm">{erro}</p><Button variant="outline" onClick={carregar} disabled={simulando || ocupado} className="mt-3">Recarregar dívidas</Button></Cartao>}
+      {dados && abertas.length > 0 && (
+        <section className={topo.topo}>
+          <div>
+            <p className={topo.rotulo}>O que você deve hoje</p>
+            <p className={topo.total}>{formatarMoeda(dados.totalCentavos)}</p>
+            <p className={topo.apoio}>
+              Em {abertas.length} {abertas.length === 1 ? "dívida" : "dívidas"}, com {formatarMoeda(dados.parcelaMensalCentavos)} saindo por mês em parcelas.
+              {dados.plano && dados.plano.quitacoes.length === abertas.length ? ` No ritmo atual você fecha tudo em ${dados.plano.meses} meses, pagando ${formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho.` : " O ritmo atual não fecha a conta: renegocie a taxa ou abra espaço no orçamento."}
+            </p>
+          </div>
+          {dados.ordem[0] && (
+            <div className={topo.alvo}>
+              <p className={topo.rotulo}>Pague esta primeiro</p>
+              <h2>{dados.ordem[0].credor}</h2>
+              <p>
+                {dados.ordem[0].jurosMensalBps > 0
+                  ? `${formatarPercentual(dados.ordem[0].jurosMensalBps)} ao mês é o juro mais caro da sua fila: cada real extra aqui economiza mais do que em qualquer outra.`
+                  : "Sem juros enquanto for paga integral — mantenha em dia para não virar rotativo."}
+              </p>
+              <div className={topo.acoes}>
+                <Button asChild><Link href="/plano">Ver o plano completo</Link></Button>
+                <Button asChild variant="outline"><Link href="/orcamento">De onde tirar o dinheiro</Link></Button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      <Cartao titulo={`Suas dívidas (${abertas.length})`}>
+        {dados && abertas.length === 0 && (
+          <Vazio titulo="Nenhuma dívida em aberto" texto="Se tiver alguma fora do app, cadastre para entrar no plano." />
+        )}
+
+        <div className="space-y-2">
+          {abertas.map((divida) => {
+            const progresso = divida.parcelasTotal ? (divida.parcelasPagas / divida.parcelasTotal) * 100 : 0
+            return (
+              <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
+                <div className="linha-financeira">
+                  <div className="min-w-0">
+                    <p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{divida.credor}</p>
+                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                      {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
+                      {divida.parcelaCentavos > 0 && ` · ${formatarMoeda(divida.parcelaCentavos)}/mês`}
+                      {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
+                      {` · vence dia ${divida.diaVencimento}`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="whitespace-nowrap text-[calc(16px*var(--escala-letra))] font-semibold tabular-nums">
+                      <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
+                    </p>
+                    {divida.jurosMensalBps > 0 && (
+                      <p className={cn("text-[calc(11px*var(--escala-letra))]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
+                        {formatarPercentual(divida.jurosMensalBps)} ao mês
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {divida.parcelasTotal ? (
+                  <div className="mt-2.5">
+                    <Barra percentual={progresso} tom="verde" />
+                  </div>
+                ) : null}
+
+                {divida.observacao && <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">{divida.observacao}</p>}
+              </div>
+            )
+          })}
+        </div>
+
+        {quitadas.length > 0 && (
+          <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-positivo">{quitadas.length} dívida(s) já quitada(s).</p>
+        )}
+      </Cartao>
+
       <Cartao
         titulo="Dívidas"
         acao={
@@ -368,54 +447,6 @@ export default function Dividas() {
         </Cartao>
       )}
 
-      <Cartao titulo={`Suas dívidas (${abertas.length})`}>
-        {dados && abertas.length === 0 && (
-          <Vazio titulo="Nenhuma dívida em aberto" texto="Se tiver alguma fora do app, cadastre para entrar no plano." />
-        )}
-
-        <div className="space-y-2">
-          {abertas.map((divida) => {
-            const progresso = divida.parcelasTotal ? (divida.parcelasPagas / divida.parcelasTotal) * 100 : 0
-            return (
-              <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-                <div className="linha-financeira">
-                  <div className="min-w-0">
-                    <p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{divida.credor}</p>
-                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
-                      {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
-                      {divida.parcelaCentavos > 0 && ` · ${formatarMoeda(divida.parcelaCentavos)}/mês`}
-                      {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
-                      {` · vence dia ${divida.diaVencimento}`}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="whitespace-nowrap text-[calc(16px*var(--escala-letra))] font-semibold tabular-nums">
-                      <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
-                    </p>
-                    {divida.jurosMensalBps > 0 && (
-                      <p className={cn("text-[calc(11px*var(--escala-letra))]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
-                        {formatarPercentual(divida.jurosMensalBps)} ao mês
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {divida.parcelasTotal ? (
-                  <div className="mt-2.5">
-                    <Barra percentual={progresso} tom="verde" />
-                  </div>
-                ) : null}
-
-                {divida.observacao && <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">{divida.observacao}</p>}
-              </div>
-            )
-          })}
-        </div>
-
-        {quitadas.length > 0 && (
-          <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-positivo">{quitadas.length} dívida(s) já quitada(s).</p>
-        )}
-      </Cartao>
     </div>
   )
 }

@@ -475,7 +475,7 @@
 .app-nav-group summary small { display:block;margin-top:3px;color:var(--texto-2);font-size: calc(12px * var(--escala-letra));font-weight:400; }
 .app-nav-group summary > span:last-child { font-size: calc(22px * var(--escala-letra));transition:transform .2s; }
 .app-nav-group[open] summary > span:last-child { transform:rotate(45deg); }
-.app-nav-item { display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:10px 14px;border-radius:14px;font-size: calc(14px * var(--escala-letra));color:var(--texto-2);text-align:left;transition:background .2s; }
+.app-nav-item { display:flex;align-items:center;gap:11px;width:100%;min-height:40px;padding:8px 12px;border-radius:12px;font-size: calc(13.5px * var(--escala-letra));color:var(--texto-2);text-align:left;transition:background .2s; }
 .app-nav-item:hover,.app-nav-item.is-active { background:var(--papel-1);color:var(--foreground); }
 .app-nav-item.is-active { font-weight:600; }
 .app-brand { display:flex;align-items:center;gap:10px;margin:4px 10px 42px;font-size: calc(32px * var(--escala-letra));font-weight:700;letter-spacing:-.06em; }
@@ -499,7 +499,11 @@
 @media(min-width:1024px) {
  .area-do-app { padding-left:256px; }
  .app-content { padding:32px 32px 100px; }
- .app-sidebar { position:fixed;inset:0 auto 0 0;z-index:30;display:flex;width:240px;flex-direction:column;padding:26px 18px;border-right:1px solid var(--pauta);background:var(--background);overflow-y:auto; }
+ .app-sidebar { position:fixed;inset:0 auto 0 0;z-index:30;display:flex;width:240px;flex-direction:column;padding:22px 16px;border-right:1px solid var(--pauta);background:var(--background);overflow-y:auto;scrollbar-width:none; }
+ /* A barra lateral passou a listar o app inteiro e ganhou rolagem própria; a
+    barra dessa rolagem aparecia como um segundo trilho no meio da tela. Ela
+    some, a rolagem continua (roda, teclado, toque). */
+ .app-sidebar::-webkit-scrollbar { width:0;height:0; }
  .app-bottom-nav { display:none; }
  .home-grid { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start; }
 }
@@ -605,3 +609,11 @@
    campo de autopreenchimento -- todos nativos. */
 :root { color-scheme: dark }
 .light { color-scheme: light }
+
+/* Grupos recolhidos da barra lateral. A seta gira ao abrir; o marcador nativo
+   do <summary> sai, senão aparecem dois indicadores na mesma linha. */
+.app-nav-grupo > summary { cursor:pointer; list-style:none; }
+.app-nav-grupo > summary::-webkit-details-marker { display:none; }
+.app-nav-grupo > summary svg { transition:transform .18s var(--curva); }
+.app-nav-grupo[open] > summary svg { transform:rotate(90deg); }
+.app-nav-grupo[open] > summary { color:var(--foreground); }

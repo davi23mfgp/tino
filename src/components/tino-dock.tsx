@@ -28,7 +28,7 @@ const SUGESTOES = [
  * motor de regras. O componente trata os dois casos pelo Content-Type: JSON é
  * resposta pronta, texto puro é fluxo.
  */
-export function TinoDock() {
+export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
   const [aberto, setAberto] = useState(false)
   const [estado, setEstado] = useState<EstadoTino>("tranquilo")
   const [turnos, setTurnos] = useState<Turno[]>([])
@@ -108,9 +108,16 @@ export function TinoDock() {
   return (
     <Dialog open={aberto} onOpenChange={setAberto}>
       <DialogTrigger asChild>
-        <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
-          <TinoMascote estado={estado} className="size-8" />
-        </button>
+        {comoItem ? (
+          // Na barra lateral ele é um item de navegação como os outros: o
+          // mascote renderizado em miniatura virava um borrão dentro do
+          // círculo, e o rótulo não dizia que ali se conversa com ele.
+          <button className="app-nav-item"><span aria-hidden className="text-lg leading-none">🐷</span><span>Seu assistente Tino</span></button>
+        ) : (
+          <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
+            <TinoMascote estado={estado} className="size-8" />
+          </button>
+        )}
       </DialogTrigger>
       {/* Cantinho direito no desktop, nao no centro da tela: o assistente
           acompanha a leitura dos numeros, e um modal centralizado tapava

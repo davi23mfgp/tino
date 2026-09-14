@@ -3,7 +3,7 @@
 import { Fragment, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LogOut, Menu, Settings } from "lucide-react"
+import { ChevronRight, LogOut, Menu, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { enviar } from "@/lib/cliente"
 import { TinoMarca } from "@/components/tino-mascote"
@@ -67,9 +67,27 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
       <p className="app-sidebar-caption">{apenasLoja ? "Sua loja" : "Seu dia a dia"}</p>
       <nav aria-label="Navegação principal" className="space-y-1">
         {principais.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}
-        {!apenasLoja && <Mais grupos={extras} ativo={secundario} desktop />}
       </nav>
-      {!apenasLoja && <div className="mt-6 flex items-center gap-3 px-3"><TinoDock /><span className="text-sm font-medium">Ajuda do Tino</span></div>}
+      {/* Os grupos ficam recolhidos, como eram dentro do "Mais": a barra
+          mostra o app inteiro sem virar uma lista de vinte linhas. O grupo da
+          tela aberta já vem expandido. */}
+      {!apenasLoja && <div className="mt-4 space-y-1">
+        {extras.map(grupo => {
+          const dentro = grupo.itens.some(item => estaAtivo(caminho, item.rota))
+          return <details key={grupo.chave} open={dentro} className="app-nav-grupo">
+            <summary className="app-nav-item"><ChevronRight className="size-4 shrink-0" aria-hidden /><span>{grupo.titulo}</span></summary>
+            <div className="space-y-1 pl-3">
+              {grupo.itens.map(item => {
+                const ativo = estaAtivo(caminho, item.rota)
+                return <Link key={item.rota} href={item.rota} className={cn("app-nav-item", ativo && "is-active")} aria-current={ativo ? "page" : undefined}>
+                  <item.Icone className="size-5" aria-hidden /><span>{item.rotulo}</span>
+                </Link>
+              })}
+            </div>
+          </details>
+        })}
+      </div>}
+      {!apenasLoja && <div className="mt-4"><TinoDock comoItem /></div>}
       <div className="mt-auto space-y-2 pt-6">
         <div className="border-t border-pauta pt-3"><p className="truncate px-3 text-sm font-medium">{nome}</p>
         {!apenasLoja && <Link href="/configuracoes" className="app-nav-item"><Settings className="size-4" aria-hidden /><span>Minha conta</span></Link>}
