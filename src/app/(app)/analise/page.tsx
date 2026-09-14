@@ -101,7 +101,7 @@ export default async function Analise() {
         </div>
       </Cartao>
 
-      <details className="space-y-4"><summary className="min-h-12 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-3 font-semibold">Indicadores e prioridades</summary>
+      <details open className="space-y-4"><summary className="min-h-11 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Indicadores e prioridades</summary>
       {/* ── Indicadores ───────────────────────────────── */}
       <Cartao titulo="Indicadores">
         <div className="grid gap-3 lg:grid-cols-2">
@@ -150,7 +150,7 @@ export default async function Analise() {
       </Cartao>
 
       </details>
-      <details className="space-y-4"><summary className="min-h-12 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-3 font-semibold">Entradas, saídas e patrimônio</summary>
+      <details open className="space-y-4"><summary className="min-h-11 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Entradas, saídas e patrimônio</summary>
       {/* ── DRE ───────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Demonstrativo do mês">
@@ -290,7 +290,7 @@ export default async function Analise() {
 
       {/* ── Gráficos ──────────────────────────────────── */}
       </details>
-      <details className="space-y-4"><summary className="min-h-12 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-3 font-semibold">Categorias e evolução</summary>
+      <details open className="space-y-4"><summary className="min-h-11 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Categorias e evolução</summary>
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Para onde foi o dinheiro">
           {panorama.mes.despesasPorCategoria.length > 0 ? (
@@ -325,8 +325,7 @@ export default async function Analise() {
 
       </details>
       <p className="px-1 text-[calc(11px*var(--escala-letra))] leading-relaxed text-muted-fg">
-        Este parecer lê os seus próprios lançamentos contra faixas de referência de mercado. Não é recomendação de
-        investimento nem substitui contador para questão tributária.
+        Leitura dos seus lançamentos. Não é recomendação nem substitui contador.
       </p>
     </div>
   )
