@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Pencil, Trash2 } from "lucide-react"
 import { rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
 
 import type { CompraParcelada } from "@/lib/cartoes"
@@ -77,21 +78,19 @@ function Parcelado({
 
       <footer className={estilos.rodapeParcela}>
         <span>Faltam <b>{restantes}</b> {restantes === 1 ? "parcela" : "parcelas"} · <b>{formatarMoeda(faltaCentavos)}</b></span>
-        <label>
-          <span className="sr-only">Ver parcela de qual mês em {parcelamento.descricao}</span>
-          <select value={competencia} onChange={(evento) => setCompetencia(evento.target.value)}>
+        <Select value={competencia} onValueChange={setCompetencia}>
+          <SelectTrigger aria-label={`Ver parcela de qual mês em ${parcelamento.descricao}`} className="h-10 w-[168px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
             {parcelamento.parcelas.map((parcela) => (
-              <option key={parcela.id} value={parcela.competencia}>
+              <SelectItem key={parcela.id} value={parcela.competencia}>
                 {rotuloCompetencia(parcela.competencia, true)} · {parcela.numero}/{parcelamento.parcelasTotal}
-              </option>
+              </SelectItem>
             ))}
-          </select>
-        </label>
-        {escolhida && (
-          <span data-paga={escolhida.paga}>
-            {formatarMoeda(escolhida.valorCentavos)} · {escolhida.paga ? "paga" : "prevista"}
-          </span>
-        )}
+          </SelectContent>
+        </Select>
+        {escolhida && <span data-paga={escolhida.paga}>{escolhida.paga ? "paga" : "prevista"}</span>}
       </footer>
     </article>
   )

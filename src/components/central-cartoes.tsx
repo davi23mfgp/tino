@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-react"
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
@@ -106,7 +107,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
     <Tabs value={aba} onValueChange={setAba}>
       <TabsList className={estilos.abas}><TabsTrigger value="compras">Compras</TabsTrigger><TabsTrigger value="parcelas">Parcelas</TabsTrigger><TabsTrigger value="categorias">Categorias</TabsTrigger><TabsTrigger value="orcamento">Orçamento</TabsTrigger><TabsTrigger value="ajuda">Ajuda</TabsTrigger><TabsTrigger value="importar">Importar</TabsTrigger></TabsList>
 
-      <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><select aria-label="Filtrar categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)}><option value="">Todas as categorias</option>{resumo.categorias.map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select></div>
+      <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><Select value={categoria || "todas"} onValueChange={(valor) => setCategoria(valor === "todas" ? "" : valor)}><SelectTrigger aria-label="Filtrar categoria" className="w-full sm:w-[220px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todas">Todas as categorias</SelectItem>{resumo.categorias.map((linha) => <SelectItem key={linha.id} value={linha.id}>{linha.nome}</SelectItem>)}</SelectContent></Select></div>
         <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.marca36}><MarcaPersonalizada nome={compra.descricao} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
       </section></TabsContent>
 
