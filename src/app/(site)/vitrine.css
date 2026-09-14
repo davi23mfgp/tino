@@ -1156,3 +1156,98 @@
 .vitrine .rodape a:hover {
   color: var(--creme);
 }
+
+/* --- pecas novas do celular, espelhando as telas reais ------ */
+.vitrine .cel-cartao--destaque {
+  border-color: oklch(0.74 0.16 162 / 35%);
+  background: linear-gradient(150deg, oklch(0.24 0.05 162), oklch(0.175 0 0) 62%);
+}
+
+.vitrine .cel-trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid oklch(1 0 0 / 9%);
+}
+
+.vitrine .cel-par-valor {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  font-size: calc(10px * var(--escala-letra));
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.vitrine .cel-par-valor small { font-weight: 500; color: oklch(0.68 0 0); }
+.vitrine .cel-par-valor--entra { color: oklch(0.8 0.15 162); }
+.vitrine .cel-par-valor--sai { color: oklch(0.72 0.16 25); }
+
+/* A fita da semana de /transacoes. */
+.vitrine .cel-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  text-align: center;
+}
+
+.vitrine .cel-dia {
+  border-radius: 9px;
+  padding: 5px 0 6px;
+  background: oklch(0.175 0 0);
+  font-size: calc(9px * var(--escala-letra));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.vitrine .cel-dia small {
+  display: block;
+  font-size: calc(6.5px * var(--escala-letra));
+  font-weight: 500;
+  color: oklch(0.66 0 0);
+}
+
+.vitrine .cel-dia--hoje {
+  background: oklch(0.43 0.15 170);
+  color: #fff;
+}
+
+.vitrine .cel-dia--hoje small { color: oklch(0.94 0.03 170); }
+
+/* As faturas por mes de /cartoes: confirmado cheio, previsto listrado. */
+.vitrine .cel-colunas {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  align-items: end;
+  gap: 5px;
+  height: 62px;
+  margin-top: 9px;
+}
+
+.vitrine .cel-coluna {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  gap: 4px;
+}
+
+.vitrine .cel-coluna small {
+  font-size: calc(6px * var(--escala-letra));
+  color: oklch(0.66 0 0);
+  text-align: center;
+}
+
+.vitrine .cel-coluna-barra {
+  display: block;
+  border-radius: 4px 4px 2px 2px;
+  background: oklch(1 0 0 / 14%);
+}
+
+.vitrine .cel-coluna-barra--atual { background: oklch(0.74 0.16 162); }
+
+.vitrine .cel-coluna-barra--prevista {
+  background: repeating-linear-gradient(135deg, oklch(0.74 0.16 162 / 38%) 0 3px, transparent 3px 6px);
+  border: 1px solid oklch(0.74 0.16 162 / 30%);
+}

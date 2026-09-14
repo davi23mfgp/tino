@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { ArrowDownLeft, CreditCard, Wallet } from "lucide-react"
+import { Wallet } from "lucide-react"
 import { TelasEmpilhadas, ORDEM_DAS_TELAS, type QualTela } from "@/app/(site)/tela-no-celular"
 import { progressoDoPalco, entradaDoPalco, telaDoProgresso, centroDaTela, ajusteDoPalco } from "@/lib/palco-do-produto"
 
@@ -50,10 +50,10 @@ export function PalcoDoProduto() {
     let quadro=0
     const atualizar=()=>{
       quadro=0
-      if(preferencia.matches) { el.style.setProperty("--entrada","1"); el.style.setProperty("--product-travel","0"); el.style.setProperty("--ajuste",ajusteDoPalco(window.innerHeight).toFixed(3)); return }
+      if(preferencia.matches) { el.style.setProperty("--entrada","1"); el.style.setProperty("--product-travel","0"); el.style.setProperty("--ajuste",ajusteDoPalco(window.innerHeight,window.innerWidth<820?240:170).toFixed(3)); return }
       const rect=el.getBoundingClientRect()
       const progresso=progressoDoPalco(rect.top,rect.height,window.innerHeight)
-      el.style.setProperty("--ajuste",ajusteDoPalco(window.innerHeight).toFixed(3))
+      el.style.setProperty("--ajuste",ajusteDoPalco(window.innerHeight,window.innerWidth<820?240:170).toFixed(3))
       el.style.setProperty("--entrada",entradaDoPalco(progresso).toFixed(3))
       el.style.setProperty("--product-travel",(progresso*2-1).toFixed(3))
       setManual(false)
@@ -84,8 +84,6 @@ export function PalcoDoProduto() {
     <div className="product-sticky">
       <div className="product-showcase">
         <div className="product-orbit" aria-hidden />
-        <div className="product-float product-float-left" aria-hidden><span className="product-float-icon"><ArrowDownLeft size={20}/></span><div><small>Entradas do mês</small><strong>R$ 8.600,00</strong></div><span className="product-mini-bars">{[25,40,31,52,42,60].map((h,i)=><i key={i} style={{height:h}}/>)}</span></div>
-        <div className="product-float product-float-right" aria-hidden><CreditCard size={22}/><small>Cartão em dia</small><strong>Mais controle.<br/>Menos surpresa.</strong><span className="product-float-check">✓</span></div>
         <div className="product-phone" id="produto-tela"><TelasEmpilhadas ativa={tela}/></div>
         <div className="product-legenda" aria-live="polite">
           <p className="eyebrow">{atual.rotulo}</p>

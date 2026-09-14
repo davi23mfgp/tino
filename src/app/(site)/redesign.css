@@ -182,7 +182,7 @@
 /* O trilho e so altura: quem aparece e o `.product-sticky` dentro dele. Tres
    telas, mais a entrada do aparelho, cabem em 320vh sem que nenhuma passe
    rapido demais para ser lida. */
-.vitrine .product-scroller { position:relative;height:320vh;margin-top:4px; }
+.vitrine .product-scroller { position:relative;height:240vh;margin-top:4px; }
 .vitrine .product-sticky { position:sticky;top:0;height:100vh;display:grid;place-items:center;overflow:hidden; }
 .vitrine .product-showcase { padding-top:0;margin-top:0;width:100%;transform:scale(var(--ajuste,1));transform-origin:center; }
 .vitrine .product-phone {
@@ -213,7 +213,7 @@
 .vitrine .cel-camada--ativa { opacity:1;transform:none; }
 
 @media (max-width:900px) {
-  .vitrine .product-scroller { height:280vh; }
+  .vitrine .product-scroller { height:250vh; }
   .vitrine .product-legenda-titulo { font-size: calc(21px * var(--escala-letra)); }
 }
 

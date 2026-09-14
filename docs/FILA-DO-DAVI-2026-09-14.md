@@ -255,3 +255,52 @@ maquina so existe minimizada, e aba oculta nao roda transicao, nem
 `IntersectionObserver`, nem `setTimeout`. Provado no DOM: o estado "fora" da
 blur(12px) e opacidade 0, o estado "dentro" da texto limpo, os atrasos saem
 escalonados (135ms na quarta palavra) e nao ha mais aninhamento.
+
+## Celular com a tela real, e o palco de volta (14/09, noite) — FEITO
+
+Dois pedidos, com duas imagens: a cena de cartoes flutuantes ("faca com
+coisas do site") e o celular ("tem que ter animacao tambem, e a tela ser a
+mesma que realmente e").
+
+**A cena ja existia quando cheguei.** Outra sessao de agente commitou em
+paralelo `cena-financeira.tsx` (`7fb4631`, "apresenta produto em cena
+tridimensional") — que e exatamente a primeira imagem. Eu tinha construido
+uma `mesa-de-cartoes` para a mesma coisa. **Joguei a minha fora** em vez de
+subir as duas: duas cenas 3D na mesma pagina competiriam entre si, e a que
+ja estava commitada e a que o Davi ja tinha visto. Nao mexi na deles.
+
+**O que faltava mesmo era o celular.** O commit da cena tinha tirado o
+`PalcoDoProduto` da pagina — ou seja, a animacao de rolagem que eu havia
+feito de manha nao estava mais no ar. Recolocado logo depois da cena, com o
+trilho encurtado de 320vh para 240vh (a cena ja segura a pessoa antes; os
+dois trilhos somados arrastavam).
+
+**A tela agora e a que realmente e.** Antes o miolo do celular era uma
+aproximacao escrita de cabeca. Agora cada rotulo e cada numero veio da tela
+real rodando com a conta de demonstracao — entrei por `curl` com
+`demo@tino.local` e li o HTML de `/painel`, `/transacoes` e `/cartoes` e a
+API de transacoes:
+
+- Inicio: "Resultado de setembro de 2026", R$ 4.436,00, "Saldo disponivel:
+  R$ 15.166,00 · aplicado: R$ 17.500,00", Entrou/Saiu/Saude 76, "Credito ·
+  Cartoes e faturas" com Platinum (final 8842, R$ 579,00) e Gold (final
+  3317, R$ 140,00), "Este mes · Para onde foi" com R$ 4.024,00 gasto ate
+  hoje e as categorias de verdade (Aluguel e condominio R$ 2.025, Educacao
+  R$ 780, Plano de saude R$ 640, Supermercado R$ 326).
+- Extrato: a fita da semana (dom 13 a sab 19), os tres totais, e os
+  lancamentos reais agrupados por dia.
+- Cartoes: fatura de set/26, limite de R$ 12.000,00, as faturas por mes com
+  previsto listrado, e as duas compras do mes.
+
+Os dois cartoes flutuantes que sobravam ao lado do celular sairam: a cena da
+abertura ja faz esse papel, e melhor.
+
+**No celular (mobile):** o trilho continua em 250vh com `sticky`, e o palco
+inteiro passou a reservar 240px em vez de 170px quando a tela e estreita —
+no aparelho a legenda ocupa mais altura, e sem isso o celular ficava maior
+que o espaco que sobrava.
+
+Sem prova visual, mesma razao das rodadas anteriores (janela do Chrome so
+existe minimizada; aba oculta nao roda transicao, nem observador, nem
+temporizador). Conferido no HTML servido: a cena abre, o palco voltou, as
+tres telas reais estao la e nao sobrou nada da mesa descartada.
