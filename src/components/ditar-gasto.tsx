@@ -5,8 +5,20 @@ import { Mic, Square } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-/** Usa o reconhecimento disponível no navegador. O navegador pode processar
- * áudio em um serviço próprio; o Tino recebe apenas o texto reconhecido. */
+/**
+ * Ditar um gasto.
+ *
+ * Dois caminhos, e a pessoa não precisa saber qual está usando:
+ *
+ * 1. **Reconhecimento do navegador**, quando existe. É instantâneo e mostra o
+ *    texto aparecendo enquanto se fala. Só que só existe no Chrome — no iPhone
+ *    e no Firefox não há nada, e antes disto o botão simplesmente sumia da
+ *    tela, justamente no aparelho onde mais se grava recado.
+ * 2. **Gravar e mandar para o Tino**, quando não existe. O áudio sobe, volta
+ *    entendido, e cai no mesmo lugar.
+ *
+ * Nos dois casos o Tino recebe texto e a pessoa confere antes de confirmar.
+ */
 
 /** O tipo não está no lib padrão do TypeScript; só o que este componente usa. */
 interface ReconhecimentoDeFala extends EventTarget {
@@ -43,10 +55,16 @@ export function DitarGasto({
   const [erro, setErro] = useState<string | null>(null)
   const textoReconhecido = useRef("")
   const motor = useRef<ReconhecimentoDeFala | null>(null)
+  const gravador = useRef<MediaRecorder | null>(null)
+  const pedacos = useRef<Blob[]>([])
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     setSuportado(construtorDeFala() !== null)
-    return () => motor.current?.stop()
+    return () => {
+      motor.current?.stop()
+      if (gravador.current?.state === "recording") gravador.current.stop()
+    }
   }, [])
 
   const parar = useCallback(() => {
@@ -104,13 +122,70 @@ export function DitarGasto({
     } catch { setErro("Não foi possível iniciar o microfone. Confira a permissão do site e o dispositivo selecionado.") }
   }
 
-  if (!suportado) return null
+  /**
+   * Grava e manda para o servidor entender.
+   *
+   * O formato sai do que o aparelho aceita: o iPhone grava mp4/aac e o resto
+   * grava webm. A rota decide a extensão pelo tipo que chega — Whisper recusa
+   * arquivo sem extensão reconhecível.
+   */
+  async function gravar() {
+    if (!window.isSecureContext) { setErro("Abra o Tino por HTTPS para usar o microfone."); return }
+    setErro(null)
+
+    try {
+      const entrada = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const gravacao = new MediaRecorder(entrada)
+      pedacos.current = []
+
+      gravacao.ondataavailable = (evento) => { if (evento.data.size > 0) pedacos.current.push(evento.data) }
+
+      gravacao.onstop = async () => {
+        entrada.getTracks().forEach((faixa) => faixa.stop())
+        setOuvindo(false)
+
+        const audio = new Blob(pedacos.current, { type: gravacao.mimeType })
+        pedacos.current = []
+        if (audio.size === 0) { setErro("Não gravou nada. Tente de novo."); return }
+
+        const formulario = new FormData()
+        formulario.append("audio", audio)
+
+        setEnviando(true)
+        try {
+          const resposta = await fetch("/api/transcrever", { method: "POST", body: formulario })
+          const dados = (await resposta.json()) as { texto?: string; erro?: string }
+          if (!resposta.ok || !dados.texto) { setErro(dados.erro ?? "Não consegui entender. Tente de novo, ou escreva."); return }
+          aoTranscrever(dados.texto)
+        } catch {
+          setErro("Não consegui mandar o áudio. Confira a conexão.")
+        } finally {
+          setEnviando(false)
+        }
+      }
+
+      gravador.current = gravacao
+      gravacao.start()
+      setOuvindo(true)
+    } catch {
+      setErro("Microfone bloqueado. Abra as permissões deste site, permita o microfone e tente novamente.")
+    }
+  }
+
+  function pararGravacao() {
+    if (gravador.current?.state === "recording") gravador.current.stop()
+  }
+
+  const gravandoNoServidor = !suportado
+  const comecar = gravandoNoServidor ? gravar : ouvir
+  const terminar = gravandoNoServidor ? pararGravacao : parar
 
   return (
     <div className={className}>
       <button
         type="button"
-        onClick={ouvindo ? parar : ouvir}
+        onClick={ouvindo ? terminar : comecar}
+        disabled={enviando}
         aria-label={ouvindo ? "Parar de gravar" : "Ditar um gasto"}
         className={cn(
           "toque flex items-center gap-2 rounded-full border px-4 py-2.5 text-[calc(13px*var(--escala-letra))] transition-colors",
@@ -120,7 +195,7 @@ export function DitarGasto({
         )}
       >
         {ouvindo ? <Square className="size-4" /> : <Mic className="size-4" />}
-        {ouvindo ? "ouvindo… toque para parar" : "ditar"}
+        {enviando ? "entendendo…" : ouvindo ? "ouvindo… toque para parar" : "ditar"}
       </button>
 
       {parcial && <p className="mt-2 text-[calc(13px*var(--escala-letra))] italic text-muted-fg">“{parcial}”</p>}

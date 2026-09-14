@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { confirmarCaptura, descartarCaptura, gerarChave } from "@/lib/captura"
+import { whatsappDisponivel } from "@/lib/captura/whatsapp"
 import { regraAPartirDeCorrecao } from "@/lib/categorizar"
 
 export const dynamic = "force-dynamic"
@@ -20,12 +21,23 @@ export const GET = comSessao(async (sessao, requisicao) => {
       where: { larId: sessao.larId },
       orderBy: { criadoEm: "desc" },
       // O hash nunca sai daqui: só o sufixo serve para o usuário reconhecer.
-      select: { id: true, nome: true, sufixo: true, origem: true, ativa: true, ultimoUso: true, usos: true },
+      // O hash nunca sai daqui. O `chatId` também não: o número de quem
+      // conversa é dado pessoal, e a tela só precisa saber SE existe conversa
+      // ligada, não qual é.
+      select: { id: true, nome: true, sufixo: true, origem: true, ativa: true, ultimoUso: true, usos: true, chatId: true },
     }),
     prisma.captura.count({ where: { larId: sessao.larId, status: "PENDENTE" } }),
   ])
 
-  return ok({ capturas, chaves, pendentes })
+  return ok({
+    capturas,
+    pendentes,
+    chaves: chaves.map(({ chatId, ...chave }) => ({ ...chave, conectada: Boolean(chatId) })),
+    // Sem as chaves da Meta configuradas no servidor, gerar chave de WhatsApp
+    // seria entregar um caminho que não leva a lugar nenhum. A tela precisa
+    // dizer isso em vez de fingir que o canal existe.
+    canais: { whatsapp: whatsappDisponivel(), telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN) },
+  })
 })
 
 /** Confirma uma captura, virando lançamento. */

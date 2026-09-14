@@ -215,6 +215,10 @@ enum OrigemCaptura {
   /// diferente — vem do app de origem, não de um modelo escrito pela pessoa — e
   /// é olhando a origem que dá para melhorar o leitor depois.
   COMPARTILHAMENTO
+  /// Conversa no WhatsApp. Separado do Telegram porque e o canal principal do
+  /// assessor e o que a pessoa ve na tela precisa dizer o nome certo — antes
+  /// disto, conversa de WhatsApp era gravada como TELEGRAM.
+  WHATSAPP
   EMAIL
   MANUAL
 }

@@ -77,7 +77,7 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
 
     await prisma.chaveCaptura.update({
       where: { id: chave.id },
-      data: { chatId: telefone, origem: "TELEGRAM" },
+      data: { chatId: telefone, origem: "WHATSAPP" },
     })
 
     await responder(
@@ -194,7 +194,7 @@ async function tratarTexto(telefone: string, larId: string, chaveId: string, tex
     larId,
     chaveId,
     texto,
-    origem: "TELEGRAM",
+    origem: "WHATSAPP",
     textoLivre: !pareceNotificacao,
     // A Meta reentrega a mesma mensagem quando o webhook falha.
     eventoId: mensagemId ? `whatsapp:${mensagemId}` : null,

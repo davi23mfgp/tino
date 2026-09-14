@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
+import { CanalWhatsApp } from "@/components/canal-whatsapp"
 import { SelectNative } from "@/components/ui/select-native"
 import { SeletorCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
@@ -46,6 +47,8 @@ interface Chave {
   ativa: boolean
   ultimoUso: string | null
   usos: number
+  /** Já existe conversa ligada a esta chave. O número em si não vem para cá. */
+  conectada: boolean
 }
 
 interface Conta {
@@ -58,6 +61,7 @@ type Categoria = CategoriaSelecionavel
 export default function Capturas() {
   const [capturas, setCapturas] = useState<Captura[]>([])
   const [chaves, setChaves] = useState<Chave[]>([])
+  const [canais, setCanais] = useState<{ whatsapp: boolean; telegram: boolean }>({ whatsapp: false, telegram: false })
   const [contas, setContas] = useState<Conta[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [chaveNova, setChaveNova] = useState<string | null>(null)
@@ -88,12 +92,13 @@ export default function Capturas() {
 
   const carregar = useCallback(async () => {
     const [fila, listaContas, listaCategorias] = await Promise.all([
-      buscar<{ capturas: Captura[]; chaves: Chave[] }>("/api/capturas"),
+      buscar<{ capturas: Captura[]; chaves: Chave[]; canais: { whatsapp: boolean; telegram: boolean } }>("/api/capturas"),
       buscar<Conta[]>("/api/contas"),
       buscar<Categoria[]>("/api/categorias"),
     ])
     setCapturas(fila.capturas)
     setChaves(fila.chaves)
+  setCanais(fila.canais)
     setContas(listaContas)
     setCategorias(listaCategorias)
     setCarregando(false)
@@ -177,8 +182,8 @@ export default function Capturas() {
     }, 5000)
   }
 
-  async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM") {
-    const nome = origem === "TELEGRAM" ? "Telegram" : "Meu celular"
+  async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM" | "WHATSAPP") {
+    const nome = origem === "WHATSAPP" ? "WhatsApp" : origem === "TELEGRAM" ? "Telegram" : "Meu celular"
     const resposta = await enviar<{ chave: string }>("/api/capturas", { nome, origem }, "PUT")
     setChaveNova(resposta.chave)
     setCopiado(false)
@@ -327,7 +332,7 @@ export default function Capturas() {
         <Cartao titulo="Fila de conferência">
           <Vazio
             titulo="Nada esperando"
-            texto="Quando chegar uma compra do celular ou do Telegram, ela aparece aqui para você confirmar com um toque."
+            texto="Quando chegar uma compra do celular ou do WhatsApp, ela aparece aqui para você confirmar com um toque."
           />
         </Cartao>
       )}
@@ -378,6 +383,13 @@ export default function Capturas() {
         )}
 
         <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
+          <CanalWhatsApp
+            disponivel={canais.whatsapp}
+            chaves={chaves}
+            chaveNova={chaveNova}
+            aoGerar={() => criarChave("WHATSAPP")}
+          />
+
           <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
             <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
               <Share2 className="size-4" /> Compartilhar do celular (Android)
