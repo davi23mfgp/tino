@@ -52,9 +52,14 @@ export const POST = comSessao(async (sessao, requisicao) => {
     diaVencimento?: number
     membroId?: string
     cor?: string
+    ticker?: string
+    quantidadeMilesimos?: number
   }>(requisicao)
 
-  for(const valor of [dados.saldoInicialCentavos,dados.limiteCentavos])if(valor!==undefined&&(!Number.isSafeInteger(valor)||Math.abs(valor)>2147483647))throw new ErroDeUso("Valor inválido.")
+  for(const valor of [dados.saldoInicialCentavos,dados.limiteCentavos,dados.quantidadeMilesimos])if(valor!==undefined&&(!Number.isSafeInteger(valor)||Math.abs(valor)>2147483647))throw new ErroDeUso("Valor inválido.")
+  // Ticker é código de negociação: letras e dígitos, nada além disso — o valor
+  // entra numa URL de consulta de cotação.
+  if(dados.ticker&&!/^[A-Za-z0-9.]{1,12}$/.test(dados.ticker.trim()))throw new ErroDeUso("Código do ativo inválido.")
   if(dados.membroId&&!await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}}))throw new ErroDeUso("Membro inválido.")
   const conta = await prisma.conta.create({
     data: {
@@ -68,6 +73,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
       diaVencimento: dados.diaVencimento ?? null,
       membroId: dados.membroId ?? null,
       cor: dados.cor ?? "blue",
+      ticker: dados.ticker?.trim().toUpperCase() || null,
+      quantidadeMilesimos: dados.quantidadeMilesimos ?? null,
     },
   })
 

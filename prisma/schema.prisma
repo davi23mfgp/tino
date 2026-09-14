@@ -356,6 +356,14 @@ model Conta {
   diaFechamento  Int?
   diaVencimento  Int?
 
+  // Investimento em ativo negociado: guarda o que a corretora chama de posição.
+  // O saldo da conta continua vindo das transferências; estes dois campos
+  // servem para calcular o valor DE MERCADO, que é exibido ao lado e nunca
+  // sobrescreve o saldo sozinho — marcação a mercado é lançamento, não efeito
+  // colateral de uma tela abrir.
+  ticker            String?
+  quantidadeMilesimos Int? // 1000 = uma unidade; permite fração de cota
+
   conexaoId      String?
   conexao        ConexaoOpenFinance? @relation(fields: [conexaoId], references: [id])
   contaExternaId String? // id da conta no agregador
