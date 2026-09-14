@@ -34,6 +34,17 @@ export interface Indicador {
   referencia: string
   /// O que o número significa, em uma frase.
   leitura: string
+  /// A régua do indicador, para a tela mostrar ONDE a pessoa está em vez de
+  /// escrever. Sem ela o número vira palavra ("ATENÇÃO") e some a noção de
+  /// distância: 28% e 29% recebem o mesmo rótulo e parecem a mesma coisa.
+  escala?: {
+    bom: number
+    atencao: number
+    /// Fim da régua. Valor acima disso encosta na ponta.
+    maximo: number
+    /// `true` quando menor é melhor (comprometimento, custo fixo, dívida).
+    menorMelhor: boolean
+  }
 }
 
 export interface LinhaDre {
@@ -56,6 +67,14 @@ export interface Dre {
   grupos: LinhaDre[]
 }
 
+/// Uma linha do balanço, como um contador listaria: de onde vem o número.
+export interface LinhaBalanco {
+  rotulo: string
+  valorCentavos: number
+  /// Detalhe opcional — instituição, prazo, credor.
+  apoio?: string
+}
+
 export interface Balanco {
   /// Dinheiro disponível hoje (não inclui limite de cartão).
   ativoCirculanteCentavos: number
@@ -68,6 +87,13 @@ export interface Balanco {
   passivoLongoPrazoCentavos: number
   passivoTotalCentavos: number
   patrimonioLiquidoCentavos: number
+  /// O balanço aberto: cada conta, cada meta, cada dívida na sua linha.
+  /// Somar dois totais e mostrar só eles esconde justamente o que a pessoa
+  /// precisa para agir — qual conta está no vermelho, qual dívida é a cara.
+  ativoCirculante: LinhaBalanco[]
+  ativoAplicado: LinhaBalanco[]
+  passivoCurto: LinhaBalanco[]
+  passivoLongo: LinhaBalanco[]
 }
 
 export interface Prioridade {
@@ -215,6 +241,31 @@ export function montarDiagnostico(
   const passivoLongo = parcelasLongoPrazo + panorama.dividas.totalCentavos
 
   const balanco: Balanco = {
+    ativoCirculante: panorama.saldoPorConta
+      .filter((conta) => conta.tipo !== "CARTAO_CREDITO" && conta.saldoCentavos > 0)
+      .map((conta) => ({ rotulo: conta.nome, valorCentavos: conta.saldoCentavos, apoio: rotuloDoTipo(conta.tipo) }))
+      .sort((a, b) => b.valorCentavos - a.valorCentavos),
+    ativoAplicado: panorama.metas
+      .filter((meta) => meta.saldoCentavos > 0)
+      .map((meta) => ({ rotulo: meta.nome, valorCentavos: meta.saldoCentavos, apoio: "meta" }))
+      .sort((a, b) => b.valorCentavos - a.valorCentavos),
+    passivoCurto: [
+      ...panorama.saldoPorConta
+        .filter((conta) => conta.tipo === "CARTAO_CREDITO" && conta.saldoCentavos < 0)
+        .map((conta) => ({ rotulo: conta.nome, valorCentavos: Math.abs(conta.saldoCentavos), apoio: "fatura aberta" })),
+      ...panorama.saldoPorConta
+        .filter((conta) => conta.tipo !== "CARTAO_CREDITO" && conta.saldoCentavos < 0)
+        .map((conta) => ({ rotulo: conta.nome, valorCentavos: Math.abs(conta.saldoCentavos), apoio: "saldo negativo" })),
+      ...(doze > 0 ? [{ rotulo: "Parcelas dos próximos 12 meses", valorCentavos: doze, apoio: "já contratadas" }] : []),
+    ].sort((a, b) => b.valorCentavos - a.valorCentavos),
+    passivoLongo: [
+      ...panorama.dividas.lista.map((divida) => ({
+        rotulo: divida.credor,
+        valorCentavos: divida.saldoDevedorCentavos,
+        apoio: divida.jurosMensalBps > 0 ? `${(divida.jurosMensalBps / 100).toFixed(2).replace(".", ",")}% ao mês` : undefined,
+      })),
+      ...(parcelasLongoPrazo > 0 ? [{ rotulo: "Parcelas além de 12 meses", valorCentavos: parcelasLongoPrazo }] : []),
+    ].sort((a, b) => b.valorCentavos - a.valorCentavos),
     ativoCirculanteCentavos: disponivel,
     ativoAplicadoCentavos: aplicado,
     ativoTotalCentavos: disponivel + aplicado,
@@ -243,6 +294,7 @@ export function montarDiagnostico(
       numero: comprometimento,
       faixa: semDados ? "SEM_DADO" : faixaMenorMelhor(comprometimento, REFERENCIA.comprometimento),
       referencia: "até 20% confortável · 30% é o teto usado por bancos",
+      escala: { bom: REFERENCIA.comprometimento.bom, atencao: REFERENCIA.comprometimento.atencao, maximo: 5000, menorMelhor: true },
       leitura:
         comprometimento > REFERENCIA.comprometimento.atencao
           ? "Parcelas tomam parte grande da renda. Sobra pouco para imprevisto, e imprevisto vira dívida nova."
@@ -257,6 +309,7 @@ export function montarDiagnostico(
       // a esse número seria elogiar uma sobra que ninguém viu acontecer.
       faixa: semDados || rendaObservada === 0 ? "SEM_DADO" : faixaMaiorMelhor(taxaPoupanca, REFERENCIA.taxaPoupanca),
       referencia: "20% ou mais constrói patrimônio · abaixo de 10% não forma reserva",
+      escala: { bom: REFERENCIA.taxaPoupanca.bom, atencao: REFERENCIA.taxaPoupanca.atencao, maximo: 4000, menorMelhor: false },
       leitura:
         rendaObservada === 0
           ? "Nenhuma receita foi lançada no mês, então esta conta usa a renda que você informou — não o que entrou de fato. Lance suas entradas para o número virar real."
@@ -271,6 +324,7 @@ export function montarDiagnostico(
       numero: Math.round(liquidez * 10) / 10,
       faixa: semDados ? "SEM_DADO" : faixaMaiorMelhor(liquidez, REFERENCIA.liquidez),
       referencia: "6 meses de custo essencial é o alvo · abaixo de 3 é frágil",
+      escala: { bom: REFERENCIA.liquidez.bom, atencao: REFERENCIA.liquidez.atencao, maximo: 12, menorMelhor: false },
       leitura:
         liquidez < 1
           ? "Sem nenhuma receita, o dinheiro disponível não cobre um mês."
@@ -283,6 +337,7 @@ export function montarDiagnostico(
       numero: custoFixoSobreRenda,
       faixa: semDados ? "SEM_DADO" : faixaMenorMelhor(custoFixoSobreRenda, REFERENCIA.custoFixo),
       referencia: "até 50% dá flexibilidade · acima de 60% o orçamento trava",
+      escala: { bom: REFERENCIA.custoFixo.bom, atencao: REFERENCIA.custoFixo.atencao, maximo: 10000, menorMelhor: true },
       leitura:
         custoFixoSobreRenda > REFERENCIA.custoFixo.atencao
           ? "Boa parte da renda já está comprometida antes de você decidir qualquer coisa. Cortar exige mexer em contrato, não em hábito."
@@ -295,6 +350,7 @@ export function montarDiagnostico(
       numero: endividamento,
       faixa: semDados ? "SEM_DADO" : faixaMenorMelhor(endividamento, REFERENCIA.endividamento),
       referencia: "até 30% administrável · acima de 100% compromete mais de um ano de renda",
+      escala: { bom: REFERENCIA.endividamento.bom, atencao: REFERENCIA.endividamento.atencao, maximo: 15000, menorMelhor: true },
       leitura: `Sua dívida total equivale a ${formatarDecimal(endividamento / 100 / 100 * 12, 1)} mês(es) de renda.`,
     },
     {
@@ -435,6 +491,19 @@ export function montarDiagnostico(
 }
 
 /** Abertura do parecer: situação, número que a sustenta e o que fazer. */
+/** Nome curto do tipo de conta, para a linha do balanço. */
+function rotuloDoTipo(tipo: string): string {
+  return (
+    {
+      CORRENTE: "conta corrente",
+      POUPANCA: "poupança",
+      DINHEIRO: "em espécie",
+      INVESTIMENTO: "investimento",
+      PJ_MEI: "conta PJ",
+    }[tipo] ?? "conta"
+  )
+}
+
 function montarParecer(params: {
   situacao: Diagnostico["situacao"]
   nota: number

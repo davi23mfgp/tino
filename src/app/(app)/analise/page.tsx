@@ -142,10 +142,17 @@ export default async function Analise() {
                 </div>
               </div>
 
-              {/* A leitura em prosa e a referencia saíram: o numero e a faixa
-                  ja dizem onde a pessoa esta, e as duas frases por indicador
-                  somavam meia tela em cinco indicadores. A referencia fica no
-                  title, para quem quiser conferir de onde vem a faixa. */}
+              {/* A régua no lugar da palavra. "ATENÇÃO" não diz se falta muito
+                  ou pouco — 28% e 29% ganham o mesmo rótulo e parecem iguais.
+                  Aqui a faixa verde é o alvo, a amarela o limite, e o traço
+                  mostra onde a pessoa caiu. */}
+              {indicador.escala && (
+                <Regua
+                  numero={indicador.numero}
+                  escala={indicador.escala}
+                  cor={COR_FAIXA[indicador.faixa]}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -227,13 +234,25 @@ export default async function Analise() {
         <Cartao titulo="Balanço">
           <div className="space-y-1">
             <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Ativo</p>
-            <Linha rotulo="Disponível em conta" valor={balanco.ativoCirculanteCentavos} />
-            <Linha rotulo="Guardado em metas" valor={balanco.ativoAplicadoCentavos} />
+            {/* Aberto conta a conta e dívida a dívida, como um contador
+                entregaria: dois totais escondem justamente o que serve para
+                agir — qual conta está no vermelho e qual dívida é a cara. */}
+            {balanco.ativoCirculante.map((linha) => (
+              <Linha key={`ac-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
+            ))}
+            {balanco.ativoAplicado.map((linha) => (
+              <Linha key={`aa-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
+            ))}
             <Linha rotulo="Total" valor={balanco.ativoTotalCentavos} forte />
 
             <p className="pt-3 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Passivo</p>
-            <Linha rotulo="Curto prazo (até 12 meses)" valor={-balanco.passivoCurtoPrazoCentavos} tom="negativo" />
-            <Linha rotulo="Longo prazo" valor={-balanco.passivoLongoPrazoCentavos} tom="negativo" />
+            {balanco.passivoCurto.map((linha) => (
+              <Linha key={`pc-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
+            ))}
+            {balanco.passivoLongo.map((linha) => (
+              <Linha key={`pl-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
+            ))}
+            {balanco.passivoTotalCentavos === 0 && <Linha rotulo="Sem dívidas" valor={0} />}
             <Linha rotulo="Total" valor={-balanco.passivoTotalCentavos} tom="negativo" forte />
 
             <div className="my-2 border-t border-pauta" />
@@ -245,11 +264,6 @@ export default async function Analise() {
               forte
             />
           </div>
-
-          <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-            Patrimônio líquido é o número que diz se você avançou: dá para terminar o mês com mais dinheiro em conta e
-            mesmo assim mais pobre, se a dívida cresceu mais que o saldo.
-          </p>
 
           {mensal.serie.length > 1 && (
             <div className="mt-5 border-t border-pauta pt-4">
@@ -356,11 +370,13 @@ export default async function Analise() {
 function Linha({
   rotulo,
   valor,
+  apoio,
   tom = "neutro",
   forte,
 }: {
   rotulo: string
   valor: number
+  apoio?: string
   tom?: "neutro" | "positivo" | "negativo"
   forte?: boolean
 }) {
@@ -368,8 +384,47 @@ function Linha({
 
   return (
     <div className={cn("flex items-baseline justify-between gap-3 py-1", forte && "font-semibold")}>
-      <span className={cn("text-[calc(13px*var(--escala-letra))]", !forte && "text-muted-fg")}>{rotulo}</span>
+      <span className={cn("min-w-0 text-[calc(13px*var(--escala-letra))]", !forte && "text-muted-fg")}>
+        {rotulo}
+        {apoio && <span className="ml-1.5 text-[calc(10px*var(--escala-letra))] opacity-60">{apoio}</span>}
+      </span>
       <span className={cn("text-[calc(14px*var(--escala-letra))] tabular-nums", cor)}><span className="valor-inteiro">{formatarMoeda(valor)}</span></span>
+    </div>
+  )
+}
+
+/**
+ * Onde o indicador caiu dentro da própria referência.
+ *
+ * Duas zonas pintadas — a boa e a de atenção — e um traço na posição do valor.
+ * É a informação que a palavra da faixa esconde: a distância até a próxima
+ * zona, que é o que diz se vale a pena agir agora.
+ */
+function Regua({
+  numero,
+  escala,
+  cor,
+}: {
+  numero: number
+  escala: { bom: number; atencao: number; maximo: number; menorMelhor: boolean }
+  cor: string
+}) {
+  const posicao = (valor: number) => Math.max(0, Math.min(100, (valor / escala.maximo) * 100))
+  const marca = posicao(numero)
+  // Menor-melhor: a zona boa começa na esquerda e vai até `bom`. Maior-melhor:
+  // ela começa em `bom` e vai até o fim da régua.
+  const zonaBoa = escala.menorMelhor
+    ? { left: 0, width: posicao(escala.bom) }
+    : { left: posicao(escala.bom), width: 100 - posicao(escala.bom) }
+  const zonaAtencao = escala.menorMelhor
+    ? { left: posicao(escala.bom), width: posicao(escala.atencao) - posicao(escala.bom) }
+    : { left: posicao(escala.atencao), width: posicao(escala.bom) - posicao(escala.atencao) }
+
+  return (
+    <div className="relative mt-2.5 h-1.5 rounded-full bg-papel-3" aria-hidden>
+      <span className="absolute inset-y-0 rounded-full bg-positivo/35" style={{ left: `${zonaBoa.left}%`, width: `${zonaBoa.width}%` }} />
+      <span className="absolute inset-y-0 bg-atencao/30" style={{ left: `${zonaAtencao.left}%`, width: `${Math.max(0, zonaAtencao.width)}%` }} />
+      <span className={cn("absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-[color:var(--papel-1)]", cor.replace("text-", "bg-"))} style={{ left: `${marca}%` }} />
     </div>
   )
 }
