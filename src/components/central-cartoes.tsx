@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
+import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { AjudaCartao } from "@/components/ajuda-cartao"
@@ -134,7 +135,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
       <TabsList className={estilos.abas}><TabsTrigger value="compras">Compras</TabsTrigger><TabsTrigger value="parcelas">Parcelas</TabsTrigger><TabsTrigger value="categorias">Categorias</TabsTrigger><TabsTrigger value="orcamento">Orçamento</TabsTrigger><TabsTrigger value="ajuda">Ajuda</TabsTrigger><TabsTrigger value="importar">Importar</TabsTrigger></TabsList>
 
       <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><Select value={categoria || "todas"} onValueChange={(valor) => setCategoria(valor === "todas" ? "" : valor)}><SelectTrigger aria-label="Filtrar categoria" className="w-full sm:w-[220px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todas">Todas as categorias</SelectItem>{resumo.categorias.map((linha) => <SelectItem key={linha.id} value={linha.id}>{linha.nome}</SelectItem>)}</SelectContent></Select></div>
-        <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.marca36}><MarcaPersonalizada nome={compra.descricao} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
+        <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.marca36}><MarcaPersonalizada nome={compra.descricao} /><IconeCategoria compra={compra} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
       </section></TabsContent>
 
       <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} /><ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} mes={mes} aoEditar={(parcelamento) => setForm({ parcelamento })} aoExcluir={setExcluir} /></section></TabsContent>
@@ -175,4 +176,16 @@ function OrcamentoDoCartao({ cartao, mes, categorias, gastos, aoSalvar }: { cart
     <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)} utilizado</small><input aria-label={`Orçamento de ${linha.nome}`} value={formatarDecimal(limite / 100, 2)} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: paraCentavos(e.target.value) }))} inputMode="decimal" /></span><input type="range" min="0" max={Math.max(total, 10000)} step="1000" value={Math.min(limite, Math.max(total, 10000))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
     {erro && <p className={estilos.erro} role="alert">{erro}</p>}<Button disabled={salvando} onClick={() => void salvar()}>Salvar orçamento</Button>
   </section>
+}
+
+/**
+ * Ícone da categoria, atrás da marca personalizada.
+ *
+ * `MarcaPersonalizada` devolve `null` quando o estabelecimento não tem logo
+ * cadastrado, e o círculo ficava vazio. O CSS esconde este ícone quando a
+ * marca existe, então nunca aparecem os dois.
+ */
+function IconeCategoria({ compra }: { compra: CompraCartao }) {
+  const Icone = iconeDaCategoria(compra.categoria, compra.tipo === "RECEITA" ? "RECEITA" : "DESPESA")
+  return <Icone aria-hidden />
 }
