@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, type CSSProperties } from "react"
+import { useRouter } from "next/navigation"
 import { ArrowRight, CircleDollarSign, ListChecks, PiggyBank } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -19,6 +20,7 @@ const OBJETIVOS = [
 ]
 
 export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes: string; aoAbrir: (aba: string) => void }) {
+  const router = useRouter()
   const [objetivo, setObjetivo] = useState("economia")
   const [programa, setPrograma] = useState("Manual")
   const [moeda, setMoeda] = useState("real")
@@ -49,6 +51,15 @@ export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes
   const economia = Math.round((categoria?.totalCentavos ?? 0) * reducao / 100)
   const teto = (categoria?.totalCentavos ?? 0) - economia
 
+  // Depois de aplicar, a tela precisa dizer como a decisão está indo — senão a
+  // pessoa aplica o teto e nunca mais sabe se ele está sendo respeitado.
+  const tetoSalvo = cartao.orcamentos
+    ?.find((plano) => plano.competencia === mes)
+    ?.categorias.find((linha) => linha.categoriaId === categoria?.id)
+    ?.limiteCentavos ?? null
+  const gastoDaCategoria = categoria?.totalCentavos ?? 0
+  const usoDoTeto = tetoSalvo && tetoSalvo > 0 ? Math.min(100, Math.round((gastoDaCategoria / tetoSalvo) * 100)) : null
+
   const taxaNumero = Number(taxa.replace(",", "."))
   const manualNumero = Number(cambioManual.replace(",", "."))
   const cambioUsado = cambioManual.trim() !== "" && Number.isFinite(manualNumero) && manualNumero > 0 ? manualNumero : cotacao?.valor ?? null
@@ -69,6 +80,8 @@ export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes
     try {
       await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos, categorias }, "PUT")
       setEstado("Teto salvo no orçamento deste mês.")
+      // Sem isso o acompanhamento abaixo continuaria mostrando o plano antigo.
+      router.refresh()
     } catch (erro) {
       setEstado(erro instanceof Error ? erro.message : "Não foi possível salvar. Tente novamente.")
     }
@@ -121,6 +134,15 @@ export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes
               Aplicar teto na categoria <ArrowRight size={15} />
             </Button>
             <span role="status">{estado}</span>
+            {tetoSalvo !== null && (
+              <div className={estilos.acompanhamento}>
+                <p>
+                  Teto em vigor: <b>{formatarMoeda(tetoSalvo)}</b> · já usou <b>{formatarMoeda(gastoDaCategoria)}</b>
+                </p>
+                <Trilho valor={usoDoTeto ?? 0} rotulo={`Uso do teto de ${categoria?.nome ?? "categoria"}`} estourou={gastoDaCategoria > tetoSalvo} />
+                <p>{gastoDaCategoria > tetoSalvo ? `Passou ${formatarMoeda(gastoDaCategoria - tetoSalvo)} do teto.` : `Ainda cabem ${formatarMoeda(tetoSalvo - gastoDaCategoria)}.`}</p>
+              </div>
+            )}
             <small>Compras já feitas não são alteradas.</small>
           </div>
         </div>
@@ -189,7 +211,7 @@ export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes
           <div className={estilos.contexto}>
             <small>Conferência de compras</small>
             <h3>{semCategoria ? `${semCategoria} para categorizar` : "Categorias em dia"}</h3>
-            <progress aria-label="Compras categorizadas" max={Math.max(1, resumo.compras.length)} value={categorizadas} />
+            <Trilho valor={resumo.compras.length ? Math.round((categorizadas / resumo.compras.length) * 100) : 0} rotulo="Compras categorizadas" />
             <p>{categorizadas} de {resumo.compras.length} categorizadas</p>
             <Button variant="outline" onClick={() => aoAbrir(semCategoria ? "compras" : "importar")}>
               {semCategoria ? "Revisar compras" : "Importar fatura para conferir"}<ArrowRight size={15} />
@@ -204,5 +226,28 @@ export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * Trilho fino do próprio desenho.
+ *
+ * O `<progress>` nativo trazia a aparência do sistema operacional para dentro
+ * de uma tela que não se parece com ele; e a cor sozinha não contava que o
+ * gasto passou do teto — por isso o texto ao lado sempre diz o mesmo.
+ */
+function Trilho({ valor, rotulo, estourou = false }: { valor: number; rotulo: string; estourou?: boolean }) {
+  return (
+    <span
+      className={estilos.trilho}
+      role="progressbar"
+      aria-label={rotulo}
+      aria-valuenow={valor}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      data-estourou={estourou}
+    >
+      <i style={{ width: `${Math.max(0, Math.min(100, valor))}%` }} />
+    </span>
   )
 }

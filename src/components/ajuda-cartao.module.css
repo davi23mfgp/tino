@@ -29,7 +29,12 @@
 }
 .contexto h3 { margin-top:10px; font-size:calc(20px * var(--escala-letra)); font-weight:650; }
 .contexto p { margin-top:8px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
-.contexto progress { width:100%; height:7px; margin-top:12px; border-radius:999px; accent-color:var(--acao); }
+.trilho { display:block; width:100%; height:6px; margin-top:12px; border-radius:999px; background:var(--papel-3); overflow:hidden; }
+.trilho > i { display:block; height:100%; border-radius:999px; background:var(--acao); transition:width var(--tempo) var(--curva); }
+.trilho[data-estourou="true"] > i { background:var(--negativo); }
+.acompanhamento { margin-top:12px; padding-top:12px; border-top:1px solid var(--pauta); }
+.acompanhamento p { margin-top:0; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.acompanhamento p + p { margin-top:8px; }
 
 .reducao { display:block; margin-top:16px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 .reducao b { margin-left:4px; color:var(--foreground); font-size:calc(14px * var(--escala-letra)); }
