@@ -52,10 +52,6 @@ import { rotaPermitida } from "@/lib/acesso"
 export interface ItemNav {
   rota: string
   rotulo: string
-  /// Rótulo das abas compactas. O `rotulo` inteiro continua no menu e no
-  /// `aria-label`; aqui cabe a versão curta, que ao lado do ícone não perde
-  /// sentido e deixa as quatro abas caberem sem rolagem no celular.
-  rotuloCurto?: string
   Icone: typeof BarChart3
 }
 
@@ -150,9 +146,9 @@ export const GRUPOS_NAV: GrupoNav[] = [
     pergunta: "Analise, fluxo de caixa, simulador e investimentos",
     itens: [
       { rota: "/analise", rotulo: "Análise", Icone: PieChart },
-      { rota: "/projecao", rotulo: "Fluxo de caixa", rotuloCurto: "Fluxo", Icone: LineChart },
-      { rota: "/simulador", rotulo: "Simulador", rotuloCurto: "Simular", Icone: Wand2 },
-      { rota: "/investir", rotulo: "Investimentos", rotuloCurto: "Investir", Icone: Sprout },
+      { rota: "/projecao", rotulo: "Fluxo de caixa", Icone: LineChart },
+      { rota: "/simulador", rotulo: "Simulador", Icone: Wand2 },
+      { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     ],
   },
   {

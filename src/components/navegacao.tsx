@@ -18,21 +18,20 @@ import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA_FUNCIONARIO, NUCLEO, 
 /**
  * Abas do grupo em que a tela está (Análise, Fluxo, Simulador, Investir).
  *
- * Compacta de propósito: eram quatro pílulas soltas de 44px com rótulo por
- * extenso, ocupando uma faixa inteira antes do conteúdo — no celular isso
- * empurrava o primeiro número para fora da tela. Agora é um trilho único de
- * vidro, com ícone e rótulo curto, e só a aba ativa fica preenchida.
+ * Quatro nomes inteiros, lado a lado, sem caixa em volta — o desenho que o
+ * Davi apontou como o que queria. Dividem a largura em partes iguais, então
+ * cabem no celular sem rolagem lateral, e só a ativa fica preenchida.
  *
- * O ícone é o que permite encurtar o rótulo sem perder o sentido: "Fluxo" ao
- * lado de uma linha ascendente não vira adivinhação.
+ * A altura ficou em 40px: o suficiente para o toque, sem a faixa de 44px mais
+ * margem que antes empurrava o primeiro número da tela para fora da vista.
  */
 export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
   const caminho = usePathname()
   const grupo = grupoDoCaminho(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei)), caminho)
   if (!grupo || grupo.itens.length < 2 || grupo.chave === "movimento" || apenasLoja) return null
   return (
-    <nav aria-label={grupo.titulo} className="app-subabas vidro-menu mb-4">
-      {grupo.itens.map(({ rota, rotulo, rotuloCurto, Icone }) => {
+    <nav aria-label={grupo.titulo} className="app-subabas mb-4">
+      {grupo.itens.map(({ rota, rotulo }) => {
         const ativo = estaAtivo(caminho, rota)
         return (
           <Link
@@ -43,8 +42,7 @@ export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boole
             data-ativo={ativo}
             className="spring-press"
           >
-            {Icone && <Icone aria-hidden />}
-            <span>{rotuloCurto ?? rotulo}</span>
+            <span className="truncate">{rotulo}</span>
           </Link>
         )
       })}

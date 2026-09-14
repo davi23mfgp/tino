@@ -101,7 +101,7 @@ export default async function Analise() {
         </div>
       </Cartao>
 
-      <details open className="space-y-4"><summary className="min-h-11 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Indicadores e prioridades</summary>
+      <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Indicadores e prioridades</h3>
       {/* ── Indicadores ───────────────────────────────── */}
       <Cartao titulo="Indicadores">
         <div className="grid gap-3 lg:grid-cols-2">
@@ -149,8 +149,8 @@ export default async function Analise() {
         </ol>
       </Cartao>
 
-      </details>
-      <details open className="space-y-4"><summary className="min-h-11 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Entradas, saídas e patrimônio</summary>
+      </section>
+      <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Entradas, saídas e patrimônio</h3>
       {/* ── DRE ───────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Demonstrativo do mês">
@@ -289,8 +289,8 @@ export default async function Analise() {
       </div>
 
       {/* ── Gráficos ──────────────────────────────────── */}
-      </details>
-      <details open className="space-y-4"><summary className="min-h-11 cursor-pointer rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Categorias e evolução</summary>
+      </section>
+      <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Categorias e evolução</h3>
       <div className="grid gap-4 lg:grid-cols-2">
         <Cartao titulo="Para onde foi o dinheiro">
           {panorama.mes.despesasPorCategoria.length > 0 ? (
@@ -323,7 +323,7 @@ export default async function Analise() {
         </Cartao>
       </div>
 
-      </details>
+      </section>
       <p className="px-1 text-[calc(11px*var(--escala-letra))] leading-relaxed text-muted-fg">
         Leitura dos seus lançamentos. Não é recomendação nem substitui contador.
       </p>
