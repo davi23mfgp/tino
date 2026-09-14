@@ -26,3 +26,22 @@ uma máquina com o navegador ligado.
 - Pontos/milhas e demais integrações: continuam sem certificação. Distinguir
   simulação, configuração manual e integração real segue pendente.
 - `docs/AUDITORIA-53-2026-09-13.md` não foi reauditado item a item.
+
+## Acabamento visual — o que impede fechar
+
+Conferi o código das seis áreas da tabela do relatório contra as capturas
+rejeitadas (extraídas dos dois ZIPs, que existem e foram abertos). Boa parte da
+crítica já não reproduz no código de hoje: no Extrato os filtros secundários já
+estão recolhidos em `<details>`, o resumo virou uma faixa compacta e o botão de
+categoria perdeu borda e fundo; o painel de orçamento já tem trilho fino próprio
+e valor exato editável.
+
+O que sobra é justamente o que só se decide vendo a tela: densidade, alinhamento,
+peso tipográfico, a pilha de cartões e o espaçamento dos modais. Esta máquina não
+tem a extensão do Chrome conectada (`list_connected_browsers` devolveu vazio),
+então qualquer mudança aqui seria feita às cegas — e mudança de CSS em massa sem
+conferência já foi desfeita a pedido antes.
+
+**Pendente do Davi:** rodar `npm run dev` numa máquina com o navegador ligado e
+mandar as capturas atuais das seis áreas, ou dizer para seguir às cegas em uma
+área específica de cada vez.
