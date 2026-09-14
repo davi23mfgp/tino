@@ -1,3 +1,5 @@
+import Link from "next/link"
+import { TrendingDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import avancadas from "../analise/avancadas.module.css"
 import estilos from "./projecao.module.css"
@@ -30,7 +32,10 @@ export default async function Projecao() {
 
   return (
     <div className={cn(avancadas.pagina, "space-y-4")}>
-      <Cartao titulo="Projeção de 12 meses">
+      <Cartao
+        titulo="Projeção de 12 meses"
+        acao={<span className="text-[calc(11px*var(--escala-letra))] text-muted-fg">pela sua média, com as parcelas já contratadas</span>}
+      >
         <div className="grade-valores">
           <Metrica
             rotulo="Saldo hoje"
@@ -46,18 +51,27 @@ export default async function Projecao() {
           />
         </div>
 
+        {/* O aviso era um bloco de três linhas para dizer um mês e um valor, e
+            embaixo dele vinha um parágrafo explicando a hipótese da projeção.
+            Agora é uma faixa de vidro com o essencial e um caminho de saída —
+            e a hipótese virou uma linha curta ao lado do título do cartão. */}
         {primeiroNegativo && (
-          <p className="mt-4 rounded-2xl border border-negativo/40 bg-negativo/10 p-3 text-sm text-negativo">
-            No ritmo atual, o caixa fica negativo em {rotuloCompetencia(primeiroNegativo.competencia)} (
-            <span className="valor-inteiro">{formatarMoeda(primeiroNegativo.acumuladoCentavos)}</span>). Ainda dá tempo de mudar isso cortando gasto ou
-            adiando compra parcelada.
-          </p>
+          <Link
+            href="/simulador"
+            className="vidro-menu mt-3 flex items-center gap-3 rounded-2xl border-[color-mix(in_oklab,var(--negativo),transparent_60%)] bg-[linear-gradient(115deg,color-mix(in_oklab,var(--papel-2),var(--negativo)_14%),var(--papel-2)_72%)] px-4 py-3"
+          >
+            <TrendingDown className="size-5 shrink-0 text-negativo" aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[calc(14px*var(--escala-letra))] font-semibold text-negativo">
+                No vermelho em {rotuloCompetencia(primeiroNegativo.competencia, true)}
+              </span>
+              <span className="numero valor-inteiro block text-[calc(12px*var(--escala-letra))] text-muted-fg">
+                {formatarMoeda(primeiroNegativo.acumuladoCentavos)}
+              </span>
+            </span>
+            <span className="shrink-0 text-[calc(12px*var(--escala-letra))] text-acao">Simular saída</span>
+          </Link>
         )}
-
-        <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-          Cenário de tudo seguir como está: receita e despesa pela sua média, mais as parcelas já contratadas. Não
-          prevê imprevisto nem aumento de renda.
-        </p>
       </Cartao>
 
       {/* Mesmo grafico do inicio, com a janela maior: quem clica em "Ver
