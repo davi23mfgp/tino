@@ -27,9 +27,10 @@ export default async function Painel() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
   const mesesFuturos = [competencia, competenciaMaisMeses(competencia, 1), competenciaMaisMeses(competencia, 2)]
-  const [panorama, pendentes, cartoes, recentes, compromissos, parcelamentos] = await Promise.all([
+  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
     prisma.captura.findMany({ where: { larId: sessao.larId, status: "PENDENTE" }, orderBy: { criadoEm: "desc" }, take: 4 }),
+    prisma.captura.aggregate({ where: { larId: sessao.larId, status: "PENDENTE" }, _count: { _all: true }, _sum: { valorCentavos: true } }),
     prisma.conta.findMany({
       where: { larId: sessao.larId, tipo: "CARTAO_CREDITO", arquivada: false }, orderBy: { criadoEm: "asc" },
       include: {
@@ -46,7 +47,9 @@ export default async function Painel() {
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
   const categorias = panorama.mes.despesasPorCategoria.slice(0, 5)
   const maiorCategoria = Math.max(1, ...categorias.map((linha) => linha.totalCentavos))
-  const totalPendente = pendentes.reduce((total, linha) => total + (linha.valorCentavos ?? 0), 0)
+  // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
+  const quantidadePendente = totaisPendentes._count._all
+  const totalPendente = totaisPendentes._sum.valorCentavos ?? 0
   const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 4)
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 4)
 
@@ -63,16 +66,17 @@ export default async function Painel() {
         const futuras = mesesFuturos.slice(1).map((mes) => {
           const confirmado = valorDoMes(cartao.transacoes, mes)
           const previsto = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === mes).reduce((soma, p) => soma + p.valorCentavos, 0)
-          return { mes, valor: confirmado || previsto }
+          // Lançado e parcela ainda não lançada somam, mas o mês avisa quando há previsão.
+          return { mes, valor: confirmado + previsto, previsto }
         })
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco}><span className={estilos.iconeBanco}><CreditCard /></span><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}>{futuras.map((fatura) => <span key={fatura.mes}><small>{rotuloCompetencia(fatura.mes, true)}</small><b>{formatarMoeda(Math.max(0, fatura.valor))}</b></span>)}</span><ArrowRight className={estilos.seta} /></Link>
+        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco}><span className={estilos.iconeBanco}><CreditCard /></span><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}>{futuras.map((fatura) => <span key={fatura.mes}><small title={fatura.previsto ? `Inclui ${formatarMoeda(fatura.previsto)} em parcelas previstas` : undefined}>{rotuloCompetencia(fatura.mes, true)}{fatura.previsto ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, fatura.valor))}</b></span>)}</span><ArrowRight className={estilos.seta} /></Link>
       })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
     {pendentes.length > 0 && <section className={estilos.painel} aria-labelledby="conferir-titulo">
-      <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>Antes de entrar no saldo</p><h2 id="conferir-titulo">{pendentes.length} {pendentes.length === 1 ? "compra para conferir" : "compras para conferir"}</h2></div><div className={estilos.totalPendente}><small>Total</small><strong>{formatarMoeda(totalPendente)}</strong></div></header>
+      <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>Antes de entrar no saldo</p><h2 id="conferir-titulo">{quantidadePendente} {quantidadePendente === 1 ? "compra para conferir" : "compras para conferir"}</h2></div><div className={estilos.totalPendente}><small>Total</small><strong>{formatarMoeda(totalPendente)}</strong></div></header>
       <div className={estilos.listaCompacta}>{pendentes.map((linha) => <Link href="/capturas" key={linha.id}><span className={estilos.iconeLinha}><ReceiptText /></span><span className={estilos.dadosLinha}><strong>{linha.estabelecimento ?? "Sem descrição"}</strong><small>Notificação bancária</small></span><b>{formatarMoeda(linha.valorCentavos ?? 0)}</b><ArrowRight /></Link>)}</div>
-      <Link href="/capturas" className={estilos.acaoSecundaria}>Conferir agora <ArrowRight /></Link>
+      <Link href="/capturas" className={estilos.acaoSecundaria}>{quantidadePendente > pendentes.length ? `Conferir as ${quantidadePendente}` : "Conferir agora"} <ArrowRight /></Link>
     </section>}
 
     <div className={estilos.duasColunas}>
