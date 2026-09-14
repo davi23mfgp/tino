@@ -10,6 +10,8 @@ import { SelectNative } from "@/components/ui/select-native"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import type { PrecoDeAtivo } from "@/lib/cotacoes"
+import { ArcaCarteira } from "@/components/arca-carteira"
+import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
 
 interface Conta {
   id: string
@@ -19,6 +21,7 @@ interface Conta {
   saldoCentavos: number
   ticker?: string | null
   quantidadeMilesimos?: number | null
+  classeDeAtivo?: string | null
 }
 
 export function CarteiraInvestimentos() {
@@ -65,6 +68,20 @@ export function CarteiraInvestimentos() {
   const diferenca = totalHoje - totalCadastrado
   const fonte = precos[0]?.fonte
 
+  /**
+   * Sem a classe, o investimento não entra em nenhuma letra do ARCA — a conta
+   * do método simplesmente não o enxerga. Por isso a escolha fica no cartão do
+   * ativo, e não escondida numa tela de edição.
+   */
+  async function classificar(contaId: string, classe: string) {
+    try {
+      await enviar(`/api/contas/${contaId}`, { classeDeAtivo: classe || null }, "PATCH")
+      await carregar()
+    } catch (falha) {
+      setErro(falha instanceof Error ? falha.message : "Não foi possível salvar a classe.")
+    }
+  }
+
   async function salvar(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     const dados = new FormData(evento.currentTarget)
@@ -89,6 +106,7 @@ export function CarteiraInvestimentos() {
           tipo: "INVESTIMENTO",
           saldoInicialCentavos: paraCentavos(String(dados.get("valor"))),
           ticker: String(dados.get("ticker") ?? "").trim() || undefined,
+          classeDeAtivo: String(dados.get("classeDeAtivo") ?? "") || undefined,
           quantidadeMilesimos: Number.isFinite(quantidadeMilesimos) ? quantidadeMilesimos : undefined,
         })
       }
@@ -153,11 +171,31 @@ export function CarteiraInvestimentos() {
                   <span className="block">Aportado: {formatarMoeda(conta.saldoCentavos)}</span>
                 </p>
               )}
+              <label className="mb-3 block text-xs text-muted-fg">
+                Classe na carteira
+                <SelectNative
+                  value={conta.classeDeAtivo ?? ""}
+                  aria-label={`Classe de ${conta.nome}`}
+                  onChange={(evento) => void classificar(conta.id, evento.target.value)}
+                >
+                  <option value="">Escolha a classe</option>
+                  {CLASSES.map((linha) => <option key={linha.classe} value={linha.classe}>{linha.rotulo}</option>)}
+                </SelectNative>
+              </label>
               <Button variant="outline" onClick={() => { setMovimento(conta); setAbrir(true) }}>Aportar ou resgatar</Button>
             </div>
           )
         })}
       </div>
+
+      <ArcaCarteira
+        carteira={ativos.map((conta) => ({
+          // Quem ainda não escolheu a classe entra como "outros": some da conta
+          // do método, mas não some da carteira nem do total.
+          classe: (conta.classeDeAtivo ?? "OUTROS") as ClasseDeAtivo,
+          valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+        }))}
+      />
 
       {!ativos.length && <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. O saldo passa a compor seu patrimônio." />}
       {erro && !abrir && <p role="alert" className="text-negativo">{erro}</p>}
@@ -182,6 +220,7 @@ export function CarteiraInvestimentos() {
                   <label className="block text-sm">Código na bolsa<Input name="ticker" placeholder="Ex.: PETR4" autoCapitalize="characters" /></label>
                   <label className="block text-sm">Quantidade<Input name="quantidade" inputMode="decimal" placeholder="Ex.: 100" /></label>
                 </div>
+                <label className="block text-sm">Classe na carteira<SelectNative name="classeDeAtivo"><option value="">Escolher depois</option>{CLASSES.map((linha) => <option key={linha.classe} value={linha.classe}>{linha.rotulo} — {linha.explicacao}</option>)}</SelectNative></label>
                 <p className="text-xs text-muted-fg">Com código e quantidade, o preço do dia entra sozinho e a carteira mostra o valor de mercado. Sem eles, vale o valor que você informar.</p>
               </>
             )}

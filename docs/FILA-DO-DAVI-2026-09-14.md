@@ -8,9 +8,9 @@ nenhuma peça se perder quando o terminal fechar.
 | # | Achado | Estado |
 |---|---|---|
 | 4 | Projeção partia do patrimônio, não do caixa | **feito** — `lib/saldo-disponivel.ts`, painel mostra "aplicado" ao lado do disponível, 9 testes |
-| 3 | Compra de cartão sem competência de fatura | regra escrita e testada (`lib/competencia-cartao.ts`); falta ligar nas rotas e no schema |
-| 1 | Captura confirmada pode ser descartada | a fazer — máquina de estados |
-| 2 | Dedup engole compra legítima | a fazer — identidade de evento |
+| 3 | Compra de cartão sem competência de fatura | **feito** — regra ligada nas duas entradas, com ajuste manual no formulário |
+| 1 | Captura confirmada pode ser descartada | **feito** — `lib/captura/transicoes.ts`, 6 testes |
+| 2 | Dedup engole compra legítima | **feito** — identidade de evento nos três transportes |
 | 5 | Orçamento herda valor legado em mês sem plano | a fazer |
 | 6 | Categoria entra com R$ 10; campo reformata a cada tecla | a fazer |
 | 7 | Detalhe de parcela não acompanha o mês | a fazer |
@@ -56,3 +56,30 @@ outros, como Open Finance, dependem de credencial de instituição e contrato,
 não de código. Antes de começar qualquer um, é preciso separar "já existe",
 "dá para fazer sozinho" e "depende de terceiro" — e o Davi escolhe por onde
 começar. Ver `docs/PESQUISA-OPEN-FINANCE.md`, que já levantou parte disso.
+
+## 5. ARCA com a carteira real — feito em 14/09
+
+O pedido foi: renda fixa, renda variável e as outras classes que formam a ARCA,
+com o app ajudando quem segue o método.
+
+A tela só dividia um valor em quatro partes iguais — isso responde "quanto é um
+quarto disso", não "onde eu ponho o dinheiro deste mês". O método vive do
+reequilíbrio pelo aporte, e para isso precisa olhar o que a pessoa já tem.
+
+- `ClasseDeAtivo` no schema: ações, FII, renda fixa, caixa, internacional,
+  cripto e outros. Renda fixa e caixa são classes separadas na carteira e somam
+  juntas na letra C — um CDB de dois anos e o dinheiro rendendo CDI cumprem o
+  mesmo papel na divisão e papéis diferentes na vida.
+- `posicaoDoArca` lê a carteira contra o alvo de 25% por letra. Cripto e outros
+  ficam fora da conta do método (ele tem quatro classes e não diz o que fazer
+  com o resto) e aparecem somados à parte.
+- `aporteQueReequilibra` distribui o aporte para as letras mais atrasadas
+  primeiro, e só divide igual quando a carteira já está no alvo. 8 testes,
+  incluindo o de não perder nem sobrar centavo.
+- Cada investimento escolhe sua classe no próprio cartão; sem classe, ele
+  aparece na carteira e fica fora da conta do método, com aviso.
+
+Continua sendo aritmética: o método é de terceiro e está identificado na tela, e
+o app não escolhe ativo nem indica corretora.
+
+**Não conferido em tela** — o navegador desconectou antes.

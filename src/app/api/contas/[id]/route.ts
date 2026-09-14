@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
+import { CLASSES } from "@/lib/tino/investir"
 
 type Contexto = { params: Promise<{ id: string }> }
+
+const CLASSES_VALIDAS = new Set<string>(CLASSES.map((linha) => linha.classe))
 
 export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) => {
   const { id } = await contexto.params
@@ -21,7 +24,15 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
     "membroId",
     "cor",
     "arquivada",
+    "classeDeAtivo",
   ] as const
+
+  // Classe de ativo é a carteira do ARCA: aceitar um texto qualquer aqui faria
+  // a conta sumir de todas as letras sem erro nenhum.
+  if ("classeDeAtivo" in dados && dados.classeDeAtivo !== null) {
+    if (!CLASSES_VALIDAS.has(String(dados.classeDeAtivo))) throw new ErroDeUso("Classe de ativo inválida.")
+    if (conta.tipo !== "INVESTIMENTO") throw new ErroDeUso("Só conta de investimento tem classe de ativo.")
+  }
 
   const atualizacao = Object.fromEntries(
     permitidos.filter((campo) => campo in dados).map((campo) => [campo, dados[campo]]),

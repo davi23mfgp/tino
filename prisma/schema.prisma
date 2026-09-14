@@ -37,6 +37,19 @@ enum PapelMembro {
   FUNCIONARIO_LOJA
 }
 
+/// Classe de ativo de uma conta de investimento. As quatro primeiras são as
+/// letras do ARCA (renda fixa e caixa dividem a letra C); cripto e outros
+/// existem para a carteira fechar sem forçar um ativo a caber no método.
+enum ClasseDeAtivo {
+  ACOES
+  FII
+  RENDA_FIXA
+  CAIXA
+  INTERNACIONAL
+  CRIPTO
+  OUTROS
+}
+
 enum TipoConta {
   CORRENTE
   POUPANCA
@@ -363,6 +376,9 @@ model Conta {
   // colateral de uma tela abrir.
   ticker            String?
   quantidadeMilesimos Int? // 1000 = uma unidade; permite fração de cota
+  /// Em que classe esta conta entra na carteira. Só faz sentido em conta de
+  /// investimento; `null` significa "ainda não classificada", e a tela pede.
+  classeDeAtivo     ClasseDeAtivo?
 
   conexaoId      String?
   conexao        ConexaoOpenFinance? @relation(fields: [conexaoId], references: [id])

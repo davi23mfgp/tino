@@ -14,7 +14,7 @@
  * Tino, e nenhum é garantia de resultado.
  */
 
-import { ratear } from "@/lib/dinheiro"
+import { ratear, ratearPorPeso } from "@/lib/dinheiro"
 
 // ============================================================
 // Divisão da renda
@@ -125,6 +125,148 @@ export const PARTES_DO_ARCA: { letra: string; rotulo: string; explicacao: string
 export function dividirPorArca(valorCentavos: number): ParteDoArca[] {
   const partes = ratear(Math.max(0, valorCentavos), PARTES_DO_ARCA.length)
   return PARTES_DO_ARCA.map((base, indice) => ({ ...base, valorCentavos: partes[indice] }))
+}
+
+
+// ------------------------------------------------------------
+// ARCA com o que a pessoa já tem
+// ------------------------------------------------------------
+
+/**
+ * As classes que o app reconhece numa carteira.
+ *
+ * `RENDA_FIXA` e `CAIXA` são a mesma letra do método (o C), mas não a mesma
+ * coisa para quem investe: um CDB de dois anos e o dinheiro na conta rendendo
+ * 100% do CDI cumprem o mesmo papel na divisão e papéis diferentes na vida.
+ * Ficam separadas na carteira e somam juntas no C.
+ */
+export type ClasseDeAtivo = "ACOES" | "FII" | "RENDA_FIXA" | "CAIXA" | "INTERNACIONAL" | "CRIPTO" | "OUTROS"
+
+export const CLASSES: { classe: ClasseDeAtivo; rotulo: string; letra: string | null; explicacao: string }[] = [
+  { classe: "ACOES", rotulo: "Ações", letra: "A", explicacao: "Empresas listadas em bolsa, no Brasil." },
+  { classe: "FII", rotulo: "Fundos imobiliários", letra: "R", explicacao: "Real estate: tijolo e papel." },
+  { classe: "RENDA_FIXA", rotulo: "Renda fixa", letra: "C", explicacao: "Tesouro, CDB, LCI, LCA, debênture." },
+  { classe: "CAIXA", rotulo: "Caixa", letra: "C", explicacao: "O que resgata hoje sem perder valor." },
+  { classe: "INTERNACIONAL", rotulo: "Ativos internacionais", letra: "A", explicacao: "O que é cotado fora do país." },
+  { classe: "CRIPTO", rotulo: "Cripto", letra: null, explicacao: "Fora do método; aparece para a conta fechar." },
+  { classe: "OUTROS", rotulo: "Outros", letra: null, explicacao: "O que não se encaixa nas linhas acima." },
+]
+
+/** As quatro letras do método, e quais classes da carteira entram em cada uma. */
+export const LETRAS_DO_ARCA: { letra: string; rotulo: string; classes: ClasseDeAtivo[]; alvoBps: number }[] = [
+  { letra: "A", rotulo: "Ações", classes: ["ACOES"], alvoBps: 2500 },
+  { letra: "R", rotulo: "Real estate", classes: ["FII"], alvoBps: 2500 },
+  { letra: "C", rotulo: "Caixa e renda fixa", classes: ["RENDA_FIXA", "CAIXA"], alvoBps: 2500 },
+  { letra: "A", rotulo: "Ativos internacionais", classes: ["INTERNACIONAL"], alvoBps: 2500 },
+]
+
+export interface PosicaoDaLetra {
+  letra: string
+  rotulo: string
+  classes: ClasseDeAtivo[]
+  atualCentavos: number
+  /// Quanto essa letra representa hoje, em pontos-base do total considerado.
+  atualBps: number
+  alvoBps: number
+  /// Quanto falta (positivo) ou sobra (negativo) para bater o alvo hoje.
+  diferencaCentavos: number
+}
+
+/**
+ * Onde a carteira está em relação ao método.
+ *
+ * Cripto e "outros" ficam FORA da conta do ARCA: o método tem quatro classes e
+ * não diz o que fazer com o resto. Somá-los ao total faria as quatro letras
+ * parecerem defasadas por causa de um ativo que o método nem considera. Eles
+ * continuam visíveis na carteira, contados à parte.
+ */
+export function posicaoDoArca(carteira: { classe: ClasseDeAtivo; valorCentavos: number }[]): {
+  letras: PosicaoDaLetra[]
+  totalCentavos: number
+  foraDoMetodoCentavos: number
+} {
+  const porClasse = new Map<ClasseDeAtivo, number>()
+  for (const item of carteira) {
+    porClasse.set(item.classe, (porClasse.get(item.classe) ?? 0) + Math.max(0, item.valorCentavos))
+  }
+
+  const letras = LETRAS_DO_ARCA.map((letra) => ({
+    ...letra,
+    atualCentavos: letra.classes.reduce((soma, classe) => soma + (porClasse.get(classe) ?? 0), 0),
+  }))
+  const totalCentavos = letras.reduce((soma, letra) => soma + letra.atualCentavos, 0)
+  const foraDoMetodoCentavos = (porClasse.get("CRIPTO") ?? 0) + (porClasse.get("OUTROS") ?? 0)
+
+  return {
+    totalCentavos,
+    foraDoMetodoCentavos,
+    letras: letras.map((letra) => ({
+      ...letra,
+      atualBps: totalCentavos > 0 ? Math.round((letra.atualCentavos / totalCentavos) * 10_000) : 0,
+      diferencaCentavos: Math.round((totalCentavos * letra.alvoBps) / 10_000) - letra.atualCentavos,
+    })),
+  }
+}
+
+export interface AporteSugerido {
+  letra: string
+  rotulo: string
+  valorCentavos: number
+  /// Por que esta letra recebeu isto — texto de conferência, não conselho.
+  porque: string
+}
+
+/**
+ * Como o aporte reequilibra a carteira.
+ *
+ * É o coração do método: em vez de vender o que subiu, aporta-se no que ficou
+ * para trás. A conta é a mesma de encher vasos comunicantes — o dinheiro vai
+ * primeiro para as letras mais atrasadas em relação ao alvo, até onde ele dá;
+ * o que sobrar depois de todas alcançarem o alvo é dividido no percentual do
+ * método.
+ *
+ * Carteira vazia cai no caso simples: quatro partes iguais.
+ *
+ * Continua sendo aritmética. O app não diz qual ativo comprar dentro da letra,
+ * e não afirma que o método é bom — ele é de terceiro e está identificado.
+ */
+export function aporteQueReequilibra(
+  aporteCentavos: number,
+  carteira: { classe: ClasseDeAtivo; valorCentavos: number }[],
+): AporteSugerido[] {
+  const aporte = Math.max(0, Math.round(aporteCentavos))
+  const { letras, totalCentavos } = posicaoDoArca(carteira)
+  if (aporte === 0) return letras.map((letra) => ({ letra: letra.letra, rotulo: letra.rotulo, valorCentavos: 0, porque: "Sem aporte." }))
+
+  const totalDepois = totalCentavos + aporte
+  // Quanto falta a cada letra para alcançar o alvo já contando o dinheiro novo.
+  const faltas = letras.map((letra) => Math.max(0, Math.round((totalDepois * letra.alvoBps) / 10_000) - letra.atualCentavos))
+  const faltaTotal = faltas.reduce((soma, falta) => soma + falta, 0)
+
+  let valores: number[]
+  let motivo: (indice: number) => string
+
+  if (faltaTotal <= 0) {
+    valores = ratear(aporte, letras.length)
+    motivo = () => "A carteira já está no alvo: divide igual."
+  } else if (faltaTotal <= aporte) {
+    // Todas alcançam o alvo e ainda sobra: a sobra vai no percentual do método.
+    const sobra = aporte - faltaTotal
+    const extra = ratearPorPeso(sobra, letras.map((letra) => letra.alvoBps))
+    valores = faltas.map((falta, indice) => falta + extra[indice])
+    motivo = (indice) => (faltas[indice] > 0 ? "Estava abaixo do alvo; o aporte fecha a diferença." : "Já estava no alvo; recebe só a parte da sobra.")
+  } else {
+    // O aporte não cobre tudo: vai proporcional ao tamanho de cada atraso.
+    valores = ratearPorPeso(aporte, faltas)
+    motivo = (indice) => (faltas[indice] > 0 ? "É a que está mais atrás do alvo." : "Já está no alvo ou acima: não recebe agora.")
+  }
+
+  return letras.map((letra, indice) => ({
+    letra: letra.letra,
+    rotulo: letra.rotulo,
+    valorCentavos: valores[indice],
+    porque: motivo(indice),
+  }))
 }
 
 // ============================================================
