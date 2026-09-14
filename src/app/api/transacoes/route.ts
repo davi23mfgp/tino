@@ -95,8 +95,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
   if (Number.isNaN(data.getTime())) throw new ErroDeUso("Data inválida.")
 
   const conta = await prisma.conta.findFirst({ where: { id: contaId, larId: sessao.larId } })
-  if (dados.competenciaFatura && (!/^\d{4}-(0[1-9]|1[0-2])$/.test(dados.competenciaFatura) || conta?.tipo !== "CARTAO_CREDITO")) throw new ErroDeUso("Informe um mês de fatura válido para o cartão.")
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
+  if (dados.competenciaFatura && (!/^\d{4}-(0[1-9]|1[0-2])$/.test(dados.competenciaFatura) || conta.tipo !== "CARTAO_CREDITO")) throw new ErroDeUso("Informe um mês de fatura válido para o cartão.")
 
   if(dados.categoriaId && !await prisma.categoria.findFirst({where:{id:dados.categoriaId,larId:sessao.larId}})) throw new ErroDeUso("Categoria inválida.")
   if(dados.membroId && !await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}})) throw new ErroDeUso("Membro inválido.")

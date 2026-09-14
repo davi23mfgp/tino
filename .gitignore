@@ -9,3 +9,8 @@ tsconfig.tsbuildinfo
 
 .design-reference/
 .qa-visual/
+
+# logs de sessao
+.build-*.log
+.dev-*.log
+.teste-resultado.log

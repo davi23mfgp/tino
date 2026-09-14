@@ -1,6 +1,0 @@
-⚠ Warning: Next.js ignored package-lock.json in C:\Users\iasdn because it is outside the current Git repository (C:\Users\iasdn\Documents\tino).
- To use this directory, set `turbopack.root` in your Next.js config.
-
-
-warn - The class `ease-[var(--curva)]` is ambiguous and matches multiple utilities.
-warn - If this is content and not a class, replace it with `ease-&lsqb;var(--curva)&rsqb;` to silence this warning.
