@@ -16,6 +16,7 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { FluxoDeCaixaNoTempo } from "@/components/graficos"
+import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
@@ -24,6 +25,7 @@ import { IdentidadeBanco } from "@/components/banco-perfil"
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
 
+const CORES_FAIXA: Record<string, string> = { BOM: "text-positivo", ATENCAO: "text-atencao", CRITICO: "text-negativo", SEM_DADO: "text-muted-fg" }
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
 function valorDoMes(transacoes: { competencia: string; tipo: string; valorCentavos: number }[], competencia: string) {
@@ -133,18 +135,19 @@ export default async function Painel() {
 
     <section className={estilos.painel}>
       <Cabecalho rotulo="Por que a nota é essa" titulo="O que está bom e o que precisa melhorar" href="/analise" acao="Ver análise" />
-        {/* O espaço abaixo da nota ficava vazio enquanto a explicação de onde
-            ela vem estava escondida em outra tela. Aqui entram os indicadores
-            que sustentam a nota — o que já está bom e o que puxa para baixo,
-            cada um com a referência que o classifica. */}
+        {/* Os indicadores que sustentam a nota: o que já está bom e o que
+            puxa para baixo, cada um com a régua da referência que o
+            classifica. */}
         <div className={estilos.indicadores}>
           {diagnostico.indicadores.filter((linha) => linha.faixa !== "SEM_DADO").slice(0, 4).map((linha) => (
             <div key={linha.chave} data-faixa={linha.faixa}>
               <span className={estilos.pilulaFaixa}>{linha.faixa === "BOM" ? "está bom" : linha.faixa === "CRITICO" ? "precisa melhorar" : "dá para melhorar"}</span>
               <dt>{linha.nome}</dt>
               <dd>{linha.valor}</dd>
-              <p>{linha.leitura}</p>
-              <small>{linha.referencia}</small>
+              {/* A frase de leitura e a referência saíram, como na análise: a
+                  régua mostra a distância até a próxima faixa, que é o que as
+                  duas linhas de texto tentavam dizer em palavras. */}
+              {linha.escala && <ReguaDoIndicador numero={linha.numero} escala={linha.escala} cor={CORES_FAIXA[linha.faixa]} />}
             </div>
           ))}
         </div>
