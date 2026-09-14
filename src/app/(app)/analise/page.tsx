@@ -89,16 +89,38 @@ export default async function Analise() {
     <div className={cn(estilos.pagina, "space-y-4")}>
       {/* ── Parecer ───────────────────────────────────── */}
       <Cartao titulo={`Parecer de ${rotuloCompetencia(competencia)}`}>
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="w-full max-w-[160px] shrink-0">
+        {/* O parecer em prosa saiu. Ele repetia, em frases, os mesmos números
+            que já estão nos tiles logo abaixo — e empurrava a próxima ação
+            para o fim de um parágrafo de cinco linhas. Agora: veredito numa
+            linha, números em tiles, e a ação em destaque. */}
+        <div className="flex items-center gap-4">
+          <div className="w-[84px] shrink-0">
             <GraficoAnel percentual={diagnostico.nota} rotulo="saúde" valor={String(diagnostico.nota)} />
           </div>
-
-          <div className="min-w-0 flex-1">
-            <p className={cn("text-[calc(13px*var(--escala-letra))] font-medium uppercase tracking-widest", situacao.tom)}>{situacao.texto}</p>
-            <p className="mt-2 text-[calc(15px*var(--escala-letra))] leading-relaxed">{diagnostico.parecer}</p>
-          </div>
+          <p className={cn("text-[calc(15px*var(--escala-letra))] font-semibold", situacao.tom)}>{situacao.texto}</p>
         </div>
+
+        <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { rotulo: "Entrou", valor: diagnostico.dre.receitasCentavos, tom: "text-positivo" },
+            { rotulo: "Saiu", valor: diagnostico.dre.despesasCentavos, tom: "text-negativo" },
+            { rotulo: "Resultado", valor: diagnostico.dre.resultadoCentavos, tom: diagnostico.dre.resultadoCentavos < 0 ? "text-negativo" : "" },
+            { rotulo: "Patrimônio", valor: diagnostico.balanco.patrimonioLiquidoCentavos, tom: diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "" },
+          ].map((linha) => (
+            <div key={linha.rotulo} className="vidro-menu rounded-2xl px-3 py-2.5">
+              <dt className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</dt>
+              <dd className={cn("numero valor-sensivel mt-1 text-[calc(15px*var(--escala-letra))] font-semibold", linha.tom)}>
+                {formatarMoeda(linha.valor)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        {diagnostico.prioridades[0] && (
+          <p className="mt-3 text-[calc(14px*var(--escala-letra))]">
+            <span className="text-muted-fg">Agora: </span>{diagnostico.prioridades[0].acao}
+          </p>
+        )}
       </Cartao>
 
       <section className="space-y-4"><h3 className="rounded-2xl border border-pauta bg-papel-2 px-4 py-2.5 text-sm font-semibold">Indicadores e prioridades</h3>
@@ -136,11 +158,10 @@ export default async function Analise() {
               </span>
               <div className="min-w-0">
                 <p className="text-[calc(14px*var(--escala-letra))] font-medium">{prioridade.titulo}</p>
-                <p className="mt-1 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{prioridade.porque}</p>
-                <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] leading-relaxed">{prioridade.acao}</p>
+                <p className="mt-1 text-[calc(13px*var(--escala-letra))]">{prioridade.acao}</p>
                 {prioridade.impactoMensalCentavos ? (
                   <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] text-positivo">
-                    Efeito estimado: <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span> por mês.
+                    <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span> por mês
                   </p>
                 ) : null}
               </div>
