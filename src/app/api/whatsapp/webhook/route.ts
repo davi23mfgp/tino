@@ -148,6 +148,7 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
   const pareceNotificacao = /R\$|compra|aprovad|cart[aã]o|d[eé]bito|pagamento/i.test(texto) && texto.length > 25
 
   const resultado = await registrarCaptura({
+    eventoId: `whatsapp:${mensagem.id}`,
     larId: chave.larId,
     chaveId: chave.id,
     texto,

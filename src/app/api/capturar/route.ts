@@ -60,6 +60,7 @@ export async function POST(requisicao: Request) {
     texto,
     origem: chave.origem,
     textoLivre,
+    eventoId: requisicao.headers.get("idempotency-key")?.slice(0, 200),
   })
 
   return NextResponse.json({

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
 import { competenciaDe, janelaDoMes } from "@/lib/datas"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
@@ -170,6 +171,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       tipo: dados.tipo,
       pago: dados.pago ?? true,
       competencia: competenciaDe(data),
+      competenciaFatura: competenciaDoCartao(data, conta),
       observacao: dados.observacao,
       tags: dados.tags ?? [],
       meiFaturamento: dados.meiFaturamento ?? false,

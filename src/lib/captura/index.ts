@@ -10,9 +10,21 @@ import { competenciaDe } from "@/lib/datas"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 import { lerNotificacao, lerTextoLivre, type NotificacaoLida } from "@/lib/captura/notificacao"
 import type { OrigemCaptura } from "@prisma/client"
+import { ErroDeUso } from "@/lib/api"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
 
 /// Confiança mínima para o app propor o lançamento já pronto para um toque.
 export const CONFIANCA_MINIMA = 70
+
+export async function descartarCaptura(larId: string, capturaId: string) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${capturaId}))`
+    const captura = await tx.captura.findFirst({ where: { id: capturaId, larId } })
+    if (!captura) throw new ErroDeUso("Captura não encontrada.", 404)
+    if (captura.transacaoId || captura.status === "CONFIRMADA") throw new ErroDeUso("Compra já confirmada. Edite o lançamento no extrato.", 409)
+    if (captura.status !== "DESCARTADA") await tx.captura.update({ where: { id: captura.id }, data: { status: "DESCARTADA", decididoEm: new Date() } })
+  })
+}
 
 /** A chave viaja em claro só uma vez; no banco fica o hash. */
 export function gerarChave(): { valor: string; hash: string; sufixo: string } {
@@ -63,13 +75,22 @@ export async function registrarCaptura(params: {
   origem: OrigemCaptura
   /// Texto digitado pela pessoa aceita formato livre ("mercado 52,30").
   textoLivre?: boolean
+  eventoId?: string | null
 }): Promise<ResultadoCaptura> {
+  return prisma.$transaction(async (banco) => {
   const leitura = params.textoLivre ? lerTextoLivre(params.texto) : lerNotificacao(params.texto)
+  const eventoId = params.eventoId ? createHash("sha256").update(JSON.stringify([params.larId, params.origem, params.chaveId ?? null, params.eventoId])).digest("hex") : null
+  if (eventoId) {
+    await banco.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${eventoId}))`
+    const anterior = await banco.captura.findUnique({ where: { eventoId } })
+    if (anterior) return { id: anterior.id, status: anterior.status as ResultadoCaptura["status"], leitura, resposta: "Este aviso já foi recebido." }
+  }
 
   if (leitura.ignorar) {
-    const captura = await prisma.captura.create({
+    const captura = await banco.captura.create({
       data: {
         larId: params.larId,
+        eventoId,
         chaveId: params.chaveId ?? null,
         origem: params.origem,
         status: "DESCARTADA",
@@ -87,9 +108,10 @@ export async function registrarCaptura(params: {
   }
 
   if (!leitura.valorCentavos) {
-    const captura = await prisma.captura.create({
+    const captura = await banco.captura.create({
       data: {
         larId: params.larId,
+        eventoId,
         chaveId: params.chaveId ?? null,
         origem: params.origem,
         status: "NAO_ENTENDIDA",
@@ -105,32 +127,10 @@ export async function registrarCaptura(params: {
     }
   }
 
-  // Duplicata é comum: o mesmo aviso chega no celular e no relógio, e a pessoa
-  // repassa dois. Mesmo valor e estabelecimento em 10 minutos é a mesma compra.
-  const dezMinutosAtras = new Date(Date.now() - 10 * 60_000)
-  const repetida = await prisma.captura.findFirst({
-    where: {
-      larId: params.larId,
-      valorCentavos: leitura.valorCentavos,
-      estabelecimento: leitura.estabelecimento,
-      criadoEm: { gte: dezMinutosAtras },
-      status: { in: ["PENDENTE", "CONFIRMADA"] },
-    },
-  })
-
-  if (repetida) {
-    return {
-      id: repetida.id,
-      status: repetida.status as ResultadoCaptura["status"],
-      leitura,
-      resposta: "Esse lançamento já tinha chegado agora há pouco — não dupliquei.",
-    }
-  }
-
   const [contas, regras, categorias] = await Promise.all([
-    prisma.conta.findMany({ where: { larId: params.larId, arquivada: false } }),
-    prisma.regraCategorizacao.findMany({ where: { larId: params.larId, ativa: true } }),
-    prisma.categoria.findMany({ where: { larId: params.larId }, select: { id: true, nome: true } }),
+    banco.conta.findMany({ where: { larId: params.larId, arquivada: false } }),
+    banco.regraCategorizacao.findMany({ where: { larId: params.larId, ativa: true } }),
+    banco.categoria.findMany({ where: { larId: params.larId }, select: { id: true, nome: true } }),
   ])
 
   // A conta sai do final do cartão quando o aviso traz; senão, do nome do banco.
@@ -155,9 +155,10 @@ export async function registrarCaptura(params: {
       )
     : null
 
-  const captura = await prisma.captura.create({
+  const captura = await banco.captura.create({
     data: {
       larId: params.larId,
+        eventoId,
       chaveId: params.chaveId ?? null,
       origem: params.origem,
       status: "PENDENTE",
@@ -187,6 +188,7 @@ export async function registrarCaptura(params: {
       sugestao?.categoriaNome || sugestao?.categoriaId ? "" : " — falta a categoria"
     }.`,
   }
+  })
 }
 
 /** Transforma a captura conferida em lançamento de verdade. */
@@ -206,7 +208,8 @@ export async function confirmarCaptura(params: {
   const contaId = params.contaId ?? captura.contaId
   if (!contaId) throw new Error("Escolha em qual conta esse gasto entra.")
 
-  if(!await prisma.conta.findFirst({where:{id:contaId,larId:params.larId,arquivada:false}}))throw new Error("Conta inválida.")
+  const conta = await prisma.conta.findFirst({where:{id:contaId,larId:params.larId,arquivada:false}})
+  if (!conta) throw new ErroDeUso("Conta inválida.")
   const categoriaId=params.categoriaId??captura.categoriaId
   if(categoriaId&&!await prisma.categoria.findFirst({where:{id:categoriaId,larId:params.larId}}))throw new Error("Categoria inválida.")
   const valorCentavos = params.valorCentavos ?? captura.valorCentavos ?? 0
@@ -217,7 +220,9 @@ export async function confirmarCaptura(params: {
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${captura.id}))`
     const atual=await tx.captura.findUniqueOrThrow({where:{id:captura.id}})
+    if (atual.status === "DESCARTADA") throw new ErroDeUso("Esta captura foi descartada. Registre novamente para confirmar.", 409)
     if(atual.transacaoId)return tx.transacao.findUniqueOrThrow({where:{id:atual.transacaoId}})
+    if (atual.status !== "PENDENTE" && atual.status !== "NAO_ENTENDIDA") throw new ErroDeUso("Esta captura já foi decidida.", 409)
     const transacao = await tx.transacao.create({
       data: {
         larId: params.larId,
@@ -230,6 +235,7 @@ export async function confirmarCaptura(params: {
         valorCentavos,
         tipo: "DESPESA",
         competencia: competenciaDe(data),
+        competenciaFatura: competenciaDoCartao(data, conta),
         origem: "MANUAL",
         observacao: `Capturado do celular (${captura.origem.toLowerCase()}).`,
       },
@@ -243,3 +249,4 @@ export async function confirmarCaptura(params: {
     return transacao
   })
 }
+

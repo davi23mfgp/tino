@@ -20,14 +20,15 @@ import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
 import { IdentidadeBanco } from "@/components/banco-perfil"
+import { TinoLeao } from "@/components/tino-leao"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
-function valorDoMes(transacoes: { competencia: string; tipo: string; valorCentavos: number }[], competencia: string) {
-  return transacoes.filter((linha) => linha.competencia === competencia).reduce((total, linha) => total + (linha.tipo === "DESPESA" ? linha.valorCentavos : -linha.valorCentavos), 0)
+function valorDoMes(transacoes: { competencia: string; competenciaFatura: string | null; fatura: { competencia: string } | null; tipo: string; valorCentavos: number }[], competencia: string) {
+  return transacoes.filter((linha) => (linha.fatura?.competencia ?? linha.competenciaFatura ?? linha.competencia) === competencia).reduce((total, linha) => total + (linha.tipo === "DESPESA" ? linha.valorCentavos : -linha.valorCentavos), 0)
 }
 
 export default async function Painel() {
@@ -41,7 +42,7 @@ export default async function Painel() {
     prisma.conta.findMany({
       where: { larId: sessao.larId, tipo: "CARTAO_CREDITO", arquivada: false }, orderBy: { criadoEm: "asc" },
       include: {
-        transacoes: { where: { competencia: { in: mesesFuturos }, tipo: { in: ["DESPESA", "RECEITA"] } } },
+        transacoes: { where: { OR: [{ competencia: { in: mesesFuturos } }, { competenciaFatura: { in: mesesFuturos } }, { fatura: { competencia: { in: mesesFuturos } } }], tipo: { in: ["DESPESA", "RECEITA"] } }, include: { fatura: { select: { competencia: true } } } },
         parcelamentos: { where: { ativo: true }, include: { parcelas: { where: { competencia: { in: mesesFuturos }, paga: false } } } },
       },
     }),
@@ -65,6 +66,15 @@ export default async function Painel() {
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
+    <section className={estilos.boasVindas} aria-labelledby="tino-proximo-passo">
+      <div className={estilos.guiaTexto}>
+        <p className={estilos.sobretitulo}>Seu próximo passo, com o Tino</p>
+        <h2 id="tino-proximo-passo">{quantidadePendente ? "Vamos colocar tudo em dia?" : "Seu dinheiro. Uma direção clara."}</h2>
+        <p>{quantidadePendente ? `${quantidadePendente} compras aguardam sua conferência.` : diagnostico.prioridades[0]?.titulo ?? "Veja seu mês e escolha o próximo objetivo."}</p>
+        <Link className={estilos.botaoGuia} href={quantidadePendente ? "/capturas" : "/analise"}>{quantidadePendente ? "Conferir compras" : "Ver meu próximo passo"}<ArrowRight size={16} /></Link>
+      </div>
+      <TinoLeao className={estilos.leao} />
+    </section>
     <section className={estilos.resumo} aria-labelledby="resumo-mes">
       <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">Resultado de {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span></p></div>
       <dl className={estilos.metricas}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
@@ -93,7 +103,7 @@ export default async function Painel() {
 
     <div className={estilos.duasColunas}>
       <section className={estilos.painel}><Cabecalho rotulo="Este mês" titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
-        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={categorias} legenda={false} /></div><ul>{categorias.map((linha, indice) => {
+        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={panorama.mes.despesasPorCategoria} legenda={false} /></div><ul>{categorias.map((linha, indice) => {
           const orcamento = panorama.orcamento.linhas.find((item) => item.categoriaId === linha.categoriaId)
           const percentual = orcamento ? Math.round(linha.totalCentavos / Math.max(1, orcamento.limiteCentavos) * 100) : Math.round(linha.totalCentavos / maiorCategoria * 100)
           return <li key={linha.categoriaId ?? linha.nome}><Link href={`/transacoes?categoriaId=${linha.categoriaId ?? "sem"}`}><span className={estilos.cor} style={{ background: CORES[indice % CORES.length] }} /><span className={estilos.dadosLinha}><strong>{linha.nome}</strong><small>{orcamento ? `${percentual}% do orçamento` : "Definir orçamento"}</small></span><b>{formatarMoeda(linha.totalCentavos)}</b></Link><Barra percentual={percentual} /></li>
@@ -108,7 +118,7 @@ export default async function Painel() {
       <section className={estilos.painel}><Cabecalho rotulo="O que entra, o que sai e o que sobra" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" /><FluxoDeCaixaNoTempo series={fluxo} altura={230} /></section>
       <section className={estilos.painel}><Cabecalho rotulo="O que você tem e deve" titulo="Balanço" href="/analise" acao="Ver análise" />
         <dl className={estilos.balanco}><div><dt>Ativos</dt><dd>{formatarMoeda(diagnostico.balanco.ativoTotalCentavos)}</dd></div><div><dt>Dívidas</dt><dd>{formatarMoeda(diagnostico.balanco.passivoTotalCentavos)}</dd></div><div><dt>Patrimônio</dt><dd className={diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(diagnostico.balanco.patrimonioLiquidoCentavos)}</dd></div></dl>
-        <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.parecer}</p><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>
+        <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.prioridades[0]?.titulo ?? "Acompanhe seus indicadores neste mês."}</p><details><summary>Entender minha nota</summary><p>{diagnostico.parecer}</p></details><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>
 
       </section>
     </>
@@ -125,8 +135,7 @@ export default async function Painel() {
               <span className={estilos.pilulaFaixa}>{linha.faixa === "BOM" ? "está bom" : linha.faixa === "CRITICO" ? "precisa melhorar" : "dá para melhorar"}</span>
               <dt>{linha.nome}</dt>
               <dd>{linha.valor}</dd>
-              <p>{linha.leitura}</p>
-              <small>{linha.referencia}</small>
+              <details><summary>Como melhorar</summary><p>{linha.leitura}</p><small>{linha.referencia}</small></details>
             </div>
           ))}
         </div>
@@ -154,3 +163,4 @@ export default async function Painel() {
 function Cabecalho({ rotulo, titulo, id, href, acao }: { rotulo: string; titulo: string; id?: string; href: string; acao: string }) {
   return <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>{rotulo}</p><h2 id={id}>{titulo}</h2></div><Link href={href}>{acao} <ArrowRight /></Link></header>
 }
+
