@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { FluxoDeCaixaNoTempo, RoscaCategorias } from "@/components/graficos"
+import { FluxoDeCaixaNoTempo } from "@/components/graficos"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
@@ -58,6 +58,7 @@ export default async function Painel() {
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
   const categorias = panorama.mes.despesasPorCategoria.slice(0, 5)
   const maiorCategoria = Math.max(1, ...categorias.map((linha) => linha.totalCentavos))
+  const totalCategorias = categorias.reduce((soma, linha) => soma + linha.totalCentavos, 0)
   // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
   const quantidadePendente = totaisPendentes._count._all
   const totalPendente = totaisPendentes._sum.valorCentavos ?? 0
@@ -93,7 +94,24 @@ export default async function Painel() {
 
     <div className={estilos.duasColunas}>
       <section className={estilos.painel}><Cabecalho rotulo="Este mês" titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
-        {categorias.length ? <div className={estilos.categorias}><div className={estilos.rosca}><RoscaCategorias dados={categorias} legenda={false} /></div><ul>{categorias.map((linha, indice) => {
+        {categorias.length ? <div className={estilos.categorias}>
+          {/* Sem rosca. O gráfico do Recharts nascia com largura zero no
+              celular: sobrava meia tela preta e um valor perdido no meio. A
+              mesma pergunta — "o mês repartido" — cabe numa faixa empilhada,
+              que não depende de medir o container para existir. */}
+          <div className={estilos.topoCategorias}>
+            <strong className="numero valor-sensivel">{formatarMoeda(totalCategorias)}</strong>
+            <small>gasto até hoje</small>
+          </div>
+          <div className={estilos.faixaCategorias} aria-hidden>
+            {categorias.map((linha, indice) => (
+              <i
+                key={linha.categoriaId ?? linha.nome}
+                style={{ background: CORES[indice % CORES.length], width: `${(linha.totalCentavos / Math.max(1, totalCategorias)) * 100}%` }}
+              />
+            ))}
+          </div>
+          <ul>{categorias.map((linha, indice) => {
           const orcamento = panorama.orcamento.linhas.find((item) => item.categoriaId === linha.categoriaId)
           const percentual = orcamento ? Math.round(linha.totalCentavos / Math.max(1, orcamento.limiteCentavos) * 100) : Math.round(linha.totalCentavos / maiorCategoria * 100)
           return <li key={linha.categoriaId ?? linha.nome}><Link href={`/transacoes?categoriaId=${linha.categoriaId ?? "sem"}`}><span className={estilos.cor} style={{ background: CORES[indice % CORES.length] }} /><span className={estilos.dadosLinha}><strong>{linha.nome}</strong><small>{orcamento ? `${percentual}% do orçamento` : "Definir orçamento"}</small></span><b>{formatarMoeda(linha.totalCentavos)}</b></Link><Barra percentual={percentual} /></li>

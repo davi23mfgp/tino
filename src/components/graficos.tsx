@@ -689,7 +689,7 @@ export function GraficoBalanco({
  */
 export function FluxoDeCaixaNoTempo({
   series,
-  altura = 260,
+  altura = 300,
 }: {
   series: Record<"dia" | "mes" | "ano", PontoFluxoGrafico[]>
   altura?: number
@@ -722,18 +722,20 @@ export function FluxoDeCaixaNoTempo({
   const horizonte = granularidade === "dia" ? "no fim do período" : granularidade === "mes" ? "no fim do período" : "no fim do período"
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* O número que responde a pergunta vem antes do gráfico, em tamanho de
-          manchete: o gráfico explica como se chega nele. */}
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+    <div className="flex flex-col gap-2">
+      {/* O número responde a pergunta e o gráfico mostra o caminho até ela.
+          O número era manchete de 34px e, com o seletor embaixo, ocupava mais
+          altura que o próprio gráfico no celular — agora é 24px e as duas
+          partes dividem a linha quando cabe. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div>
-          <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-[.12em] text-muted-fg">
+          <p className="text-[calc(10px*var(--escala-letra))] uppercase tracking-[.12em] text-muted-fg">
             Quanto você vai ter em {fim?.rotulo}
           </p>
-          <p className={cn("numero text-[calc(34px*var(--escala-letra))] font-semibold leading-tight tracking-tight", depois < 0 && "text-negativo")}>
+          <p className={cn("numero text-[calc(24px*var(--escala-letra))] font-semibold leading-tight tracking-tight", depois < 0 && "text-negativo")}>
             {formatarMoeda(depois)}
           </p>
-          <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
+          <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
             Hoje: <span className="numero">{formatarMoeda(agora)}</span>
             {" · "}
             <span className={cn("numero", variacao < 0 ? "text-negativo" : "text-positivo")}>
@@ -784,7 +786,7 @@ export function FluxoDeCaixaNoTempo({
               {dados.map((ponto, indice) => (
                 <Cell
                   key={indice}
-                  fill={ponto.caixa < 0 ? cores.negativo : cores.neutro}
+                  fill={ponto.caixa < 0 ? cores.negativo : cores.positivo}
                   fillOpacity={ponto.futuro ? 0.42 : 1}
                 />
               ))}
