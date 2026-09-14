@@ -31,6 +31,14 @@ export function encontrarBanco(nome: string) {
 /** Cor decorativa de apoio; não substitui o ícone oficial da instituição. */
 export function corDoBanco(instituicao: string | null | undefined): string {
   const nome = encontrarBanco(instituicao ?? "")?.nome
-  const cores: Record<string, string> = { Nubank: "#820ad1", "Itaú": "#ec7000", Bradesco: "#cc092f", Santander: "#ea1d25", "C6 Bank": "#242424", Inter: "#ff7a00" }
+  // Cores institucionais publicadas pelas próprias marcas. O Banco do Brasil e a
+  // XP usam o azul e o preto da marca, não o amarelo: o cartão é pintado inteiro
+  // e texto branco sobre amarelo não passa em contraste.
+  const cores: Record<string, string> = {
+    Nubank: "#820ad1", "Itaú": "#ec7000", Bradesco: "#cc092f", Santander: "#ea1d25",
+    "C6 Bank": "#242424", Inter: "#ff7a00", "Banco do Brasil": "#0038a8", Caixa: "#0070af",
+    "BTG Pactual": "#002c5f", XP: "#141414", Sicoob: "#00ae9d", Sicredi: "#3fa110",
+    "Mercado Pago": "#00a1ea", PagBank: "#00a868", PicPay: "#11c76f",
+  }
   return nome && cores[nome] ? cores[nome] : "var(--primary)"
 }

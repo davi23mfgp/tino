@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import type { CSSProperties } from "react"
 import Link from "next/link"
-import { ArrowRight, CheckCircle2, CreditCard, ReceiptText, WalletCards } from "lucide-react"
+import { ArrowRight, CheckCircle2, ReceiptText, WalletCards } from "lucide-react"
 
 import estilos from "./painel.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
@@ -13,6 +13,8 @@ import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { GraficoEvolucao, RoscaCategorias } from "@/components/graficos"
 import { Barra } from "@/components/ui/painel"
+import { IdentidadeBanco } from "@/components/banco-perfil"
+import { corDoBanco } from "@/lib/bancos-perfil"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
@@ -69,7 +71,7 @@ export default async function Painel() {
           // Lançado e parcela ainda não lançada somam, mas o mês avisa quando há previsão.
           return { mes, valor: confirmado + previsto, previsto }
         })
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco}><span className={estilos.iconeBanco}><CreditCard /></span><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}>{futuras.map((fatura) => <span key={fatura.mes}><small title={fatura.previsto ? `Inclui ${formatarMoeda(fatura.previsto)} em parcelas previstas` : undefined}>{rotuloCompetencia(fatura.mes, true)}{fatura.previsto ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, fatura.valor))}</b></span>)}</span><ArrowRight className={estilos.seta} /></Link>
+        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}>{futuras.map((fatura) => <span key={fatura.mes}><small title={fatura.previsto ? `Inclui ${formatarMoeda(fatura.previsto)} em parcelas previstas` : undefined}>{rotuloCompetencia(fatura.mes, true)}{fatura.previsto ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, fatura.valor))}</b></span>)}</span><ArrowRight className={estilos.seta} /></Link>
       })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
