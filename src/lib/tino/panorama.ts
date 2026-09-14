@@ -7,6 +7,7 @@
  */
 
 import { prisma } from "@/lib/prisma"
+import { saldoDisponivel, patrimonio, aplicado } from "@/lib/saldo-disponivel"
 import {
   competenciaAtual,
   competenciaMaisMeses,
@@ -37,6 +38,10 @@ export interface Panorama {
   }
   competencia: string
   saldoTotalCentavos: number
+  /// Tudo que a pessoa tem, menos a dívida do cartão — inclui o aplicado.
+  patrimonioCentavos: number
+  /// A parte que está em conta de investimento e não entra no caixa.
+  aplicadoCentavos: number
   saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null }[]
   mes: {
     receitasCentavos: number
@@ -179,11 +184,13 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     }
   })
 
-  // Cartão de crédito é dívida, não dinheiro disponível: somá-lo ao caixa
-  // mostraria um saldo que a pessoa não tem.
-  const saldoTotalCentavos = saldoPorConta
-    .filter((conta) => conta.tipo !== "CARTAO_CREDITO")
-    .reduce((soma, conta) => soma + conta.saldoCentavos, 0)
+  // Cartão de crédito é dívida, e investimento não é dinheiro que está na
+  // conta: os dois ficam fora do caixa. O que é aplicado continua contado no
+  // patrimônio, logo abaixo — sai da pergunta "dá para pagar?", não do bolso
+  // da pessoa. Ver `lib/saldo-disponivel.ts`.
+  const saldoTotalCentavos = saldoDisponivel(saldoPorConta)
+  const patrimonioCentavos = patrimonio(saldoPorConta)
+  const aplicadoCentavos = aplicado(saldoPorConta)
 
   // ── Mês corrente ──────────────────────────────────────────
   const doMes = transacoesMes.filter((t) => t.tipo !== "TRANSFERENCIA")
@@ -444,6 +451,8 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     },
     competencia,
     saldoTotalCentavos,
+    patrimonioCentavos,
+    aplicadoCentavos,
     saldoPorConta,
     mes: {
       receitasCentavos: receitasMes,

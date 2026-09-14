@@ -66,7 +66,7 @@ export default async function Painel() {
 
   return <div className={estilos.pagina}>
     <section className={estilos.resumo} aria-labelledby="resumo-mes">
-      <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">Resultado de {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span></p></div>
+      <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">Resultado de {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span>{panorama.aplicadoCentavos > 0 && <> · aplicado: <span className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</span></>}</p></div>
       <dl className={estilos.metricas}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
     </section>
 

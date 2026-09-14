@@ -34,7 +34,9 @@ function panorama(parcial: {
       mesesReserva: 6,
     },
     competencia: "2026-08",
-    saldoTotalCentavos: contas
+    patrimonioCentavos: 0,
+  aplicadoCentavos: 0,
+  saldoTotalCentavos: contas
       .filter((conta) => conta.tipo !== "CARTAO_CREDITO")
       .reduce((soma, conta) => soma + conta.saldo, 0),
     saldoPorConta: contas.map((conta, indice) => ({
