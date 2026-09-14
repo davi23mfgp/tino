@@ -205,3 +205,30 @@ Estados em `src/components/tino-mascote.tsx`: `tranquilo`, `atento`,
   está respeitado no `globals.css`
 - os componentes são shadcn/ui sobre Radix: personalize pelo token, não
   reescrevendo o componente
+
+## 14/09/2026 — a marca passa a ser o leão
+
+O porquinho saiu. A marca agora é o leão de frente, óculos redondos, desenhado
+a traço solto — imagem escolhida pelo Davi.
+
+**Dois arquivos da mesma arte, escolhidos pelo tamanho:**
+
+- `public/mascote/tino-leao-traco.png` (907×1024) — o traço original, para o
+  mascote grande da vitrine (140px e 270px).
+- `public/mascote/tino-leao-marca.png` (453×512) — o mesmo desenho com o traço
+  engrossado antes da redução, para a marca pequena (barra lateral do app,
+  cabeçalho e rodapé da vitrine).
+
+**Por que dois:** a linha de 1px do desenho original, reduzida a 38px, vira um
+cinza de 20% que o olho lê como sujeira. Conferido no navegador lado a lado: a
+versão engrossada lê como leão, a fina lê como borrão.
+
+**Como é aplicada:** sempre como *máscara* CSS com `background-color:
+currentColor`, nunca como `<img>`. A arte é tinta preta e sumiria no fundo
+escuro do app; como máscara, a cor vem de quem usa, e o mesmo arquivo serve ao
+tema claro. Vale para `TinoMarca` (app) e `Leao` (vitrine).
+
+O componente `TinoMascote` (o porquinho vetorial) continua no repositório e em
+uso em outras telas — quem sai da vitrine e da barra do app é a marca, não o
+personagem inteiro. Se for para aposentar o porquinho de vez, é decisão a
+tomar, não consequência desta mudança.

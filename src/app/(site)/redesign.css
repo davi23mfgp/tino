@@ -4,7 +4,11 @@
 .vitrine .landing-skip:focus { transform:none; }
 .vitrine [id] { scroll-margin-top:110px; }
 .vitrine .landing-menu { position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:40;width:min(calc(100% - 32px),1100px);display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 12px 10px 20px;border:1px solid var(--linha);border-radius:999px;background:color-mix(in oklch,var(--tinta) 85%,transparent);backdrop-filter:blur(20px); }
-.vitrine .landing-brand { display:flex;align-items:center;gap:4px;font:700 29px var(--fonte-display),sans-serif;letter-spacing:-.06em; }
+.vitrine .landing-brand { display:flex;align-items:center;gap:8px;font:700 29px var(--fonte-display),sans-serif;letter-spacing:-.06em; }
+/* A arte é tinta preta: entra como máscara para herdar a cor do texto. */
+.vitrine .marca-leao { display:inline-block;flex-shrink:0;background-color:currentColor;
+  -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center; }
 .vitrine .landing-menu nav,.vitrine .landing-menu-actions { display:flex;align-items:center;gap:26px;font-size: calc(13px * var(--escala-letra)); }
 .vitrine .landing-menu nav a { color:var(--creme-2); }
 .vitrine .landing-menu a:hover { color:var(--acento); }
@@ -105,7 +109,7 @@
  .vitrine .cerca { width:calc(100% - 36px); }
  .vitrine .landing-menu { top:12px;padding:8px 10px;gap:8px; }
  .vitrine .landing-brand { font-size: calc(25px * var(--escala-letra)); }
- .vitrine .landing-brand img { width:30px;height:30px; }
+ .vitrine .landing-brand .marca-leao { width:27px;height:30px; }
  .vitrine .landing-menu-actions { gap:14px;font-size: calc(12px * var(--escala-letra)); }
  .vitrine .landing-menu .botao { font-size: calc(12px * var(--escala-letra));padding-inline:14px; }
  .vitrine .landing-menu .botao svg { display:none; }
@@ -117,7 +121,7 @@
  .vitrine .product-showcase { padding-top:40px; }
  .vitrine .product-float { display:none; }
  .vitrine .product-mascot { right:-12px;top:5%; }
- .vitrine .product-mascot img { width:100px;height:100px; }
+ .vitrine .product-mascot .marca-leao { width:89px;height:100px; }
  .vitrine .product-phone .celular { width:280px; }
  .vitrine .product-controls { margin-top:18px;max-width:100%; }
  .vitrine .product-controls button { padding-inline:14px;font-size: calc(12px * var(--escala-letra)); }

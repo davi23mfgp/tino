@@ -361,8 +361,8 @@ export function TinoMarca({
       style={{
         display: "inline-block",
         backgroundColor: "currentColor",
-        maskImage: "url(/mascote/tino-leao-traco.png)",
-        WebkitMaskImage: "url(/mascote/tino-leao-traco.png)",
+        maskImage: "url(/mascote/tino-leao-marca.png)",
+        WebkitMaskImage: "url(/mascote/tino-leao-marca.png)",
         maskSize: "contain",
         WebkitMaskSize: "contain",
         maskRepeat: "no-repeat",

@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { ArrowRight, Check, Plus, Wallet, CreditCard, ScanLine, CalendarDays, Store, SlidersHorizontal } from "lucide-react"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
-import { Porquinho } from "./porquinho"
+import { Leao } from "./leao"
 import { FitaDoTempo } from "./fita-do-tempo"
 import { TelaNoCelular } from "./tela-no-celular"
 import { PalcoDoProduto, Revelar } from "@/components/landing/movimento"
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic"
 export const metadata: Metadata = {
   title: "Tino — Seu dinheiro, mais simples.",
   description: "Entenda seu saldo, acompanhe gastos e veja o que vem pela frente. Seu contador pessoal para pessoa física e MEI.",
-  openGraph: { title: "Tino — Seu dinheiro, mais simples.", description: "Contas, cartões e planos. Clareza para decidir o próximo passo.", type: "website", locale: "pt_BR", siteName: "Tino", images: [{url:"/mascote/tino.png",width:1024,height:1024,alt:"Porquinho do Tino"}] },
+  openGraph: { title: "Tino — Seu dinheiro, mais simples.", description: "Contas, cartões e planos. Clareza para decidir o próximo passo.", type: "website", locale: "pt_BR", siteName: "Tino", images: [{url:"/mascote/tino-leao-traco.png",width:907,height:1024,alt:"Tino, o leão do app"}] },
 }
 const RECURSOS = [
   {titulo:"Tudo em um lugar.",texto:"Contas e lançamentos organizados para encontrar o que você precisa.",Icone:Wallet},
@@ -45,7 +45,7 @@ export default async function Vitrine() {
   return <>
     <a href="#conteudo" className="landing-skip">Pular para o conteúdo</a>
     <header className="landing-menu glass-pill">
-      <Link href="/" className="landing-brand" aria-label="Tino — início"><Porquinho tamanho={38} /><span>tino.</span></Link>
+      <Link href="/" className="landing-brand" aria-label="Tino — início"><Leao tamanho={38} /><span>tino.</span></Link>
       <nav aria-label="Seções da página"><a href="#recursos">Recursos</a><a href="#como-funciona">Como funciona</a><a href="#planos">Preços</a><a href="#duvidas">Dúvidas</a></nav>
       <div className="landing-menu-actions"><Link href="/login">Entrar</Link><Link href="/cadastro" className="botao botao--pequeno">Testar {dias} dias <ArrowRight size={15} aria-hidden /></Link></div>
     </header>
@@ -93,8 +93,8 @@ export default async function Vitrine() {
         <div><p className="eyebrow">Sem ponto solto</p><h2 className="display">Dúvidas?<br />Vamos lá.</h2></div>
         <div className="faq">{FAQ.map(([pergunta,resposta])=><details key={pergunta}><summary>{pergunta}<Plus size={20} aria-hidden /></summary><p>{resposta}</p></details>)}</div>
       </section>
-      <section className="cerca landing-final"><Revelar><p className="eyebrow">Dê um pouco de tino ao seu dinheiro</p><h2 className="display">A sua virada<br />começa aqui.</h2><Link href="/cadastro" className="botao">Testar {dias} dias de graça <ArrowRight size={18} aria-hidden /></Link><p className="landing-note">Um passo de cada vez. Do seu jeito.</p></Revelar><Porquinho tamanho={270} flutua /></section>
+      <section className="cerca landing-final"><Revelar><p className="eyebrow">Dê um pouco de tino ao seu dinheiro</p><h2 className="display">A sua virada<br />começa aqui.</h2><Link href="/cadastro" className="botao">Testar {dias} dias de graça <ArrowRight size={18} aria-hidden /></Link><p className="landing-note">Um passo de cada vez. Do seu jeito.</p></Revelar><Leao tamanho={270} flutua /></section>
     </main>
-    <footer className="cerca landing-footer"><Link href="/" className="landing-brand"><Porquinho tamanho={34} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><Link href="/login">Entrar</Link><a href="#planos">Planos</a><a href="#duvidas">Dúvidas</a></nav><small>© {new Date().getFullYear()} Tino</small></footer>
+    <footer className="cerca landing-footer"><Link href="/" className="landing-brand"><Leao tamanho={34} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><Link href="/login">Entrar</Link><a href="#planos">Planos</a><a href="#duvidas">Dúvidas</a></nav><small>© {new Date().getFullYear()} Tino</small></footer>
   </>
 }
