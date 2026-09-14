@@ -256,16 +256,32 @@ export function GraficoCategorias({
 
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row">
-      <ResponsiveContainer width="100%" height={altura} className="max-w-[240px]">
-        <PieChart>
-          <Pie data={serie} dataKey="value" nameKey="name" innerRadius="58%" outerRadius="88%" paddingAngle={2} stroke="none">
-            {serie.map((_, indice) => (
-              <Cell key={indice} fill={paleta[indice % paleta.length]} />
-            ))}
-          </Pie>
-          <Tooltip content={<Dica />} />
-        </PieChart>
-      </ResponsiveContainer>
+      {/* O buraco da rosca estava vazio: o desenho mostrava a repartição e
+          escondia o número que ela reparte. O total vai no meio, que é onde o
+          olho já para. */}
+      <div className="relative w-full max-w-[240px] shrink-0" style={{ height: altura }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={serie} dataKey="value" nameKey="name" innerRadius="58%" outerRadius="88%" paddingAngle={2} stroke="none">
+              {serie.map((_, indice) => (
+                <Cell key={indice} fill={paleta[indice % paleta.length]} />
+              ))}
+            </Pie>
+            <Tooltip content={<Dica />} />
+          </PieChart>
+        </ResponsiveContainer>
+
+        {/* `pointer-events-none` porque a rosca por baixo continua sendo o
+            alvo do toque de cada fatia. */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="numero valor-sensivel text-[calc(18px*var(--escala-letra))] font-semibold leading-none tracking-tight">
+            {formatarMoeda(total)}
+          </span>
+          <span className="mt-1 whitespace-nowrap text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-[color:var(--texto-3)]">
+            no mês
+          </span>
+        </div>
+      </div>
 
       <ul className="w-full space-y-1.5">
         {serie.map((linha, indice) => (
