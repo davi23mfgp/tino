@@ -74,3 +74,12 @@ it("aporte zero ou negativo não distribui nada", () => {
   assert.equal(soma(aporteQueReequilibra(0, carteira([["ACOES", 1000]]))), 0)
   assert.equal(soma(aporteQueReequilibra(-500, carteira([["ACOES", 1000]]))), 0)
 })
+
+it("classe acima do alvo não recebe nem um centavo de resto", () => {
+  // Ações muito acima, as outras atrás: o resto da divisão inteira não pode
+  // pingar na classe que já passou do alvo.
+  const partes = aporteQueReequilibra(200_000, carteira([["ACOES", 1_200_000], ["RENDA_FIXA", 400_000], ["FII", 150_000]])).filter((p) => p.valorCentavos > 0)
+  const acoes = partes.find((p) => p.rotulo === "Ações")
+  assert.equal(acoes, undefined, "ações não deveria aparecer na lista de destinos")
+  assert.equal(soma(partes), 200_000)
+})

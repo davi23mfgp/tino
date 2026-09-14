@@ -117,8 +117,13 @@ export function ratearPorPeso(centavos: number, pesos: number[]): number[] {
   let resto = centavos - bruto.reduce((soma, valor) => soma + valor, 0)
   // O resto da divisão inteira é distribuído de um em um: a soma tem de bater
   // exatamente com o valor original, senão o rateio "perde" centavos.
-  for (let i = 0; resto > 0; i = (i + 1) % bruto.length) {
-    bruto[i] += 1
+  //
+  // Só entre quem tem peso. Antes o resto começava no índice 0 e um peso zero
+  // recebia um centavo — no aporte do ARCA isso virava a linha "Ações R$ 0,01"
+  // numa classe que estava 44 pontos ACIMA do alvo e não devia receber nada.
+  const comPeso = pesos.map((peso, indice) => (peso > 0 ? indice : -1)).filter((indice) => indice >= 0)
+  for (let i = 0; resto > 0; i = (i + 1) % comPeso.length) {
+    bruto[comPeso[i]] += 1
     resto -= 1
   }
   return bruto
