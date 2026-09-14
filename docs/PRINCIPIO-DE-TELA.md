@@ -54,3 +54,26 @@ Cor viva não dispensa a conta: todo par texto/fundo é calculado
 `/analise`, `/simulador`, `/investir`, `/dividas` (a lista precisa responder
 "qual dívida, por que pagaria, de onde tiro o dinheiro" logo no topo),
 `/orcamento`, `/metas`, `/reserva`.
+
+## Mínimo de texto — regra de 14/09/2026
+
+Pedido do Davi ao ver o painel do ARCA: **o mínimo possível de texto e o máximo
+de instrução prática**, no sistema inteiro.
+
+O que isso quer dizer, na prática:
+
+- **Rótulo curto e número.** Não escrever a frase que explica por que o número é
+  aquele. O número já é a explicação.
+- **Quando houver texto, que seja instrução, não justificativa.** "Aporte
+  R$ 300 aqui" no lugar de "esta classe está abaixo do alvo porque o método
+  prevê partes iguais e a sua carteira concentrou em ações".
+- **Diferença que importa vira etiqueta, não parágrafo.** `−8 p.p.` ao lado da
+  barra, e não uma linha dizendo o mesmo em palavras.
+- **Explicação que sobrevive vai recolhida** (`<details>`) ou sai da tela.
+- **A ressalva de investimento fica**, em uma linha curta. "Cálculo, não
+  recomendação" é exigência de CVM, não didatismo — encurtar é permitido,
+  apagar não.
+
+Isso vale para tela nova e para tela que for tocada. Não é autorização para sair
+varrendo texto do app inteiro sem pedido — quando o Davi quiser a varredura, ele
+pede.
