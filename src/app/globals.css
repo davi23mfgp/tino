@@ -617,3 +617,12 @@
 .app-nav-grupo > summary svg { transition:transform .18s var(--curva); }
 .app-nav-grupo[open] > summary svg { transform:rotate(90deg); }
 .app-nav-grupo[open] > summary { color:var(--foreground); }
+
+/* Valores em conta escondidos, como o olho dos aplicativos de banco. O borrão
+   fica no CSS e a marcação é uma classe: qualquer tela marca o que é sensível
+   sem precisar de contexto. `user-select:none` evita copiar o número que a
+   pessoa acabou de esconder. */
+[data-valores="ocultos"] .valor-sensivel { filter: blur(9px); user-select: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .valor-sensivel { transition: filter .18s var(--curva); }
+}

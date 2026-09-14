@@ -8,8 +8,10 @@ import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { corDoBanco } from "@/lib/bancos-perfil"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
+import { BotaoOcultarValores } from "@/components/ocultar-valores"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
+import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
@@ -64,8 +66,8 @@ export default async function Painel() {
 
   return <div className={estilos.pagina}>
     <section className={estilos.resumo} aria-labelledby="resumo-mes">
-      <div><p className={estilos.sobretitulo} id="resumo-mes">Resultado de {rotuloCompetencia(competencia)}</p><p className={estilos.saldo}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: {formatarMoeda(panorama.saldoTotalCentavos)}</p></div>
-      <dl className={estilos.metricas}><div><dt>Entrou</dt><dd className="text-positivo">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
+      <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">Resultado de {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span></p></div>
+      <dl className={estilos.metricas}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
     </section>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">

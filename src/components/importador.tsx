@@ -251,18 +251,6 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
         </Cartao>
       )}
 
-      {!previa && (
-        <Cartao titulo="Conectar banco automaticamente">
-          <p className="text-sm text-muted-fg">
-            A conexão automática usa Open Finance por meio de um agregador autorizado pelo Banco Central. Sua senha do
-            banco nunca passa por aqui: a autenticação acontece no site da instituição e o app recebe só a permissão de
-            leitura, que você pode revogar quando quiser.
-          </p>
-          <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-            Configure as credenciais do agregador no arquivo <code>.env</code> para habilitar.
-          </p>
-        </Cartao>
-      )}
     </div>
   )
 }
