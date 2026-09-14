@@ -15,6 +15,7 @@
 
 import { lerData } from "@/lib/datas"
 import { paraCentavos } from "@/lib/dinheiro"
+import { lerGastoFalado } from "@/lib/captura/fala"
 
 export interface NotificacaoLida {
   valorCentavos: number | null
@@ -218,7 +219,30 @@ export function lerTextoLivre(texto: string, agora = new Date()): NotificacaoLid
   const casaValor = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+\.\d{2}|\d+)\s*$/.exec(limpo)
   const casaValorInicio = /^(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+\.\d{2}|\d+)\s+/.exec(limpo)
   const casado = casaValor ?? casaValorInicio
-  if (!casado) return { ...lerNotificacao(limpo, agora) }
+
+  // Ninguém fala "mercado 52,30": fala "paguei cinquenta e dois reais e trinta
+  // centavos no mercado". Quando o formato de digitado não casa, tenta o de
+  // falado antes de desistir para o leitor de notificação de banco.
+  if (!casado) {
+    const falado = lerGastoFalado(limpo)
+    if (falado) {
+      return {
+        valorCentavos: falado.valorCentavos,
+        estabelecimento: falado.estabelecimento,
+        cartaoFinal: null,
+        instituicao: null,
+        data: new Date(Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth(), agora.getUTCDate())),
+        parcelaNumero: null,
+        parcelaTotal: null,
+        ignorar: false,
+        // Abaixo do digitado de propósito: entre a fala e o texto existe uma
+        // transcrição, que erra valor. Isto mantém o lançamento na fila de
+        // conferência em vez de entrar direto no saldo.
+        confianca: falado.estabelecimento ? 80 : 65,
+      }
+    }
+    return { ...lerNotificacao(limpo, agora) }
+  }
 
   const valorCentavos = paraCentavos(casado[1])
   const estabelecimento = limpo.replace(casado[0], "").replace(/^(gastei|paguei|comprei)\s+(em|no|na)?\s*/i, "").trim()

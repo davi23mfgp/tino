@@ -7,9 +7,13 @@
  *
  * **Por que Groq, e não o modelo do resto do app:** os modelos Claude não
  * aceitam áudio como entrada, então a `ANTHROPIC_API_KEY` não resolve isto.
- * A `GROQ_API_KEY` já é provedor do assessor (`lib/tino/modelo.ts`) e a mesma
- * chave dá acesso ao Whisper — ou seja, nenhum fornecedor novo entra no
- * produto por causa deste arquivo.
+ * O Groq dá acesso ao Whisper, e já é provedor conhecido do app — nenhum
+ * fornecedor novo entra no produto por causa deste arquivo.
+ *
+ * **Duas chaves, de propósito.** `GROQ_API_KEY` sozinha faz o Groq assumir
+ * também as respostas do assessor, na frente do Claude (`modelo.ts`). Quem
+ * quer só a transcrição põe a chave em `GROQ_API_KEY_AUDIO`: o áudio passa a
+ * funcionar e a conversa continua onde estava.
  *
  * Sem a chave, quem manda áudio recebe um recado dizendo para escrever. O app
  * inteiro continua funcionando: isto é opcional, como o resto da camada de
@@ -31,8 +35,13 @@ export class AudioIndisponivel extends Error {}
 export class AudioLongoDemais extends Error {}
 export class AudioVazio extends Error {}
 
+/** A do áudio primeiro; a geral só como herança de quem já tinha uma só. */
+function chave(): string | undefined {
+  return process.env.GROQ_API_KEY_AUDIO || process.env.GROQ_API_KEY
+}
+
 export function transcricaoDisponivel(): boolean {
-  return Boolean(process.env.GROQ_API_KEY)
+  return Boolean(chave())
 }
 
 /**
@@ -62,7 +71,7 @@ export async function transcrever(conteudo: ArrayBuffer, nome = "audio.ogg"): Pr
   const resposta = await fetch(ENDERECO, {
     method: "POST",
     signal: AbortSignal.timeout(30000),
-    headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+    headers: { Authorization: `Bearer ${chave()}` },
     body: formulario,
   })
 

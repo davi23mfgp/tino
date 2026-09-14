@@ -77,6 +77,37 @@ caminho de captura que já existe.
 - **Sem a chave nada quebra:** quem manda áudio recebe recado pedindo para
   escrever, como já acontecia com foto.
 
+**O que a transcrição revelou, e não estava no plano:** transcrever era a
+metade fácil. O `lerTextoLivre` só entendia o formato de quem digita — número
+colado numa ponta da frase ("mercado 52,30"). Ninguém **fala** assim, e quatro
+de seis frases faladas voltavam `null`. Sem fechar isso, o áudio chegava e
+morria. Daí `src/lib/captura/fala.ts`: lê valor por extenso ("cento e vinte
+reais"), moeda dita ("trinta reais"), centavo separado ("cinquenta e dois
+reais e trinta centavos"), moeda subentendida ("comprei pão, sete e
+cinquenta"), e acha o lugar por preposição, por sobra entre verbo e valor, ou
+pelo que veio antes.
+
+Regras que existem por causa de dinheiro, não de gramática:
+- centavo dito acima de 99 é transcrição errada, e a frase inteira é recusada
+  em vez de cair num padrão mais fraco que leria só os reais e jogaria o resto
+  fora sem ninguém ver;
+- número solto sem verbo de gasto não vira dinheiro ("são duas e trinta da
+  tarde");
+- pergunta continua sendo pergunta;
+- vai até 999 e não trata milhar por extenso — gasto que se anota por recado
+  de voz mora abaixo disso, e cada regra a mais é uma chance a mais de ler o
+  valor errado.
+
+**Duas chaves de propósito:** `GROQ_API_KEY_AUDIO` liga só a transcrição.
+A `GROQ_API_KEY` sozinha faria o Groq assumir também as respostas do assessor,
+na frente do Claude (`modelo.ts`) — efeito colateral que quem só quer áudio
+não está pedindo.
+
+**Provado com áudio de verdade**, sintetizado em pt-BR e passado pelo caminho
+inteiro (fala → Whisper → leitura → valor): "Gastei 30 reais no Uber" → 3000 |
+Uber; "Paguei 120 reais na conta de luz" → 12000 | conta de luz; "Comprei pão,
+sete e cinquenta" → 750 | pão; "Quanto eu tenho hoje?" → nada, como deve ser.
+
 **1.3 Resumo do dia / da fatura sem pedir.** "Sua fatura vence hoje, quer o
 relatório?" é o vigia 1.1 com uma ação anexada. Reaproveita `montarPanorama`.
 
