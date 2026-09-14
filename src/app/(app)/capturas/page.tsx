@@ -229,18 +229,18 @@ export default function Capturas() {
 
       {!carregando && pendentes.length > 0 && (
         <Cartao titulo={`${pendentes.length} esperando você`}>
-          <div className="mb-3 grid grid-cols-2 gap-3">
-            <Metrica rotulo="A confirmar" valor={String(pendentes.length)} />
-            <Metrica rotulo="Somam" valor={formatarMoeda(totalPendente)} tom="atencao" />
-          </div>
+          <p className="mb-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 border-b border-pauta pb-3 text-[calc(13px*var(--escala-letra))] text-muted-fg">
+            <b className="numero valor-sensivel text-[calc(22px*var(--escala-letra))] font-semibold tracking-tight text-foreground">{formatarMoeda(totalPendente)}</b>
+            em {pendentes.length} {pendentes.length === 1 ? "compra ainda fora do saldo" : "compras ainda fora do saldo"}
+          </p>
 
           <div className="space-y-2">
             {pendentes.map((captura) => (
               <div
                 key={captura.id}
                 className={cn(
-                  "rounded-2xl border p-3",
-                  captura.confianca >= 70 ? "border-pauta" : "border-atencao/40 bg-atencao/5",
+                  "rounded-2xl p-3 transition-colors",
+                  captura.confianca >= 70 ? "border-b border-pauta last:border-b-0 hover:bg-papel-2" : "border border-atencao/40 bg-atencao/5",
                 )}
               >
                 <div className="flex items-center gap-3">

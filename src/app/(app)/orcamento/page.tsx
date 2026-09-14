@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { SelectNative } from "@/components/ui/select-native"
 import { SimboloCategoria } from "@/components/seletor-categoria"
 import { cn } from "@/lib/utils"
 
@@ -174,25 +175,26 @@ export default function OrcamentoPagina() {
           <button
             onClick={sugerir}
             disabled={ocupado}
-            className="flex items-center gap-1.5 rounded-full border border-pauta px-4 py-2 text-[calc(12px*var(--escala-letra))] transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
+            className="flex min-h-11 items-center gap-2 rounded-full border border-pauta px-5 text-[calc(14px*var(--escala-letra))] font-medium transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
           >
             <Sparkles className="size-3.5" />
             Usar meu histórico
           </button>
 
-          <label className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
+          <label className="flex min-h-11 items-center gap-2 text-[calc(14px*var(--escala-letra))] text-muted-fg">
             Repetir por
-            <select
-              value={repetir}
+            <SelectNative
+              tamanho="pilula"
+              value={String(repetir)}
               onChange={(evento) => setRepetir(Number(evento.target.value))}
-              className="rounded-full border border-pauta bg-background px-2.5 py-1.5 text-[calc(12px*var(--escala-letra))]"
+              className="w-auto min-w-[150px] text-[calc(14px*var(--escala-letra))]"
             >
               {[0, 2, 5, 11].map((n) => (
                 <option key={n} value={n}>
                   {n === 0 ? "só este mês" : `${n} meses`}
                 </option>
               ))}
-            </select>
+            </SelectNative>
           </label>
 
           <button
@@ -220,19 +222,22 @@ export default function OrcamentoPagina() {
             <div key={linha.categoriaId} className="rounded-2xl border border-pauta bg-papel-2 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <SimboloCategoria categoria={linha.categoria}/><span className="min-w-0 flex-1 text-sm font-semibold">{linha.categoria.nome}</span>
-                <span className={cn("text-sm tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
-                  {formatarMoeda(linha.gastoCentavos)}
+                <span className={cn("text-right text-sm tabular-nums", linha.estourou ? "text-negativo" : "text-muted-fg")}>
+                  <b className="block text-[calc(15px*var(--escala-letra))] font-semibold text-foreground">{formatarMoeda(linha.gastoCentavos)}</b>
+                  <small className="text-[calc(11px*var(--escala-letra))]">gastos</small>
                 </span>
-                <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">de</span>
-                <input
-                  aria-label={`Orçamento de ${linha.categoria.nome}`}
-                  value={rascunho[linha.categoriaId] ?? ""}
-                  onChange={(evento) =>
-                    setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))
-                  }
-                  className={campo}
-                  inputMode="decimal"
-                />
+                <label className="flex items-center gap-1.5 rounded-[var(--raio-campo)] border border-pauta bg-background px-3 focus-within:border-acao">
+                  <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">limite R$</span>
+                  <input
+                    aria-label={`Orçamento de ${linha.categoria.nome}`}
+                    value={rascunho[linha.categoriaId] ?? ""}
+                    onChange={(evento) =>
+                      setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))
+                    }
+                    className="h-11 w-24 border-0 bg-transparent text-right text-[calc(15px*var(--escala-letra))] font-semibold tabular-nums outline-none sm:h-10"
+                    inputMode="decimal"
+                  />
+                </label>
                 <button
                   onClick={() =>
                     setRascunho((atual) => ({ ...atual, [linha.categoriaId]: "0" }))

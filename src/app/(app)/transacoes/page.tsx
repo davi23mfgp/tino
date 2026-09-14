@@ -259,12 +259,12 @@ export default function Transacoes() {
           <dl aria-label="Resumo do período filtrado" aria-busy={carregando}>
             {[
               { rotulo: "Entradas", valor: totais?.receitasCentavos, tom: "text-positivo" },
-              { rotulo: "Saídas", valor: totais?.despesasCentavos, tom: "" },
+              { rotulo: "Saídas", valor: totais?.despesasCentavos, tom: "text-negativo" },
               { rotulo: "Saldo do período", valor: saldo, tom: saldo !== null && saldo < 0 ? "text-negativo" : "" },
             ].map((metrica) => (
               <div key={metrica.rotulo}>
-                <dt className="text-sm text-muted-fg">{metrica.rotulo}</dt>
-                <dd className={cn("numero whitespace-nowrap text-lg font-semibold sm:mt-1", metrica.tom)}>
+                <dt>{metrica.rotulo}</dt>
+                <dd className={cn("numero valor-sensivel whitespace-nowrap", metrica.tom)}>
                   {metrica.valor == null ? "—" : formatarMoeda(metrica.valor)}
                 </dd>
               </div>
@@ -324,7 +324,7 @@ export default function Transacoes() {
                   </p>
                 </div>
                 <div className={estilos.categoria}>
-                  {transferencia ? <span className="text-xs text-muted-fg">Transferência</span> : <SeletorCategoria
+                  {transferencia ? <span className="flex min-h-9 items-center text-sm text-muted-fg">Transferência</span> : <SeletorCategoria
                     opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`}
                     desabilitado={ocupado || carregandoCategorias || erroCategorias} className="w-full justify-start"
                     aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}

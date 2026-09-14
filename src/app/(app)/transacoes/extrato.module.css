@@ -1,10 +1,15 @@
 .pagina { max-width: 1180px; margin: auto; border: 1px solid var(--pauta); border-radius: 20px; background: var(--papel-solido); overflow: hidden; }
 .pagina .controles,.pagina .movimentos { border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 20px 24px; }
 .pagina .controles { display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--pauta); }
-.resumo { order: -1; }
-.resumo dl { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; }
-.resumo dt { font-size: 12px; }
-.resumo dd { font-size: 22px; font-weight: 550; letter-spacing: -.04em; margin-top: 4px; }
+.resumo { order: -1; position: relative; margin: -20px -24px 4px; padding: 22px 24px 18px; overflow: hidden; border-bottom: 1px solid var(--pauta); background: linear-gradient(118deg, color-mix(in oklab, var(--papel-solido), var(--acao) 12%), var(--papel-solido) 62%); }
+.resumo:before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--acao); }
+.resumo dl { display: flex; align-items: stretch; gap: 0; }
+.resumo dl > div { padding: 0 22px; border-left: 1px solid var(--pauta); }
+.resumo dl > div:first-child { padding-left: 0; border-left: 0; }
+.resumo dl > div:last-child { margin-left: auto; text-align: right; border-left: 0; }
+.resumo dt { font-size: calc(10px * var(--escala-letra)); text-transform: uppercase; letter-spacing: .12em; font-weight: 650; color: var(--texto-3); }
+.resumo dd { font-size: calc(21px * var(--escala-letra)); font-weight: 600; letter-spacing: -.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.resumo dl > div:last-child dd { font-size: calc(30px * var(--escala-letra)); font-weight: 680; }
 .contagem { color: var(--texto-3); font-size: 11px; margin-top: 10px; }
 .busca { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 12px; }
 .busca label>span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

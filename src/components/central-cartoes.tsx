@@ -104,21 +104,27 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
                 points={barras.map((barra, indice) => `${((indice + 0.5) / barras.length) * 100},${100 - Math.max(4, (barra.gastos / maximo) * 100)}`).join(" ")}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
               />
+            </svg>
+            {/* O ponto do mês fica fora do SVG: com o viewBox achatado para
+                acompanhar a largura, um <circle> vira elipse. Aqui ele é um
+                elemento posicionado em porcentagem, então continua redondo em
+                qualquer largura. */}
+            <div className={estilos.marcaTendencia} aria-hidden>
               {barras.map((barra, indice) => mes === barra.competencia ? (
-                <circle
+                <span
                   key={barra.competencia}
-                  cx={((indice + 0.5) / barras.length) * 100}
-                  cy={100 - Math.max(4, (barra.gastos / maximo) * 100)}
-                  r={4}
-                  vectorEffect="non-scaling-stroke"
+                  style={{
+                    left: `${((indice + 0.5) / barras.length) * 100}%`,
+                    bottom: `${Math.max(4, (barra.gastos / maximo) * 100)}%`,
+                  }}
                 />
               ) : null)}
-            </svg>
+            </div>
             <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
               <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
               <small>{rotuloCompetencia(barra.competencia, true)}</small><b>{mes === barra.competencia ? formatarMoeda(barra.saldo) : ""}</b>
