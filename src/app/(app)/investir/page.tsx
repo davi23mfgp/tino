@@ -169,35 +169,27 @@ export default function Investir() {
 
       <section className={estilos.bloco}>
         <h2>Os próximos 24 meses</h2>
-        <p>Como o caixa se comporta guardando {formatarMoeda(corteCentavos)} por mês, contra não guardar nada.</p>
+        <p>Guardando {formatarMoeda(corteCentavos)} por mês, contra não guardar nada.</p>
         <div className="mt-4">{dados && <GraficoDoCorte dados={dados.corte.serie} />}</div>
       </section>
 
       <div className={estilos.duas}>
         <section className={estilos.bloco}>
           <h2>Onde colocar o aporte</h2>
-          <p>Divisão em quatro partes iguais, pelo método ARCA.</p>
           <ul className={estilos.divisao}>
             {partesDoArca.map((parte, indice) => (
               <li key={indice}>
                 <span className={estilos.letra}>{parte.letra}</span>
-                <span>
-                  <strong>{parte.rotulo}</strong>
-                  <small>{parte.explicacao}</small>
-                </span>
+                <span><strong>{parte.rotulo}</strong></span>
                 <b>{formatarMoeda(parte.valorCentavos)}</b>
               </li>
             ))}
           </ul>
-          <p className={estilos.nota}>
-            <b>Não sou consultor de investimentos.</b> É uma conta de dividir sobre o método de outra pessoa (ARCA,
-            divulgado por Thiago Nigro), não uma indicação do que comprar.
-          </p>
+          <p className={estilos.nota}>Cálculo, não recomendação. Método de Thiago Nigro.</p>
         </section>
 
         <section className={estilos.bloco}>
           <h2>Como sua renda se divide hoje</h2>
-          <p>Comparada à referência publicada pelo Grão, do Grupo Primo.</p>
           {dados && (
             <>
               <div className="mt-4"><GraficoDaDivisao fatias={dados.divisaoSugerida} total={formatarMoeda(dados.receitaMensalCentavos)} /></div>
@@ -209,10 +201,7 @@ export default function Investir() {
                   </div>
                 ))}
               </div>
-              <p className={estilos.nota}>
-                É parâmetro de comparação, não regra: quem mora em capital cara estoura a fatia de necessidades sem
-                estar fazendo nada errado.
-              </p>
+              <p className={estilos.nota}>Referência do Grão (Grupo Primo). Parâmetro, não regra.</p>
             </>
           )}
         </section>

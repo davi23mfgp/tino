@@ -248,15 +248,21 @@ export default function Simulador() {
           </p>
         )}
 
-        <h3 className="mt-5 text-sm font-semibold">1. Escolha o que deseja mudar</h3><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Eram oito cartões de 96px em coluna única: no celular a escolha
+            ocupava três telas de rolagem antes de qualquer simulação. Como
+            filtro — pílula com o nome e mais nada — a mesma escolha cabe numa
+            olhada. O que cada uma pede aparece no campo, depois de escolhida. */}
+        <h3 className="mt-5 text-sm font-semibold">1. O que mudar</h3>
+        <div className="mt-3 flex flex-wrap gap-2">
           {MODELOS.map((modelo) => (
             <button
               key={modelo.tipo}
               onClick={() => adicionar(modelo.tipo)}
-              className="flex min-h-24 flex-col items-start gap-2 rounded-2xl border border-pauta bg-papel-2 p-4 text-left text-sm transition hover:border-acao/60"
+              title={modelo.texto}
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-pauta bg-papel-2 px-3.5 text-[calc(13px*var(--escala-letra))] transition hover:border-acao/60 hover:text-acao"
             >
-              <Plus className="size-3.5" />
-              <strong>{modelo.titulo}</strong><span className="text-xs text-muted-fg">{modelo.texto}</span>
+              <Plus className="size-3.5 shrink-0" aria-hidden />
+              {modelo.titulo}
             </button>
           ))}
         </div>
