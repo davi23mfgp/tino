@@ -77,3 +77,27 @@ O que isso quer dizer, na prática:
 Isso vale para tela nova e para tela que for tocada. Não é autorização para sair
 varrendo texto do app inteiro sem pedido — quando o Davi quiser a varredura, ele
 pede.
+
+## A abertura de toda tela — regra de 14/09/2026
+
+O Davi apontou a calculadora de reserva como o desenho que ele quer em tudo:
+
+> "Tá vendo esse começo? Gostei muito dele. Do gradiente, da fonte, do texto.
+> Aplique isso no site todo. Sempre comece assim, como se fosse a entrada do
+> cliente para aquela seção. E depois busca as informações pra saber onde guiar
+> ele."
+
+O componente é `src/components/abertura.tsx`. A ordem é a regra:
+
+1. **Rótulo** — duas ou três palavras em caixa alta dizendo do que se trata.
+2. **Resposta** — uma frase em tamanho de manchete que responde a pergunta
+   daquela seção, com o número da pessoa dentro dela.
+3. **Apoio** — uma linha de contexto, só quando o número sozinho não basta.
+4. **Guia** — as perguntas ou controles que levam a pessoa ao próximo passo.
+
+**Primeiro a pessoa sabe onde está, depois o app pede informação.** O
+contrário — formulário no topo, resposta no fim — faz preencher campo sem saber
+para quê, e foi o que as telas antigas faziam.
+
+O **verde** marca só o pedaço da frase que vem dos dados dela ("6 meses",
+"R$ 26.948,58"), nunca a frase inteira: ele diz "isto é seu", não decora texto.
