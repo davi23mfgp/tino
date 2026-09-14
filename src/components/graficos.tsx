@@ -321,7 +321,7 @@ export function RoscaCategorias({
 
   return (
     <div className="flex flex-col items-center gap-5 sm:flex-row sm:gap-6">
-      <div className="relative w-full max-w-[200px] shrink-0" style={{ height: altura }}>
+      <div className="relative mx-auto w-full max-w-[200px] shrink-0" style={{ height: altura }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -347,7 +347,7 @@ export function RoscaCategorias({
           <span className="numero text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">
             {formatarMoeda(total)}
           </span>
-          <span className="mt-1.5 text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-2)]">gasto até hoje</span>
+          <span className="mt-1.5 whitespace-nowrap text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-2)]">gasto até hoje</span>
         </div>
       </div>
 
