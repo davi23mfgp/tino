@@ -54,5 +54,9 @@ export interface AtualizacaoTelegram {
     caption?: string
     document?: { file_id: string; file_name?: string; mime_type?: string; file_size?: number }
     photo?: { file_id: string; file_size?: number }[]
+    /** Gravado na hora, o botão do microfone. */
+    voice?: { file_id: string; mime_type?: string; duration?: number }
+    /** Arquivo de áudio anexado, que o Telegram entrega em campo separado. */
+    audio?: { file_id: string; mime_type?: string; duration?: number }
   }
 }

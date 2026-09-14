@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { autenticarChave, registrarCaptura } from "@/lib/captura"
 import { baixarMidia, primeiraMensagem, responder, type EventoWhatsApp } from "@/lib/captura/whatsapp"
+import { AudioIndisponivel, AudioLongoDemais, AudioVazio, transcrever } from "@/lib/captura/transcricao"
 import { confirmarImportacao, detectarFormato, previaImportacao } from "@/lib/importar"
 import { PdfProtegido } from "@/lib/importar/pdf"
 import { montarPanorama } from "@/lib/tino/panorama"
@@ -108,6 +109,16 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
     return
   }
 
+  // ── Áudio: a pessoa falou em vez de escrever ────────────
+  if (mensagem.audio) {
+    const falado = await tratarAudio(telefone, mensagem.audio)
+    if (!falado) return
+    // O id da mensagem segue junto: a Meta reentrega o mesmo áudio quando o
+    // webhook falha, e sem ele o gasto entraria duas vezes.
+    await tratarTexto(telefone, chave.larId, chave.id, falado, mensagem.id ?? null)
+    return
+  }
+
   if (mensagem.image) {
     await responder(
       telefone,
@@ -126,13 +137,45 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
     return
   }
 
+  await tratarTexto(telefone, chave.larId, chave.id, texto, mensagem.id ?? null)
+}
+
+/**
+ * Baixa e transcreve o áudio, ou explica por que não deu.
+ *
+ * Devolve `null` quando já respondeu à pessoa e não há texto para seguir.
+ */
+async function tratarAudio(telefone: string, audio: { id: string; mime_type?: string }): Promise<string | null> {
+  try {
+    const arquivo = await baixarMidia(audio.id)
+    const falado = await transcrever(arquivo.conteudo, arquivo.nome)
+    // Mostrar o que foi entendido antes de agir: transcrição erra, e a pessoa
+    // precisa ver o valor que vai virar lançamento sem ter que abrir o app.
+    await responder(telefone, `Entendi: _${falado}_`)
+    return falado
+  } catch (excecao) {
+    const recado =
+      excecao instanceof AudioIndisponivel
+        ? "Ainda não escuto áudio por aqui. Me manda por escrito (ex.: *mercado 52,30*)."
+        : excecao instanceof AudioLongoDemais
+          ? "Esse áudio é comprido demais. Manda um recadinho curto, só o gasto."
+          : excecao instanceof AudioVazio
+            ? "Não consegui ouvir nada nesse áudio. Grava de novo ou escreve o valor."
+            : "Não consegui entender esse áudio. Tenta escrever o gasto."
+    await responder(telefone, recado)
+    return null
+  }
+}
+
+/** Caminho comum do que a pessoa disse, tendo digitado ou falado. */
+async function tratarTexto(telefone: string, larId: string, chaveId: string, texto: string, mensagemId: string | null) {
   // ── Pergunta ou lançamento ──────────────────────────────
   //
   // A distinção decide tudo: tratar pergunta como gasto criaria lançamento do
   // nada, e tratar gasto como pergunta perderia o registro. Texto terminado em
   // interrogação, ou começando com palavra de pergunta, é conversa.
   if (ehPergunta(texto)) {
-    const panorama = await montarPanorama(chave.larId, competenciaAtual())
+    const panorama = await montarPanorama(larId, competenciaAtual())
     const resposta = responderPorRegras(texto, panorama)
 
     await responder(
@@ -148,13 +191,13 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
   const pareceNotificacao = /R\$|compra|aprovad|cart[aã]o|d[eé]bito|pagamento/i.test(texto) && texto.length > 25
 
   const resultado = await registrarCaptura({
-    larId: chave.larId,
-    chaveId: chave.id,
+    larId,
+    chaveId,
     texto,
     origem: "TELEGRAM",
     textoLivre: !pareceNotificacao,
     // A Meta reentrega a mesma mensagem quando o webhook falha.
-    eventoId: mensagem.id ? `whatsapp:${mensagem.id}` : null,
+    eventoId: mensagemId ? `whatsapp:${mensagemId}` : null,
   })
 
   await responder(telefone, resultado.resposta)

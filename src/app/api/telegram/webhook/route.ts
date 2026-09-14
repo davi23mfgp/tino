@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { autenticarChave, hashDeChave, registrarCaptura } from "@/lib/captura"
 import { baixarArquivo, responder, type AtualizacaoTelegram } from "@/lib/captura/telegram"
+import { AudioIndisponivel, AudioLongoDemais, AudioVazio, transcrever } from "@/lib/captura/transcricao"
 import { confirmarImportacao, detectarFormato, previaImportacao } from "@/lib/importar"
 import { PdfProtegido } from "@/lib/importar/pdf"
 
@@ -36,7 +37,9 @@ export async function POST(requisicao: Request) {
   if (!mensagem) return NextResponse.json({ ok: true })
 
   const chatId = String(mensagem.chat.id)
-  const texto = (mensagem.text ?? mensagem.caption ?? "").trim()
+  // Deixa de ser `const` porque o recado de voz também vira texto, mais
+  // abaixo, e daí em diante segue pelo mesmo caminho de quem digitou.
+  let texto = (mensagem.text ?? mensagem.caption ?? "").trim()
 
   // ── Ligar a conversa ao lar ─────────────────────────────
   const conectar = /^\/conectar\s+(\S+)/i.exec(texto)
@@ -161,6 +164,29 @@ export async function POST(requisicao: Request) {
     }
 
     return NextResponse.json({ ok: true })
+  }
+
+  // ── Áudio: a pessoa falou em vez de escrever ────────────
+  const audio = mensagem.voice ?? mensagem.audio
+  if (audio) {
+    try {
+      const arquivo = await baixarArquivo(audio.file_id)
+      texto = await transcrever(arquivo.conteudo, arquivo.nome)
+      // Mostrar o que foi entendido antes de agir: transcrição erra, e a
+      // pessoa precisa ver o valor que vai virar lançamento.
+      await responder(chatId, `Entendi: <i>${texto}</i>`)
+    } catch (excecao) {
+      const recado =
+        excecao instanceof AudioIndisponivel
+          ? "Ainda não escuto áudio por aqui. Me manda por escrito (ex.: <b>mercado 52,30</b>)."
+          : excecao instanceof AudioLongoDemais
+            ? "Esse áudio é comprido demais. Manda um recadinho curto, só o gasto."
+            : excecao instanceof AudioVazio
+              ? "Não consegui ouvir nada nesse áudio. Grava de novo ou escreve o valor."
+              : "Não consegui entender esse áudio. Tenta escrever o gasto."
+      await responder(chatId, recado)
+      return NextResponse.json({ ok: true })
+    }
   }
 
   if (mensagem.photo?.length) {

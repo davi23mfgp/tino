@@ -93,6 +93,12 @@ function extensaoDe(mime?: string): string {
   if (mime.includes("pdf")) return ".pdf"
   if (mime.includes("csv") || mime.includes("comma")) return ".csv"
   if (mime.includes("ofx")) return ".ofx"
+  // O recado de voz do WhatsApp vem sempre em ogg/opus; os outros aparecem
+  // quando a pessoa anexa um arquivo de áudio em vez de gravar.
+  if (mime.includes("ogg")) return ".ogg"
+  if (mime.includes("mpeg") || mime.includes("mp3")) return ".mp3"
+  if (mime.includes("mp4") || mime.includes("m4a") || mime.includes("aac")) return ".m4a"
+  if (mime.includes("wav")) return ".wav"
   return ""
 }
 
@@ -103,6 +109,8 @@ export interface MensagemWhatsApp {
   type: string
   text?: { body: string }
   document?: { id: string; filename?: string; mime_type?: string }
+  /** Recado de voz e áudio anexado chegam no mesmo campo. */
+  audio?: { id: string; mime_type?: string; voice?: boolean }
   image?: { id: string; mime_type?: string }
 }
 

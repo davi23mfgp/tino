@@ -56,10 +56,26 @@ escolher, no horário que ela escolher.
 - Risco: virar spam. A `chave` estável dos alertas já resolve repetição; falta
   um limite diário e um "não me avise mais disso".
 
-**1.2 Anotar por áudio.** Hoje o webhook aceita texto e PDF. Áudio ("paguei
-7,50 no...") vira transcrição e cai no mesmo caminho de captura que já existe.
-- Depende de: transcrição. A `ANTHROPIC_API_KEY` já está no `.env.example`.
-- Tamanho: pequeno — é um `case` a mais no webhook.
+**1.2 Anotar por áudio.** ✅ **Feito em 14/09/2026.** Hoje o webhook aceita
+texto e PDF. Áudio ("paguei 7,50 no...") vira transcrição e cai no mesmo
+caminho de captura que já existe.
+- **Correção do plano:** a linha original dizia que a `ANTHROPIC_API_KEY`
+  resolvia a transcrição. **Não resolve** — os modelos Claude não aceitam
+  áudio como entrada. A saída, sem fornecedor novo: a `GROQ_API_KEY`, que já
+  é provedor do assessor em `lib/tino/modelo.ts`, dá acesso ao Whisper pela
+  mesma chave.
+- **Onde ficou:** `src/lib/captura/transcricao.ts`, ligado nos dois webhooks
+  (WhatsApp e Telegram — o Telegram entrega voz em `voice` e anexo em
+  `audio`, campos separados).
+- **Decisões tomadas no caminho:** o Tino repete o que entendeu ("Entendi:
+  _mercado 52,30_") antes de lançar, porque transcrição erra valor; áudio
+  acima de 8 MB e abaixo de 1 KB é recusado sem chamar a API (silêncio é
+  exatamente o que faz o Whisper inventar frase); `language=pt` explícito,
+  senão áudio curto com número é detectado como espanhol e volta traduzido,
+  com o valor trocado; o id da mensagem segue junto para o mesmo áudio
+  reentregue pela Meta não virar dois lançamentos.
+- **Sem a chave nada quebra:** quem manda áudio recebe recado pedindo para
+  escrever, como já acontecia com foto.
 
 **1.3 Resumo do dia / da fatura sem pedir.** "Sua fatura vence hoje, quer o
 relatório?" é o vigia 1.1 com uma ação anexada. Reaproveita `montarPanorama`.
