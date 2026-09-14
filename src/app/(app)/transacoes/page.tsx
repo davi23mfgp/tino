@@ -18,6 +18,7 @@ import Link from "next/link"
 import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { Button } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import estilos from "./extrato.module.css"
 
 interface Transacao {
   id: string
@@ -51,6 +52,14 @@ export default function Transacoes() {
   const [semCategoria, setSemCategoria] = useState(false)
   const [tipo, setTipo] = useState("todos")
   const [categoriaFiltro, setCategoriaFiltro] = useState<string | null>(null)
+  useEffect(() => {
+    const parametros = new URLSearchParams(window.location.search)
+    const categoria = parametros.get("categoriaId")
+    if (categoria === "sem") setSemCategoria(true)
+    else if (categoria) setCategoriaFiltro(categoria)
+    const conta = parametros.get("contaId")
+    if (conta) setContaFiltro(conta)
+  }, [])
   const [contagem, setContagem] = useState<{ entradas: number; saidas: number } | null>(null)
   const [transacoes, setTransacoes] = useState<Transacao[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
@@ -195,13 +204,13 @@ export default function Transacoes() {
   const saldo = totais ? totais.receitasCentavos - totais.despesasCentavos : null
 
   return (
-    <div className="space-y-4">
-      <Cartao estatico>
+    <div className={estilos.pagina}>
+      <Cartao estatico className={estilos.controles}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-base font-semibold">Seus lançamentos</h2>
+          <h2 className="text-base font-semibold">Movimentações</h2>
           <FabAdicionar inline />
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)]">
+        <div className={estilos.busca}>
           <label className="min-w-0 space-y-1 text-sm">
             <span className="block font-medium">Mês</span>
             <SelectNative
@@ -226,7 +235,7 @@ export default function Transacoes() {
             />
           </label>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className={estilos.filtros}>
           <ToggleGroup type="single" value={tipo} onValueChange={valor => {if(valor) setTipo(valor)}} aria-label="Tipo de movimento">
             <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
             <ToggleGroupItem value="RECEITA">Entradas</ToggleGroupItem>
@@ -234,9 +243,8 @@ export default function Transacoes() {
           </ToggleGroup>
           <SelectNative aria-label="Filtrar conta ou cartão" value={contaFiltro} onChange={e=>setContaFiltro(e.target.value)}><option value="">Todas as contas e cartões</option>{contas.map(c=><option key={c.id} value={c.id}>{c.nome}</option>)}</SelectNative>
           <SeletorCategoria opcoes={categorias} valor={categoriaFiltro} aoMudar={id => {setCategoriaFiltro(id);setSemCategoria(false)}} vazio="Todas as categorias" rotulo="Filtrar categoria" desabilitado={carregandoCategorias || erroCategorias} />
-          <Button asChild variant="link"><Link href="/categorias">Personalizar categorias</Link></Button>
         </div>
-        <details className="mt-3 text-sm">
+        <details className={estilos.maisFiltros}>
           <summary className="min-h-11 cursor-pointer py-3 font-medium">
             Mais filtros{semCategoria ? " · 1 ativo" : ""}
           </summary>
@@ -244,16 +252,17 @@ export default function Transacoes() {
             <Checkbox checked={semCategoria} onChange={(evento) => setSemCategoria(evento.target.checked)} />
             Só sem categoria
           </label>
+          <Button asChild variant="link"><Link href="/categorias">Personalizar categorias</Link></Button>
         </details>
-        <div className="mt-3 border-t border-pauta pt-4">
-          <p className="mb-3 text-xs text-muted-fg">Totais de todos os lançamentos neste filtro</p>
-          <dl className="grid gap-3 sm:grid-cols-3" aria-busy={carregando}>
+        {(busca || contaFiltro || categoriaFiltro || semCategoria || tipo !== "todos") && <div className={estilos.ativos}><span>{[busca && `Busca: ${busca}`, contas.find(c => c.id === contaFiltro)?.nome, categorias.find(c => c.id === categoriaFiltro)?.nome, semCategoria && "Sem categoria", tipo === "RECEITA" && "Entradas", tipo === "DESPESA" && "Saídas"].filter(Boolean).join(" · ")}</span><button onClick={() => { setBusca(""); setContaFiltro(""); setCategoriaFiltro(null); setSemCategoria(false); setTipo("todos") }}>Limpar filtros</button></div>}
+        <div className={estilos.resumo}>
+          <dl aria-label="Resumo do período filtrado" aria-busy={carregando}>
             {[
               { rotulo: "Entradas", valor: totais?.receitasCentavos, tom: "text-positivo" },
               { rotulo: "Saídas", valor: totais?.despesasCentavos, tom: "" },
               { rotulo: "Saldo do período", valor: saldo, tom: saldo !== null && saldo < 0 ? "text-negativo" : "" },
             ].map((metrica) => (
-              <div key={metrica.rotulo} className="min-w-0 rounded-2xl border border-pauta bg-papel-2 p-4">
+              <div key={metrica.rotulo}>
                 <dt className="text-sm text-muted-fg">{metrica.rotulo}</dt>
                 <dd className={cn("numero whitespace-nowrap text-lg font-semibold sm:mt-1", metrica.tom)}>
                   {metrica.valor == null ? "—" : formatarMoeda(metrica.valor)}
@@ -261,16 +270,16 @@ export default function Transacoes() {
               </div>
             ))}
           </dl>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm" aria-live="polite">
+          <div className={estilos.contagem} aria-live="polite">
             <p>{contagem ? `${contagem.entradas} entradas · ${contagem.saidas} saídas neste filtro` : `${transacoes.filter(item => item.tipo === "RECEITA").length} entradas · ${transacoes.filter(item => item.tipo === "DESPESA").length} saídas carregadas`}</p>
           </div>
         </div>
       </Cartao>
 
-      <Cartao estatico>
+      <Cartao estatico className={estilos.movimentos}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-medium" role="status">
-            {carregando ? "Atualizando lançamentos…" : `${transacoes.length} lançamento(s) carregado(s)`}
+            {carregando ? "Atualizando…" : `${transacoes.length} movimentações`}
           </p>
           <p className="text-xs text-muted-fg">Toque na descrição ou no valor para editar.</p>
         </div>
@@ -297,12 +306,12 @@ export default function Transacoes() {
           />
         )}
 
-        <ul className="space-y-3 sm:space-y-0 sm:divide-y sm:divide-pauta" aria-label="Lançamentos" aria-busy={ocupado}>
+        <ul className={estilos.lista} aria-label="Lançamentos" aria-busy={ocupado}>
           {transacoes.map((transacao) => {
             const transferencia = transacao.tipo === "TRANSFERENCIA"
             return (
-              <li key={transacao.id} className="grid min-w-0 grid-cols-[40px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl border border-pauta p-3 sm:grid-cols-[40px_minmax(0,1fr)_minmax(140px,190px)_auto] sm:items-center sm:rounded-none sm:border-0 sm:px-0 sm:py-3">
-                <MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} />
+              <li key={transacao.id} className={estilos.linha}>
+                <span className={estilos.simbolo}><MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} /></span>
                 <div className="min-w-0">
                   <EditavelTexto
                     valor={transacao.descricao}
@@ -314,19 +323,19 @@ export default function Transacoes() {
                     {new Date(transacao.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })} · {transacao.conta.nome}
                   </p>
                 </div>
-                <div className="col-span-2 min-w-0 sm:col-span-1">
-                  {transferencia ? <span className="text-sm text-muted-fg">Transferência entre contas</span> : <SeletorCategoria
+                <div className={estilos.categoria}>
+                  {transferencia ? <span className="text-xs text-muted-fg">Transferência</span> : <SeletorCategoria
                     opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`}
                     desabilitado={ocupado || carregandoCategorias || erroCategorias} className="w-full justify-start"
                     aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
                   />}
                 </div>
-                <div className={cn("col-span-2 flex min-w-0 flex-wrap items-center justify-end gap-1 sm:col-span-1", transacao.tipo === "RECEITA" && "text-positivo")}>
+                <div className={cn(estilos.valor, transacao.tipo === "RECEITA" && "text-positivo")}>
                   {transferencia ? (
                     <span className="numero break-words text-sm text-muted-fg">{formatarMoeda(transacao.valorCentavos)}</span>
                   ) : (
                     <>
-                      <span className="text-xs">{transacao.tipo === "RECEITA" ? "Entrada +" : "Saída −"}</span>
+                      <span aria-label={transacao.tipo === "RECEITA" ? "Entrada" : "Saída"}>{transacao.tipo === "RECEITA" ? "+" : "−"}</span>
                       <EditavelMoeda
                         valorCentavos={transacao.valorCentavos}
                         aoSalvar={(valorCentavos) => salvarEdicao(transacao.id, { valorCentavos })}

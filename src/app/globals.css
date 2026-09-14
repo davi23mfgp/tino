@@ -158,6 +158,9 @@
     --gradient-plum: linear-gradient(135deg, oklch(0.85 0 0), oklch(0.55 0 0));
 
     --radius: 12px;
+    /* CSS modules consomem cores completas; o Tailwind usa os trios --lch. */
+    --acao: oklch(var(--lch-acao));
+    --negativo: oklch(var(--lch-negativo));
 
     --sombra-ficha: var(--sombra-ios);
     --sombra-alta: var(--sombra-flutuante);

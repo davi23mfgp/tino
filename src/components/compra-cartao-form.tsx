@@ -24,7 +24,7 @@ export function CompraCartaoForm({contaId,categorias,compra,parcelamento,fechar,
     else await enviar("/api/transacoes",{contaId,descricao,valorCentavos:paraCentavos(valor),data,categoriaId:categoria||null,tipo:"DESPESA"})
     salvou();fechar()
   }catch(e){setErro(e instanceof Error?e.message:"Não foi possível salvar.")}finally{setOcupado(false)}}
-  const formulario=<form onSubmit={salvar} className="grid gap-4 px-1 sm:grid-cols-2">
+  const formulario=<form onSubmit={salvar} className="grid gap-4 px-4 py-4 sm:px-6 sm:py-5 sm:grid-cols-2">
     <label className="block text-sm sm:col-span-2">Descrição<Input required maxLength={200} value={descricao} onChange={e=>setDescricao(e.target.value)} /></label>
     {!parcelamento&&<><label className="text-sm">Valor total (R$)<Input required inputMode="decimal" value={valor} onChange={e=>setValor(e.target.value)} /></label><label className="text-sm">Data da compra<Input required type="date" value={data} onChange={e=>setData(e.target.value)} /></label></>}
     <div className="sm:col-span-2"><SeletorCategoria opcoes={categorias} valor={categoria||null} aoMudar={id=>setCategoria(id??"")}/></div>

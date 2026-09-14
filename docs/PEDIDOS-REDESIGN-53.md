@@ -1,6 +1,6 @@
 # Redesign solicitado — lista consolidada
 
-Autorizado em 09/09/2026. Estado final: itens implementados e verificados em código, testes automatizados e quatro larguras de tela. Integrações que dependem de contas externas ficaram preparadas para ativação.
+Autorizado em 09/09/2026. Revisão reaberta em 13/09/2026: as marcações abaixo são o histórico da implementação anterior, não comprovam conclusão nem aprovação visual. A revisão sênior está em `REVISAO-SENIOR-2026-09-13.md`. Integrações preparadas devem ser distinguidas de integrações ativas.
 
 - [x] 1. Cartões com identidade visual do banco/modelo selecionado.
 - [x] 2. Faturas por mês em barras estilo Nubank.

@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState, type CSSProperties } from "react"
+import { useEffect, useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-react"
+import { ChevronLeft, ChevronRight, CreditCard, Pencil, Plus, Trash2, Upload } from "lucide-react"
 
 import estilos from "./central-cartoes.module.css"
+import { OrcamentoDoCartao } from "./orcamento-cartao"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { AjudaCartao } from "@/components/ajuda-cartao"
@@ -18,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { enviar } from "@/lib/cliente"
 import { mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
 import { rotuloCompetencia } from "@/lib/datas"
-import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
+import { formatarMoeda } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
@@ -37,7 +38,10 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
   const cartao = cartoes.find((linha) => linha.id === id) ?? cartoes[0]
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("aba") === "parcelas") setAba("parcelas")
+    const parametros = new URLSearchParams(window.location.search)
+    if (parametros.get("aba") === "parcelas") setAba("parcelas")
+    const selecionado = parametros.get("contaId")
+    if (selecionado) setId(selecionado)
   }, [])
 
   if (!cartao) return <div className={estilos.vazio}><p>Adicione seu primeiro cartão.</p><Button asChild><Link href="/configuracoes">Cadastrar cartão</Link></Button></div>
@@ -101,15 +105,15 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
       <TabsList className={estilos.abas}><TabsTrigger value="compras">Compras</TabsTrigger><TabsTrigger value="parcelas">Parcelas</TabsTrigger><TabsTrigger value="categorias">Categorias</TabsTrigger><TabsTrigger value="orcamento">Orçamento</TabsTrigger><TabsTrigger value="ajuda">Ajuda</TabsTrigger><TabsTrigger value="importar">Importar</TabsTrigger></TabsList>
 
       <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><select aria-label="Filtrar categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)}><option value="">Todas as categorias</option>{resumo.categorias.map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select></div>
-        <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><MarcaPersonalizada nome={compra.descricao} /><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
+        <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.iconeCompra}><MarcaPersonalizada nome={compra.descricao} /><CreditCard size={16} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
       </section></TabsContent>
 
-      <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} /><div className={estilos.parcelamentos}>{cartao.parcelamentos.map((parcela) => <article key={parcela.id}><header><span><strong>{parcela.descricao}</strong><small>{formatarMoeda(parcela.parcelaCentavos)}/mês · termina em {rotuloCompetencia(parcela.parcelas.at(-1)?.competencia ?? mes, true)}</small></span><b>{parcela.parcelasPagas}/{parcela.parcelasTotal}</b><button aria-label={`Editar ${parcela.descricao}`} onClick={() => setForm({ parcelamento: parcela })}><Pencil /></button><button aria-label={`Excluir ${parcela.descricao}`} onClick={() => setExcluir({ id: parcela.id, nome: parcela.descricao, tipo: "parcelamentos" })}><Trash2 /></button></header><progress value={parcela.parcelasPagas} max={parcela.parcelasTotal} /><details><summary>Ver calendário</summary>{parcela.parcelas.map((linha) => <div key={linha.id} data-atual={linha.competencia === mes}><span>{linha.numero}/{parcela.parcelasTotal} · {rotuloCompetencia(linha.competencia, true)}</span><b>{formatarMoeda(linha.valorCentavos)} · {linha.paga ? "Paga" : "Prevista"}</b></div>)}</details></article>)}</div></section></TabsContent>
+      <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} /><div className={estilos.parcelamentos}>{cartao.parcelamentos.map((parcela) => <article key={parcela.id}><header><span><strong>{parcela.descricao}</strong><small>{formatarMoeda(parcela.parcelaCentavos)}/mês · termina em {rotuloCompetencia(parcela.parcelas.at(-1)?.competencia ?? mes, true)}</small></span><b>{parcela.parcelasPagas}/{parcela.parcelasTotal}<small>pagas</small></b><button aria-label={`Editar ${parcela.descricao}`} onClick={() => setForm({ parcelamento: parcela })}><Pencil /></button><button aria-label={`Excluir ${parcela.descricao}`} onClick={() => setExcluir({ id: parcela.id, nome: parcela.descricao, tipo: "parcelamentos" })}><Trash2 /></button></header><div className={estilos.progressoParcelas}><progress aria-label={`Progresso de ${parcela.descricao}`} value={parcela.parcelasPagas} max={parcela.parcelasTotal} /><span>{formatarMoeda(parcela.parcelas.filter(p => !p.paga).reduce((s, p) => s + p.valorCentavos, 0))} restantes</span></div><details><summary>Ver calendário</summary>{parcela.parcelas.map((linha) => <div key={linha.id} data-atual={linha.competencia === mes}><span>{linha.numero}/{parcela.parcelasTotal} · {rotuloCompetencia(linha.competencia, true)}</span><b>{formatarMoeda(linha.valorCentavos)} · {linha.paga ? "Paga" : "Prevista"}</b></div>)}</details></article>)}</div></section></TabsContent>
 
       <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
 
-      <TabsContent value="orcamento"><OrcamentoDoCartao cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
-      <TabsContent value="ajuda"><AjudaCartao cartao={cartao} mes={mes} /></TabsContent>
+      <TabsContent value="orcamento"><OrcamentoDoCartao key={`${cartao.id}-${mes}`} cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
+      <TabsContent value="ajuda"><AjudaCartao key={`${cartao.id}-${mes}`} cartao={cartao} mes={mes} aoAbrir={(destino) => { setAba(destino); if (destino === "compras") setCategoria("sem") }} /></TabsContent>
       <TabsContent value="importar"><Importador contaInicial={cartao.id} aoConcluir={() => router.refresh()} /></TabsContent>
     </Tabs>
 
@@ -122,24 +126,3 @@ function Cabecalho({ titulo, apoio }: { titulo: string; apoio: string }) {
   return <header className={estilos.cabecalho}><div><h2>{titulo}</h2><p>{apoio}</p></div></header>
 }
 
-function OrcamentoDoCartao({ cartao, mes, categorias, gastos, aoSalvar }: { cartao: DadosCartao; mes: string; categorias: { id: string; nome: string }[]; gastos: { id: string; nome: string; totalCentavos: number }[]; aoSalvar: () => void }) {
-  const existente = cartao.orcamentos?.find((plano) => plano.competencia === mes)
-  const inicial = existente?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0
-  const [total, setTotal] = useState(inicial)
-  const [linhas, setLinhas] = useState<Record<string, number>>(() => Object.fromEntries(existente?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? []))
-  const [erro, setErro] = useState("")
-  const [salvando, setSalvando] = useState(false)
-  const [novaCategoria, setNovaCategoria] = useState("")
-  useEffect(() => { const plano = cartao.orcamentos?.find((item) => item.competencia === mes); setTotal(plano?.totalCentavos ?? cartao.orcamentoMensalCentavos ?? 0); setLinhas(Object.fromEntries(plano?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? [])); setErro("") }, [cartao, mes])
-  const distribuido = Object.values(linhas).reduce((soma, valor) => soma + valor, 0)
-  const categoriasAtivas = useMemo(() => categorias.filter((linha) => gastos.some((gasto) => gasto.id === linha.id) || (linhas[linha.id] ?? 0) > 0), [categorias, gastos, linhas])
-  async function salvar() { setErro(""); if (distribuido > total) { setErro("As categorias ultrapassam o orçamento total."); return } setSalvando(true); try { await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos: total, categorias: Object.entries(linhas).filter(([, valor]) => valor > 0).map(([categoriaId, limiteCentavos]) => ({ categoriaId, limiteCentavos })) }, "PUT"); aoSalvar() } catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível salvar.") } finally { setSalvando(false) } }
-  const gastoTotal = gastos.reduce((soma, linha) => soma + linha.totalCentavos, 0)
-  const maximo = Math.max(10000, cartao.limiteCentavos ?? 0, gastoTotal * 2)
-  return <section className={estilos.painel}><Cabecalho titulo="Orçamento do cartão" apoio={`Plano de ${rotuloCompetencia(mes, true)} · limite bancário separado`} /><div className={estilos.resumoOrcamento}><div><small>Planejado</small><strong>{total ? formatarMoeda(total) : "Definir orçamento"}</strong></div><div><small>Utilizado</small><strong>{formatarMoeda(gastoTotal)}</strong></div><div><small>Restante</small><strong>{total ? formatarMoeda(total - gastoTotal) : "—"}</strong></div><div><small>Não distribuído</small><strong>{formatarMoeda(Math.max(0, total - distribuido))}</strong></div></div>
-    <label className={estilos.slider}><span><b>Total do mês</b><input aria-label="Valor exato do orçamento total" value={formatarDecimal(total / 100, 2)} onChange={(e) => setTotal(paraCentavos(e.target.value))} inputMode="decimal" /></span><input type="range" min="0" max={maximo} step="5000" value={Math.min(total, maximo)} onChange={(e) => setTotal(Number(e.target.value))} /></label>
-    <div className={estilos.adicionarCategoria}><select aria-label="Adicionar categoria ao orçamento" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)}><option value="">Adicionar categoria</option>{categorias.filter((linha) => !categoriasAtivas.some((ativa) => ativa.id === linha.id)).map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select><Button type="button" variant="outline" disabled={!novaCategoria} onClick={() => { setLinhas((atual) => ({ ...atual, [novaCategoria]: 1000 })); setNovaCategoria("") }}>Adicionar</Button></div>
-    <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)} utilizado</small><input aria-label={`Orçamento de ${linha.nome}`} value={formatarDecimal(limite / 100, 2)} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: paraCentavos(e.target.value) }))} inputMode="decimal" /></span><input type="range" min="0" max={Math.max(total, 10000)} step="1000" value={Math.min(limite, Math.max(total, 10000))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
-    {erro && <p className={estilos.erro} role="alert">{erro}</p>}<Button disabled={salvando} onClick={() => void salvar()}>Salvar orçamento</Button>
-  </section>
-}
