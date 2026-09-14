@@ -98,7 +98,7 @@ o app não escolhe ativo nem indica corretora.
 
 **Não conferido em tela** — o navegador desconectou antes.
 
-## 6. Assistente de investimento com objetivo — pedido em 14/09, a fazer
+## 6. Assistente de investimento com objetivo — feito em 14/09
 
 Pedido: em Investimentos, uma ajuda que **olhe as contas**, ajude a definir
 **quanto separar para investir** como objetivo, e então **indique a porcentagem
@@ -118,7 +118,14 @@ persistida → progresso), aplicado ao investimento:
    `efeitoDoCorte` já existe e faz exatamente essa conta para corte de gasto;
    falta ligar ao aporte.
 
-**Decisão pendente do Davi:** o objetivo de aporte é uma meta nova no banco ou
-reaproveita `Meta` (que já existe, com tipo APOSENTADORIA entre outros)? A
-segunda evita tabela nova e faz o objetivo aparecer nas telas de meta que já
-existem.
+**Decidido pelo Davi: meta nova.** Entrou o modelo `ObjetivoDeAporte`, um por
+lar, com valor mensal e prazo. É separado de `Meta` porque responde outra
+pergunta: `Meta` é "quero juntar X até tal data", com alvo, prazo e saldo; o
+objetivo de aporte é um hábito mensal sem fim marcado.
+
+A tela ficou nas três perguntas, nessa ordem: **quanto separo por mês** (o
+objetivo, gravado), **onde entra** (o ARCA reequilibrando pela carteira real) e
+**no que dá** (patrimônio no prazo, a 4% ao ano acima da inflação).
+
+API em `/api/investir/objetivo`, com GET, PUT e DELETE — desistir do objetivo é
+uma decisão como qualquer outra e precisa de saída.

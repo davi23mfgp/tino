@@ -270,6 +270,7 @@ model Lar {
   orcamentos      Orcamento[]
   orcamentosCartao OrcamentoCartao[]
   metas           Meta[]
+  objetivoDeAporte ObjetivoDeAporte?
   dividas         Divida[]
   simulacoes      SimulacaoEmprestimo[]
   faturas         Fatura[]
@@ -1513,4 +1514,24 @@ model FaturaRecebida {
  criadoEm DateTime @default(now())
  @@unique([eventoId,contaId,arquivoNome])
  @@index([larId,status])
+}
+
+/// Quanto o lar decidiu separar por mês para investir.
+///
+/// Meta própria, e não um `Meta` comum, porque responde outra pergunta: `Meta`
+/// é "quero juntar X até tal data" e tem alvo, prazo e saldo; isto é um hábito
+/// mensal sem fim marcado, que a tela de investimento usa para dividir o aporte
+/// pelo ARCA e para projetar patrimônio. Um por lar: são duas perguntas
+/// diferentes, não duas listas.
+model ObjetivoDeAporte {
+  id    String @id @default(cuid())
+  larId String @unique
+  lar   Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+
+  valorMensalCentavos Int
+  /// Prazo em anos que a tela usa para projetar o patrimônio.
+  prazoAnos           Int @default(10)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 }
