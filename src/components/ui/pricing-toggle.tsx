@@ -26,10 +26,10 @@ export function PricingToggle({
       <div
         aria-hidden
         className={cn(
-          // `acao-solido`, não `acao`: o indicador hospeda texto branco em
-          // cima (os dois botões abaixo), e o `acao` claro só dá 2,9:1 com
-          // branco — abaixo do 4,5:1 exigido (ver globals.css).
-          "absolute inset-y-1 w-[calc(50%-4px)] rounded-[var(--raio-pilula)] bg-acao-solido shadow-sm transition-transform duration-200 ease-[var(--curva)]",
+          // O indicador é o verde neon da marca e o texto por cima é PRETO —
+          // 13,61:1, o mesmo par do botão principal. Branco sobre esse verde
+          // daria 1,46:1 e é por isso que a opção ativa não usa branco.
+          "absolute inset-y-1 w-[calc(50%-4px)] rounded-[var(--raio-pilula)] bg-acao shadow-sm transition-transform duration-200 ease-[var(--curva)]",
           valor === "ANUAL" ? "translate-x-[calc(100%+8px)]" : "translate-x-0",
         )}
       />
@@ -38,7 +38,7 @@ export function PricingToggle({
         onClick={() => aoMudar("MENSAL")}
         className={cn(
           "relative z-10 rounded-[var(--raio-pilula)] px-3.5 py-1.5 font-medium transition-colors",
-          valor === "MENSAL" ? "text-white" : "text-muted-fg",
+          valor === "MENSAL" ? "text-[color:var(--background)]" : "text-foreground/70 hover:text-foreground",
         )}
       >
         mensal
@@ -48,7 +48,7 @@ export function PricingToggle({
         onClick={() => aoMudar("ANUAL")}
         className={cn(
           "relative z-10 flex items-center gap-1.5 rounded-[var(--raio-pilula)] px-3.5 py-1.5 font-medium transition-colors",
-          valor === "ANUAL" ? "text-white" : "text-muted-fg",
+          valor === "ANUAL" ? "text-[color:var(--background)]" : "text-foreground/70 hover:text-foreground",
         )}
       >
         anual
@@ -56,7 +56,7 @@ export function PricingToggle({
           <span
             className={cn(
               "rounded-full px-1.5 py-0.5 text-[calc(10px*var(--escala-letra))] font-semibold",
-              valor === "ANUAL" ? "bg-white/20 text-white" : "bg-positivo/15 text-positivo",
+              valor === "ANUAL" ? "bg-black/15 text-[color:var(--background)]" : "bg-acao/15 text-acao",
             )}
           >
             {rotuloDesconto}

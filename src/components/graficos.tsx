@@ -696,6 +696,10 @@ export function FluxoDeCaixaNoTempo({
 }) {
   const cores = useCores()
   const [granularidade, setGranularidade] = useState<"dia" | "mes" | "ano">("mes")
+  // A pergunta desta tela é "quanto eu vou ter", não "quanto entrou e saiu".
+  // O caixa é a série principal; entrada e saída ficam atrás de um botão,
+  // desligadas, para quem quiser abrir a conta que produziu a linha.
+  const [mostrarMovimento, setMostrarMovimento] = useState(false)
   const serie = series[granularidade]
 
   const dados = serie.map((ponto) => ({
@@ -712,10 +716,32 @@ export function FluxoDeCaixaNoTempo({
 
   const virada = dados.findIndex((ponto) => ponto.futuro)
   const fim = serie[serie.length - 1]
+  const hoje = serie.find((ponto) => ponto.viradaDoFuturo) ?? serie.filter((ponto) => !ponto.futuro).at(-1)
+  const agora = hoje?.caixaCentavos ?? 0
+  const depois = fim?.caixaCentavos ?? 0
+  const variacao = depois - agora
+  const horizonte = granularidade === "dia" ? "no fim do período" : granularidade === "mes" ? "no fim do período" : "no fim do período"
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* O número que responde a pergunta vem antes do gráfico, em tamanho de
+          manchete: o gráfico explica como se chega nele. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div>
+          <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-[.12em] text-muted-fg">
+            Quanto você vai ter em {fim?.rotulo}
+          </p>
+          <p className={cn("numero text-[calc(34px*var(--escala-letra))] font-semibold leading-tight tracking-tight", depois < 0 && "text-negativo")}>
+            {formatarMoeda(depois)}
+          </p>
+          <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
+            Hoje: <span className="numero">{formatarMoeda(agora)}</span>
+            {" · "}
+            <span className={cn("numero", variacao < 0 ? "text-negativo" : "text-positivo")}>
+              {variacao < 0 ? "−" : "+"}{formatarMoeda(Math.abs(variacao))}
+            </span>{" "}{horizonte}
+          </p>
+        </div>
         <ToggleGroup
           type="single"
           value={granularidade}
@@ -726,17 +752,17 @@ export function FluxoDeCaixaNoTempo({
           <ToggleGroupItem value="mes">Meses</ToggleGroupItem>
           <ToggleGroupItem value="ano">Anos</ToggleGroupItem>
         </ToggleGroup>
-        <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
-          No fim de {fim?.rotulo}:{" "}
-          <span className={cn("numero font-semibold", (fim?.caixaCentavos ?? 0) < 0 && "text-negativo")}>
-            {formatarMoeda(fim?.caixaCentavos ?? 0)}
-          </span>
-        </p>
       </div>
 
       <div style={{ height: altura }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={dados} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id="caixa" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={cores.neutro} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={cores.neutro} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <XAxis dataKey="rotulo" tick={eixo} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={12} />
             <YAxis tick={eixo} tickLine={false} axisLine={false} width={58} tickFormatter={(valor) => formatarMoedaCurta(valor * 100)} />
             <Tooltip content={<Dica />} cursor={{ fill: "currentColor", opacity: 0.06 }} />
@@ -752,26 +778,38 @@ export function FluxoDeCaixaNoTempo({
                 label={{ value: "hoje", position: "insideTopLeft", fill: "currentColor", fontSize: 10, opacity: 0.6 }}
               />
             )}
-            <Bar dataKey="entrou" name="Entrou" fill={cores.positivo} radius={[4, 4, 0, 0]} maxBarSize={18}>
+            {/* Declaradas primeiro para encabeçar a dica: o caixa é a resposta,
+                entrada e saída são o detalhe. */}
+            <Area type="monotone" dataKey="caixaRealizado" name="Vou ter" stroke={cores.neutro} strokeWidth={2.6} fill="url(#caixa)" dot={false} connectNulls={false} />
+            <Line type="monotone" dataKey="caixaPrevisto" name="Vou ter (previsto)" stroke={cores.neutro} strokeWidth={2.6} strokeDasharray="5 4" dot={false} connectNulls={false} />
+            {mostrarMovimento && <Bar dataKey="entrou" name="Entrou" fill={cores.positivo} radius={[4, 4, 0, 0]} maxBarSize={14}>
               {dados.map((ponto, indice) => (
-                <Cell key={indice} fillOpacity={ponto.futuro ? 0.42 : 1} />
+                <Cell key={indice} fillOpacity={ponto.futuro ? 0.3 : 0.7} />
               ))}
-            </Bar>
-            <Bar dataKey="saiu" name="Saiu" fill={cores.negativo} radius={[4, 4, 0, 0]} maxBarSize={18}>
+            </Bar>}
+            {mostrarMovimento && <Bar dataKey="saiu" name="Saiu" fill={cores.negativo} radius={[4, 4, 0, 0]} maxBarSize={14}>
               {dados.map((ponto, indice) => (
-                <Cell key={indice} fillOpacity={ponto.futuro ? 0.42 : 1} />
+                <Cell key={indice} fillOpacity={ponto.futuro ? 0.3 : 0.7} />
               ))}
-            </Bar>
-            <Line type="monotone" dataKey="caixaRealizado" name="Caixa" stroke={cores.dado} strokeWidth={2.4} dot={false} connectNulls={false} />
-            <Line type="monotone" dataKey="caixaPrevisto" name="Caixa previsto" stroke={cores.dado} strokeWidth={2.4} strokeDasharray="5 4" dot={false} connectNulls={false} />
+            </Bar>}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
-      <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
-        Barra cheia e linha contínua: o que já aconteceu. Barra apagada e linha pontilhada: o que está agendado —
-        lançamento com data futura e parcela de cartão já contratada. Não prevê imprevisto nem aumento de renda.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-[52ch] text-[calc(11px*var(--escala-letra))] text-muted-fg">
+          Linha contínua: o que já aconteceu. Linha pontilhada: o que está agendado — lançamento com data futura e
+          parcela de cartão já contratada. Não prevê imprevisto nem aumento de renda.
+        </p>
+        <button
+          type="button"
+          aria-pressed={mostrarMovimento}
+          onClick={() => setMostrarMovimento((atual) => !atual)}
+          className="min-h-9 shrink-0 rounded-full border border-pauta px-3 text-[calc(12px*var(--escala-letra))] text-muted-fg transition-colors hover:text-foreground"
+        >
+          {mostrarMovimento ? "Ocultar entradas e saídas" : "Ver entradas e saídas"}
+        </button>
+      </div>
     </div>
   )
 }
