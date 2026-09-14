@@ -2,12 +2,13 @@
 
 import estilos from "../analise/avancadas.module.css"
 import { useCallback, useEffect, useState } from "react"
-import { Plus, RotateCcw, Trash2 } from "lucide-react"
+import { RotateCcw, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, formatarMoedaCurta, paraCentavos } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
+import { SelectNative } from "@/components/ui/select-native"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { GraficoFluxo } from "@/components/graficos"
 
@@ -235,36 +236,27 @@ export default function Simulador() {
           </select>
         }
       >
-        <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
-          Monte hipóteses e veja o efeito no seu caixa mês a mês. Tudo parte dos seus números reais: renda de{" "}
-          <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.rendaMensalCentavos ?? 0)}</span>, custo de vida de{" "}
-          <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.custoDeVidaMensalCentavos ?? 0)}</span> e saldo de{" "}
-          <span className="valor-inteiro">{formatarMoeda(comparacao?.entrada.saldoInicialCentavos ?? 0)}</span>.
-        </p>
-
         {comparacao && comparacao.entrada.rendaMensalCentavos === 0 && (
-          <p className="mt-3 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[calc(13px*var(--escala-letra))] text-atencao">
+          <p className="mt-1 rounded-2xl border border-atencao/40 bg-atencao/10 p-3 text-[calc(13px*var(--escala-letra))] text-atencao">
             Sem renda cadastrada. Complete seu perfil ou importe um extrato para simular com seus dados.
           </p>
         )}
 
-        {/* Eram oito cartões de 96px em coluna única: no celular a escolha
-            ocupava três telas de rolagem antes de qualquer simulação. Como
-            filtro — pílula com o nome e mais nada — a mesma escolha cabe numa
-            olhada. O que cada uma pede aparece no campo, depois de escolhida. */}
-        <h3 className="mt-5 text-sm font-semibold">1. O que mudar</h3>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {MODELOS.map((modelo) => (
-            <button
-              key={modelo.tipo}
-              onClick={() => adicionar(modelo.tipo)}
-              title={modelo.texto}
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-pauta bg-papel-2 px-3.5 text-[calc(13px*var(--escala-letra))] transition hover:border-acao/60 hover:text-acao"
-            >
-              <Plus className="size-3.5 shrink-0" aria-hidden />
-              {modelo.titulo}
-            </button>
-          ))}
+        {/* Um controle, e não oito botões. O paragrafo de abertura repetia
+            renda, custo e saldo, que já estão nos tiles logo abaixo; e as oito
+            pílulas ocupavam meia tela para uma escolha que cabe num campo. */}
+        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-full border border-[color-mix(in_oklab,var(--acao),transparent_70%)] bg-[linear-gradient(115deg,color-mix(in_oklab,var(--papel-2),var(--acao)_16%),var(--papel-2)_70%)] p-1.5 backdrop-blur-[var(--desfoque)]">
+          <SelectNative
+            aria-label="O que mudar na simulação"
+            value=""
+            onChange={(evento: { target: { value: string } }) => { if (evento.target.value) adicionar(evento.target.value as TipoAjuste) }}
+            className="min-w-0 flex-1 border-0 bg-transparent"
+          >
+            <option value="">O que você quer mudar?</option>
+            {MODELOS.map((modelo) => (
+              <option key={modelo.tipo} value={modelo.tipo}>{modelo.titulo} — {modelo.texto}</option>
+            ))}
+          </SelectNative>
         </div>
       </Cartao>
 
