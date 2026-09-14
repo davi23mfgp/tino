@@ -105,7 +105,8 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
                 points={barras.map((barra, indice) => `${((indice + 0.5) / barras.length) * 100},${100 - Math.max(4, (barra.gastos / maximo) * 100)}`).join(" ")}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={1.5}
+                strokeWidth={1.25}
+                strokeDasharray="4 5"
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"

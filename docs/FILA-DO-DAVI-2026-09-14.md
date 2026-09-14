@@ -97,3 +97,28 @@ Continua sendo aritmética: o método é de terceiro e está identificado na tel
 o app não escolhe ativo nem indica corretora.
 
 **Não conferido em tela** — o navegador desconectou antes.
+
+## 6. Assistente de investimento com objetivo — pedido em 14/09, a fazer
+
+Pedido: em Investimentos, uma ajuda que **olhe as contas**, ajude a definir
+**quanto separar para investir** como objetivo, e então **indique a porcentagem
+para seguir o ARCA**; e o simulador mostrando o resultado da simulação.
+
+É o mesmo desenho da Ajuda do cartão (situação → ajuste simples → ação
+persistida → progresso), aplicado ao investimento:
+
+1. **Situação** — quanto entra, quanto sai, quanto sobra hoje, e o que já está
+   aplicado. Tudo isso já existe no `panorama`.
+2. **Objetivo** — a pessoa escolhe quanto separar por mês. Precisa virar dado
+   guardado, não estado de tela: hoje não existe "meta de aporte mensal" no
+   schema.
+3. **Divisão** — `aporteQueReequilibra` já responde onde entra o dinheiro, com
+   a carteira real. Está feito e testado.
+4. **Resultado** — a projeção do simulador com esse aporte aplicado. O
+   `efeitoDoCorte` já existe e faz exatamente essa conta para corte de gasto;
+   falta ligar ao aporte.
+
+**Decisão pendente do Davi:** o objetivo de aporte é uma meta nova no banco ou
+reaproveita `Meta` (que já existe, com tipo APOSENTADORIA entre outros)? A
+segunda evita tabela nova e faz o objetivo aparecer nas telas de meta que já
+existem.
