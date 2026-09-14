@@ -1,6 +1,7 @@
 "use client"
 
 import { CompromissosMetas } from "@/components/compromissos-metas"
+import { AbasInternas } from "@/components/abas-internas"
 import { useCallback, useEffect, useState } from "react"
 import { Check, Plus, Trash2 } from "lucide-react"
 
@@ -209,10 +210,6 @@ export default function Recorrencias() {
           />
         </div>
 
-        <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-          Cadastre uma vez o que entra e sai com frequência. O Tino usa essas contas para prever os próximos meses.
-        </p>
-
         <Dialog open={abrir} onOpenChange={(aberto) => { if (!ocupado) setAbrir(aberto) }}>
           <DialogContent>
           <DialogHeader><DialogTitle>Nova conta fixa</DialogTitle></DialogHeader>
@@ -305,11 +302,18 @@ export default function Recorrencias() {
         </Dialog>
       </Cartao>
 
-      {[
-        { titulo: "Sai todo mês", lista: despesas },
-        { titulo: "Entra todo mês", lista: receitas },
-      ].map((bloco) =>
-        bloco.lista.length > 0 ? (
+      {/* As duas listas viram abas, como na analise: uma por vez, em vez de
+          dois cartoes empilhados que dobram a rolagem da tela. */}
+      <AbasInternas
+        abas={[
+          { titulo: "Sai todo mês", lista: despesas },
+          { titulo: "Entra todo mês", lista: receitas },
+        ]
+          .filter((bloco) => bloco.lista.length > 0)
+          .map((bloco) => ({
+            chave: bloco.titulo,
+            titulo: bloco.titulo,
+            conteudo: (
           <Cartao key={bloco.titulo} titulo={bloco.titulo}>
             <div className="space-y-2">
               {bloco.lista.map((recorrencia) => {
@@ -320,8 +324,8 @@ export default function Recorrencias() {
                   <div
                     key={recorrencia.id}
                     className={cn(
-                      "flex flex-wrap items-center gap-3 rounded-2xl border p-3",
-                      atrasada ? "border-atencao/40 bg-atencao/5" : "border-pauta",
+                      "flex items-center gap-3 rounded-2xl p-3",
+                      atrasada ? "border border-atencao/40 bg-atencao/5" : "vidro-menu",
                     )}
                   >
                     <div className="min-w-0 flex-1">
@@ -361,8 +365,9 @@ export default function Recorrencias() {
               })}
             </div>
           </Cartao>
-        ) : null,
-      )}
+            ),
+          }))}
+      />
 
       {ativas.length === 0 && (
         <Cartao>
