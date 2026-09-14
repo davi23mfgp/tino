@@ -25,6 +25,11 @@ const COR_FAIXA: Record<Faixa, string> = {
   SEM_DADO: "text-muted-fg",
 }
 
+/// Cabeçalho de grupo do balanço: o nome contábil e, ao lado, o que ele
+/// significa para quem não é contador.
+const estiloGrupo =
+  "flex items-baseline gap-2 pb-1 text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-widest text-muted-fg [&>span]:text-[calc(10px*var(--escala-letra))] [&>span]:font-normal [&>span]:normal-case [&>span]:tracking-normal [&>span]:opacity-70"
+
 const ROTULO_FAIXA: Record<Faixa, string> = {
   BOM: "saudável",
   ATENCAO: "atenção",
@@ -230,7 +235,7 @@ export default async function Analise() {
         {/* ── Balanço ─────────────────────────────────── */}
         <Cartao titulo="Balanço">
           <div className="space-y-1">
-            <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Ativo</p>
+            <p className={estiloGrupo}>Ativo <span>o que você tem</span></p>
             {/* Aberto conta a conta e dívida a dívida, como um contador
                 entregaria: dois totais escondem justamente o que serve para
                 agir — qual conta está no vermelho e qual dívida é a cara. */}
@@ -240,9 +245,9 @@ export default async function Analise() {
             {balanco.ativoAplicado.map((linha) => (
               <Linha key={`aa-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
             ))}
-            <Linha rotulo="Total" valor={balanco.ativoTotalCentavos} forte />
+            <Linha rotulo="Total do ativo" valor={balanco.ativoTotalCentavos} forte soma />
 
-            <p className="pt-3 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Passivo</p>
+            <p className={cn(estiloGrupo, "mt-4")}>Passivo <span>o que você deve</span></p>
             {balanco.passivoCurto.map((linha) => (
               <Linha key={`pc-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
             ))}
@@ -250,11 +255,10 @@ export default async function Analise() {
               <Linha key={`pl-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
             ))}
             {balanco.passivoTotalCentavos === 0 && <Linha rotulo="Sem dívidas" valor={0} />}
-            <Linha rotulo="Total" valor={-balanco.passivoTotalCentavos} tom="negativo" forte />
-
-            <div className="my-2 border-t border-pauta" />
+            <Linha rotulo="Total do passivo" valor={-balanco.passivoTotalCentavos} tom="negativo" forte soma />
 
             <Linha
+              fechamento
               rotulo="Patrimônio líquido"
               valor={balanco.patrimonioLiquidoCentavos}
               tom={balanco.patrimonioLiquidoCentavos >= 0 ? "positivo" : "negativo"}
@@ -370,17 +374,32 @@ function Linha({
   apoio,
   tom = "neutro",
   forte,
+  soma,
+  fechamento,
 }: {
   rotulo: string
   valor: number
   apoio?: string
   tom?: "neutro" | "positivo" | "negativo"
   forte?: boolean
+  /// Linha de total: fecha o grupo com um traço acima, como numa soma.
+  soma?: boolean
+  /// Resultado final: traço mais forte e mais respiro.
+  fechamento?: boolean
 }) {
   const cor = tom === "positivo" ? "text-positivo" : tom === "negativo" ? "text-negativo" : "text-foreground"
 
   return (
-    <div className={cn("flex items-baseline justify-between gap-3 py-1", forte && "font-semibold")}>
+    <div
+      className={cn(
+        // Cada item tem seu fio, como num extrato de papel: sem ele, rótulo e
+        // valor de linhas vizinhas se misturam quando o nome é longo.
+        "flex items-baseline justify-between gap-3 border-t border-pauta/50 py-1.5",
+        forte && "font-semibold",
+        soma && "mt-0.5 border-t-2 border-t-pauta",
+        fechamento && "mt-2 border-t-2 border-t-[color:var(--texto-3)] pt-2.5",
+      )}
+    >
       <span className={cn("min-w-0 text-[calc(13px*var(--escala-letra))]", !forte && "text-muted-fg")}>
         {rotulo}
         {apoio && <span className="ml-1.5 text-[calc(10px*var(--escala-letra))] opacity-60">{apoio}</span>}
