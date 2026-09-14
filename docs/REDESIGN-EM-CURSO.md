@@ -1299,3 +1299,16 @@ Valores cortados nos cartões corrigidos, formulário de contas fixas em diálog
 ### 09/09/2026 — iOS com shadcn
 
 Pedido do usuário implementado na estrutura principal: abas Agora/Futuro/Categorias, Drawer e Accordion no menu, controles shadcn, previsão compartilhada e capturas reais atualizadas. Detalhes e verificações em CONTINUAR-NO-OUTRO-NOTEBOOK.md.
+
+### 14/09/2026 — movimento da landing
+
+As referências de animação do Dribbble foram traduzidas para uma coreografia
+própria: entrada escalonada do menu, título, apoio e ações; brilho ambiente
+contido; celular em perspectiva preso ao scroll; cartões financeiros em
+planos diferentes e reflexo lento sobre a tela. O título palavra por palavra
+foi corrigido para sobreviver à montagem dupla do React em desenvolvimento —
+antes, o primeiro efeito desligava o observador e podia deixar o `h1`
+invisível. `prefers-reduced-motion` continua removendo todo movimento.
+
+Verificado em navegador real no desktop, incluindo entrada e rolagem do palco;
+TypeScript limpo, 368 testes aprovados e build de produção com 63 páginas.

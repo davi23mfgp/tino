@@ -15,13 +15,22 @@
 .vitrine .landing-menu .botao:hover { color:var(--tinta); }
 .vitrine .botao { min-height:52px; }
 .vitrine .botao--pequeno { min-height:44px; }
-.vitrine .landing-hero { padding-top:170px;text-align:center; }
+.vitrine .landing-hero { position:relative;padding-top:170px;text-align:center;isolation:isolate; }
+.vitrine .landing-hero:before { content:"";position:absolute;z-index:-1;top:88px;left:50%;width:min(900px,92vw);height:540px;transform:translateX(-50%);background:radial-gradient(ellipse at center,color-mix(in oklch,var(--acento) 13%,transparent),transparent 66%);filter:blur(22px);opacity:.72;animation:hero-respira 7s ease-in-out infinite;pointer-events:none; }
 .vitrine .landing-hero h1 { font-size: calc(clamp(44px,6.3vw,88px) * var(--escala-letra));max-width:1000px;margin:24px auto 22px; }
 .vitrine .landing-hero h1 span { color:var(--acento); }
 .vitrine .landing-lead { font-size: calc(clamp(18px,2vw,23px) * var(--escala-letra));line-height:1.5;color:var(--creme-2); }
 .vitrine .landing-cta-row { display:flex;gap:24px;align-items:center;justify-content:center;flex-wrap:wrap;margin:30px 0 18px; }
 .vitrine .landing-secondary { font-size: calc(14px * var(--escala-letra));min-height:44px;display:flex;align-items:center;gap:14px; }
 .vitrine .landing-note { font-size: calc(13px * var(--escala-letra));color:var(--creme-3);line-height:1.6; }
+.vitrine .landing-menu { animation:menu-chega .75s cubic-bezier(.2,.8,.2,1) both; }
+.vitrine .landing-hero > .eyebrow { animation:hero-chega .65s .08s cubic-bezier(.2,.8,.2,1) both; }
+.vitrine .landing-hero > .landing-lead { animation:hero-chega .75s .48s cubic-bezier(.2,.8,.2,1) both; }
+.vitrine .landing-hero > .landing-cta-row { animation:hero-chega .75s .62s cubic-bezier(.2,.8,.2,1) both; }
+.vitrine .landing-hero > .landing-note { animation:hero-chega .75s .72s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes menu-chega { from { opacity:0;transform:translate(-50%,-18px) scale(.98); } to { opacity:1;transform:translateX(-50%); } }
+@keyframes hero-chega { from { opacity:0;transform:translateY(18px);filter:blur(7px); } to { opacity:1;transform:none;filter:none; } }
+@keyframes hero-respira { 0%,100% { opacity:.52;transform:translateX(-50%) scale(.94); } 50% { opacity:.82;transform:translateX(-50%) scale(1.04); } }
 .vitrine .landing-centered { text-align:center; }
 .vitrine .landing-centered > p:last-child { margin-top:24px;color:var(--creme-2); }
 .vitrine .product-showcase { position:relative;display:flex;align-items:center;flex-direction:column;padding-top:60px;margin-top:4px;isolation:isolate; }
@@ -182,6 +191,12 @@
   transform-origin:center;will-change:transform;
 }
 .vitrine .product-phone .celular { width:min(300px,72vw);height:650px;aspect-ratio:auto; }
+.vitrine .product-phone:after { content:"";position:absolute;inset:5% 8%;border-radius:42px;background:linear-gradient(115deg,transparent 20%,oklch(1 0 0 / 7%) 45%,transparent 68%);transform:translateX(-140%);animation:tela-reflexo 6.5s 1.4s ease-in-out infinite;pointer-events:none; }
+.vitrine .product-float-left { animation:cartao-respira-esquerda 6s ease-in-out infinite; }
+.vitrine .product-float-right { animation:cartao-respira-direita 6.8s .5s ease-in-out infinite; }
+@keyframes tela-reflexo { 0%,58% { transform:translateX(-140%); } 78%,100% { transform:translateX(140%); } }
+@keyframes cartao-respira-esquerda { 0%,100% { margin-top:0; } 50% { margin-top:-10px; } }
+@keyframes cartao-respira-direita { 0%,100% { margin-top:0; } 50% { margin-top:12px; } }
 .vitrine .product-float { opacity:var(--entrada,0);transition:opacity .3s linear; }
 .vitrine .product-legenda { text-align:center;margin-top:26px;max-width:420px; }
 .vitrine .product-legenda-titulo { font-family:var(--fonte-display),sans-serif;font-size: calc(26px * var(--escala-letra));letter-spacing:-.04em;margin:6px 0 8px; }
@@ -205,6 +220,7 @@
 /* Quem pediu menos movimento nao ganha trilho: a secao volta a ser um bloco
    comum, com uma tela so, e a troca fica por conta dos botoes. */
 @media (prefers-reduced-motion: reduce) {
+  .vitrine .landing-menu,.vitrine .landing-hero > *,.vitrine .landing-hero:before,.vitrine .product-phone:after,.vitrine .product-float { animation:none!important; }
   .vitrine .product-scroller { height:auto; }
   .vitrine .product-sticky { position:static;height:auto;padding-block:40px; }
   .vitrine .product-phone { transform:none;will-change:auto; }
