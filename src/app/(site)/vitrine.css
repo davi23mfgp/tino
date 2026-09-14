@@ -588,6 +588,9 @@
 }
 
 .vitrine .celular-tela {
+  /* O celular mora dentro da seção do herói, que é centralizada — sem isto
+     o miolo do app herda o alinhamento e nenhuma lista fica legível. */
+  text-align: left;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -810,6 +813,7 @@
 }
 
 .vitrine .cel-linha-nome {
+  display: block;
   font-size: calc(8.5px * var(--escala-letra));
   font-weight: 600;
   white-space: nowrap;
@@ -818,6 +822,7 @@
 }
 
 .vitrine .cel-linha-nota {
+  display: block;
   font-size: calc(7px * var(--escala-letra));
   color: oklch(0.66 0 0);
 }

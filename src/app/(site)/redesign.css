@@ -38,7 +38,6 @@
 .vitrine .product-float-right { right:8%;top:45%;width:205px;padding:24px;transform:translateY(calc(var(--product-travel)*65px)) rotate(6deg); }
 .vitrine .product-float-right > svg { color:var(--acento);margin-bottom:22px; }
 .vitrine .product-float-check { display:inline-grid;place-items:center;position:absolute;right:16px;top:18px;border:1px solid var(--linha-forte);border-radius:50%;width:25px;height:25px;color:var(--acento);font-size: calc(12px * var(--escala-letra)); }
-.vitrine .product-mascot { position:absolute;right:18%;top:8%;z-index:3;transform:rotate(12deg); }
 .vitrine .product-controls { display:flex;gap:4px;padding:5px;border:1px solid var(--linha);border-radius:999px;background:var(--superficie-1);margin-top:28px;z-index:4; }
 .vitrine .product-controls button { min-height:42px;padding:8px 20px;border-radius:999px;font-size: calc(13px * var(--escala-letra));transition:background .2s,color .2s;color:var(--creme-2); }
 .vitrine .product-controls button[aria-pressed=true] { background:var(--creme);color:var(--tinta); }
@@ -120,8 +119,6 @@
  .vitrine .landing-note { font-size: calc(12px * var(--escala-letra)); }
  .vitrine .product-showcase { padding-top:40px; }
  .vitrine .product-float { display:none; }
- .vitrine .product-mascot { right:-12px;top:5%; }
- .vitrine .product-mascot .marca-leao { width:89px;height:100px; }
  .vitrine .product-phone .celular { width:280px; }
  .vitrine .product-controls { margin-top:18px;max-width:100%; }
  .vitrine .product-controls button { padding-inline:14px;font-size: calc(12px * var(--escala-letra)); }
@@ -157,9 +154,6 @@
  .vitrine .product-phone,.vitrine .product-float { transform:none;will-change:auto; }
 }
 /* Real app captures replace the hand-drawn miniature screens. */
-.vitrine .actual-device { padding:5px;border-radius:38px;background:var(--superficie-2);border:1px solid var(--linha-forte);box-shadow:var(--shadow-card); }
-.vitrine .actual-device-screen { height:100%;overflow:hidden;border-radius:32px;background:var(--tinta); }
-.vitrine .actual-device-screen img { display:block;width:100%;height:100%;object-fit:cover; }
 .vitrine .landing-feature { height:auto;background:transparent;border:0;overflow:visible; }
 .vitrine .landing-feature-copy { min-height:220px;padding:24px 6px; }
 .vitrine .landing-feature-phone { padding:28px 16px;border:1px solid var(--linha);border-radius:26px;background:var(--superficie-1);transform:none; }

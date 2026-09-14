@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { ArrowDownLeft, CreditCard, Wallet } from "lucide-react"
 import { TelaNoCelular, type QualTela } from "@/app/(site)/tela-no-celular"
-import { Leao } from "@/app/(site)/leao"
 
 export function Revelar({children,className=""}:{children:ReactNode;className?:string}) {
   const ref=useRef<HTMLDivElement>(null)
@@ -42,7 +41,6 @@ export function PalcoDoProduto() {
     <div className="product-orbit" aria-hidden />
     <div className="product-float product-float-left" aria-hidden><span className="product-float-icon"><ArrowDownLeft size={20}/></span><div><small>Entradas do mês</small><strong>R$ 8.600,00</strong></div><span className="product-mini-bars">{[25,40,31,52,42,60].map((h,i)=><i key={i} style={{height:h}}/>)}</span></div>
     <div className="product-float product-float-right" aria-hidden><CreditCard size={22}/><small>Cartão em dia</small><strong>Mais controle.<br/>Menos surpresa.</strong><span className="product-float-check">✓</span></div>
-    <div className="product-mascot"><Leao tamanho={140} flutua /></div>
     <div className="product-phone" id="produto-tela" aria-live="polite"><TelaNoCelular tela={tela}/></div>
     <div className="product-controls" role="group" aria-label="Explorar telas de demonstração">{TELAS.map(item=><button key={item.tela} type="button" aria-pressed={tela===item.tela} aria-controls="produto-tela" onClick={()=>setTela(item.tela)}>{item.rotulo}</button>)}</div>
     <p className="landing-note product-caption"><Wallet size={14} aria-hidden/> Seu Tino, no seu bolso. Dados de demonstração.</p>
