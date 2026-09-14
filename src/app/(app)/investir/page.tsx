@@ -8,7 +8,7 @@ import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Cartao, Vazio } from "@/components/ui/painel"
 import { GraficoDaDivisao, GraficoDoCorte } from "@/components/graficos"
-import { corteViraPatrimonio, dividirPorArca } from "@/lib/tino/investir"
+import { corteViraPatrimonio } from "@/lib/tino/investir"
 import { cn } from "@/lib/utils"
 import estilos from "./investir.module.css"
 
@@ -81,7 +81,6 @@ export default function Investir() {
     () => corteViraPatrimonio({ cortePorMesCentavos: corteCentavos, anos: anosNumero, rendimentoRealAnualBps: RENDIMENTO_REAL_ANUAL_BPS }),
     [corteCentavos, anosNumero],
   )
-  const partesDoArca = useMemo(() => dividirPorArca(corteCentavos), [corteCentavos])
 
   if (dados && !dados.temBase) {
     return (
@@ -174,20 +173,6 @@ export default function Investir() {
       </section>
 
       <div className={estilos.duas}>
-        <section className={estilos.bloco}>
-          <h2>Onde colocar o aporte</h2>
-          <ul className={estilos.divisao}>
-            {partesDoArca.map((parte, indice) => (
-              <li key={indice}>
-                <span className={estilos.letra}>{parte.letra}</span>
-                <span><strong>{parte.rotulo}</strong></span>
-                <b>{formatarMoeda(parte.valorCentavos)}</b>
-              </li>
-            ))}
-          </ul>
-          <p className={estilos.nota}>Cálculo, não recomendação. Método de Thiago Nigro.</p>
-        </section>
-
         <section className={estilos.bloco}>
           <h2>Como sua renda se divide hoje</h2>
           {dados && (

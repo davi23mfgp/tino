@@ -189,6 +189,7 @@ export function CarteiraInvestimentos() {
       </div>
 
       <ArcaCarteira
+        contas={ativos.map((conta) => ({ id: conta.id, nome: conta.nome, classeDeAtivo: conta.classeDeAtivo }))}
         carteira={ativos.map((conta) => ({
           // Quem ainda não escolheu a classe entra como "outros": some da conta
           // do método, mas não some da carteira nem do total.

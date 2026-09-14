@@ -273,14 +273,23 @@ export default function Dividas() {
         </div>
 
         <form onSubmit={simularExtra} className="mt-4 rounded-[20px] border border-foreground/20 bg-papel-2 p-4 sm:p-5">
-          <h1 className="text-xl font-semibold tracking-tight">Quite suas dívidas mais cedo</h1>
-          <p className="mt-1 text-sm text-muted-fg">Veja o efeito de pagar mais por mês.</p>
-          <label className="mt-4 block text-sm font-medium" htmlFor="pagamento-extra">Pagamento extra mensal</label>
-          <div className="mt-2 flex flex-wrap gap-3">
-            <input id="pagamento-extra" value={extra} onChange={(evento) => setExtra(evento.target.value)} disabled={simulando || ocupado} placeholder="0,00" className={cn(campo, "w-full sm:w-44 tabular-nums")} inputMode="decimal" />
-            <Button type="submit" disabled={simulando || ocupado || !base || abertas.length === 0}>{simulando ? "Calculando…" : "Simular pagamento extra"}</Button>
+          {/* Titulo, subtitulo, rotulo do campo, campo, botao e ressalva eram
+              seis linhas empilhadas para pedir um numero. Agora o titulo diz o
+              que a tela faz e o campo e o botao dividem a mesma linha. */}
+          <h1 className="text-base font-semibold tracking-tight">Pagar mais por mês</h1>
+          <div className="mt-3 flex items-center gap-2 rounded-full border border-pauta bg-papel-2 p-1.5">
+            <input
+              id="pagamento-extra"
+              aria-label="Pagamento extra mensal"
+              value={extra}
+              onChange={(evento) => setExtra(evento.target.value)}
+              disabled={simulando || ocupado}
+              placeholder="R$ 0,00"
+              className="min-w-0 flex-1 bg-transparent px-3 text-[calc(14px*var(--escala-letra))] tabular-nums outline-none"
+              inputMode="decimal"
+            />
+            <Button type="submit" disabled={simulando || ocupado || !base || abertas.length === 0}>{simulando ? "Calculando…" : "Simular"}</Button>
           </div>
-          <p className="mt-2 text-xs text-muted-fg">Simulação. Nenhum pagamento será feito.</p>
           {extra !== extraAplicado && <p role="status" className="mt-3 text-sm">Valor alterado. Simule para atualizar o resultado.</p>}
           {base?.plano && dados?.plano && extra === extraAplicado && (
             <div aria-live="polite" className="mt-4 space-y-4">
