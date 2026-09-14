@@ -43,11 +43,11 @@
   position:absolute; inset:0 0 32px 0; width:100%; height:calc(100% - 32px);
   /* Traço discreto: a leitura principal é a altura das barras, a linha só
      mostra a direção. Grosso, ele cortava as colunas. */
-  color:color-mix(in oklab,var(--acao),transparent 42%); pointer-events:none; z-index:3; overflow:visible;
+  color:color-mix(in oklab,var(--acao),transparent 62%); pointer-events:none; z-index:3; overflow:visible;
 }
 .marcaTendencia { position:absolute; inset:0 0 32px 0; pointer-events:none; z-index:4; }
 .marcaTendencia span {
-  position:absolute; width:9px; height:9px; margin:0 0 -4.5px -4.5px;
+  position:absolute; width:7px; height:7px; margin:0 0 -3.5px -3.5px;
   border-radius:50%; background:var(--acao); box-shadow:0 0 0 2px var(--papel-1);
 }
 .areaBarras .barras { position:relative; z-index:2; }

@@ -105,6 +105,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={1.5}
+                strokeDasharray="4 5"
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
