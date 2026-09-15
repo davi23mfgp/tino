@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import type { PrecoDeAtivo } from "@/lib/cotacoes"
 import { ArcaCarteira } from "@/components/arca-carteira"
 import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
+import { ComposicaoDaCarteira } from "@/components/composicao-da-carteira"
 
 interface Conta {
   id: string
@@ -144,7 +145,21 @@ export function CarteiraInvestimentos() {
         )}
       </p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      {/* Do que a carteira é feita, antes da lista de ativos. A lista responde
+          "o que eu tenho"; a composição responde "em que eu estou" — e é essa
+          que decide o próximo aporte. */}
+      {ativos.length > 0 && (
+        <div className="mt-6 border-t border-pauta pt-5">
+          <ComposicaoDaCarteira
+            posicoes={ativos.map((conta) => ({
+              classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+              valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+            }))}
+          />
+        </div>
+      )}
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {ativos.map((conta) => {
           const mercado = mercadoDe(conta)
           const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
