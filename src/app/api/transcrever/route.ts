@@ -1,4 +1,5 @@
 import { comSessao, ok, ErroDeUso } from "@/lib/api"
+import { consumirLimite, REGRAS } from "@/lib/limite"
 import {
   AudioIndisponivel,
   AudioLongoDemais,
@@ -24,7 +25,10 @@ export const dynamic = "force-dynamic"
  * Atrás de sessão: sem isso o app viraria serviço de transcrição aberto para
  * qualquer um pagar com a nossa chave.
  */
-export const POST = comSessao(async (_sessao, requisicao) => {
+export const POST = comSessao(async (sessao, requisicao) => {
+  // Cada chamada gasta Groq. Sem teto, um laço vira conta para o dono pagar.
+  await consumirLimite(`transcrever:${sessao.usuarioId}`, REGRAS.caro)
+
   if (!transcricaoDisponivel()) {
     throw new ErroDeUso("A transcrição de áudio não está configurada neste servidor.")
   }

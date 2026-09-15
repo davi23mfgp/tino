@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { autenticarChave, registrarCaptura } from "@/lib/captura"
+import { consumirLimite, ipDaRequisicao, LimiteEstourado, REGRAS } from "@/lib/limite"
 
 export const dynamic = "force-dynamic"
 
@@ -19,6 +20,17 @@ export async function POST(requisicao: Request) {
   const url = new URL(requisicao.url)
   const cabecalho = requisicao.headers.get("authorization")?.replace(/^Bearer\s+/i, "")
   const chaveValor = cabecalho || url.searchParams.get("chave") || url.searchParams.get("token")
+
+  // Antes de conferir a chave, segura o laço por IP: chave errada em série é
+  // varredura, e conferir chave custa uma ida ao banco por tentativa.
+  try {
+    await consumirLimite(`capturar:ip:${ipDaRequisicao(requisicao)}`, REGRAS.captura)
+  } catch (excecao) {
+    if (excecao instanceof LimiteEstourado) {
+      return NextResponse.json({ erro: excecao.message }, { status: 429 })
+    }
+    throw excecao
+  }
 
   const chave = await autenticarChave(chaveValor)
   if (!chave) return NextResponse.json({ erro: "Chave inválida ou revogada." }, { status: 401 })

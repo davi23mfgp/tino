@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { consumirLimite, REGRAS } from "@/lib/limite"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { responderPorRegras } from "@/lib/tino/chat"
@@ -11,6 +12,10 @@ import { modeloDisponivel, responderComModeloStream, type TurnoConversa } from "
 export const dynamic = "force-dynamic"
 
 export const POST = comSessao(async (sessao, requisicao) => {
+  // O assessor chama modelo de linguagem a cada pergunta: mesma conta da
+  // transcrição, mesmo teto.
+  await consumirLimite(`chat:${sessao.usuarioId}`, REGRAS.caro)
+
   const dados = await corpo<{ pergunta: string; conversaId?: string }>(requisicao)
   const pergunta = exigir(dados.pergunta, "Escreva sua pergunta").trim()
 

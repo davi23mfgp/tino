@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { criarToken, gravarCookieSessao, hashSenha } from "@/lib/auth"
 import { corpo, erro, exigir, ok } from "@/lib/api"
+import { consumirLimite, ipDaRequisicao, LimiteEstourado, REGRAS } from "@/lib/limite"
 import { semearLar } from "@/lib/semear"
 
 interface Entrada {
@@ -13,6 +14,14 @@ interface Entrada {
 }
 
 export async function POST(requisicao: Request) {
+  // Criação de conta em massa vinda da mesma máquina: cinco por hora.
+  try {
+    await consumirLimite(`cadastro:ip:${ipDaRequisicao(requisicao)}`, REGRAS.cadastro)
+  } catch (excecao) {
+    if (excecao instanceof LimiteEstourado) return erro(excecao.message, 429)
+    throw excecao
+  }
+
   const dados = await corpo<Entrada>(requisicao)
 
   const email = exigir(dados.email, "Informe o e-mail").trim().toLowerCase()

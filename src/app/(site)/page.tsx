@@ -8,7 +8,12 @@ import { DemonstracaoReal } from "@/components/landing/demonstracao-real"
 import { Precos } from "@/components/landing/precos"
 import { VitrineRecursos } from "@/components/landing/vitrine-recursos"
 
-export const dynamic = "force-dynamic"
+// A vitrine consultava o banco a cada visita só para ler preço e dias de
+// teste — números que mudam por decisão de negócio, não a cada segundo. Agora
+// ela é gerada e servida do cache, e se refaz a cada 5 minutos: uma mudança de
+// preço no painel do admin aparece aqui sem deploy, e ninguém espera o banco
+// para ver a primeira dobra.
+export const revalidate = 300
 export const metadata: Metadata = {
   title: "Tino — Seu dinheiro, mais simples.",
   description: "Contas, cartões, orçamento e planos em um só lugar. Entenda seu dinheiro e encontre seu próximo passo com o Tino.",

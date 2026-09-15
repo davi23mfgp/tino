@@ -293,6 +293,26 @@ model Lar {
   lojas           Loja[]
 }
 
+/// Contador de tentativas, para segurar ataque de força bruta e abuso de rota
+/// cara.
+///
+/// Fica no banco e não na memória do processo de propósito: em serverless cada
+/// requisição pode cair numa instância nova, e um contador em memória zera
+/// sozinho a cada partida — ou seja, não conta nada. O banco é o único lugar
+/// que todas as instâncias enxergam.
+///
+/// A `chave` é o que está sendo limitado: "login:email@x", "login:ip:1.2.3.4",
+/// "transcrever:<usuarioId>". Guardar o alvo dentro da própria chave evita uma
+/// tabela por tipo de limite.
+model LimiteAcesso {
+  chave         String   @id
+  tentativas    Int      @default(0)
+  janelaInicio  DateTime @default(now())
+  bloqueadoAte  DateTime?
+
+  @@index([bloqueadoAte])
+}
+
 /// Um aparelho inscrito para receber o atalho de lançar de volta na barra.
 ///
 /// O endereço (`endpoint`) é dado pelo próprio navegador e é a identidade do

@@ -33,6 +33,13 @@ export async function proxy(requisicao: NextRequest) {
   }
 
   const caminho = requisicao.nextUrl.pathname
+
+  // Quem já entrou não vê a vitrine. Este desvio morava no layout da vitrine,
+  // e ler a sessão lá tornava a página inteira dinâmica: o Next não pode
+  // guardar em cache uma página que decide pelo cookie. Aqui o cookie já foi
+  // lido de qualquer jeito, e a vitrine volta a ser servida do cache.
+  if (caminho === "/") return NextResponse.redirect(new URL("/painel", requisicao.url))
+
   if (rotaPermitida(papel, caminho)) return NextResponse.next()
 
   if (caminho.startsWith("/api/")) {
