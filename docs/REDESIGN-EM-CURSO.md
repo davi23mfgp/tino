@@ -1363,3 +1363,8 @@ Verificação: tipos sem erros; 409 testes aprovados. Browser desktop, 390px e
 320px sem overflow horizontal. Confirmados troca automática no mobile,
 pausa, preços mensal/anual e abertura do FAQ. Build de produção verificado
 separadamente no fechamento desta rodada.
+
+15/09: usuário reforçou que o celular deve aparecer na abertura, com conteúdo
+real, e não se repetir abaixo. Confirmado: uma única `DemonstracaoReal` no
+hero; seções seguintes usam capturas desktop e painéis, sem aparelhos móveis.
+Build de produção aprovado (63 páginas); prévia local reaberta e conferida.
