@@ -33,7 +33,6 @@ const PAGINAS = [
   "/mei",
   "/metas",
   "/orcamento",
-  "/parcelamentos",
   "/plano",
   "/projecao",
   "/recorrencias",
@@ -238,6 +237,18 @@ async function principal() {
 
   console.log("\nPáginas autenticadas")
   for (const rota of PAGINAS) await visitar(rota, cookie)
+
+  // `/parcelamentos` deixou de ser tela: virou a aba de parcelas do cartao
+  // no commit 3af300e (13/09/2026), e a rota agora so redireciona. O teste
+  // guarda o redirecionamento em vez de esperar 200 - apagar o redirect por
+  // engano quebraria link antigo e atalho salvo, em silencio.
+  const parcelas = await visitar("/parcelamentos", cookie, { esperado: 307 })
+  const destino = parcelas?.headers.get("location") ?? ""
+  registrar(
+    destino.includes("/cartoes?aba=parcelas"),
+    "/parcelamentos -> /cartoes?aba=parcelas",
+    destino ? `redireciona para ${destino}` : "nao redirecionou para lugar nenhum",
+  )
 
   console.log("\nRotas de leitura")
   for (const rota of APIS) await visitar(rota, cookie)
