@@ -238,7 +238,7 @@ export function Etapas({
           <span
             aria-hidden
             className={cn(
-              "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[calc(11px*var(--escala-letra))] font-semibold",
+              "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold",
               etapa.concluida ? "bg-positivo/15 text-positivo" : "border border-pauta text-muted-fg",
             )}
           >

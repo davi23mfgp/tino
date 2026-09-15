@@ -146,7 +146,7 @@ export function TelaConectar({ inicial }: { inicial: EstadoOpenFinance }) {
         )}
 
         <div>
-          <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-[0.14em] text-[color:var(--texto-3)]">Saldo total</p>
+          <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-[0.14em] text-[color:var(--texto-3)]">Saldo total</p>
           <p className="mt-1 text-[calc(36px*var(--escala-letra))] font-bold leading-none tracking-tight tabular-nums text-foreground">
             {formatarMoeda(total)}
           </p>

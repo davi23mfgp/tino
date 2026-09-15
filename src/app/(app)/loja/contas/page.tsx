@@ -259,7 +259,7 @@ export default function ContasDaLoja() {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">
                       {conta.descricao}
-                      {conta.mensal && <span className="ml-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">todo mês</span>}
+                      {conta.mensal && <span className="ml-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">todo mês</span>}
                     </p>
                     <p className={`text-[calc(12px*var(--escala-letra))] ${vencida ? "text-negativo" : "text-muted-fg"}`}>
                       {vencida ? "venceu em " : "vence em "}

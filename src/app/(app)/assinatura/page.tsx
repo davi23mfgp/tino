@@ -286,7 +286,7 @@ export default function Assinatura() {
                         >
                           Pagar com {opcao.rotulo}
                         </button>
-                        <p className="mt-1 text-center text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                        <p className="mt-1 text-center text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                           {opcao.configurado
                             ? opcao.formasDePagamento
                             : `${opcao.rotulo} ainda não está disponível neste app.`}

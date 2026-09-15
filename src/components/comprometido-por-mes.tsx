@@ -34,7 +34,7 @@ export function ComprometidoPorMes({
 
   return (
     <section className={cn("mt-5", className)}>
-      <p className="text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
+      <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
         {rotulo}
       </p>
 
@@ -45,7 +45,7 @@ export function ComprometidoPorMes({
             <li key={mes.competencia} className="flex min-w-0 flex-1 flex-col items-center gap-2">
               <span
                 className={cn(
-                  "numero whitespace-nowrap text-[calc(11px*var(--escala-letra))] font-medium tabular-nums",
+                  "numero whitespace-nowrap text-[max(10px,calc(12px*var(--escala-letra)))] font-medium tabular-nums",
                   vazio ? "text-[color:var(--texto-3)]" : "text-foreground",
                 )}
               >
@@ -66,7 +66,7 @@ export function ComprometidoPorMes({
 
               <span
                 className={cn(
-                  "truncate text-[calc(11px*var(--escala-letra))]",
+                  "truncate text-[max(10px,calc(12px*var(--escala-letra)))]",
                   indice === destaque ? "font-medium text-foreground" : "text-[color:var(--texto-3)]",
                 )}
               >

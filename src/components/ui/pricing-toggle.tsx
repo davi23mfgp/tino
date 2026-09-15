@@ -55,7 +55,7 @@ export function PricingToggle({
         {rotuloDesconto && (
           <span
             className={cn(
-              "rounded-full px-1.5 py-0.5 text-[calc(10px*var(--escala-letra))] font-semibold",
+              "rounded-full px-1.5 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold",
               valor === "ANUAL" ? "bg-black/15 text-[color:var(--background)]" : "bg-acao/15 text-acao",
             )}
           >

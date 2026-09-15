@@ -277,7 +277,7 @@ export default function Capturas() {
 
                   <div className="min-w-0 flex-1">
                     <MarcaPersonalizada nome={captura.estabelecimento??""}/><p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{captura.estabelecimento ?? "Sem descrição"}</p>
-                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                    <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                       {captura.instituicao ?? captura.origem.toLowerCase()}
                       {captura.cartaoFinal && ` · final ${captura.cartaoFinal}`}
                       {captura.confianca < 70 && " · confira o valor"}
@@ -440,7 +440,7 @@ export default function Capturas() {
                   <p className="text-[calc(13px*var(--escala-letra))]">
                     {chave.nome} <span className="text-muted-fg">···{chave.sufixo}</span>
                   </p>
-                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                     {chave.ativa ? "ativa" : "revogada"} · {chave.usos} envio(s)
                     {chave.ultimoUso && ` · último em ${new Date(chave.ultimoUso).toLocaleString("pt-BR")}`}
                   </p>
@@ -448,7 +448,7 @@ export default function Capturas() {
                 {chave.ativa && (
                   <button
                     onClick={() => revogarChave(chave)}
-                    className="rounded-full border border-pauta px-3 py-1.5 text-[calc(11px*var(--escala-letra))] text-muted-fg transition hover:border-negativo/40 hover:text-negativo"
+                    className="rounded-full border border-pauta px-3 py-1.5 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg transition hover:border-negativo/40 hover:text-negativo"
                   >
                     revogar
                   </button>

@@ -73,7 +73,7 @@ export function SemOpenFinance() {
                 <Icone className="size-[18px]" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
+                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
                   Caminho {indice + 1}
                 </p>
                 <h2 className="mt-1 text-[calc(15px*var(--escala-letra))] font-semibold">{titulo}</h2>

@@ -31,7 +31,7 @@ const COR_FAIXA: Record<Faixa, string> = {
 /// Cabeçalho de grupo do balanço: o nome contábil e, ao lado, o que ele
 /// significa para quem não é contador.
 const estiloGrupo =
-  "flex items-baseline gap-2 pb-1 text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-widest text-muted-fg [&>span]:text-[calc(10px*var(--escala-letra))] [&>span]:font-normal [&>span]:normal-case [&>span]:tracking-normal [&>span]:opacity-70"
+  "flex items-baseline gap-2 pb-1 text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-widest text-muted-fg [&>span]:text-[max(10px,calc(12px*var(--escala-letra)))] [&>span]:font-normal [&>span]:normal-case [&>span]:tracking-normal [&>span]:opacity-70"
 
 const ROTULO_FAIXA: Record<Faixa, string> = {
   BOM: "saudável",
@@ -121,7 +121,7 @@ export default async function Analise() {
               { rotulo: "Patrimônio", valor: balanco.patrimonioLiquidoCentavos, tom: balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "" },
             ].map((linha) => (
               <div key={linha.rotulo} className="vidro-menu rounded-2xl px-3 py-2.5">
-                <dt className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</dt>
+                <dt className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</dt>
                 <dd className={cn("numero valor-sensivel mt-1 text-[calc(15px*var(--escala-letra))] font-semibold", linha.tom)}>
                   {formatarMoeda(linha.valor)}
                 </dd>
@@ -177,7 +177,7 @@ export default async function Analise() {
                   <p className={cn("text-[calc(20px*var(--escala-letra))] font-semibold leading-none", COR_FAIXA[indicador.faixa])}>
                     {indicador.valor}
                   </p>
-                  <p className={cn("mt-1 text-[calc(10px*var(--escala-letra))] uppercase tracking-widest", COR_FAIXA[indicador.faixa])}>
+                  <p className={cn("mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest", COR_FAIXA[indicador.faixa])}>
                     {ROTULO_FAIXA[indicador.faixa]}
                   </p>
                 </div>
@@ -322,7 +322,7 @@ export default async function Analise() {
             <div className="mt-4 space-y-3">
               {diagnostico.riscos.length > 0 && (
                 <div>
-                  <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-negativo">Riscos</p>
+                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-negativo">Riscos</p>
                   <ul className="mt-1.5 space-y-1.5">
                     {diagnostico.riscos.map((risco) => (
                       <li key={risco} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
@@ -335,7 +335,7 @@ export default async function Analise() {
 
               {diagnostico.pontosFortes.length > 0 && (
                 <div>
-                  <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-positivo">Pontos fortes</p>
+                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-positivo">Pontos fortes</p>
                   <ul className="mt-1.5 space-y-1.5">
                     {diagnostico.pontosFortes.map((ponto) => (
                       <li key={ponto} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
@@ -385,7 +385,7 @@ export default async function Analise() {
       </div>
 
       </>) }]} />
-      <p className="px-1 text-[calc(11px*var(--escala-letra))] leading-relaxed text-muted-fg">
+      <p className="px-1 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-muted-fg">
         Leitura dos seus lançamentos. Não é recomendação nem substitui contador.
       </p>
     </div>
@@ -426,7 +426,7 @@ function Linha({
     >
       <span className={cn("min-w-0 text-[calc(13px*var(--escala-letra))]", !forte && "text-muted-fg")}>
         {rotulo}
-        {apoio && <span className="ml-1.5 text-[calc(10px*var(--escala-letra))] opacity-60">{apoio}</span>}
+        {apoio && <span className="ml-1.5 text-[max(10px,calc(12px*var(--escala-letra)))] opacity-60">{apoio}</span>}
       </span>
       <span className={cn("text-[calc(14px*var(--escala-letra))] tabular-nums", cor)}><span className="valor-inteiro">{formatarMoeda(valor)}</span></span>
     </div>

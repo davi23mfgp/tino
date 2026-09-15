@@ -73,7 +73,7 @@ export function SeletorEmoji({
           >
             {GRADE.map((secao) => (
               <div key={secao.titulo} className="mb-1.5 last:mb-0">
-                <p className="px-1 pb-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-[0.1em] text-[color:var(--texto-3)]">
+                <p className="px-1 pb-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-[0.1em] text-[color:var(--texto-3)]">
                   {secao.titulo}
                 </p>
                 <div className="grid grid-cols-10 gap-0.5">

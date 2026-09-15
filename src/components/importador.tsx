@@ -227,11 +227,11 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
                 <span className="min-w-0 flex-1 truncate">
                   {lancamento.descricaoSugerida}
                   {lancamento.categoriaNome && (
-                    <span className="ml-2 rounded-full bg-papel-2 px-2 py-0.5 text-[calc(10px*var(--escala-letra))]">
+                    <span className="ml-2 rounded-full bg-papel-2 px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))]">
                       {lancamento.categoriaNome}
                     </span>
                   )}
-                  {lancamento.duplicada && <span className="ml-2 text-[calc(10px*var(--escala-letra))] text-muted-fg">{lancamento.possivelDuplicada?"Possível repetição do celular":"Já importado"}</span>}
+                  {lancamento.duplicada && <span className="ml-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{lancamento.possivelDuplicada?"Possível repetição do celular":"Já importado"}</span>}
                 </span>
                 <span className={lancamento.tipo === "RECEITA" ? "text-positivo" : ""}>
                   {lancamento.tipo === "RECEITA" ? "+" : "-"}

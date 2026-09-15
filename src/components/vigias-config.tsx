@@ -63,7 +63,7 @@ export function VigiasConfig({ semMoldura }: { semMoldura?: boolean } = {}) {
               <p className="text-[calc(14px*var(--escala-letra))] font-medium">{vigia.nome}</p>
               <p className="mt-0.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{vigia.frase}</p>
               {vigia.disparos30dias > 0 && (
-                <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-3)]">
+                <p className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-[color:var(--texto-3)]">
                   {vigia.disparos30dias === 1
                     ? "disparou 1 vez nos últimos 30 dias"
                     : `disparou ${vigia.disparos30dias} vezes nos últimos 30 dias`}

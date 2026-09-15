@@ -110,7 +110,7 @@ function EditorNcm({
     return (
       <button
         onClick={() => setAberto(true)}
-        className="rounded-full border border-pauta px-2 py-0.5 text-[calc(11px*var(--escala-letra))] text-muted-fg hover:border-acao/40 hover:text-foreground"
+        className="rounded-full border border-pauta px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg hover:border-acao/40 hover:text-foreground"
       >
         {ncmAtual ?? "definir"}
       </button>
@@ -329,7 +329,7 @@ export default function Estoque() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
-                <tr className="border-b border-pauta text-left text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">
+                <tr className="border-b border-pauta text-left text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">
                   <th className="pb-2 font-normal">produto</th>
                   <th className="pb-2 text-right font-normal">tem</th>
                   <th className="pb-2 text-right font-normal">custou</th>
@@ -359,7 +359,7 @@ export default function Estoque() {
                       ) : (
                         <span className={linha.margem.margemBps < 0 ? "text-negativo" : "text-positivo"}>
                           {formatarMoeda(linha.margem.lucroCentavos ?? 0)}{" "}
-                          <span className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                          <span className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                             ({formatarPercentual(linha.margem.margemBps, 0)})
                           </span>
                         </span>
@@ -385,7 +385,7 @@ export default function Estoque() {
               {maisVendidos.map((linha, indice) => (
                 <li key={linha.produtoId} className="flex items-center justify-between py-2.5">
                   <span className="flex items-center gap-2">
-                    <span className="numero text-[calc(11px*var(--escala-letra))] text-muted-fg">{indice + 1}º</span>
+                    <span className="numero text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{indice + 1}º</span>
                     {linha.descricao}
                   </span>
                   <span className="numero text-right">{linha.quantidadeVendida} un.</span>

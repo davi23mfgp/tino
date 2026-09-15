@@ -121,7 +121,7 @@ function Dica({
        valor sumia. Fundo solido aqui, que e o unico lugar do app em que algo
        flutua por cima de cor cheia. */
     <div className="rounded-xl border border-pauta bg-[color:var(--papel-solido)] px-3 py-2 shadow-alta">
-      {label && <p className="mb-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{label}</p>}
+      {label && <p className="mb-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{label}</p>}
       {payload.map((linha, indice) => (
         <p key={indice} className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))]">
           <span className="size-2 rounded-full" style={{ background: linha.color }} />
@@ -277,7 +277,7 @@ export function GraficoCategorias({
           <span className="numero valor-sensivel text-[calc(18px*var(--escala-letra))] font-semibold leading-none tracking-tight">
             {formatarMoeda(total)}
           </span>
-          <span className="mt-1 whitespace-nowrap text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-[color:var(--texto-3)]">
+          <span className="mt-1 whitespace-nowrap text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-[color:var(--texto-3)]">
             no mês
           </span>
         </div>
@@ -366,7 +366,7 @@ export function RoscaCategorias({
           <span className="numero text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">
             {formatarMoeda(total)}
           </span>
-          <span className="mt-1.5 whitespace-nowrap text-[calc(11px*var(--escala-letra))] text-[color:var(--texto-2)]">gasto até hoje</span>
+          <span className="mt-1.5 whitespace-nowrap text-[max(10px,calc(12px*var(--escala-letra)))] text-[color:var(--texto-2)]">gasto até hoje</span>
         </div>
       </div>
 
@@ -504,7 +504,7 @@ export function GraficoAnel({
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">{valor}</span>
-        <span className="mt-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{rotulo}</span>
+        <span className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{rotulo}</span>
       </div>
     </div>
   )
@@ -619,7 +619,7 @@ export function GraficoDaDivisao({
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <span className="numero text-[calc(19px*var(--escala-letra))] font-semibold leading-none">{total}</span>
-        <span className="mt-1 text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">por mês</span>
+        <span className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">por mês</span>
       </div>
     </div>
   )
@@ -755,13 +755,13 @@ export function FluxoDeCaixaNoTempo({
             sai por mês. O saldo acumulado saiu daqui junto com as barras — ele
             é outra conta, e continua disponível no botão abaixo. */}
         <div>
-          <p className="text-[calc(10px*var(--escala-letra))] uppercase tracking-[.12em] text-muted-fg">
+          <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-[.12em] text-muted-fg">
             Sobra por mês, na média
           </p>
           <p className={cn("numero text-[calc(19px*var(--escala-letra))] font-semibold leading-tight tracking-tight sm:text-[calc(24px*var(--escala-letra))]", sobraMedia < 0 && "text-negativo")}>
             {sobraMedia < 0 ? "−" : ""}{formatarMoeda(Math.abs(sobraMedia))}
           </p>
-          <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+          <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
             <span className="numero text-positivo">{formatarMoeda(entradaMedia)}</span> entram
             {" · "}
             <span className="numero text-negativo">{formatarMoeda(saidaMedia)}</span> saem

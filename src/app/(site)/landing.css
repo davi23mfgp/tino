@@ -10,14 +10,14 @@
 .vitrine .lp button,.vitrine .lp a { -webkit-tap-highlight-color:transparent }
 .vitrine .lp :focus-visible { outline:2px solid #9ae6ba; outline-offset:5px }
 .vitrine .lp .marca-leao { display:inline-block; background:currentColor; mask-size:contain; mask-repeat:no-repeat; mask-position:center }
-.vitrine .lp-secao { width:min(1180px,calc(100% - 64px)); margin-inline:auto; padding-block:100px; scroll-margin-top:110px }
-.vitrine .lp-menu { position:fixed; inset:28px 0 auto; margin:auto; z-index:50; width:min(890px,calc(100% - 40px)); min-height:74px; padding:10px 22px; display:flex; align-items:center; justify-content:space-between; gap:24px; border:1px solid var(--lp-linha); border-radius:100px; background:rgba(10,11,12,.72); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); box-shadow:inset 0 1px 0 #ffffff06 }
+.vitrine .lp-secao { width:min(1180px,calc(100% - 64px)); margin-inline:auto; padding-block:100px; scroll-margin-top:110px}
+.vitrine .lp-menu { position:fixed; inset:28px 0 auto; margin:auto; z-index:50; width:min(890px,calc(100% - 40px)); min-height:74px; padding:8px 20px; display:flex; align-items:center; justify-content:space-between; gap:24px; border:1px solid var(--lp-linha); border-radius:100px; background:rgba(10,11,12,.72); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); box-shadow:inset 0 1px 0 #ffffff06 }
 .vitrine .lp-marca { display:flex; align-items:center; gap:4px; color:#fff; flex-shrink:0 }
 .vitrine .lp-marca>span:last-child { font-size:30px; font-weight:600; letter-spacing:-2px }
 .vitrine .lp-menu nav { display:flex; gap:28px; margin-left:auto; margin-right:22px }
 .vitrine .lp-menu nav a { color:#a7a8aa; font-size:15px; min-height:44px; display:flex; align-items:center; transition:color .2s }
 .vitrine .lp-menu nav a:hover { color:#fff }
-.vitrine .lp-botao { min-height:46px; padding:12px 23px; display:inline-flex; justify-content:center; align-items:center; gap:12px; background:#fafafa; border:1px solid transparent; border-radius:100px; color:#0b0c0c; font-size:14px; font-weight:500; letter-spacing:-.03em; transition:transform .25s,background .25s; width:fit-content }
+.vitrine .lp-botao { min-height:46px; padding:12px 24px; display:inline-flex; justify-content:center; align-items:center; gap:12px; background:#fafafa; border:1px solid transparent; border-radius:100px; color:#0b0c0c; font-size:14px; font-weight:500; letter-spacing:-.03em; transition:transform .25s,background .25s; width:fit-content }
 .vitrine .lp-botao:hover { transform:translateY(-2px); background:#dedfe0 }
 .vitrine .lp-pular { position:fixed; top:8px; left:8px; padding:12px; background:white; color:black; z-index:100; transform:translateY(-160%) }
 .vitrine .lp-pular:focus { transform:none }
@@ -25,18 +25,18 @@
 .vitrine .lp-hero-texto { padding:0 20px; animation:lp-chegar .9s both }
 .vitrine .lp-hero h1 { font-size:clamp(42px,4.7vw,66px); max-width:810px; margin:auto }
 .vitrine .lp-hero-texto p { margin:24px auto 30px; max-width:570px; color:#b6b6b9; font-size:18px }
-.vitrine .lp-hero-texto>small { display:block; color:#777b80; font-size:12px; margin-top:15px }
+.vitrine .lp-hero-texto>small { display:block; color:#777b80; font-size:12px; margin-top:16px}
 .vitrine .lp-demonstracao { position:relative; max-width:1040px; margin:62px auto 0; padding-bottom:24px; isolation:isolate }
 .vitrine .lp-demonstracao:before { content:""; position:absolute; width:650px; height:650px; max-width:100%; left:50%; top:20px; transform:translateX(-50%); background:radial-gradient(ellipse,#12211c80,transparent 64%); z-index:-1 }
-.vitrine .lp-janela { width:min(100%,900px); margin:auto; border:1px solid #4a4f50; border-radius:18px; background:#111415; box-shadow:0 34px 90px #000a; overflow:hidden; position:relative; animation:lp-aparelho-chegar 1.3s cubic-bezier(.2,.7,.2,1) both }
-.vitrine .lp-janela-barra { display:flex; align-items:center; gap:7px; padding:11px 15px; border-bottom:1px solid #ffffff12; background:#181b1c }
+.vitrine .lp-janela { width:min(100%,900px); margin:auto; border:1px solid #4a4f50; border-radius:var(--raio-cartao); background:#111415; box-shadow:0 34px 90px #000a; overflow:hidden; position:relative; animation:lp-aparelho-chegar 1.3s cubic-bezier(.2,.7,.2,1) both }
+.vitrine .lp-janela-barra { display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid #ffffff12; background:#181b1c }
 .vitrine .lp-janela-barra i { width:10px; height:10px; border-radius:50%; background:#33393a }
 .vitrine .lp-janela-barra span { margin:0 auto 0 -46px; font-size:12px; color:#7e8487 }
 .vitrine .lp-visor { overflow:hidden; aspect-ratio:1265/712; position:relative; background:#08090a }
 .vitrine .lp-tela-real { display:block; position:absolute; width:100%; height:100%; object-fit:cover; object-position:top center; inset:0; opacity:0; transform:translateX(16px) scale(1.015); transition:opacity .8s,transform .8s }
 .vitrine .lp-tela-real[data-ativa=true] { opacity:1; transform:none }
-.vitrine .lp-flutuante { position:absolute; z-index:2; text-align:left; padding:21px 24px; border:1px solid #ffffff19; border-radius:23px; background:linear-gradient(135deg,#171b1cdd,#0a0c0ded); backdrop-filter:blur(18px); box-shadow:0 18px 50px #0006,inset 0 1px 0 #ffffff08; font-size:17px; animation:lp-flutuar 6s ease-in-out infinite; }
-.vitrine .lp-flutuante small { display:block; font-size:12px; color:#92999a; margin-top:5px }
+.vitrine .lp-flutuante { position:absolute; z-index:2; text-align:left; padding:20px 24px; border:1px solid #ffffff19; border-radius:var(--raio-bloco); background:linear-gradient(135deg,#171b1cdd,#0a0c0ded); backdrop-filter:blur(18px); box-shadow:0 18px 50px #0006,inset 0 1px 0 #ffffff08; font-size:17px; animation:lp-flutuar 6s ease-in-out infinite; }
+.vitrine .lp-flutuante small { display:block; font-size:12px; color:#92999a; margin-top:4px}
 .vitrine .lp-flutuante strong { display:block; font-size:18px; font-weight:400; letter-spacing:-.035em }
 .vitrine .lp-flutuante-um { top:64px; left:-10px; transform:rotate(-4deg) }
 .vitrine .lp-flutuante-dois { right:-12px; top:150px; width:280px; animation-delay:-2s }
@@ -44,47 +44,47 @@
 .vitrine .lp-flutuante-tres { left:-4px; top:392px; width:263px; animation-delay:-4s }
 .vitrine .lp-flutuante-tres>span:first-child { font-size:12px; color:#9a9da0 }
 .vitrine .lp-ponto { display:inline-block; width:7px; height:7px; border-radius:50%; background:#82dbaa; margin-right:7px; box-shadow:0 0 15px #82dbaa55 }
-.vitrine .lp-mini-bancos { display:flex; align-items:center; gap:8px; margin-top:18px }
+.vitrine .lp-mini-bancos { display:flex; align-items:center; gap:8px; margin-top:16px}
 .vitrine .lp-mini-bancos img { width:26px; height:26px; border-radius:7px; object-fit:contain }
 .vitrine .lp-mini-bancos small { font-size:11px; margin:0 0 0 3px }
-.vitrine .lp-linha-progresso { height:3px; display:block; background:linear-gradient(90deg,#9be2b7 65%,#292e30 65%); border-radius:5px; margin-top:17px; transform-origin:left; animation:lp-progresso 6s ease-in-out infinite }
-.vitrine .lp-demo-controles { margin:30px auto 0; display:flex; gap:3px; justify-content:center; width:fit-content; border:1px solid var(--lp-linha); border-radius:50px; padding:3px; background:#121415 }
+.vitrine .lp-linha-progresso { height:3px; display:block; background:linear-gradient(90deg,#9be2b7 65%,#292e30 65%); border-radius:var(--raio-pilula); margin-top:16px; transform-origin:left; animation:lp-progresso 6s ease-in-out infinite }
+.vitrine .lp-demo-controles { margin:30px auto 0; display:flex; gap:4px; justify-content:center; width:fit-content; border:1px solid var(--lp-linha); border-radius:50px; padding:4px; background:#121415 }
 .vitrine .lp-demo-controles button { min-height:44px; min-width:44px; padding:8px 16px; border:0; border-radius:50px; font-size:13px; color:#a3a6a8; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center }
 .vitrine .lp-demo-controles button[aria-pressed=true] { color:#fff; background:#2a2d2e }
 .vitrine .lp-demo-controles button:disabled { opacity:.4; cursor:default }
 .vitrine .lp .lp-legenda-demo { margin-top:12px; font-size:11px; color:#81868a }
 .vitrine .lp-demonstracao[data-pausada=true] .lp-flutuante,.vitrine .lp-demonstracao[data-pausada=true] .lp-linha-progresso { animation-play-state:paused }
-.vitrine .lp-confianca { display:flex; align-items:center; justify-content:center; gap:45px; flex-wrap:wrap; padding:52px 20px 0; color:#a1a4a7; font-size:14px }
-.vitrine .lp-confianca span { display:flex; align-items:center; gap:10px }
-.vitrine .lp-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:36px; margin-bottom:50px }
-.vitrine .lp-cabecalho p { margin-top:22px }
-.vitrine .lp-recursos-grade { display:grid; grid-template-columns:repeat(4,1fr); gap:22px }
+.vitrine .lp-confianca { display:flex; align-items:center; justify-content:center; gap:44px; flex-wrap:wrap; padding:52px 20px 0; color:#a1a4a7; font-size:14px }
+.vitrine .lp-confianca span { display:flex; align-items:center; gap:8px}
+.vitrine .lp-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:36px; margin-bottom:50px}
+.vitrine .lp-cabecalho p { margin-top:20px}
+.vitrine .lp-recursos-grade { display:grid; grid-template-columns:repeat(4,1fr); gap:20px}
 /* Os quatro blocos de recurso. Cada um mostra um pedaço da tela de verdade —
    barra, fatura, progresso, linha — em vez do ícone de contorno gigante que
    estava ali e servia para qualquer app de finanças. */
-.vitrine .lp-bloco { color:inherit; display:block; padding:22px; border:1px solid #ffffff14; border-radius:22px; background:linear-gradient(160deg,#16191a,#0e1011); transition:transform .45s var(--lp-curva,cubic-bezier(.2,.7,.2,1)),border-color .45s }
+.vitrine .lp-bloco { color:inherit; display:block; padding:20px; border:1px solid #ffffff14; border-radius:var(--raio-bloco); background:linear-gradient(160deg,#16191a,#0e1011); transition:transform .45s var(--lp-curva,cubic-bezier(.2,.7,.2,1)),border-color .45s }
 .vitrine .lp-bloco:hover { transform:translateY(-6px); border-color:#45f45c4d }
-.vitrine .lp-bloco-arte { height:172px; border-radius:16px; background:#0b0d0e; border:1px solid #ffffff0f; padding:18px; display:flex; flex-direction:column; justify-content:flex-start; overflow:hidden; position:relative }
-.vitrine .lp-bloco h3 { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:20px; font-size:21px; letter-spacing:-.03em }
+.vitrine .lp-bloco-arte { height:172px; border-radius:var(--raio-cartao); background:#0b0d0e; border:1px solid #ffffff0f; padding:16px; display:flex; flex-direction:column; justify-content:flex-start; overflow:hidden; position:relative }
+.vitrine .lp-bloco h3 { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px; font-size:21px; letter-spacing:-.03em }
 .vitrine .lp-bloco h3 svg { color:#45f45c; flex-shrink:0 }
 .vitrine .lp-bloco p { font-size:14px; margin-top:8px; color:#9aa0a2; line-height:1.5 }
 
 .vitrine .lp-arte-rotulo { font-size:10px; text-transform:uppercase; letter-spacing:.16em; color:#7e8487; font-weight:600 }
 .vitrine .lp-arte-numero { display:block; margin-top:8px; font-size:27px; font-weight:600; letter-spacing:-.04em; color:#45f45c; font-variant-numeric:tabular-nums }
-.vitrine .lp-arte-pilula { display:inline-block; margin-top:10px; padding:5px 11px; border-radius:50px; background:#ffffff0f; color:#b9bec0; font-size:11px }
+.vitrine .lp-arte-pilula { display:inline-block; margin-top:8px; padding:4px 12px; border-radius:50px; background:#ffffff0f; color:#b9bec0; font-size:11px }
 
 .vitrine .lp-arte-barras { display:grid; gap:8px; margin-top:auto }
-.vitrine .lp-arte-barras i { display:block; height:9px; border-radius:5px; background:#45f45c }
+.vitrine .lp-arte-barras i { display:block; height:9px; border-radius:var(--raio-pilula); background:#45f45c }
 .vitrine .lp-arte-barras i[data-tom=saiu] { background:#ffffff26 }
-.vitrine .lp-arte-legenda { display:flex; justify-content:space-between; margin-top:9px; font-size:10.5px; color:#787e81; font-variant-numeric:tabular-nums }
+.vitrine .lp-arte-legenda { display:flex; justify-content:space-between; margin-top:8px; font-size:10.5px; color:#787e81; font-variant-numeric:tabular-nums }
 
-.vitrine .lp-arte-meses { display:flex; align-items:flex-end; gap:7px; height:52px; margin-top:auto }
-.vitrine .lp-arte-meses i { flex:1; border-radius:5px 5px 3px 3px; background:#ffffff1c }
+.vitrine .lp-arte-meses { display:flex; align-items:flex-end; gap:8px; height:52px; margin-top:auto }
+.vitrine .lp-arte-meses i { flex:1; border-radius:var(--raio-pilula) 5px 3px 3px; background:#ffffff1c }
 .vitrine .lp-arte-meses i[data-aceso=true] { background:#45f45c }
 
-.vitrine .lp-arte-trilho { height:9px; border-radius:5px; background:#ffffff14; margin-top:auto; overflow:hidden }
-.vitrine .lp-arte-trilho i { display:block; height:100%; border-radius:5px; background:#45f45c }
-.vitrine .lp-arte-linha { display:flex; justify-content:space-between; align-items:baseline; margin-top:10px; font-size:11.5px; color:#8d9395 }
+.vitrine .lp-arte-trilho { height:9px; border-radius:var(--raio-pilula); background:#ffffff14; margin-top:auto; overflow:hidden }
+.vitrine .lp-arte-trilho i { display:block; height:100%; border-radius:var(--raio-pilula); background:#45f45c }
+.vitrine .lp-arte-linha { display:flex; justify-content:space-between; align-items:baseline; margin-top:8px; font-size:11.5px; color:#8d9395 }
 .vitrine .lp-arte-linha b { color:#e6e7e7; font-weight:500; font-variant-numeric:tabular-nums }
 
 .vitrine .lp-arte-linha-svg { display:block; width:calc(100% + 36px); margin:auto -18px -18px; height:76px }
@@ -92,66 +92,66 @@
 .vitrine .lp-produto-grande { position:relative; min-height:590px; overflow:hidden; border-radius:28px; border:1px solid #ffffff0d; background:radial-gradient(ellipse at 100% 50%,#29352e55,transparent 65%),#0c0e0f; display:flex; align-items:center; padding:65px 50px; perspective:1300px }
 .vitrine .lp-produto-texto { max-width:420px; z-index:2; position:relative }
 .vitrine .lp-produto-texto p { margin:25px 0 30px }
-.vitrine .lp-tag { font-size:12px; color:#939b9e; display:block; margin-bottom:22px; letter-spacing:.02em }
-.vitrine .lp-desktop { border:1px solid #565c5c; padding:8px; border-radius:17px; background:#181b1c; box-shadow:0 35px 90px #0008; }
+.vitrine .lp-tag { font-size:12px; color:#939b9e; display:block; margin-bottom:20px; letter-spacing:.02em }
+.vitrine .lp-desktop { border:1px solid #565c5c; padding:8px; border-radius:var(--raio-cartao); background:#181b1c; box-shadow:0 35px 90px #0008; }
 .vitrine .lp-desktop-inclinado { position:absolute; left:47%; width:790px; transform:rotateY(-20deg) rotateZ(-4deg); transition:transform 1s }
 .vitrine .lp-produto-grande:hover .lp-desktop-inclinado { transform:rotateY(-12deg) rotateZ(-2deg) translateY(-8px) }
-.vitrine .lp-desktop img { display:block; width:100%; height:auto; border-radius:9px }
+.vitrine .lp-desktop img { display:block; width:100%; height:auto; border-radius:var(--raio-campo) }
 .vitrine .lp-alternada { display:grid; grid-template-columns:1fr 1.2fr; align-items:center; gap:70px; min-height:580px; padding-block:80px }
 .vitrine .lp-secao-texto p { margin:25px 0 31px; max-width:430px }
 .vitrine .lp-moldura-recurso { padding:24px; border:1px solid #ffffff0b; border-radius:26px; background:radial-gradient(ellipse at top,#17272066,transparent),#101213; box-shadow:0 25px 80px #0004; overflow:hidden }
-.vitrine .lp-moldura-recurso img { width:100%; height:auto; display:block; border:1px solid #ffffff18; border-radius:12px; box-shadow:0 20px 45px #0007; transition:transform .8s }
+.vitrine .lp-moldura-recurso img { width:100%; height:auto; display:block; border:1px solid #ffffff18; border-radius:var(--raio-campo); box-shadow:0 20px 45px #0007; transition:transform .8s }
 .vitrine .lp-moldura-recurso:hover img { transform:scale(1.035) }
 .vitrine .lp-invertida { grid-template-columns:1.2fr 1fr }
 .vitrine .lp-invertida .lp-secao-texto { order:2 }
 .vitrine .lp-cartoes-visual { background:radial-gradient(ellipse at top,#37302166,transparent),#111213 }
-.vitrine .lp-painel-claro { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); align-items:center; gap:50px; padding:65px 0 65px 48px; background:#f2f3ef; color:#131615; border-radius:25px; overflow:hidden }
+.vitrine .lp-painel-claro { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); align-items:center; gap:50px; padding:65px 0 65px 48px; background:#f2f3ef; color:#131615; border-radius:var(--raio-bloco); overflow:hidden }
 .vitrine .lp-painel-claro h2 { font-size:clamp(35px,3.8vw,50px) }
 .vitrine .lp-painel-claro p { color:#666d68; margin:24px 0 30px; max-width:350px }
 .vitrine .lp-painel-claro .lp-botao { background:#141715; color:white }
-.vitrine .lp-tela-projecao { transform:translateX(50px) rotate(-5deg); padding:9px; border-radius:17px; background:#1a1b1c; border:1px solid #535958; box-shadow:-15px 24px 50px #0003 }
-.vitrine .lp-tela-projecao img { display:block; width:900px; max-width:none; border-radius:10px }
+.vitrine .lp-tela-projecao { transform:translateX(50px) rotate(-5deg); padding:8px; border-radius:var(--raio-cartao); background:#1a1b1c; border:1px solid #535958; box-shadow:-15px 24px 50px #0003 }
+.vitrine .lp-tela-projecao img { display:block; width:900px; max-width:none; border-radius:var(--raio-campo) }
 .vitrine .lp-negocio { text-align:center; padding-block:105px; background:radial-gradient(ellipse at 50% 20%,#14201977,transparent 60%) }
 .vitrine .lp-negocio-simbolo { display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:40px; color:#c5d3c8 }
 .vitrine .lp-negocio-simbolo>span { font-size:64px; font-weight:600; letter-spacing:-5px }
 .vitrine .lp-mais { color:#a1d7b5; font-weight:300 }
 .vitrine .lp-negocio p { margin:25px 0 }
-.vitrine .lp-chips { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin-bottom:30px }
-.vitrine .lp-chips span { font-size:12px; border:1px solid var(--lp-linha); border-radius:40px; padding:8px 17px; color:#b3b9b6 }
+.vitrine .lp-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:28px}
+.vitrine .lp-chips span { font-size:12px; border:1px solid var(--lp-linha); border-radius:40px; padding:8px 16px; color:#b3b9b6 }
 .vitrine .lp-central { text-align:center }
 .vitrine .lp-central p { margin:24px auto 0; max-width:600px }
-.vitrine .lp-passos { display:grid; grid-template-columns:repeat(3,1fr); gap:45px; margin-top:70px }
+.vitrine .lp-passos { display:grid; grid-template-columns:repeat(3,1fr); gap:44px; margin-top:70px}
 .vitrine .lp-passos>div { border-top:1px solid #ffffff26; padding-top:22px; position:relative }
 .vitrine .lp-numero { float:right; color:#636a6e; font-size:13px }
 .vitrine .lp-passos h3 { margin:30px 0 12px; font-size:21px }
 .vitrine .lp-passos p { font-size:15px }
 .vitrine .lp-ciclo { display:flex; width:fit-content; margin:30px auto 36px; padding:4px; border-radius:40px; background:#17191a; border:1px solid var(--lp-linha) }
-.vitrine .lp-ciclo button { padding:10px 26px; min-height:44px; border:0; border-radius:40px; background:transparent; color:#999da1; font-size:14px; cursor:pointer }
+.vitrine .lp-ciclo button { padding:8px 24px; min-height:44px; border:0; border-radius:40px; background:transparent; color:#999da1; font-size:14px; cursor:pointer }
 .vitrine .lp-ciclo button[aria-pressed=true] { background:#fff; color:#111 }
-.vitrine .lp-planos { max-width:890px; margin:auto; display:grid; grid-template-columns:1fr 1fr; gap:18px }
-.vitrine .lp-plano { padding:35px; background:#101213; border:1px solid #ffffff1a; border-radius:23px; display:flex; flex-direction:column }
+.vitrine .lp-planos { max-width:890px; margin:auto; display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.vitrine .lp-plano { padding:36px; background:#101213; border:1px solid #ffffff1a; border-radius:var(--raio-bloco); display:flex; flex-direction:column }
 .vitrine .lp-plano[data-destaque=true] { background:linear-gradient(150deg,#1b2420,#111513 55%); border-color:#54716166 }
 .vitrine .lp-plano h3 { font-size:25px; margin:0 0 18px }
 .vitrine .lp-plano>p { font-size:14px; min-height:68px }
-.vitrine .lp-preco { font-size:46px; letter-spacing:-.06em; font-weight:400; margin-top:25px }
+.vitrine .lp-preco { font-size:46px; letter-spacing:-.06em; font-weight:400; margin-top:24px}
 .vitrine .lp-preco small { font-size:14px; letter-spacing:0; color:#969ba0; margin-left:5px }
 .vitrine .lp-plano .lp-cobranca { font-size:12px; min-height:0; margin:3px 0 28px }
 .vitrine .lp-plano .lp-botao { width:100% }
-.vitrine .lp-plano ul { list-style:none; padding:25px 0 0; margin:25px 0 20px; border-top:1px solid var(--lp-linha); display:grid; gap:17px }
-.vitrine .lp-plano li { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:#c1c5c3; line-height:1.5 }
-.vitrine .lp-plano li svg { flex-shrink:0; margin-top:2px; color:#aed6bd }
+.vitrine .lp-plano ul { list-style:none; padding:24px 0 0; margin:25px 0 20px; border-top:1px solid var(--lp-linha); display:grid; gap:16px}
+.vitrine .lp-plano li { display:flex; align-items:flex-start; gap:8px; font-size:13px; color:#c1c5c3; line-height:1.5 }
+.vitrine .lp-plano li svg { flex-shrink:0; margin-top:0px; color:#aed6bd }
 .vitrine .lp-plano .lp-exclusoes { font-size:11px; color:#848b8a; min-height:0; margin-top:auto }
-.vitrine .lp-duvidas { display:grid; grid-template-columns:.85fr 1.15fr; gap:70px }
+.vitrine .lp-duvidas { display:grid; grid-template-columns:.85fr 1.15fr; gap:70px}
 .vitrine .lp-duvidas h2 { font-size:43px }
 .vitrine .lp-duvidas details { border-bottom:1px solid #ffffff18; }
 .vitrine .lp-duvidas summary { list-style:none; display:flex; gap:20px; align-items:center; justify-content:space-between; padding:24px 0; cursor:pointer; font-size:16px; font-weight:400 }
 .vitrine .lp-duvidas summary::-webkit-details-marker { display:none }
 .vitrine .lp-duvidas summary svg { flex-shrink:0; transition:transform .2s }
 .vitrine .lp-duvidas details[open] summary svg { transform:rotate(45deg) }
-.vitrine .lp-duvidas details p { padding:0 25px 25px 0; font-size:14px }
+.vitrine .lp-duvidas details p { padding:0 24px 24px 0; font-size:14px }
 .vitrine .lp-final { text-align:center; padding-block:80px 125px; }
-.vitrine .lp-final .marca-leao { margin-bottom:30px; color:#bfc7c1 }
-.vitrine .lp-final h2 { margin-bottom:35px }
+.vitrine .lp-final .marca-leao { margin-bottom:28px; color:#bfc7c1 }
+.vitrine .lp-final h2 { margin-bottom:36px}
 .vitrine .lp-rodape { padding-block:35px; border-top:1px solid var(--lp-linha); display:flex; align-items:center; gap:28px; flex-wrap:wrap }
 .vitrine .lp-rodape p,.vitrine .lp-rodape small { font-size:12px; color:#81898b }
 .vitrine .lp-rodape nav { display:flex; gap:20px; margin-left:auto }
@@ -165,8 +165,8 @@
 @keyframes lp-progresso { 0%,100% { scale:.8 1 } 50% { scale:1 1 } }
 @media (max-width:800px) {
   .vitrine .lp-secao { width:calc(100% - 40px); padding-block:65px }
-  .vitrine .lp-menu { top:16px; padding:7px 16px; min-height:64px; gap:12px }
-  .vitrine .lp-menu nav { gap:18px; margin:0 }
+  .vitrine .lp-menu { top:16px; padding:8px 16px; min-height:64px; gap:12px}
+  .vitrine .lp-menu nav { gap:16px; margin:0 }
   .vitrine .lp-menu nav a { font-size:13px }
   .vitrine .lp-menu nav a:nth-child(2),.vitrine .lp-menu nav a:nth-child(4) { display:none }
   .vitrine .lp-hero { padding-top:144px }
@@ -174,77 +174,77 @@
   .vitrine .lp-hero-texto p { font-size:16px }
   .vitrine .lp-demonstracao { margin-top:53px; max-width:600px }
   .vitrine .lp-janela { width:100% }
-  .vitrine .lp-flutuante { padding:14px 16px; border-radius:16px; font-size:13px }
+  .vitrine .lp-flutuante { padding:12px 16px; border-radius:var(--raio-cartao); font-size:13px }
   .vitrine .lp-flutuante-um { left:-6px; top:-18px }
   .vitrine .lp-flutuante-dois { right:-6px; bottom:44px; top:auto; width:210px }
   .vitrine .lp-flutuante-tres { display:none }
   .vitrine .lp-flutuante strong { font-size:14px }
-  .vitrine .lp-confianca { gap:15px 28px; padding-top:25px; font-size:12px }
-  .vitrine .lp-recursos-grade { grid-template-columns:repeat(2,1fr); gap:32px 20px }
-  .vitrine .lp-produto-grande { min-height:600px; align-items:flex-start; padding:35px 28px }
+  .vitrine .lp-confianca { gap:16px 28px; padding-top:25px; font-size:12px }
+  .vitrine .lp-recursos-grade { grid-template-columns:repeat(2,1fr); gap:32px 20px}
+  .vitrine .lp-produto-grande { min-height:600px; align-items:flex-start; padding:36px 28px}
   .vitrine .lp-produto-texto { max-width:none }
   .vitrine .lp-desktop-inclinado { left:12%; top:340px; width:650px; transform:rotateY(-13deg) rotateZ(-4deg) }
-  .vitrine .lp-alternada,.vitrine .lp-invertida { grid-template-columns:1fr; gap:35px; min-height:0 }
+  .vitrine .lp-alternada,.vitrine .lp-invertida { grid-template-columns:1fr; gap:36px; min-height:0 }
   .vitrine .lp-invertida .lp-secao-texto { order:0 }
   .vitrine .lp-secao-texto p { max-width:560px }
-  .vitrine .lp-painel-claro { grid-template-columns:1fr; padding:35px 28px 0; gap:30px }
+  .vitrine .lp-painel-claro { grid-template-columns:1fr; padding:36px 28px 0; gap:28px}
   .vitrine .lp-tela-projecao { transform:translateX(20px) rotate(-4deg); width:700px; }
   .vitrine .lp-tela-projecao img { width:100% }
-  .vitrine .lp-passos { gap:25px }
+  .vitrine .lp-passos { gap:24px}
   .vitrine .lp-passos h3 { font-size:18px }
-  .vitrine .lp-planos { gap:12px }
-  .vitrine .lp-plano { padding:25px }
+  .vitrine .lp-planos { gap:12px}
+  .vitrine .lp-plano { padding:24px}
   .vitrine .lp-plano h3 { font-size:22px }
-  .vitrine .lp-duvidas { grid-template-columns:1fr; gap:30px }
+  .vitrine .lp-duvidas { grid-template-columns:1fr; gap:28px}
 }
 @media (max-width:480px) {
-  .vitrine .lp-menu { width:calc(100% - 24px); top:12px; min-height:60px; padding:6px 12px }
+  .vitrine .lp-menu { width:calc(100% - 24px); top:12px; min-height:60px; padding:4px 12px}
   .vitrine .lp-menu nav a { font-size:12px }
-  .vitrine .lp-menu nav { gap:12px }
+  .vitrine .lp-menu nav { gap:12px}
   .vitrine .lp-marca>span:last-child { font-size:25px }
   .vitrine .lp-menu .marca-leao { width:25px!important; height:30px!important }
-  .vitrine .lp-entrar { padding:9px 17px; font-size:12px; min-height:44px }
+  .vitrine .lp-entrar { padding:8px 16px; font-size:12px; min-height:44px }
   .vitrine .lp-hero { padding-top:127px }
   .vitrine .lp-hero h1 { font-size:clamp(31px,8.6vw,41px); letter-spacing:-.055em }
   .vitrine .lp-hero-texto { padding-inline:15px }
   .vitrine .lp-hero-texto p { font-size:15px; margin:24px 0 }
   .vitrine .lp-hero-texto>small { font-size:10px }
-  .vitrine .lp-janela { border-radius:14px }
+  .vitrine .lp-janela { border-radius:var(--raio-campo) }
 
-  .vitrine .lp-flutuante-um { top:-14px; left:-5px; font-size:11px; padding:11px 13px; max-width:160px; transform:rotate(-5deg) }
+  .vitrine .lp-flutuante-um { top:-14px; left:-5px; font-size:11px; padding:12px 12px; max-width:160px; transform:rotate(-5deg) }
   .vitrine .lp-flutuante-um small { font-size:9px }
-  .vitrine .lp-flutuante-dois { bottom:34px; top:auto; right:-7px; width:174px; transform:rotate(4deg); padding:12px }
+  .vitrine .lp-flutuante-dois { bottom:34px; top:auto; right:-7px; width:174px; transform:rotate(4deg); padding:12px}
   .vitrine .lp-flutuante-dois strong { font-size:13px }
-  .vitrine .lp-mini-bancos { margin-top:10px; gap:5px }
+  .vitrine .lp-mini-bancos { margin-top:8px; gap:4px}
   .vitrine .lp-mini-bancos img { width:20px; height:20px }
   .vitrine .lp-mini-bancos small { font-size:9px }
-  .vitrine .lp-demo-controles button { padding:8px 13px; font-size:12px }
-  .vitrine .lp-confianca { flex-direction:column; align-items:center; gap:14px }
+  .vitrine .lp-demo-controles button { padding:8px 12px; font-size:12px }
+  .vitrine .lp-confianca { flex-direction:column; align-items:center; gap:12px}
   .vitrine .lp-secao { width:calc(100% - 36px); padding-block:55px }
   .vitrine .lp h2 { font-size:35px }
   .vitrine .lp p { font-size:15px }
-  .vitrine .lp-cabecalho { display:block; margin-bottom:32px }
-  .vitrine .lp-cabecalho>.lp-botao { margin-top:26px }
-  .vitrine .lp-bloco h3 { font-size:19px; margin-top:16px }
+  .vitrine .lp-cabecalho { display:block; margin-bottom:32px}
+  .vitrine .lp-cabecalho>.lp-botao { margin-top:24px}
+  .vitrine .lp-bloco h3 { font-size:19px; margin-top:16px}
   .vitrine .lp-bloco p { font-size:12.5px }
-  .vitrine .lp-bloco { padding:16px; border-radius:18px }
-  .vitrine .lp-bloco-arte { height:148px; padding:14px }
+  .vitrine .lp-bloco { padding:16px; border-radius:var(--raio-cartao) }
+  .vitrine .lp-bloco-arte { height:148px; padding:12px}
   .vitrine .lp-arte-numero { font-size:22px }
 
-  .vitrine .lp-produto-grande { min-height:570px; padding:30px 23px }
+  .vitrine .lp-produto-grande { min-height:570px; padding:28px 24px}
   .vitrine .lp-desktop-inclinado { top:345px; left:6%; width:530px }
-  .vitrine .lp-moldura-recurso { padding:12px; border-radius:17px }
-  .vitrine .lp-painel-claro { padding:30px 23px 0 }
-  .vitrine .lp-tela-projecao { width:550px; margin-top:10px }
-  .vitrine .lp-passos { grid-template-columns:1fr; gap:30px; margin-top:40px }
+  .vitrine .lp-moldura-recurso { padding:12px; border-radius:var(--raio-cartao) }
+  .vitrine .lp-painel-claro { padding:28px 24px 0}
+  .vitrine .lp-tela-projecao { width:550px; margin-top:8px}
+  .vitrine .lp-passos { grid-template-columns:1fr; gap:28px; margin-top:40px}
   .vitrine .lp-passos h3 { margin-top:16px; font-size:21px }
-  .vitrine .lp-planos { grid-template-columns:1fr; gap:18px }
-  .vitrine .lp-plano { padding:28px }
+  .vitrine .lp-planos { grid-template-columns:1fr; gap:16px}
+  .vitrine .lp-plano { padding:28px}
   .vitrine .lp-plano>p { min-height:0 }
   .vitrine .lp-plano h3 { font-size:25px }
   .vitrine .lp-duvidas summary { font-size:15px }
   .vitrine .lp-final h2 { font-size:32px }
-  .vitrine .lp-rodape { gap:16px }
+  .vitrine .lp-rodape { gap:16px}
   .vitrine .lp-rodape p { font-size:11px }
   .vitrine .lp-rodape nav { margin:0; width:100% }
 }
@@ -257,18 +257,18 @@
    Texto longo para ser lido de verdade: coluna estreita, linha alta e
    hierarquia clara. Não herda o ritmo da vitrine — aqui ninguém está sendo
    convencido de nada, está conferindo o que foi combinado. */
-.vitrine .lp-legal { max-width:760px; margin:0 auto; padding:120px 22px 90px }
-.vitrine .lp-legal-voltar { display:inline-block; margin-bottom:34px; font-size:14px; color:#9aa0a2 }
+.vitrine .lp-legal { max-width:760px; margin:0 auto; padding:120px 20px 90px}
+.vitrine .lp-legal-voltar { display:inline-block; margin-bottom:32px; font-size:14px; color:#9aa0a2 }
 .vitrine .lp-legal-voltar:hover { color:#fff }
 .vitrine .lp-legal h1 { font-size:clamp(34px,5vw,50px); letter-spacing:-.04em }
-.vitrine .lp-legal header p { margin-top:18px; font-size:17px; line-height:1.6; color:#b6b6b9 }
-.vitrine .lp-legal header small { display:block; margin-top:14px; font-size:12px; color:#7e8487 }
+.vitrine .lp-legal header p { margin-top:16px; font-size:17px; line-height:1.6; color:#b6b6b9 }
+.vitrine .lp-legal header small { display:block; margin-top:12px; font-size:12px; color:#7e8487 }
 .vitrine .lp-legal section { margin-top:48px; padding-top:28px; border-top:1px solid #ffffff14 }
 .vitrine .lp-legal h2 { font-size:21px; letter-spacing:-.03em }
-.vitrine .lp-legal section p { margin-top:14px; font-size:15px; line-height:1.65; color:#a9aeb0 }
+.vitrine .lp-legal section p { margin-top:12px; font-size:15px; line-height:1.65; color:#a9aeb0 }
 .vitrine .lp-legal footer { margin-top:52px; font-size:14px; color:#9aa0a2 }
 .vitrine .lp-legal a { text-decoration:underline; text-underline-offset:3px }
 @media (max-width:640px) {
-  .vitrine .lp-legal { padding:100px 18px 70px }
-  .vitrine .lp-legal section { margin-top:36px }
+  .vitrine .lp-legal { padding:100px 16px 70px}
+  .vitrine .lp-legal section { margin-top:36px}
 }

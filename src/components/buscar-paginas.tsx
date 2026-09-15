@@ -182,7 +182,7 @@ export function GatilhoBuscaPaginas({
         <span className="flex-1 truncate">Buscar...</span>
         {/* Só a pista visual — o atalho de verdade já existe (`Ctrl/Cmd+K`
             no Provider), não é implementado de novo aqui. */}
-        <kbd className="shrink-0 rounded-md border border-pauta bg-papel-1 px-1.5 py-0.5 text-[calc(10px*var(--escala-letra))] font-medium tracking-wide text-muted-fg">
+        <kbd className="shrink-0 rounded-md border border-pauta bg-papel-1 px-1.5 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))] font-medium tracking-wide text-muted-fg">
           Ctrl K
         </kbd>
       </button>

@@ -71,7 +71,7 @@ export function FilaDeChamados({ chamados }: { chamados: ChamadoNaFila[] }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="flex flex-wrap items-center gap-2 text-[calc(13px*var(--escala-letra))]">
-                <span className={`rounded-full border px-2 py-0.5 text-[calc(10px*var(--escala-letra))] uppercase tracking-wide ${COR_TIPO[chamado.tipo]}`}>
+                <span className={`rounded-full border px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-wide ${COR_TIPO[chamado.tipo]}`}>
                   {ROTULO_TIPO[chamado.tipo]}
                 </span>
                 <span>{chamado.usuario.nome}</span>

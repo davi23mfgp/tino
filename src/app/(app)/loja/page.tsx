@@ -426,11 +426,11 @@ export default function Loja() {
                 <span>{formatarMoeda(venda.totalCentavos)}</span>
 
                 {venda.notaFiscal?.status === "EMITIDA" ? (
-                  <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-[calc(11px*var(--escala-letra))] text-positivo">
+                  <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-positivo">
                     nota emitida
                   </span>
                 ) : venda.notaFiscal?.status === "CANCELADA" ? (
-                  <span className="rounded-full bg-muted-fg/10 px-2.5 py-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                  <span className="rounded-full bg-muted-fg/10 px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                     nota cancelada
                   </span>
                 ) : (
@@ -442,7 +442,7 @@ export default function Loja() {
                         ? "A tentativa anterior foi rejeitada. Corrija o que faltar e tente de novo."
                         : undefined
                     }
-                    className="rounded-full border border-pauta px-2.5 py-1 text-[calc(11px*var(--escala-letra))] text-muted-fg hover:border-acao/40 disabled:opacity-50"
+                    className="rounded-full border border-pauta px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg hover:border-acao/40 disabled:opacity-50"
                   >
                     {notaEmOperacao === venda.id
                       ? "emitindo…"

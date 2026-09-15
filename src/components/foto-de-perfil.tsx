@@ -125,8 +125,8 @@ export function FotoDePerfil() {
             </Button>
           )}
         </div>
-        <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">JPG, PNG ou WebP. Até 10 MB.</p>
-        {(erroLocal || erro) && <p className="text-[calc(11px*var(--escala-letra))] text-negativo" role="alert">{erroLocal || erro}</p>}
+        <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">JPG, PNG ou WebP. Até 10 MB.</p>
+        {(erroLocal || erro) && <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-negativo" role="alert">{erroLocal || erro}</p>}
       </div>
 
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={!perfilCarregado || carregando || processando || ocupado} aria-label="Escolher foto de perfil" className="sr-only" onChange={aoEscolher} />

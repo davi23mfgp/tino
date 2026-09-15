@@ -126,19 +126,19 @@ export default function Emprestimos() {
       <Cartao titulo="Os números do empréstimo">
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="space-y-1.5">
-            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Valor</span>
+            <span className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">Valor</span>
             <input value={valor} onChange={(e) => setValor(e.target.value)} placeholder="10.000,00" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Parcelas</span>
+            <span className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">Parcelas</span>
             <input value={parcelas} onChange={(e) => setParcelas(e.target.value)} placeholder="24" className={campo} inputMode="numeric" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Juros % ao mês</span>
+            <span className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">Juros % ao mês</span>
             <input value={juros} onChange={(e) => setJuros(e.target.value)} placeholder="2,5" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">IOF e tarifas</span>
+            <span className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">IOF e tarifas</span>
             <input value={custos} onChange={(e) => setCustos(e.target.value)} placeholder="opcional" className={campo} inputMode="decimal" />
           </label>
         </div>
@@ -215,7 +215,7 @@ export default function Emprestimos() {
 
             {analise.alternativas.length > 0 && (
               <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-                <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Antes de assinar</p>
+                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">Antes de assinar</p>
                 <ul className="mt-2 space-y-1.5">
                   {analise.alternativas.map((alternativa) => (
                     <li key={alternativa} className="text-[calc(13px*var(--escala-letra))] leading-relaxed">
@@ -260,7 +260,7 @@ export default function Emprestimos() {
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+            <p className="mt-3 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
               Cada linha mostra juros pagos e saldo restante.
             </p>
           </Cartao>
@@ -274,21 +274,21 @@ export default function Emprestimos() {
               <div key={simulacao.id} className="flex flex-wrap items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[calc(14px*var(--escala-letra))]">{simulacao.titulo}</p>
-                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                     <span className="valor-inteiro">{formatarMoeda(simulacao.valorCentavos)}</span> em {simulacao.parcelas}x ·{" "}
                     {formatarPercentual(simulacao.jurosMensalBps)} a.m. nominal
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-[calc(13px*var(--escala-letra))] tabular-nums"><span className="valor-inteiro">{formatarMoeda(simulacao.resultado.parcelaCentavos)}</span>/mês</p>
-                  <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                     CET {formatarPercentual(simulacao.resultado.cetMensalBps)} a.m.
                   </p>
                 </div>
                 {simulacao.veredito && (
                   <span
                     className={cn(
-                      "rounded-full border px-2.5 py-1 text-[calc(11px*var(--escala-letra))]",
+                      "rounded-full border px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))]",
                       VEREDITO[simulacao.veredito as keyof typeof VEREDITO]?.borda,
                       VEREDITO[simulacao.veredito as keyof typeof VEREDITO]?.tom,
                     )}

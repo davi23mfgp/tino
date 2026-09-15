@@ -80,7 +80,7 @@ export function Rotulo({ children, className }: { children: React.ReactNode; cla
         // 11px / peso 600 / tracking 0.14em — número do spec (PARTE 2). O
         // espaçamento largo é o que faz a caixa alta virar rótulo em vez de
         // grito: em 0.06em ele ainda lia como texto normal em maiúscula.
-        "text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]",
+        "text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]",
         className,
       )}
     >

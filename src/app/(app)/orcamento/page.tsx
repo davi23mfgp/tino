@@ -279,10 +279,10 @@ export default function OrcamentoPagina() {
                   <b className={cn("numero block text-[calc(15px*var(--escala-letra))] font-semibold", linha.estourou && "text-negativo")}>
                     {formatarMoeda(linha.gastoCentavos)}
                   </b>
-                  <small className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">gastos</small>
+                  <small className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">gastos</small>
                 </span>
                 <label className="flex shrink-0 items-center gap-1 rounded-full border border-pauta bg-background px-3 focus-within:border-acao">
-                  <span className="text-[calc(11px*var(--escala-letra))] text-muted-fg">limite</span>
+                  <span className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">limite</span>
                   <input
                     aria-label={`Orçamento de ${linha.categoria.nome}`}
                     value={rascunho[linha.categoriaId] ?? ""}
@@ -298,7 +298,7 @@ export default function OrcamentoPagina() {
                 <Barra percentual={linha.percentual} />
               </div>
               {/* Etiqueta, nao frase: "restam X" e "passou X" dizem tudo. */}
-              <p className={cn("mt-1 text-[calc(11px*var(--escala-letra))]", linha.estourou ? "text-negativo" : "text-muted-fg")}>
+              <p className={cn("mt-1 text-[max(10px,calc(12px*var(--escala-letra)))]", linha.estourou ? "text-negativo" : "text-muted-fg")}>
                 {linha.estourou
                   ? `passou ${formatarMoeda(-linha.restanteCentavos)}`
                   : `restam ${formatarMoeda(linha.restanteCentavos)} · ${linha.percentual}%`}
@@ -309,7 +309,7 @@ export default function OrcamentoPagina() {
 
         {dados && dados.semOrcamento.length > 0 && (
           <div className="mt-5">
-            <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">
+            <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">
               Gastou e não estava no plano
             </p>
             <div className="mt-2 space-y-2">
@@ -334,7 +334,7 @@ export default function OrcamentoPagina() {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+            <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
               São as categorias em que o estouro nasce: dinheiro saiu sem limite definido.
             </p>
           </div>

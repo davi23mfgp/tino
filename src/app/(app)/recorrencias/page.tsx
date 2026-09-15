@@ -341,7 +341,7 @@ export default function Recorrencias() {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[calc(14px*var(--escala-letra))]">{recorrencia.descricao}</p>
-                      <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                      <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                         {PERIODOS.find((p) => p.valor === recorrencia.periodicidade)?.rotulo} · dia{" "}
                         {recorrencia.diaVencimento} · {recorrencia.conta.nome}
                         {recorrencia.categoria && ` · ${recorrencia.categoria.nome}`}
@@ -351,7 +351,7 @@ export default function Recorrencias() {
 
                     <div className="text-right">
                       <p className="text-[calc(14px*var(--escala-letra))] tabular-nums">{formatarMoeda(recorrencia.valorCentavos)}</p>
-                      <p className={cn("text-[calc(11px*var(--escala-letra))]", atrasada ? "text-atencao" : "text-muted-fg")}>
+                      <p className={cn("text-[max(10px,calc(12px*var(--escala-letra)))]", atrasada ? "text-atencao" : "text-muted-fg")}>
                         {atrasada ? "venceu" : "vence"} {formatarData(proxima)}
                       </p>
                     </div>

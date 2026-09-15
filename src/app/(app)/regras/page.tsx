@@ -283,7 +283,7 @@ export default function Regras() {
                   <span className="mx-2 text-muted-fg">vira</span>
                   {regra.categoria.nome}
                 </p>
-                <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                   {regra.acertos > 0 ? `${regra.acertos} lançamento(s) classificados` : "ainda não pegou nenhum"}
                   {regra.renomearPara && ` · renomeia para "${regra.renomearPara}"`}
                   {regra.regex && " · expressão regular"}

@@ -67,7 +67,7 @@ export default async function ContasAdmin({ searchParams }: { searchParams: Prom
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-[calc(13px*var(--escala-letra))]">
               <thead>
-                <tr className="border-b border-pauta text-left text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">
+                <tr className="border-b border-pauta text-left text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">
                   <th className="py-2 pr-3 font-normal">Conta</th>
                   <th className="py-2 pr-3 font-normal">Perfil</th>
                   <th className="py-2 pr-3 font-normal">Assinatura</th>
@@ -83,7 +83,7 @@ export default async function ContasAdmin({ searchParams }: { searchParams: Prom
                       <p>
                         {usuario.nome}
                         {usuario.admin && (
-                          <span className="ml-2 rounded-full border border-acao/40 px-2 py-0.5 text-[calc(10px*var(--escala-letra))] uppercase tracking-wide text-acao">
+                          <span className="ml-2 rounded-full border border-acao/40 px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-wide text-acao">
                             admin
                           </span>
                         )}

@@ -48,18 +48,18 @@ export function CategoriasComparadas({ linhas, limite = 8 }: { linhas: Linha[]; 
                 {linha.nome}
                 {/* Espaço explícito: sem ele, leitor de tela e cópia do texto
                     devolvem "Supermercadoessencial" numa palavra só. */}
-                {linha.essencial && <span className="ml-1.5 text-[calc(10px*var(--escala-letra))] text-muted-fg"> · essencial</span>}
+                {linha.essencial && <span className="ml-1.5 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg"> · essencial</span>}
               </span>
 
               <span className="text-[calc(13px*var(--escala-letra))] tabular-nums">{formatarMoeda(linha.totalCentavos)}</span>
 
               {linha.variacaoBps !== null ? (
-                <span className={cn("flex w-16 items-center justify-end gap-1 text-[calc(11px*var(--escala-letra))] tabular-nums", tom)}>
+                <span className={cn("flex w-16 items-center justify-end gap-1 text-[max(10px,calc(12px*var(--escala-letra)))] tabular-nums", tom)}>
                   <Icone className="size-3" />
                   {estavel ? "0%" : `${Math.abs(Math.round(linha.variacaoBps / 100))}%`}
                 </span>
               ) : (
-                <span className="w-16 text-right text-[calc(11px*var(--escala-letra))] text-muted-fg">novo</span>
+                <span className="w-16 text-right text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">novo</span>
               )}
             </div>
 
@@ -86,7 +86,7 @@ export function CategoriasComparadas({ linhas, limite = 8 }: { linhas: Linha[]; 
         )
       })}
 
-      <p className="pt-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+      <p className="pt-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
         A barra fina é o mês passado. Em despesa, cair é bom — por isso a queda aparece em verde.
       </p>
     </div>

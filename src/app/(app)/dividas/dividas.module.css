@@ -3,24 +3,24 @@
    cadastro, comparação de estratégias) só faz sentido depois dessas três. */
 
 .topo {
-  display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:26px; align-items:center;
-  padding:26px; border:1px solid var(--pauta); border-radius:24px;
+  display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:24px; align-items:center;
+  padding:24px; border:1px solid var(--pauta); border-radius:var(--raio-bloco);
   background:linear-gradient(135deg,color-mix(in oklab,var(--papel-1),var(--negativo) 9%),var(--papel-1) 60%);
 }
-.rotulo { font-size:calc(11px * var(--escala-letra)); text-transform:uppercase; letter-spacing:.14em; font-weight:650; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(12px * var(--escala-letra))); text-transform:uppercase; letter-spacing:.14em; font-weight:650; color:var(--texto-3); }
 .total { margin-top:8px; font-size:calc(clamp(32px,4.6vw,46px) * var(--escala-letra)); font-weight:680; line-height:1.03; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
-.apoio { margin-top:10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); max-width:44ch; }
+.apoio { margin-top:8px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); max-width:44ch; }
 
-.alvo { padding:18px; border-radius:18px; background:var(--papel-2); border:1px solid color-mix(in oklab,var(--acao),transparent 66%); }
-.alvo h2 { margin-top:6px; font-size:calc(19px * var(--escala-letra)); font-weight:650; letter-spacing:-.02em; }
-.alvo p { margin-top:6px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
-.acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.alvo { padding:16px; border-radius:var(--raio-cartao); background:var(--papel-2); border:1px solid color-mix(in oklab,var(--acao),transparent 66%); }
+.alvo h2 { margin-top:4px; font-size:calc(19px * var(--escala-letra)); font-weight:650; letter-spacing:-.02em; }
+.alvo p { margin-top:4px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 
 /* --- lista --- */
-.lista { display:grid; gap:10px; margin-top:16px; }
+.lista { display:grid; gap:8px; margin-top:16px; }
 .divida {
-  display:grid; grid-template-columns:4px minmax(0,1fr) auto; align-items:center; gap:14px;
-  padding:16px 18px; border:1px solid var(--pauta); border-radius:18px; background:var(--papel-1);
+  display:grid; grid-template-columns:4px minmax(0,1fr) auto; align-items:center; gap:12px;
+  padding:16px 16px; border:1px solid var(--pauta); border-radius:var(--raio-cartao); background:var(--papel-1);
 }
 /* A faixa lateral carrega o nível do juro: a pessoa varre a coluna e vê onde
    dói, sem ler uma taxa de cada vez. */
@@ -29,11 +29,11 @@
 .divida[data-peso="medio"] i { background:var(--atencao); }
 .divida[data-peso="leve"] i { background:var(--acao); }
 .divida strong { display:block; font-size:calc(15px * var(--escala-letra)); font-weight:620; }
-.meta { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:4px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.meta { display:flex; flex-wrap:wrap; gap:4px 8px; margin-top:4px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 .juroCaro { color:var(--negativo); font-weight:600; }
 .saldo { text-align:right; }
 .saldo b { display:block; font-size:calc(20px * var(--escala-letra)); font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.saldo small { display:block; margin-top:3px; font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.saldo small { display:block; margin-top:4px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .progresso { grid-column:2/-1; height:5px; border-radius:999px; background:var(--papel-3); overflow:hidden; }
 .progresso i { display:block; height:100%; border-radius:999px; background:var(--acao); }
 

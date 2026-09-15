@@ -473,7 +473,7 @@ export default function Simulador() {
               comparar={temHipotese ? base.meses : undefined}
             />
             {temHipotese && (
-              <p className="mt-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+              <p className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                 A linha cinza é o seu cenário de hoje; a área azul é com as hipóteses.
               </p>
             )}
@@ -512,7 +512,7 @@ export default function Simulador() {
                       )}
                     </div>
 
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                       <span>entra {formatarMoedaCurta(mes.receitasCentavos)}</span>
                       <span>vida {formatarMoedaCurta(mes.custoDeVidaCentavos)}</span>
                       {mes.parcelasCentavos > 0 && <span>parcelas {formatarMoedaCurta(mes.parcelasCentavos)}</span>}
@@ -528,7 +528,7 @@ export default function Simulador() {
                     </div>
 
                     {mes.eventos.length > 0 && (
-                      <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-acao">{mes.eventos.join(" · ")}</p>
+                      <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-acao">{mes.eventos.join(" · ")}</p>
                     )}
                   </div>
                 )

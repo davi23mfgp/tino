@@ -134,7 +134,7 @@ export function CanalWhatsApp({ disponivel, chaves, aoGerar, chaveNova }: Props)
       )}
 
       {conectada && (
-        <p className="mt-3 text-[calc(11px*var(--escala-letra))] text-muted-fg">
+        <p className="mt-3 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
           {conectada.usos} envio(s)
           {conectada.ultimoUso && ` · último em ${new Date(conectada.ultimoUso).toLocaleString("pt-BR")}`}
         </p>
@@ -155,7 +155,7 @@ function Selo({ estado }: { estado: "ligado" | "esperando" | "desligado" | "sem-
   return (
     <span
       className={cn(
-        "shrink-0 rounded-full px-2.5 py-1 text-[calc(11px*var(--escala-letra))]",
+        "shrink-0 rounded-full px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))]",
         estado === "ligado" ? "bg-positivo/15 text-positivo" : "bg-papel-2 text-muted-fg",
       )}
     >

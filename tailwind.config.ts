@@ -127,13 +127,16 @@ const config: Config = {
         "negativo-solido": "oklch(var(--lch-negativo-solido) / <alpha-value>)",
         "positivo-solido": "oklch(var(--lch-positivo-solido) / <alpha-value>)",
       },
+      // Os mesmos três degraus do CSS (ver `globals.css`): peça pequena,
+      // cartão, bloco de tela. `rounded-xl` e `rounded-2xl` apareciam em
+      // dezenas de telas abrindo 16 e 20px fora da escala.
       borderRadius: {
         sm: "8px",
-        md: "10px",
-        lg: "var(--radius)",
-        xl: "16px",
-        "2xl": "20px",
-        "3xl": "26px",
+        md: "var(--raio-campo)",
+        lg: "var(--raio-campo)",
+        xl: "var(--raio-cartao)",
+        "2xl": "var(--raio-cartao)",
+        "3xl": "var(--raio-bloco)",
       },
       boxShadow: {
         ficha: "var(--sombra-ficha)",

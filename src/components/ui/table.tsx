@@ -29,7 +29,7 @@ TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <th ref={ref} className={cn("h-11 px-4 text-left align-middle text-[calc(11px*var(--escala-letra))] font-medium uppercase tracking-wider text-muted-fg [&:has([role=checkbox])]:pr-0", className)} {...props} />
+    <th ref={ref} className={cn("h-11 px-4 text-left align-middle text-[max(10px,calc(12px*var(--escala-letra)))] font-medium uppercase tracking-wider text-muted-fg [&:has([role=checkbox])]:pr-0", className)} {...props} />
   )
 )
 TableHead.displayName = "TableHead"

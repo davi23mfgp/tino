@@ -227,7 +227,7 @@ export default function Dividas() {
                 <div className="linha-financeira">
                   <div className="min-w-0">
                     <p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{divida.credor}</p>
-                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                    <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                       {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
                       {divida.parcelaCentavos > 0 && ` · ${formatarMoeda(divida.parcelaCentavos)}/mês`}
                       {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
@@ -239,7 +239,7 @@ export default function Dividas() {
                       <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
                     </p>
                     {divida.jurosMensalBps > 0 && (
-                      <p className={cn("text-[calc(11px*var(--escala-letra))]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
+                      <p className={cn("text-[max(10px,calc(12px*var(--escala-letra)))]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
                         {formatarPercentual(divida.jurosMensalBps)} ao mês
                       </p>
                     )}
@@ -252,7 +252,7 @@ export default function Dividas() {
                   </div>
                 ) : null}
 
-                {divida.observacao && <p className="mt-2 text-[calc(11px*var(--escala-letra))] text-muted-fg">{divida.observacao}</p>}
+                {divida.observacao && <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{divida.observacao}</p>}
               </div>
             )
           })}
@@ -451,7 +451,7 @@ export default function Dividas() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[calc(14px*var(--escala-letra))]">{divida.credor}</p>
-                    <p className="text-[calc(11px*var(--escala-letra))] text-muted-fg">
+                    <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
                       {divida.jurosMensalBps > 0 ? `${formatarPercentual(divida.jurosMensalBps)} ao mês` : "sem juros informados"}
                       {quitacao && ` · quita no mês ${quitacao.mes}`}
                     </p>

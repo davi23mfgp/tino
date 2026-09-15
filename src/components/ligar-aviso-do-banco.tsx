@@ -92,7 +92,7 @@ export function LigarAvisoDoBanco({
       ) : (
         <>
           <div className="mt-3 rounded-[var(--raio-campo)] border border-acao/40 bg-acao/[0.07] p-3">
-            <p className="text-[calc(11px*var(--escala-letra))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
+            <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
               Cole isto no encaminhador
             </p>
             <p className="numero mt-2 break-all text-[calc(12px*var(--escala-letra))] leading-relaxed">{url}</p>
@@ -112,7 +112,7 @@ export function LigarAvisoDoBanco({
                 {testando ? "mandando…" : "mandar um aviso de teste"}
               </button>
             </div>
-            <p className="mt-2 text-[calc(11px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
+            <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-[color:var(--texto-3)]">
               Guarde agora: por segurança, o Tino não mostra esta chave de novo. Some da tela quando você sair.
             </p>
           </div>
@@ -139,7 +139,7 @@ export function LigarAvisoDoBanco({
         <li>4. Faça uma compra pequena e veja se ela aparece na fila aqui em cima.</li>
       </ol>
 
-      <p className="mt-2 text-[calc(11px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
+      <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-[color:var(--texto-3)]">
         Isto é Android. No iPhone o sistema não deixa nenhum app ler a notificação de outro — ali o caminho é
         compartilhar o aviso com o Tino, ou falar pelo WhatsApp.
       </p>
