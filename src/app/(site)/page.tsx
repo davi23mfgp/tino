@@ -64,6 +64,6 @@ export default async function Vitrine() {
       <section className="lp-secao lp-duvidas" id="duvidas"><div><span className="lp-tag">Ficou alguma dúvida?</span><h2>Vamos simplificar.</h2></div><div>{FAQ.map(([pergunta,resposta]) => <details key={pergunta}><summary>{pergunta}<Plus size={19} aria-hidden /></summary><p>{resposta}</p></details>)}</div></section>
       <section className="lp-secao lp-final"><Revelar><Leao tamanho={136} /><h2>Mais tino no dinheiro.<br />Mais espaço para a vida.</h2><Comecar texto={`Experimentar por ${dias} dias`} /></Revelar></section>
     </main>
-    <footer className="lp-secao lp-rodape"><Link href="/" className="lp-marca"><Leao tamanho={38} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><a href="#recursos">Recursos</a><a href="#planos">Preços</a><Link href="/login">Entrar</Link></nav><small>© {new Date().getFullYear()} Tino</small></footer>
+    <footer className="lp-secao lp-rodape"><Link href="/" className="lp-marca"><Leao tamanho={38} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><a href="#recursos">Recursos</a><a href="#planos">Preços</a><Link href="/privacidade">Privacidade</Link><Link href="/login">Entrar</Link></nav><small>© {new Date().getFullYear()} Tino</small></footer>
   </div>
 }

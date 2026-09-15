@@ -252,3 +252,23 @@
   .vitrine .lp *, .vitrine .lp *:before,.vitrine .lp *:after { animation:none!important; transition:none!important; scroll-behavior:auto!important }
   .vitrine .lp [data-reveal=pending] { opacity:1; transform:none }
 }
+
+/* ── Páginas legais (privacidade, termos) ──────────────────────────────────
+   Texto longo para ser lido de verdade: coluna estreita, linha alta e
+   hierarquia clara. Não herda o ritmo da vitrine — aqui ninguém está sendo
+   convencido de nada, está conferindo o que foi combinado. */
+.vitrine .lp-legal { max-width:760px; margin:0 auto; padding:120px 22px 90px }
+.vitrine .lp-legal-voltar { display:inline-block; margin-bottom:34px; font-size:14px; color:#9aa0a2 }
+.vitrine .lp-legal-voltar:hover { color:#fff }
+.vitrine .lp-legal h1 { font-size:clamp(34px,5vw,50px); letter-spacing:-.04em }
+.vitrine .lp-legal header p { margin-top:18px; font-size:17px; line-height:1.6; color:#b6b6b9 }
+.vitrine .lp-legal header small { display:block; margin-top:14px; font-size:12px; color:#7e8487 }
+.vitrine .lp-legal section { margin-top:48px; padding-top:28px; border-top:1px solid #ffffff14 }
+.vitrine .lp-legal h2 { font-size:21px; letter-spacing:-.03em }
+.vitrine .lp-legal section p { margin-top:14px; font-size:15px; line-height:1.65; color:#a9aeb0 }
+.vitrine .lp-legal footer { margin-top:52px; font-size:14px; color:#9aa0a2 }
+.vitrine .lp-legal a { text-decoration:underline; text-underline-offset:3px }
+@media (max-width:640px) {
+  .vitrine .lp-legal { padding:100px 18px 70px }
+  .vitrine .lp-legal section { margin-top:36px }
+}

@@ -12,6 +12,7 @@ import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
 import { ConfigAtalhoLancar } from "@/components/config-atalho-lancar"
+import { MeusDados } from "@/components/meus-dados"
 import { FotoDePerfil } from "@/components/foto-de-perfil"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -417,6 +418,14 @@ export default function Configuracoes() {
 
         <LinhaAjuste titulo="Avisos do Tino" descricao="O que ele observa e avisa sem você pedir" acao="Configurar">
           <VigiasConfig semMoldura />
+        </LinhaAjuste>
+
+        <LinhaAjuste
+          titulo="Meus dados"
+          descricao="Baixar tudo, ou apagar a conta de vez"
+          acao="Abrir"
+        >
+          <MeusDados />
         </LinhaAjuste>
 
         <LinhaAjuste titulo="Falar com o suporte" descricao="Relatar um problema ou pedir ajuda" acao="Abrir">
