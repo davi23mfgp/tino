@@ -46,7 +46,33 @@ Cada onda é entregável sozinha.
 ### Onda 1 — o assessor sai do app e vai até a pessoa
 *Nenhum fornecedor novo. Nenhuma decisão de dinheiro. Só código.*
 
-**1.1 Vigia que fala no WhatsApp.** Os alertas de `tino/alertas.ts` já sabem
+**1.1 Vigia que fala no WhatsApp.** 🔧 **Encanamento feito em 14/09/2026; o
+envio continua desligado, esperando decisão de dinheiro do Davi.**
+- **Onde ficou:** `src/lib/tino/avisar.ts` (decisão + envio),
+  `AvisoProativo` no schema, `Alerta.avisadoEm`, `enviarModelo` em
+  `lib/captura/whatsapp.ts`, rota `/api/tino/avisos` (GET ensaia, PUT
+  configura, POST manda).
+- **Silêncio é o padrão.** Sem linha em `AvisoProativo`, nenhum lar recebe
+  nada. Ninguém é cobrado sem ter dito sim antes.
+- **Freios, todos testados:** teto por dia (limite duro de 10), janela de
+  horário (funciona cruzando a meia-noite), severidade mínima, trava por
+  alerta (`avisadoEm` — a `chave` evitava repetir dentro do app, não impedia
+  mandar duas vezes), e **um assunto, uma mensagem**: dois alertas do mesmo
+  tipo viram um só.
+- **Achado no caminho, que muda o item:** fora da janela de 24h, texto livre
+  é DESCARTADO em silêncio pela Meta — a API responde 200 e a mensagem não
+  chega. Falar primeiro só funciona por modelo aprovado antes, e é esse que
+  é cobrado. Por isso `enviarModelo` é função separada de `responder`:
+  trocar uma pela outra por engano vira aviso que ninguém recebe.
+- **Achado de produto:** o ensaio contra a conta real mostrou dois avisos
+  "Falta dinheiro pela frente" seguidos, de meses diferentes — numa lista
+  fazem sentido, como mensagem seriam duas interrupções quase iguais. Daí a
+  regra de um por tipo.
+- **Falta só a decisão:** com `WHATSAPP_MODELO_AVISO` preenchido e o canal
+  conectado, ele passa a mandar. Sem isso roda inteiro e devolve o que teria
+  mandado, com o motivo.
+
+**Pedido original:** Os alertas de `tino/alertas.ts` já sabem
 o que dizer; hoje morrem na tela. Passam a sair pelo canal que a pessoa
 escolher, no horário que ela escolher.
 - Depende de: template de mensagem aprovado pela Meta (mensagem iniciada pela

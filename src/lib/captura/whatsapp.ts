@@ -54,6 +54,60 @@ export async function responder(telefone: string, texto: string) {
   })
 }
 
+/**
+ * Fala primeiro, fora da janela de 24h.
+ *
+ * Quando a pessoa escreve, abre uma janela de serviço de 24h em que o Tino
+ * pode responder texto livre de graça. **Passada essa janela, texto livre é
+ * silenciosamente descartado pela Meta** — a mensagem não chega, e a API
+ * responde 200 assim mesmo. A única forma de falar primeiro é um modelo
+ * aprovado antes pela Meta, e essa mensagem é cobrada.
+ *
+ * Por isso esta função é separada de `responder`: não é a mesma coisa nem no
+ * preço nem no que chega do outro lado, e trocar uma pela outra por engano
+ * significa aviso que ninguém recebe ou conta que ninguém esperava.
+ *
+ * `variaveis` entram na ordem em que aparecem no modelo aprovado ({{1}},
+ * {{2}}, …).
+ */
+export async function enviarModelo(
+  telefone: string,
+  modelo: string,
+  variaveis: string[],
+  idioma = "pt_BR",
+): Promise<boolean> {
+  const resposta = await fetch(`${BASE}/${numeroDoBot()}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: telefone,
+      type: "template",
+      template: {
+        name: modelo,
+        language: { code: idioma },
+        components: variaveis.length
+          ? [{ type: "body", parameters: variaveis.map((texto) => ({ type: "text", text: texto })) }]
+          : [],
+      },
+    }),
+  })
+
+  if (!resposta.ok) {
+    // O corpo do erro da Meta diz qual é o problema (modelo não aprovado,
+    // número fora da lista, janela). Sem isso o diagnóstico vira adivinhação.
+    console.error("[tino] a Meta recusou o modelo", modelo, await resposta.text().catch(() => ""))
+    return false
+  }
+
+  return true
+}
+
+/** O modelo aprovado que carrega o aviso. Sem ele, o Tino não fala primeiro. */
+export function modeloDeAvisoConfigurado(): string | null {
+  return process.env.WHATSAPP_MODELO_AVISO || null
+}
+
 /** `<b>` do Telegram vira `*` do WhatsApp; o resto das marcações cai fora. */
 export function paraWhatsApp(texto: string): string {
   return texto

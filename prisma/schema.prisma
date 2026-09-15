@@ -283,6 +283,7 @@ model Lar {
   conexoes        ConexaoOpenFinance[]
   alertas         Alerta[]
   vigiaConfigs    VigiaConfig[]
+  avisoProativo   AvisoProativo?
   conversas       Conversa[]
   meiPerfil       MeiPerfil?
   meiCompetencias MeiCompetencia[]
@@ -880,6 +881,12 @@ model Alerta {
   chave    String
   criadoEm DateTime @default(now())
 
+  /// Quando este aviso saiu do app e foi entregue por mensagem. Nulo é "ainda
+  /// não saiu". É o que impede o mesmo alerta de ser mandado duas vezes — a
+  /// `chave` já evita repetir dentro do app, mas mensagem cobrada precisa de
+  /// uma trava própria, no momento do envio.
+  avisadoEm DateTime?
+
   /// Quando a pessoa usou "Limpar tudo". Aviso dispensado sai da lista e NÃO
   /// volta enquanto o conteúdo dele não mudar — `atualizarAlertas` compara o
   /// texto recalculado com o guardado e só reabre quando o motivo é outro.
@@ -894,6 +901,43 @@ model Alerta {
 /// Liga/desliga por TIPO de alerta — os "vigias" do redesign de 07/09/2026.
 /// Ausência de linha = ligado (o padrão é vigiar tudo); só existe registro
 /// pra quem desligou algum. Isso poupa criar 6 linhas em branco por lar novo.
+/// Como e quando o Tino pode falar primeiro.
+///
+/// Uma linha por lar. Sem linha, ele não fala — silêncio é o padrão, porque
+/// mensagem iniciada pela empresa é cobrada pela Meta e ninguém pediu para ser
+/// cobrado sem dizer sim antes.
+model AvisoProativo {
+  id    String @id @default(cuid())
+  larId String @unique
+  lar   Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+
+  canal CanalAviso @default(NENHUM)
+
+  /// Teto de mensagens por dia. Existe por duas razões, e as duas importam:
+  /// cada mensagem custa dinheiro, e um assessor que fala demais deixa de ser
+  /// lido.
+  limiteDiario Int @default(3)
+
+  /// Janela em que pode falar, hora local do lar (0–23). Fora dela o aviso
+  /// espera — ninguém quer ser acordado por aviso de orçamento.
+  horaInicio Int @default(9)
+  horaFim    Int @default(21)
+
+  /// Só avisos daqui para cima saem por mensagem. Dentro do app continuam
+  /// aparecendo todos.
+  severidadeMinima SeveridadeAlerta @default(ATENCAO)
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+enum CanalAviso {
+  /// O Tino só fala quando perguntado. Padrão.
+  NENHUM
+  WHATSAPP
+  TELEGRAM
+}
+
 model VigiaConfig {
   id     String @id @default(cuid())
   larId  String
