@@ -32,3 +32,16 @@
 .proximosPassos b{font-size:calc(16px * var(--escala-letra));font-weight:650;font-variant-numeric:tabular-nums;text-align:right;color:var(--acao)}
 .proximosPassos b small{display:block;font-size:calc(10px * var(--escala-letra));font-weight:500;color:var(--texto-3)}
 .tituloResumo{display:flex;align-items:center;gap:12px}
+
+/* O próximo passo, colado na conclusão do mês. Pílula da cor de ação com
+   texto do fundo — o mesmo par já calculado do botão principal (verde da
+   marca hospeda texto preto, nunca branco). */
+.proximoPasso {
+  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
+  min-height:40px; padding:0 16px; border-radius:var(--raio-pilula);
+  background:var(--acao); color:var(--background);
+  font-size:calc(13px * var(--escala-letra)); font-weight:620;
+  transition:opacity var(--tempo) var(--curva);
+}
+.proximoPasso:hover { opacity:.88; }
+.proximoPasso svg { width:15px; height:15px; }

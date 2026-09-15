@@ -12,6 +12,7 @@ import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { orcamentoInicialCentavos } from "@/lib/orcamento-cartao"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
+import { Abertura } from "@/components/abertura"
 import { AjudaCartao } from "@/components/ajuda-cartao"
 import { CompraCartaoForm } from "@/components/compra-cartao-form"
 import { Importador } from "@/components/importador"
@@ -70,7 +71,28 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
     finally { setOcupado(false) }
   }
 
+  // Quantos dias faltam para o vencimento deste cartão. A tela mostrava "vence
+  // dia 12" — insumo: quem olha quer saber se é agora ou daqui a três semanas.
+  const diasAteVencer = (() => {
+    if (!cartao.diaVencimento) return null
+    const hoje = new Date()
+    const alvo = new Date(hoje.getFullYear(), hoje.getMonth(), cartao.diaVencimento)
+    if (alvo < hoje) alvo.setMonth(alvo.getMonth() + 1)
+    return Math.round((alvo.getTime() - hoje.getTime()) / 86_400_000)
+  })()
+
   return <div className={estilos.pagina}>
+    <Abertura
+      rotulo="Cartão"
+      titulo={
+        diasAteVencer === null ? (
+          <>A fatura de {rotuloCompetencia(mes, true)} do {cartao.nome} é <em>{formatarMoeda(resumo.saldo)}</em>.</>
+        ) : (
+          <>Sua próxima fatura é <em>{formatarMoeda(resumo.saldo)}</em> e vence em {diasAteVencer} {diasAteVencer === 1 ? "dia" : "dias"}.</>
+        )
+      }
+      apoio={<>{cartao.nome}{cartao.diaFechamento ? <> · fecha dia {cartao.diaFechamento}</> : null}</>}
+    />
     <section className={estilos.topo}>
       <div className={estilos.carteira} aria-label="Seus cartões">
         {cartoes.map((linha, indice) => <button

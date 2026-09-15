@@ -62,7 +62,7 @@ novo. Sem eles, cada tela reinventa o mesmo desenho.
   legendas em frase viram etiqueta; `Caixa no vermelho` aponta problema sem
   botão; a divisão da renda mostra percentual sem dizer o aporte a fazer.
 
-## Onda 2 — as telas de decisão (maior ganho por esforço)
+## Onda 2 — as telas de decisão — FEITA em 15/09/2026
 
 ### `/painel` (início)
 Abre com "Resultado de <mês>" e a dupla Entrou/Saiu. É a primeira tela do app
@@ -154,3 +154,19 @@ Só nas telas de cada onda, não no app inteiro de uma vez:
 `tsc`, `next build`, `npm test`, fumaça 63 rotas, e leitura no navegador
 medindo geometria pelo DOM (o screenshot desta máquina sai em escala diferente
 do viewport e engana a olho).
+
+## O que mudou do plano, ao encostar no código
+
+- `<Resposta>` não nasceu: `Heroi` já era isso e estava sem uso (ver acima).
+- O mapa "para onde vai quem quer resolver isto" era para viver na Análise;
+  virou `src/lib/tino/onde-resolver.ts` porque o painel precisa do mesmo
+  destino, e dois mapas iguais divergem na primeira mudança.
+- `/dividas` já respondia "de onde tiro o dinheiro" (botão para `/orcamento`);
+  o que faltava ali era só cortar o parágrafo de três linhas.
+- `/painel` não ganhou `<Abertura>`: o topo dele já tem rótulo, número grande
+  e apoio — a mesma anatomia. Trocou-se o rótulo ("Resultado de setembro", que
+  não responde nada) por "Sobrou/Faltou em setembro" e colou-se o próximo
+  passo do diagnóstico ao lado, que só existia dentro da Análise.
+- Defeito achado no caminho: `/mei` dizia "Você passou o limite do MEI em
+  R$ 0,00" para quem não tem limite cadastrado — alarme falso sobre dado que
+  falta. Agora pede o limite.

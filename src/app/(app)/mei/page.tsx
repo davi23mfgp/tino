@@ -7,7 +7,8 @@ import { Check, Plus } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Metrica, Pilula, Valor, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 
 /**
  * MEI.
@@ -168,12 +169,31 @@ export default function Mei() {
 
   return (
     <div className="space-y-4">
+      {/* O faturamento já era número grande, mas a resposta da tela é outra:
+          quanto ainda cabe até o fim do ano. O aviso de limite proporcional
+          era um parêntese no meio da frase e virou etiqueta. */}
+      <Abertura
+        rotulo={`MEI ${ano}`}
+        titulo={
+          // Sem limite cadastrado o número não existe, e "passou R$ 0,00" era
+          // o que a tela dizia — alarme falso em cima de dado que falta.
+          (perfil?.limiteAnualEfetivoCentavos ?? 0) <= 0 ? (
+            <>Informe seu limite anual para acompanhar o MEI.</>
+          ) : (situacao?.disponivelCentavos ?? 0) > 0 ? (
+            <>Ainda cabem <em>{formatarMoeda(situacao?.disponivelCentavos ?? 0)}</em> de faturamento neste ano.</>
+          ) : (situacao?.disponivelCentavos ?? 0) === 0 ? (
+            <>Você já usou <em>todo o limite</em> do MEI deste ano.</>
+          ) : (
+            <>Você passou o limite do MEI em <em>{formatarMoeda(Math.abs(situacao?.disponivelCentavos ?? 0))}</em>.</>
+          )
+        }
+        apoio={<>Faturou <b>{formatarMoeda(situacao?.faturamentoAnoCentavos ?? 0)}</b> de {formatarMoeda(perfil?.limiteAnualEfetivoCentavos ?? 0)}.</>}
+      >
+        {perfil?.limiteProporcional && <Pilula tom="atencao">limite proporcional aos meses de atividade</Pilula>}
+      </Abertura>
+
       <Cartao titulo={`Faturamento ${ano}`}>
         <Valor>{formatarMoeda(situacao?.faturamentoAnoCentavos ?? 0)}</Valor>
-        <p className="mt-1 text-sm text-muted-fg">
-          de {formatarMoeda(perfil?.limiteAnualEfetivoCentavos ?? 0)} de limite
-          {perfil?.limiteProporcional && " (proporcional aos meses de atividade neste primeiro ano)"}
-        </p>
 
         <div className="mt-4">
           <Barra percentual={situacao?.percentualUsado ?? 0} />

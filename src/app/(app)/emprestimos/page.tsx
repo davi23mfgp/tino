@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { cn } from "@/lib/utils"
 
 /**
@@ -101,11 +102,28 @@ export default function Emprestimos() {
 
   return (
     <div className={cn(estilos.pagina, "space-y-4")}>
-      <Cartao titulo="Vale a pena esse empréstimo?">
-        <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
-          Veja quanto recebe, quanto devolve e o impacto na renda.
-        </p>
+      {/* A tela abria com formulário e uma frase explicando o formulário. A
+          resposta vem primeiro: enquanto não há simulação, a pergunta da tela
+          fica no lugar dela; com simulação, o veredito é a manchete. */}
+      <Abertura
+        rotulo="Empréstimo"
+        titulo={
+          analise && parecer ? (
+            <>{parecer.texto}: <em>{formatarMoeda(analise.parcelaCentavos)}</em> por mês, {parcelas} vezes.</>
+          ) : (
+            <>Vale a pena esse empréstimo?</>
+          )
+        }
+        apoio={
+          analise ? (
+            <>Você recebe <b>{formatarMoeda(analise.liberadoCentavos)}</b> e devolve <b>{formatarMoeda(analise.totalPagoCentavos)}</b>. Compromete {(analise.comprometimentoBps / 100).toFixed(0)}% da renda.</>
+          ) : (
+            <>Preencha ao lado para ver quanto recebe, quanto devolve e o quanto sobra da sua renda.</>
+          )
+        }
+      />
 
+      <Cartao titulo="Os números do empréstimo">
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="space-y-1.5">
             <span className="text-[calc(11px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Valor</span>

@@ -9,6 +9,7 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { Cartao, Metrica } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { FluxoDeCaixaNoTempo } from "@/components/graficos"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
@@ -27,15 +28,28 @@ export default async function Projecao() {
   const comAcumulado = projetarComParcelas(panorama, compromissos)
   const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, comAcumulado)
 
+  const fechaAno = comAcumulado[comAcumulado.length - 1]?.acumuladoCentavos ?? 0
   const primeiroNegativo = comAcumulado.find((linha) => linha.acumuladoCentavos < 0)
   const maiorSaida = Math.max(...comAcumulado.map((linha) => linha.despesasCentavos + linha.parcelasCentavos), 1)
 
   return (
     <div className={cn(avancadas.pagina, "space-y-4")}>
-      <Cartao
-        titulo="Projeção de 12 meses"
-        acao={<span className="text-[calc(11px*var(--escala-letra))] text-muted-fg">pela sua média, com as parcelas já contratadas</span>}
-      >
+      {/* "Fecha o ano em" é a resposta da tela e estava do mesmo tamanho dos
+          três insumos que a produzem. Ela subiu para a abertura; saldo, receita
+          e despesa média continuam logo abaixo, no papel de explicar. */}
+      <Abertura
+        rotulo="Daqui a 12 meses"
+        titulo={
+          fechaAno >= 0 ? (
+            <>No ritmo de hoje, você fecha o ano com <em>{formatarMoeda(fechaAno)}</em>.</>
+          ) : (
+            <>No ritmo de hoje, você fecha o ano <em>{formatarMoeda(Math.abs(fechaAno))} no vermelho</em>.</>
+          )
+        }
+        apoio={<>Pela sua média, com as parcelas já contratadas.</>}
+      />
+
+      <Cartao titulo="O que sustenta essa conta">
         <div className="grade-valores">
           <Metrica
             rotulo="Saldo hoje"
@@ -44,11 +58,6 @@ export default async function Projecao() {
           />
           <Metrica rotulo="Receita média" valor={formatarMoeda(panorama.medias.receitaCentavos)} />
           <Metrica rotulo="Despesa média" valor={formatarMoeda(panorama.medias.despesaCentavos)} />
-          <Metrica
-            rotulo="Fecha o ano em"
-            valor={formatarMoeda(comAcumulado[comAcumulado.length - 1]?.acumuladoCentavos ?? 0)}
-            tom={(comAcumulado[comAcumulado.length - 1]?.acumuladoCentavos ?? 0) < 0 ? "negativo" : "positivo"}
-          />
         </div>
 
         {/* O aviso era um bloco de três linhas para dizer um mês e um valor, e

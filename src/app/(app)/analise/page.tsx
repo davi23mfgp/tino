@@ -10,6 +10,7 @@ import { montarDiagnostico, type Faixa } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { Barra, Cartao, Detalhe, Metrica, Pilula, Vazio } from "@/components/ui/painel"
 import { Abertura } from "@/components/abertura"
+import { ONDE_RESOLVER, ONDE_RESOLVER_INDICADOR } from "@/lib/tino/onde-resolver"
 import Link from "next/link"
 import { GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
@@ -37,27 +38,6 @@ const ROTULO_FAIXA: Record<Faixa, string> = {
   ATENCAO: "atenção",
   CRITICO: "crítico",
   SEM_DADO: "sem faixa",
-}
-
-/// Para onde vai quem quer resolver cada indicador. Um bloco que aponta
-/// problema sem dizer onde agir devolve o trabalho para a pessoa.
-const ONDE_RESOLVER: Record<string, { href: string; texto: string }> = {
-  "cheque-especial": { href: "/orcamento", texto: "Direcionar a sobra" },
-  renegociar: { href: "/dividas", texto: "Ver minhas dívidas" },
-  folga: { href: "/orcamento", texto: "Onde cortar" },
-  reserva: { href: "/reserva", texto: "Montar a reserva" },
-  classificar: { href: "/transacoes", texto: "Classificar pendentes" },
-  manter: { href: "/metas", texto: "Escolher uma meta" },
-}
-
-/// O mesmo para os indicadores, que têm chaves próprias.
-const ONDE_RESOLVER_INDICADOR: Record<string, { href: string; texto: string }> = {
-  comprometimento: { href: "/dividas", texto: "Ver minhas dívidas" },
-  endividamento: { href: "/dividas", texto: "Ver minhas dívidas" },
-  "taxa-poupanca": { href: "/investir", texto: "Quanto dá para guardar" },
-  liquidez: { href: "/reserva", texto: "Montar a reserva" },
-  "custo-fixo": { href: "/recorrencias", texto: "Rever contas fixas" },
-  essencial: { href: "/orcamento", texto: "Ajustar o orçamento" },
 }
 
 const ROTULO_SITUACAO = {

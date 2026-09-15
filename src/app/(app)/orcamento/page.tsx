@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { SelectNative } from "@/components/ui/select-native"
 import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
@@ -129,10 +130,44 @@ export default function OrcamentoPagina() {
 
   const limitePlanejado = Object.values(rascunho).reduce((soma, valor) => soma + (valor ? paraCentavos(valor) : 0), 0)
   const gasto = dados?.gastoTotalCentavos ?? 0
-  const estourados = dados?.linhas.filter((linha) => linha.estourou).length ?? 0
+  const estourados = dados?.linhas.filter((linha) => linha.estourou) ?? []
+  const usado = limitePlanejado > 0 ? Math.round((gasto / limitePlanejado) * 100) : 0
+  // A categoria que mais passou do limite, em reais — é ela que responde
+  // "onde está o problema", não a contagem de quantas estouraram.
+  const pior = [...estourados].sort((a, b) => (b.gastoCentavos - b.limiteCentavos) - (a.gastoCentavos - a.limiteCentavos))[0]
+  const diasQueFaltam = (() => {
+    const [ano, mes] = competencia.split("-").map(Number)
+    const hoje = new Date()
+    const mesmoMes = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes
+    if (!mesmoMes) return null
+    return new Date(ano, mes, 0).getDate() - hoje.getDate()
+  })()
 
   return (
     <div className="space-y-4">
+      {/* A tela abria pelo seletor de competência: filtro antes de resposta.
+          Agora ela diz quanto do plano já foi embora e onde está o estouro —
+          o seletor continua, no lugar de controle do cartão abaixo. */}
+      <Abertura
+        rotulo={`Orçamento de ${rotuloCompetencia(competencia)}`}
+        titulo={
+          limitePlanejado === 0 ? (
+            <>Você ainda não definiu um orçamento para este mês.</>
+          ) : diasQueFaltam !== null ? (
+            <>Você usou <em>{usado}%</em> do orçamento com {diasQueFaltam} {diasQueFaltam === 1 ? "dia" : "dias"} pela frente.</>
+          ) : (
+            <>Você usou <em>{usado}%</em> do orçamento deste mês.</>
+          )
+        }
+        apoio={
+          pior ? (
+            <><b>{pior.categoria.nome}</b> passou {formatarMoeda(pior.gastoCentavos - pior.limiteCentavos)} do limite.</>
+          ) : limitePlanejado > 0 ? (
+            <>Nenhuma categoria estourou. Sobram {formatarMoeda(limitePlanejado - gasto)} do plano.</>
+          ) : undefined
+        }
+      />
+
       <Cartao
         titulo="Orçamento"
         acao={
@@ -161,8 +196,8 @@ export default function OrcamentoPagina() {
           />
           <Metrica
             rotulo="Categorias estouradas"
-            valor={String(estourados)}
-            tom={estourados > 0 ? "atencao" : "neutro"}
+            valor={String(estourados.length)}
+            tom={estourados.length > 0 ? "atencao" : "neutro"}
           />
         </div>
 

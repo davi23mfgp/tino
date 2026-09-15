@@ -20,6 +20,7 @@ import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
+import { ONDE_RESOLVER } from "@/lib/tino/onde-resolver"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 
 export const dynamic = "force-dynamic"
@@ -64,12 +65,18 @@ export default async function Painel() {
   // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
   const quantidadePendente = totaisPendentes._count._all
   const totalPendente = totaisPendentes._sum.valorCentavos ?? 0
+  const primeiraPrioridade = diagnostico.prioridades[0]
+  const proximoPasso = primeiraPrioridade ? ONDE_RESOLVER[primeiraPrioridade.chave] : undefined
   const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 6)
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
     <section className={estilos.resumo} aria-labelledby="resumo-mes">
-      <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">Resultado de {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span>{panorama.aplicadoCentavos > 0 && <> · aplicado: <span className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</span></>}</p></div>
+      <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">{panorama.mes.sobraCentavos >= 0 ? "Sobrou" : "Faltou"} em {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span>{panorama.aplicadoCentavos > 0 && <> · aplicado: <span className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</span></>}</p>
+      {/* O número sozinho diz como você está, não o que fazer. A primeira
+          prioridade do diagnóstico já existia e só aparecia lá dentro da
+          Análise — aqui ela vira o próximo passo, com o destino junto. */}
+      {proximoPasso && <Link href={proximoPasso.href} className={estilos.proximoPasso}>{primeiraPrioridade.titulo}<ArrowRight /></Link>}</div>
       <dl className={estilos.metricas}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
     </section>
 

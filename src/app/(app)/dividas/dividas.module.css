@@ -42,3 +42,8 @@
   .divida { grid-template-columns:4px minmax(0,1fr); }
   .saldo { grid-column:2; text-align:left; }
 }
+
+/* As etiquetas embaixo do total. Substituem o parágrafo de três linhas que
+   dizia em palavras o que o número já diz — a diferença que importa vira
+   etiqueta, não frase. */
+.etiquetas { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }

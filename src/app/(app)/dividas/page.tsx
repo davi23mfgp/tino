@@ -10,7 +10,7 @@ import { Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Metrica, Pilula, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
@@ -181,10 +181,20 @@ export default function Dividas() {
           <div>
             <p className={topo.rotulo}>O que você deve hoje</p>
             <p className={topo.total}>{formatarMoeda(dados.totalCentavos)}</p>
-            <p className={topo.apoio}>
-              Em {abertas.length} {abertas.length === 1 ? "dívida" : "dívidas"}, com {formatarMoeda(dados.parcelaMensalCentavos)} saindo por mês em parcelas.
-              {dados.plano && dados.plano.quitacoes.length === abertas.length ? ` No ritmo atual você fecha tudo em ${dados.plano.meses} meses, pagando ${formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho.` : " O ritmo atual não fecha a conta: renegocie a taxa ou abra espaço no orçamento."}
-            </p>
+            {/* Eram três linhas de prosa dizendo o que cabe em três etiquetas.
+                A regra de mínimo de texto vale aqui: rótulo e número. */}
+            <div className={topo.etiquetas}>
+              <Pilula>{abertas.length} {abertas.length === 1 ? "dívida" : "dívidas"}</Pilula>
+              <Pilula>{formatarMoeda(dados.parcelaMensalCentavos)} por mês</Pilula>
+              {dados.plano && dados.plano.quitacoes.length === abertas.length ? (
+                <>
+                  <Pilula tom="positivo">livre em {dados.plano.meses} meses</Pilula>
+                  <Pilula tom="atencao">{formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho</Pilula>
+                </>
+              ) : (
+                <Pilula tom="negativo">o ritmo atual não fecha a conta</Pilula>
+              )}
+            </div>
           </div>
           {dados.ordem[0] && (
             <div className={topo.alvo}>
@@ -192,8 +202,8 @@ export default function Dividas() {
               <h2>{dados.ordem[0].credor}</h2>
               <p>
                 {dados.ordem[0].jurosMensalBps > 0
-                  ? `${formatarPercentual(dados.ordem[0].jurosMensalBps)} ao mês é o juro mais caro da sua fila: cada real extra aqui economiza mais do que em qualquer outra.`
-                  : "Sem juros enquanto for paga integral — mantenha em dia para não virar rotativo."}
+                  ? `Juro mais caro da fila: ${formatarPercentual(dados.ordem[0].jurosMensalBps)} ao mês. Cada real extra rende mais aqui.`
+                  : "Sem juros enquanto paga integral. Mantenha em dia para não virar rotativo."}
               </p>
               <div className={topo.acoes}>
                 <Button asChild><Link href="/plano">Ver o plano completo</Link></Button>
