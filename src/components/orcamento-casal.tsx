@@ -102,7 +102,7 @@ export function OrcamentoCasal({ gastoComumCentavos = 0 }: { gastoComumCentavos?
         ativo && gastoComumCentavos > 0 ? (
           <>De <em>{formatarMoeda(gastoComumCentavos)}</em> do casal, cabe {formatarMoeda(conta.partes[0]?.deviaCentavos ?? 0)} para {pessoas[0]?.nome || "você"}.</>
         ) : (
-          <>Divida o que é do casal do jeito que vocês combinaram.</>
+          <>Divida o que é do casal.</>
         )
       }
       apoio={ativo ? undefined : "Ligue para escolher a forma de dividir."}
