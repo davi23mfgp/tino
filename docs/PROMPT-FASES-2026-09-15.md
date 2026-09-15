@@ -24,7 +24,7 @@ Regras que valem para todas as fases:
 
 ---
 
-## Fase 1 — O encaminhador de notificação, pronto para colar
+## Fase 1 — O encaminhador de notificação — FEITA em 15/09/2026
 
 **Por que primeiro:** é a fase que entrega o "aproximou o cartão, o gasto
 aparece". Todo o resto do caminho já existe no código; falta a configuração
@@ -58,7 +58,7 @@ na primeira vez que falha.
 
 ---
 
-## Fase 2 — A notificação que volta sozinha (push)
+## Fase 2 — A notificação que volta sozinha — FEITA em 15/09/2026
 
 **O que existe hoje:** notificação **local**, criada quando o app abre
 (`src/components/atalho-de-lancar.tsx`, `public/sw.js`). Se o Android limpar a
@@ -126,7 +126,7 @@ fase só começa se ele reabrir.
 
 Nenhuma é visual, e todas já foram vistas e registradas.
 
-1. **`/parcelamentos` responde 307 e o teste de fumaça espera 200.** Virou
+1. ~~**`/parcelamentos` responde 307.**~~ **Resolvido em 15/09:** o redirect é intencional (a tela virou aba do cartão) e a expectativa do teste é que estava velha. O teste agora guarda o redirecionamento e confere o destino. 62 rotas, zero falha. *(era:)* Virou
    `redirect()` para `/cartoes?aba=parcelas` no commit `3af300e` (13/09). São
    62 de 63 passando. **Decisão do Davi:** ajustar a expectativa do teste, ou o
    redirect é que não deveria existir?

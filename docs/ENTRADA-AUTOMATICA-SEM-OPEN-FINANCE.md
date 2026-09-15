@@ -59,10 +59,28 @@ renovada a cada abertura do Tino, e o Android pode limpá-la junto com as
 outras. Push de verdade (VAPID, sem fornecedor pago) é o passo seguinte se o
 Davi quiser que ela volte sozinha.
 
-## Não feito
+## O push, feito em 15/09/2026
 
-- Push (VAPID + `PushSubscription` guardada) para a notificação renascer sem
-  abrir o app.
+A notificação volta sozinha uma vez por dia, mesmo com o app fechado. Sem
+fornecedor: o par VAPID identifica este servidor e o navegador entrega de
+graça.
+
+Peças: `prisma` → `InscricaoPush`; `src/lib/push.ts` (envio e limpeza de
+inscrição morta); `/api/push` (inscrever, consultar, desligar);
+`/api/cron/lembrete` (protegido por `CRON_SECRET`, corta pelo fuso do lar,
+uma vez por dia); `vercel.json` com o agendamento.
+
+**Para ligar em produção**, quatro variáveis na Vercel: `VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY`, `VAPID_ASSUNTO` e `CRON_SECRET`. O par já existe no `.env`
+local desta máquina. Gerar outro:
+`node -e "console.log(require('web-push').generateVAPIDKeys())"`.
+
+**Limite do plano gratuito da Vercel:** um disparo de cron por dia. Por isso o
+agendamento é `0 23 * * *` (20h em São Paulo) e o horário escolhido pela pessoa
+ainda não vale — a coluna `hora` já está no banco e passa a valer sozinha
+quando o agendamento virar `0 * * * *`.
+
+## Não feito
 - Um guia passo a passo do encaminhador de notificação no Android, com o app
   recomendado. Hoje a tela diz o que fazer, mas não mostra a configuração
   pronta para copiar.
