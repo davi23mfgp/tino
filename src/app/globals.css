@@ -344,6 +344,34 @@
 }
 
 @layer components {
+  /* A superfície clara.
+     
+     Um bloco por tela, e um só: a ação recomendada, a dívida da vez, a
+     próxima fatura. É o recurso que as referências usam para dizer "olhe
+     aqui" sem precisar de cor de alerta — no meio de uma tela escura, o
+     claro é o que o olho encontra primeiro.
+
+     Só funciona porque é raro. Dois blocos claros na mesma tela viram duas
+     chamadas e a hierarquia volta a ser plana, que é o problema que ela veio
+     resolver.
+
+     Contraste calculado, não escolhido no olho (OKLab → sRGB linear → WCAG):
+     título 16,74:1, apoio 7,53:1, texto do botão 17,24:1. */
+  .superficie-clara {
+    background: oklch(0.96 0 0);
+    color: oklch(0.18 0 0);
+    border: 1px solid oklch(0.88 0 0);
+    border-radius: var(--raio-bloco);
+  }
+  .superficie-clara .apoio-claro { color: oklch(0.42 0 0); }
+  .superficie-clara .acao-clara {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 0 20px; border-radius: var(--raio-pilula);
+    background: oklch(0.18 0 0); color: oklch(0.97 0 0);
+    font-weight: 620;
+  }
+  .superficie-clara .acao-clara:hover { opacity: .9; }
+
   /* A ficha (`.ficha`/`.ios-card`, mesma classe — nomes convivem pra não
      quebrar os dois vocabulários já espalhados pelo app).
 

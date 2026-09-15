@@ -14,6 +14,7 @@ import { Barra, Cartao, Metrica, Pilula, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
+import { Destaque } from "@/components/ui/destaque"
 
 /**
  * Dívidas.
@@ -197,19 +198,18 @@ export default function Dividas() {
             </div>
           </div>
           {dados.ordem[0] && (
-            <div className={topo.alvo}>
-              <p className={topo.rotulo}>Pague esta primeiro</p>
-              <h2>{dados.ordem[0].credor}</h2>
-              <p>
-                {dados.ordem[0].jurosMensalBps > 0
+            <Destaque
+              className={topo.alvo}
+              rotulo="Pague esta primeira"
+              titulo={dados.ordem[0].credor}
+              apoio={
+                dados.ordem[0].jurosMensalBps > 0
                   ? `Juro mais caro da fila: ${formatarPercentual(dados.ordem[0].jurosMensalBps)} ao mês. Cada real extra rende mais aqui.`
-                  : "Sem juros enquanto paga integral. Mantenha em dia para não virar rotativo."}
-              </p>
-              <div className={topo.acoes}>
-                <Button asChild><Link href="/plano">Ver o plano completo</Link></Button>
-                <Button asChild variant="outline"><Link href="/orcamento">De onde tirar o dinheiro</Link></Button>
-              </div>
-            </div>
+                  : "Sem juros enquanto paga integral. Mantenha em dia para não virar rotativo."
+              }
+              acao={{ href: "/plano", texto: "Ver o plano completo" }}
+              acaoSecundaria={{ href: "/orcamento", texto: "De onde tirar o dinheiro" }}
+            />
           )}
         </section>
       )}

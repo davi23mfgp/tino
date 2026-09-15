@@ -22,6 +22,7 @@ import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
 import { ONDE_RESOLVER } from "@/lib/tino/onde-resolver"
 import { AvisoNoHeroi } from "@/components/aviso-no-heroi"
+import { Destaque } from "@/components/ui/destaque"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 
 export const dynamic = "force-dynamic"
@@ -77,9 +78,21 @@ export default async function Painel() {
       {/* O número sozinho diz como você está, não o que fazer. A primeira
           prioridade do diagnóstico já existia e só aparecia lá dentro da
           Análise — aqui ela vira o próximo passo, com o destino junto. */}
-      <AvisoNoHeroi />
-      {proximoPasso && <Link href={proximoPasso.href} className={estilos.proximoPasso}>{primeiraPrioridade.titulo}<ArrowRight /></Link>}</div>
+      <AvisoNoHeroi /></div>
     </section>
+
+    {/* O próximo passo saiu do herói e virou o bloco claro da tela. Ele é a
+        única coisa do painel que pede AÇÃO, e no escuro ele se perdia entre
+        seis cartões do mesmo tom. Um bloco claro por tela — dois viram duas
+        chamadas e a hierarquia volta a ser plana. */}
+    {proximoPasso && primeiraPrioridade && (
+      <Destaque
+        rotulo="Seu próximo passo"
+        titulo={primeiraPrioridade.titulo}
+        apoio={primeiraPrioridade.acao}
+        acao={{ href: proximoPasso.href, texto: proximoPasso.texto }}
+      />
+    )}
 
     {/* Entrou, saiu e saúde saíram de dentro do herói. Eram três colunas ao
         lado do número, e o que deveria ser UMA resposta virava quatro coisas
