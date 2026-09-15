@@ -17,6 +17,7 @@ import { BuscaPaginasProvider } from "@/components/buscar-paginas"
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 import { RenovarAtalhoDeLancar } from "@/components/atalho-de-lancar"
+import { AlertasProvider } from "@/components/alertas-provider"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
@@ -55,7 +56,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
     // duplicado que existia antes dele.
     <BuscaPaginasProvider mei={false} apenasLoja={apenasLoja}>
-      <IdentidadesProvider><div className="area-do-app min-h-screen">
+      {/* Uma busca de alertas para a tela inteira: barra do topo, faixa
+          crítica, recado do Tino e dock liam a mesma lista separados. */}
+      <AlertasProvider><IdentidadesProvider><div className="area-do-app min-h-screen">
         {/* Alertas pessoais não são consultados pela conta do funcionário da loja. */}
         <div className="app-content mx-auto w-full max-w-6xl px-4">
           {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
@@ -94,7 +97,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
 
         <Toaster />
       </div>
-      </IdentidadesProvider>
+      </IdentidadesProvider></AlertasProvider>
     </BuscaPaginasProvider>
   )
 }

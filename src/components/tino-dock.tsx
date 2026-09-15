@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { buscar } from "@/lib/cliente"
 import { estadoPorAlertas, FRASE, TinoMascote } from "@/components/tino-mascote"
 import type { EstadoTino } from "@/components/tino-mascote"
+import { usarAlertas } from "@/components/alertas-provider"
 
 interface Turno {
   papel: "USUARIO" | "ASSISTENTE"
@@ -44,18 +45,15 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
    * mascote sorrindo por falta de dado mentiria sobre a situação, que é o
    * defeito que esta base mais evita.
    */
-  const lerEstado = useCallback(async () => {
-    try {
-      const alertas = await buscar<{ severidade: string }[]>("/api/tino/alertas")
-      setEstado(estadoPorAlertas(alertas))
-    } catch {
-      /* mantém o estado anterior */
-    }
-  }, [])
+  // Os alertas vêm do provedor — era a terceira requisição igual na mesma
+  // tela. Sem dado nenhum o estado anterior fica de pé, que é a regra deste
+  // componente: mascote sorrindo por falta de dado mentiria.
+  const { alertas, carregando } = usarAlertas()
 
   useEffect(() => {
-    lerEstado()
-  }, [lerEstado])
+    if (carregando) return
+    setEstado(estadoPorAlertas(alertas))
+  }, [alertas, carregando])
 
   async function perguntar(texto: string) {
     if (!texto.trim() || pensando) return

@@ -5,14 +5,7 @@ import Link from "next/link"
 
 import { buscar } from "@/lib/cliente"
 import { Banner } from "@/components/ui/banner"
-
-interface Alerta {
-  id: string
-  titulo: string
-  texto: string
-  severidade: "INFO" | "ATENCAO" | "CRITICO"
-  acaoRota: string | null
-}
+import { usarAlertas } from "@/components/alertas-provider"
 
 /**
  * Faixa de vigia crítica no topo do app — mapeamento do componente `banner`
@@ -25,13 +18,10 @@ interface Alerta {
  * quando o de verdade aparecer.
  */
 export function AvisoCritico() {
-  const [alerta, setAlerta] = useState<Alerta | null>(null)
-
-  useEffect(() => {
-    buscar<Alerta[]>("/api/tino/alertas")
-      .then((lista) => setAlerta(lista.find((item) => item.severidade === "CRITICO") ?? null))
-      .catch(() => setAlerta(null))
-  }, [])
+  // A lista vem do provedor: era a segunda de quatro requisições idênticas na
+  // mesma tela, e chegava num instante diferente das outras.
+  const { alertas } = usarAlertas()
+  const alerta = alertas.find((item) => item.severidade === "CRITICO") ?? null
 
   if (!alerta) return null
 

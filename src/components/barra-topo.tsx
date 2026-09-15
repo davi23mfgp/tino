@@ -12,30 +12,23 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FabAdicionar } from "@/components/fab-adicionar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
+import { usarAlertas } from "@/components/alertas-provider"
 import { showToast } from "@/components/ui/toast"
 
-interface Alerta { id:string; titulo:string; texto:string; lido:boolean; acaoRota:string|null; severidade:string; criadoEm?:string }
 export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean}) {
   const router=useRouter()
   const caminho=usePathname()
-  const [alertas,setAlertas]=useState<Alerta[]>([])
   const [aberto,setAberto]=useState(false)
-  const [erro,setErro]=useState(false)
-  const [carregando,setCarregando]=useState(true)
+  // Os avisos vêm do provedor: quatro componentes desta mesma tela pediam a
+  // mesma lista, cada um no seu tempo, e marcar como lido num não apagava a
+  // bolinha dos outros.
+  const {alertas,carregando,erro,recarregar,marcarLidos,dispensarTodos}=usarAlertas()
   const [salvando,setSalvando]=useState(false)
   const [soNovas,setSoNovas]=useState(false)
-  const carregar=useCallback(async()=>{
-    if(apenasLoja) return
-    setCarregando(true);setErro(false)
-    try { setAlertas(await buscar<Alerta[]>("/api/tino/alertas")) } catch { setErro(true) } finally { setCarregando(false) }
-  },[apenasLoja])
-  useEffect(()=>{void carregar()},[carregar])
   async function marcar(ids?:string[]) {
     setSalvando(true)
-    try {
-      await enviar("/api/tino/alertas",ids ? {ids} : {},"PATCH")
-      setAlertas(lista=>lista.map(a=>!ids || ids.includes(a.id) ? {...a,lido:true} : a))
-    } catch { showToast("Não foi possível marcar como lida. Tente novamente.",{variant:"error"}) }
+    try { await marcarLidos(ids) }
+    catch { showToast("Não foi possível marcar como lida. Tente novamente.",{variant:"error"}) }
     finally { setSalvando(false) }
   }
   /**
@@ -49,10 +42,8 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
    */
   async function limparTudo() {
     setSalvando(true)
-    try {
-      await enviar("/api/tino/alertas",{dispensar:true},"PATCH")
-      setAlertas([])
-    } catch { showToast("Nao foi possivel limpar os avisos. Tente novamente.",{variant:"error"}) }
+    try { await dispensarTodos() }
+    catch { showToast("Nao foi possivel limpar os avisos. Tente novamente.",{variant:"error"}) }
     finally { setSalvando(false) }
   }
   async function sair() {
@@ -106,7 +97,7 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
-            {carregando ? <p role="status" className="py-6 text-sm text-muted-fg">Carregando avisos…</p> : erro ? <div role="alert" className="py-6"><p className="text-sm">Não foi possível carregar os avisos.</p><button className="mt-2 min-h-11 text-sm underline" onClick={()=>void carregar()}>Tentar novamente</button></div> : <>
+            {carregando ? <p role="status" className="py-6 text-sm text-muted-fg">Carregando avisos…</p> : erro ? <div role="alert" className="py-6"><p className="text-sm">Não foi possível carregar os avisos.</p><button className="mt-2 min-h-11 text-sm underline" onClick={()=>void recarregar()}>Tentar novamente</button></div> : <>
               {!lista.length && <p className="py-10 text-center text-sm text-muted-fg">{soNovas ? "Nenhum aviso não lido." : "Nenhum aviso por aqui."}</p>}
               {lista.map(a=>(
                 <article key={a.id} className={"relative mb-2 flex items-start gap-3 overflow-hidden rounded-[14px] py-3 pl-4 pr-3 last:mb-0 " + (a.lido ? "border border-pauta bg-transparent" : "bg-papel-2")}>

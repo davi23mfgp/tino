@@ -6,6 +6,7 @@ import Link from "next/link"
 import { buscar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
 import { estadoPorAlertas, TinoMascote } from "@/components/tino-mascote"
+import { usarAlertas } from "@/components/alertas-provider"
 
 /**
  * O Tino acompanhando as contas.
@@ -69,20 +70,11 @@ const SEVERIDADE: Record<Alerta["severidade"], string> = {
 }
 
 export function TinoAcompanha() {
-  const [alertas, setAlertas] = useState<Alerta[] | null>(null)
-
-  const carregar = useCallback(async () => {
-    try {
-      setAlertas(await buscar<Alerta[]>("/api/tino/alertas"))
-    } catch {
-      // Falha de rede não vira "está tudo bem": fica sem opinião.
-      setAlertas(null)
-    }
-  }, [])
-
-  useEffect(() => {
-    carregar()
-  }, [carregar])
+  // Quarta e última requisição repetida da mesma tela — agora todas leem a
+  // mesma lista. Falha de rede continua não virando "está tudo bem": com erro,
+  // o componente fica sem opinião em vez de fingir calmaria.
+  const { alertas: lista, erro } = usarAlertas()
+  const alertas = erro ? null : lista
 
   // A fila do carrossel: o mais grave primeiro, e dentro da mesma gravidade a
   // ordem que o motor devolveu — ele já ordena por urgência. Isso importa
