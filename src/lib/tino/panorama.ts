@@ -128,7 +128,22 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   const janela = janelaDoMes(competencia, lar.diaInicioMes)
   const historicoCompetencias = ultimasCompetencias(12, competencia)
 
-  const [contas, transacoesMes, transacoesHistorico, orcamentos, metas, dividas, recorrencias, meiCompetencias] =
+  // Tudo que só depende do `larId` vai junto, numa rodada só. Cada `await`
+  // solto é uma ida e volta ao banco, e num Postgres gerenciado longe da
+  // função isso custa dezenas de milissegundos — a conta que fazia o painel
+  // demorar não era SQL lento, era quantidade de viagens.
+  const [
+    contas,
+    transacoesMes,
+    transacoesHistorico,
+    orcamentos,
+    metas,
+    dividas,
+    recorrencias,
+    meiCompetencias,
+    movimentosPorConta,
+    transferencias,
+  ] =
     await Promise.all([
       prisma.conta.findMany({ where: { larId, arquivada: false } }),
       prisma.transacao.findMany({
@@ -144,28 +159,28 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       prisma.divida.findMany({ where: { larId, quitada: false } }),
       prisma.recorrencia.findMany({ where: { larId, ativa: true }, orderBy: { proximaData: "asc" } }),
       lar.meiPerfil ? prisma.meiCompetencia.findMany({ where: { larId } }) : Promise.resolve([]),
+
+      // ── Saldos ────────────────────────────────────────────
+      // Transferência nunca entra em receita ou despesa: as duas pontas se
+      // anulam e contá-las inflaria receita e despesa no mesmo valor.
+      prisma.transacao.groupBy({
+        by: ["contaId", "tipo"],
+        where: { larId, pago: true, tipo: { in: ["RECEITA", "DESPESA"] } },
+        _sum: { valorCentavos: true },
+      }),
+
+      // Transferência não entra em receita nem em despesa — as duas pontas se
+      // anulam no resultado do mês — mas move saldo entre contas. Sem contá-la
+      // aqui, guardar dinheiro na poupança ou pagar a fatura do cartão não
+      // mudava saldo nenhum, e a fatura ficava aberta para sempre.
+      //
+      // A direção vem do vínculo: a ponta de destino é a que aponta para a de
+      // origem (`transferenciaParId`), como criado na rota de transações.
+      prisma.transacao.findMany({
+        where: { larId, pago: true, tipo: "TRANSFERENCIA" },
+        select: { contaId: true, valorCentavos: true, transferenciaParId: true },
+      }),
     ])
-
-  // ── Saldos ────────────────────────────────────────────────
-  // Transferência nunca entra em receita ou despesa: as duas pontas se anulam
-  // e contá-las inflaria receita e despesa no mesmo valor.
-  const movimentosPorConta = await prisma.transacao.groupBy({
-    by: ["contaId", "tipo"],
-    where: { larId, pago: true, tipo: { in: ["RECEITA", "DESPESA"] } },
-    _sum: { valorCentavos: true },
-  })
-
-  // Transferência não entra em receita nem em despesa — as duas pontas se
-  // anulam no resultado do mês — mas move saldo entre contas. Sem contá-la
-  // aqui, guardar dinheiro na poupança ou pagar a fatura do cartão não mudava
-  // saldo nenhum, e a fatura ficava aberta para sempre.
-  //
-  // A direção vem do vínculo: a ponta de destino é a que aponta para a de
-  // origem (`transferenciaParId`), como criado na rota de transações.
-  const transferencias = await prisma.transacao.findMany({
-    where: { larId, pago: true, tipo: "TRANSFERENCIA" },
-    select: { contaId: true, valorCentavos: true, transferenciaParId: true },
-  })
 
   const saldoPorConta = contas.map((conta) => {
     const entradas = movimentosPorConta.find((m) => m.contaId === conta.id && m.tipo === "RECEITA")?._sum.valorCentavos ?? 0
