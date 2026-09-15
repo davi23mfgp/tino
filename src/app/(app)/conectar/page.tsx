@@ -1,21 +1,20 @@
-import { sessaoDaPagina } from "@/lib/pagina"
-import { estadoOpenFinance } from "@/lib/open-finance/provedor"
-
-import { TelaConectar } from "./tela-conectar"
+import { SemOpenFinance } from "@/components/sem-open-finance"
 
 export const dynamic = "force-dynamic"
 
-export const metadata = { title: "Conectar banco · Tino" }
+export const metadata = { title: "Entrada automática · Tino" }
 
 /**
- * Conectar banco (Open Finance).
+ * Como o gasto entra sozinho.
  *
- * O estado vem do servidor para a primeira pintura já sair certa: quem tem
- * banco ligado nunca vê o convite piscar antes da lista de contas.
+ * Esta página era o convite do Open Finance. Em 15/09/2026 o Davi tirou o Open
+ * Finance de cena por custo — o agregador é cobrado por conta conectada, e não
+ * há assinante suficiente para pagar isso ainda. O código do provedor continua
+ * no repositório (`src/lib/open-finance/`), desligado: quando houver dinheiro,
+ * é só voltar a apontar esta rota para `TelaConectar`.
+ *
+ * Enquanto isso, a página mostra os caminhos que existem e custam zero.
  */
-export default async function ConectarPagina() {
-  const sessao = await sessaoDaPagina()
-  const estado = await estadoOpenFinance(sessao.larId)
-
-  return <TelaConectar inicial={estado} />
+export default function EntradaAutomatica() {
+  return <SemOpenFinance />
 }

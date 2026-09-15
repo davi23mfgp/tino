@@ -153,6 +153,11 @@ export function lerNotificacao(texto: string, agora = new Date()): NotificacaoLi
       // estabelecimentos diferentes para as regras de categoria.
       .replace(/\s*(?:parcelad[ao]\s*)?(?:em\s+)?\d{1,2}\s*(?:\/|\s+de\s+)\s*\d{1,2}\s*(?:x|vezes|parcelas?)?\s*$/i, "")
       .replace(/\s*(?:em|no|na)?\s*\d+\s*x\s*$/i, "")
+      // O final do cartão também tem campo próprio, e vinha grudado quando o
+      // banco escreve o estabelecimento antes dele: "em PADARIA SAO JOSE -
+      // cartão final 4416" devolvia as duas coisas como nome do lugar, e a
+      // mesma padaria viraria um estabelecimento novo a cada cartão usado.
+      .replace(/\s*[-–·,]?\s*(?:no\s+)?cart[aã]o\s*(?:de\s*cr[eé]dito\s*)?(?:final|com\s*final)?\s*\d{4}\s*$/i, "")
       .replace(/[*_:-]+$/g, "")
       .trim()
 

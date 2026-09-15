@@ -90,10 +90,12 @@ export const NUCLEO: GrupoNav[] = [
     pergunta: "Extrato, anotar e importar",
     itens: [
       { rota: "/transacoes", rotulo: "Transações", Icone: Receipt },
-      // Conectar banco vem antes de Anotar e Importar por ser o caminho em
-      // que o Tino se enche sozinho — a mesma ordem de automação-primeiro
-      // que o "+" do celular já usa.
-      { rota: "/conectar", rotulo: "Conectar banco", Icone: Building2 },
+      // "Entrada automática" vem antes de Anotar e Importar por ser o caminho
+      // em que o Tino se enche sozinho — a mesma ordem de automação-primeiro
+      // que o "+" do celular já usa. O rótulo deixou de dizer "Conectar banco"
+      // em 15/09/2026: o Open Finance saiu de cena por custo, e prometer
+      // conexão que não existe é pior do que não oferecer nada.
+      { rota: "/conectar", rotulo: "Entrada automática", Icone: Building2 },
       { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
       { rota: "/importar", rotulo: "Importar", Icone: Upload },
     ],

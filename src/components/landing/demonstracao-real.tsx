@@ -9,7 +9,16 @@ const TELAS = [
   { arquivo: "extrato", nome: "Extrato", descricao: "Lançamentos, categorias e filtros do extrato." },
 ]
 
-/** Capturas do app, na conta demo. Nunca consulta dados de visitantes. */
+/**
+ * As telas do Tino na primeira dobra.
+ *
+ * Era um celular desenhado com a tela dentro. O aparelho ocupava metade da
+ * dobra para mostrar um retângulo de 340px — o produto aparecia pequeno
+ * justamente onde ele precisa aparecer grande. Agora é a plataforma em
+ * tamanho de plataforma, numa moldura de janela.
+ *
+ * Capturas do app, na conta demo. Nunca consulta dados de visitantes.
+ */
 export function DemonstracaoReal() {
   const [ativa, definirAtiva] = useState(0)
   const [pausada, definirPausada] = useState(false)
@@ -34,10 +43,13 @@ export function DemonstracaoReal() {
   return <div className="lp-demonstracao" ref={palco} data-pausada={pausada || reduzido}>
     <div className="lp-flutuante lp-flutuante-um"><span className="lp-ponto" /> Escola do Téo<small>Educação · 10 de setembro</small><strong>R$ 780,00</strong></div>
     <div className="lp-flutuante lp-flutuante-dois"><span>Fatura atual · Platinum</span><strong>R$ 579,00</strong><div className="lp-mini-bancos"><img src="/bancos/bb.ico" alt="Banco do Brasil" /><small>Fecha dia 28 · vence dia 6</small></div></div>
-    <div className="lp-aparelho" role="group" aria-label="Telas reais do aplicativo Tino com dados de demonstração">
-      <div className="lp-camera" aria-hidden="true" />
+    <div className="lp-janela" role="group" aria-label="Telas reais do aplicativo Tino com dados de demonstração">
+      <div className="lp-janela-barra" aria-hidden="true">
+        <i /><i /><i />
+        <span>tino.app</span>
+      </div>
       <div className="lp-visor">
-        {TELAS.map((tela, indice) => <img key={tela.arquivo} className="lp-tela-real" data-ativa={indice === ativa} src={`/demonstracao/${tela.arquivo}-mobile.png`} alt={`${tela.nome}: ${tela.descricao}`} aria-hidden={indice !== ativa} width={304} height={657} loading={indice === 0 ? "eager" : "lazy"} />)}
+        {TELAS.map((tela, indice) => <img key={tela.arquivo} className="lp-tela-real" data-ativa={indice === ativa} src={`/demonstracao/${tela.arquivo}-desktop.png`} alt={`${tela.nome}: ${tela.descricao}`} aria-hidden={indice !== ativa} width={1265} height={712} loading={indice === 0 ? "eager" : "lazy"} />)}
       </div>
     </div>
     <div className="lp-flutuante lp-flutuante-tres"><span>Antes de entrar no saldo</span><strong>3 compras para conferir</strong><small>Total de R$ 326,80</small></div>

@@ -36,6 +36,18 @@ describe("lerNotificacao — compras", () => {
     assert.equal(lida.estabelecimento, "NETFLIX")
   })
 
+  it("não gruda o final do cartão no nome do estabelecimento", () => {
+    // O Nubank escreve o cartão depois do lugar, separado por traço. Sem
+    // cortar, a mesma padaria virava um estabelecimento novo a cada cartão.
+    const lida = lerNotificacao(
+      "Nubank — Compra aprovada no crédito: R$ 34,90 em PADARIA SAO JOSE - cartão final 4416",
+      HOJE,
+    )
+    assert.equal(lida.valorCentavos, 3490)
+    assert.equal(lida.cartaoFinal, "4416")
+    assert.equal(lida.estabelecimento, "PADARIA SAO JOSE")
+  })
+
   it("separa a parcela do nome do estabelecimento", () => {
     const lida = lerNotificacao("Compra aprovada: R$ 300,00 em MAGAZINE LUIZA parcelada em 3/10", HOJE)
     assert.equal(lida.estabelecimento, "MAGAZINE LUIZA")

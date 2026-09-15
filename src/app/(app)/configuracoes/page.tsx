@@ -106,16 +106,6 @@ export default function Configuracoes() {
     } finally { setSalvandoConta(false) }
   }
 
-  async function conectarBanco() {
-    try {
-      const { url } = await enviar<{ url: string }>("/api/open-finance", {})
-      // A autenticação acontece no site do banco, nunca dentro do app.
-      window.location.href = url
-    } catch (erro) {
-      setMensagem(erro instanceof Error ? erro.message : "Não consegui iniciar a conexão.")
-    }
-  }
-
   async function sincronizar(conexaoId: string) {
     setMensagem("Sincronizando…")
     try {
@@ -340,7 +330,11 @@ export default function Configuracoes() {
           </Dialog>
         </LinhaAjuste>
 
-        <LinhaAjuste
+        {/* O Open Finance saiu de cena em 15/09/2026 por custo: o agregador
+            cobra por conta conectada. Quem já tem conexão continua vendo a
+            dela para sincronizar ou revogar — esconder conexão viva seria
+            pior do que mostrar. O convite para conectar saiu. */}
+        {(openFinance?.conexoes.length ?? 0) > 0 && <LinhaAjuste
           titulo="Conexão com o banco"
           descricao={conectados ? `Open Finance · ${conectados} conectado(s)` : "Open Finance · nenhum conectado"}
           acao="Configurar"
@@ -380,12 +374,15 @@ export default function Configuracoes() {
             ))}
           </div>
 
-          <Button size="sm" variant="outline" className="mt-3" onClick={conectarBanco}>
-            Conectar um banco
-          </Button>
-
           {mensagem && <p className="mt-2 text-[calc(13px*var(--escala-letra))] text-muted-fg">{mensagem}</p>}
-        </LinhaAjuste>
+        </LinhaAjuste>}
+
+        <LinhaAjuste
+          titulo="Entrada automática"
+          descricao="Como o gasto entra sem você digitar"
+          href="/conectar"
+          acao="Ver"
+        />
 
         <LinhaAjuste
           titulo="Assinatura"

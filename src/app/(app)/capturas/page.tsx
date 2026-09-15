@@ -2,13 +2,14 @@
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 
 import { useCallback, useEffect, useState } from "react"
-import { Check, Copy, Plus, Receipt, Send, Share2, Smartphone, X } from "lucide-react"
+import { Check, Copy, Plus, Receipt, Send, Share2, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { Abertura } from "@/components/abertura"
+import { LigarAvisoDoBanco } from "@/components/ligar-aviso-do-banco"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
 import { CanalWhatsApp } from "@/components/canal-whatsapp"
@@ -422,29 +423,11 @@ export default function Capturas() {
             </p>
           </div>
 
-          <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-            <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
-              <Smartphone className="size-4" /> Compras pelo aviso do banco
-            </p>
-            <ol className="mt-2 space-y-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-              <li>1. No Android, instale um encaminhador como MacroDroid ou Tasker e permita o acesso às notificações.</li>
-              <li>2. Gatilho: <b>Notificação recebida</b>, filtrando o app do seu banco.</li>
-              <li>
-                3. Ação: <b>Requisição HTTP POST</b> para
-                <code className="mx-1 rounded bg-papel-2 px-1.5 py-0.5">{endereco}/api/capturar</code>
-                com corpo JSON <code className="rounded bg-papel-2 px-1.5 py-0.5">{`{"titulo":"[app]","texto":"[texto]"}`}</code>
-              </li>
-              <li>
-                4. Cabeçalho <code className="rounded bg-papel-2 px-1.5 py-0.5">Authorization: Bearer SUA_CHAVE</code>.
-              </li>
-            </ol>
-            <button
-              onClick={() => criarChave("NOTIFICACAO")}
-              className="mt-3 flex items-center gap-1.5 rounded-full border border-acao/40 bg-acao/10 px-4 py-2 text-[calc(12px*var(--escala-letra))] text-acao"
-            >
-              <Plus className="size-3.5" /> gerar chave do celular
-            </button>
-          </div>
+          <LigarAvisoDoBanco
+            endereco={endereco}
+            chaveNova={chaveNova}
+            aoGerar={() => criarChave("NOTIFICACAO")}
+          />
 
           <div className="rounded-2xl border border-pauta bg-papel-2 p-4"><h3 className="font-semibold">Faturas por e-mail</h3><p className="mt-2 text-sm text-muted-fg">Receba a fatura diretamente no Tino e confira antes de importar.</p><a href="/cartoes" className="mt-3 inline-flex min-h-11 items-center font-medium text-acao">Configurar no cartão</a></div>
         </div>

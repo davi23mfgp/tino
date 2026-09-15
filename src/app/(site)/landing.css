@@ -28,18 +28,20 @@
 .vitrine .lp-hero-texto>small { display:block; color:#777b80; font-size:12px; margin-top:15px }
 .vitrine .lp-demonstracao { position:relative; max-width:1040px; margin:62px auto 0; padding-bottom:24px; isolation:isolate }
 .vitrine .lp-demonstracao:before { content:""; position:absolute; width:650px; height:650px; max-width:100%; left:50%; top:20px; transform:translateX(-50%); background:radial-gradient(ellipse,#12211c80,transparent 64%); z-index:-1 }
-.vitrine .lp-aparelho { width:340px; margin:auto; padding:24px 9px 12px; border:2px solid #5c5f60; border-radius:49px; background:linear-gradient(130deg,#333638,#08090a 13%,#0a0b0c 80%,#252829); box-shadow:0 0 0 3px #17191a,0 0 0 5px #292c2c,0 28px 90px #000; position:relative; animation:lp-aparelho-chegar 1.3s cubic-bezier(.2,.7,.2,1) both }
-.vitrine .lp-camera { position:absolute; width:65px; height:12px; background:#020303; border-radius:20px; left:50%; top:7px; transform:translateX(-50%) }
-.vitrine .lp-visor { overflow:hidden; aspect-ratio:304/657; position:relative; border-radius:27px 27px 34px 34px; background:#08090a }
-.vitrine .lp-tela-real { display:block; position:absolute; width:100%; height:100%; object-fit:cover; inset:0; opacity:0; transform:translateX(16px) scale(1.015); transition:opacity .8s,transform 1s cubic-bezier(.2,.7,.2,1) }
+.vitrine .lp-janela { width:min(100%,900px); margin:auto; border:1px solid #4a4f50; border-radius:18px; background:#111415; box-shadow:0 34px 90px #000a; overflow:hidden; position:relative; animation:lp-aparelho-chegar 1.3s cubic-bezier(.2,.7,.2,1) both }
+.vitrine .lp-janela-barra { display:flex; align-items:center; gap:7px; padding:11px 15px; border-bottom:1px solid #ffffff12; background:#181b1c }
+.vitrine .lp-janela-barra i { width:10px; height:10px; border-radius:50%; background:#33393a }
+.vitrine .lp-janela-barra span { margin:0 auto 0 -46px; font-size:12px; color:#7e8487 }
+.vitrine .lp-visor { overflow:hidden; aspect-ratio:1265/712; position:relative; background:#08090a }
+.vitrine .lp-tela-real { display:block; position:absolute; width:100%; height:100%; object-fit:cover; object-position:top center; inset:0; opacity:0; transform:translateX(16px) scale(1.015); transition:opacity .8s,transform .8s }
 .vitrine .lp-tela-real[data-ativa=true] { opacity:1; transform:none }
 .vitrine .lp-flutuante { position:absolute; z-index:2; text-align:left; padding:21px 24px; border:1px solid #ffffff19; border-radius:23px; background:linear-gradient(135deg,#171b1cdd,#0a0c0ded); backdrop-filter:blur(18px); box-shadow:0 18px 50px #0006,inset 0 1px 0 #ffffff08; font-size:17px; animation:lp-flutuar 6s ease-in-out infinite; }
 .vitrine .lp-flutuante small { display:block; font-size:12px; color:#92999a; margin-top:5px }
 .vitrine .lp-flutuante strong { display:block; font-size:18px; font-weight:400; letter-spacing:-.035em }
-.vitrine .lp-flutuante-um { top:130px; left:5%; transform:rotate(-4deg) }
-.vitrine .lp-flutuante-dois { right:0; top:310px; width:280px; animation-delay:-2s }
+.vitrine .lp-flutuante-um { top:64px; left:-10px; transform:rotate(-4deg) }
+.vitrine .lp-flutuante-dois { right:-12px; top:150px; width:280px; animation-delay:-2s }
 .vitrine .lp-flutuante-dois>span { font-size:12px; color:#999ea1 }
-.vitrine .lp-flutuante-tres { left:7%; top:500px; width:263px; animation-delay:-4s }
+.vitrine .lp-flutuante-tres { left:-4px; top:392px; width:263px; animation-delay:-4s }
 .vitrine .lp-flutuante-tres>span:first-child { font-size:12px; color:#9a9da0 }
 .vitrine .lp-ponto { display:inline-block; width:7px; height:7px; border-radius:50%; background:#82dbaa; margin-right:7px; box-shadow:0 0 15px #82dbaa55 }
 .vitrine .lp-mini-bancos { display:flex; align-items:center; gap:8px; margin-top:18px }
@@ -152,10 +154,10 @@
   .vitrine .lp-hero h1 { font-size:clamp(34px,6.5vw,52px) }
   .vitrine .lp-hero-texto p { font-size:16px }
   .vitrine .lp-demonstracao { margin-top:53px; max-width:600px }
-  .vitrine .lp-aparelho { width:300px }
+  .vitrine .lp-janela { width:100% }
   .vitrine .lp-flutuante { padding:14px 16px; border-radius:16px; font-size:13px }
-  .vitrine .lp-flutuante-um { left:2%; top:95px }
-  .vitrine .lp-flutuante-dois { right:1%; top:340px; width:210px }
+  .vitrine .lp-flutuante-um { left:-6px; top:-18px }
+  .vitrine .lp-flutuante-dois { right:-6px; bottom:44px; top:auto; width:210px }
   .vitrine .lp-flutuante-tres { display:none }
   .vitrine .lp-flutuante strong { font-size:14px }
   .vitrine .lp-confianca { gap:15px 28px; padding-top:25px; font-size:12px }
@@ -188,11 +190,11 @@
   .vitrine .lp-hero-texto { padding-inline:15px }
   .vitrine .lp-hero-texto p { font-size:15px; margin:24px 0 }
   .vitrine .lp-hero-texto>small { font-size:10px }
-  .vitrine .lp-aparelho { width:258px; border-radius:39px; padding:20px 7px 10px }
-  .vitrine .lp-visor { border-radius:23px 23px 29px 29px }
-  .vitrine .lp-flutuante-um { top:100px; left:-5px; font-size:11px; padding:11px 13px; max-width:160px; transform:rotate(-5deg) }
+  .vitrine .lp-janela { border-radius:14px }
+
+  .vitrine .lp-flutuante-um { top:-14px; left:-5px; font-size:11px; padding:11px 13px; max-width:160px; transform:rotate(-5deg) }
   .vitrine .lp-flutuante-um small { font-size:9px }
-  .vitrine .lp-flutuante-dois { top:370px; right:-7px; width:174px; transform:rotate(4deg); padding:12px }
+  .vitrine .lp-flutuante-dois { bottom:34px; top:auto; right:-7px; width:174px; transform:rotate(4deg); padding:12px }
   .vitrine .lp-flutuante-dois strong { font-size:13px }
   .vitrine .lp-mini-bancos { margin-top:10px; gap:5px }
   .vitrine .lp-mini-bancos img { width:20px; height:20px }

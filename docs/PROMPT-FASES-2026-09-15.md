@@ -83,28 +83,13 @@ existe em aplicativo nativo ou pelo WhatsApp.
 
 ---
 
-## Fase 3 — Etiqueta NFC de verdade
+## Fase 3 — ~~Etiqueta NFC~~ — CANCELADA pelo Davi em 15/09/2026
 
-**O que não dá, e não deve ser prometido:** interceptar o pagamento por
-aproximação. O toque passa pelo *secure element* / HCE e o Android não entrega
-esse evento a nenhum app de terceiro — nem nativo, nem PWA, nem Tasker. Quem
-resolve o "aproximou, apareceu" é a Fase 1.
-
-**O que dá:** um adesivo NFC na carteira ou atrás do celular que, ao encostar,
-abre `/lancar?modo=voz` já gravando. Quem dispara é a pessoa, não a maquininha.
-
-**Escopo:**
-
-1. Em Configurações, "Gravar minha etiqueta": usa Web NFC (`NDEFReader`, Chrome
-   no Android) para escrever a URL na etiqueta, sem app de terceiro.
-2. Detectar ausência de suporte e dizer o que fazer, em vez de sumir com o
-   botão.
-
-**Aceite:** encostar o celular na etiqueta abre a tela de lançar já ouvindo.
-
-**Custo:** o adesivo. É o único item deste documento que precisa de compra.
-
----
+Ele perguntou se dava para o pagamento por aproximação abrir o lançamento
+sozinho. Não dá: o toque passa pelo *secure element* / HCE e o Android não
+entrega esse evento a nenhum app de terceiro — nem nativo, nem PWA, nem Tasker.
+A alternativa era uma etiqueta NFC acionada pela pessoa, e ele dispensou. Quem
+resolve o "gastou, apareceu" é a Fase 1.
 
 ## Fase 4 — A landing no ritmo da referência
 
@@ -163,19 +148,20 @@ Sem código proposto: são escolhas dele.
 - **Campo de banco na simulação de empréstimo.**
 - **OCR de comprovante.** O `share_target` do manifesto já recebe imagem e nada
   lê pixel hoje. Custa biblioteca nova e erra bastante em foto de papel.
-- **Open Finance de verdade (Pluggy).** Continua sendo a única forma de trazer
-  o saldo da conta sozinho; tudo que as fases acima entregam é o lançamento.
-  `docs/PESQUISA-OPEN-FINANCE.md` tem o levantamento. É decisão de custo.
+- ~~**Open Finance (Pluggy).**~~ **Adiado pelo Davi em 15/09/2026, por custo.**
+  O agregador cobra por conta conectada e não há assinante suficiente ainda. O
+  convite saiu do app; o código do provedor continua em `src/lib/open-finance/`,
+  desligado, para o dia em que houver dinheiro. `docs/PESQUISA-OPEN-FINANCE.md`
+  guarda o levantamento.
 
 ---
 
-## Duas coisas para o Davi conferir no celular antes de qualquer fase
+## Para o Davi conferir no celular
 
-Ambas estão no ar em `main` e não consegui ver funcionando nesta máquina:
-
-1. A tela nova de `/conectar` sem agregador — aqui o `.env` roda
-   `OPEN_FINANCE_PROVIDER="sandbox"`, então a tela cai no convite, não no
-   fallback com os três caminhos.
-2. A notificação do atalho de lançar — a permissão fica em `default` na
-   automação do navegador. O que dá para afirmar é que o service worker
-   registra e ativa, e que `/lancar` grava a captura ponta a ponta.
+1. **A notificação do atalho de lançar.** A permissão fica em `default` na
+   automação do navegador, então o que dá para afirmar daqui é que o service
+   worker registra e ativa, e que `/lancar` grava a captura ponta a ponta.
+2. **O endereço do encaminhador**, em `/capturas` → "Compras pelo aviso do
+   banco": gerar, copiar e mandar o aviso de teste. O teste foi provado nesta
+   máquina (R$ 34,90, cartão final 4416, origem NOTIFICACAO), mas quem fecha o
+   ciclo é uma compra de verdade no celular dele.
