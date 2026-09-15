@@ -68,9 +68,15 @@ envio continua desligado, esperando decisão de dinheiro do Davi.**
   "Falta dinheiro pela frente" seguidos, de meses diferentes — numa lista
   fazem sentido, como mensagem seriam duas interrupções quase iguais. Daí a
   regra de um por tipo.
-- **Falta só a decisão:** com `WHATSAPP_MODELO_AVISO` preenchido e o canal
-  conectado, ele passa a mandar. Sem isso roda inteiro e devolve o que teria
-  mandado, com o motivo.
+- **DECIDIDO PELO DAVI EM 14/09/2026: não vai ter mensagem cobrada agora.**
+  "Não vai ter isso agora, deixe guardado, tudo vai ser pelo Groq por
+  enquanto que não tenho muitos assinantes." O encanamento fica dormindo —
+  como silêncio já é o padrão, ele não custa nada parado e não precisa ser
+  desfeito. Quando a base de assinantes justificar, é preencher
+  `WHATSAPP_MODELO_AVISO` e escolher o canal: nenhuma linha de código a mais.
+- **Consequência:** o item 1.3 (fatura vencendo + relatório) fica parado
+  junto, porque é exatamente uma mensagem iniciada pelo Tino. Os avisos
+  continuam aparecendo dentro do app, como sempre.
 
 **Pedido original:** Os alertas de `tino/alertas.ts` já sabem
 o que dizer; hoje morrem na tela. Passam a sair pelo canal que a pessoa
@@ -134,7 +140,8 @@ inteiro (fala → Whisper → leitura → valor): "Gastei 30 reais no Uber" → 
 Uber; "Paguei 120 reais na conta de luz" → 12000 | conta de luz; "Comprei pão,
 sete e cinquenta" → 750 | pão; "Quanto eu tenho hoje?" → nada, como deve ser.
 
-**1.3 Resumo do dia / da fatura sem pedir.** "Sua fatura vence hoje, quer o
+**1.3 Resumo do dia / da fatura sem pedir.** ⏸ **Parado por decisão de
+14/09/2026** — depende de mensagem iniciada pelo Tino, que é a parte cobrada. "Sua fatura vence hoje, quer o
 relatório?" é o vigia 1.1 com uma ação anexada. Reaproveita `montarPanorama`.
 
 **1.4 Achar documento por conversa.** "Você acha o comprovante do aluguel?" —
