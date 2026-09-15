@@ -9,6 +9,7 @@ import { buscar } from "@/lib/cliente"
 import { estadoPorAlertas, FRASE, TinoMascote } from "@/components/tino-mascote"
 import type { EstadoTino } from "@/components/tino-mascote"
 import { usarAlertas } from "@/components/alertas-provider"
+import { DitarGasto } from "@/components/ditar-gasto"
 
 interface Turno {
   papel: "USUARIO" | "ASSISTENTE"
@@ -107,10 +108,11 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
     <Dialog open={aberto} onOpenChange={setAberto}>
       <DialogTrigger asChild>
         {comoItem ? (
-          // Na barra lateral ele é um item de navegação como os outros: o
-          // mascote renderizado em miniatura virava um borrão dentro do
-          // círculo, e o rótulo não dizia que ali se conversa com ele.
-          <button className="app-nav-item"><span aria-hidden className="text-lg leading-none">🐷</span><span>Seu assistente Tino</span></button>
+          // Na barra lateral ele é um item de navegação como os outros. O
+          // emoji de porco que ficava aqui não era a marca do Tino — era um
+          // desenho de outro sistema, em outro estilo, do lado de ícones de
+          // traço. Agora é o próprio mascote, no tamanho dos outros ícones.
+          <button className="app-nav-item"><TinoMascote estado={estado} aria-hidden className="size-5 shrink-0" /><span>Seu assistente Tino</span></button>
         ) : (
           <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
             <TinoMascote estado={estado} className="size-8" />
@@ -179,9 +181,17 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
           onChange={(evento) => setPergunta(evento.target.value)}
           aria-label="Pergunta para o Tino"
           disabled={pensando}
-          placeholder="Pergunte sobre suas finanças…"
+          placeholder="Pergunte ou fale…"
           className="min-w-0 w-full rounded-full border border-pauta bg-background px-4 py-2.5 text-sm outline-none focus:border-acao/50"
         />
+
+        {/* Perguntar falando. Reaproveita o mesmo `DitarGasto` do lançamento —
+            ele já resolve os dois caminhos (reconhecimento do navegador quando
+            existe, gravar e transcrever quando não) e já pede a permissão do
+            microfone uma vez só. O que chega aqui é texto, e a pessoa confere
+            antes de enviar: transcrição erra, e enviar sozinho faria o Tino
+            responder uma pergunta que ninguém fez. */}
+        <DitarGasto compacto rotulo="a pergunta" aoTranscrever={(falado) => setPergunta((atual) => (atual ? `${atual} ${falado}` : falado))} />
         <button type="submit" disabled={pensando || !pergunta.trim()} aria-label="Enviar pergunta" className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-40"><Send className="size-4" /></button>
       </form>
       </DialogContent>

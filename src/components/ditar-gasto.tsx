@@ -44,6 +44,12 @@ function construtorDeFala(): (new () => ReconhecimentoDeFala) | null {
 export function DitarGasto({
   aoTranscrever,
   className,
+  /** Só o ícone, redondo, do tamanho dos outros botões de uma linha de campo.
+      O botão largo com a palavra "ditar" cabe embaixo de um formulário; ao
+      lado de um campo de conversa ele empurraria o campo para fora da tela. */
+  compacto = false,
+  /** O que se dita aqui. Vai para o leitor de tela e para a dica do botão. */
+  rotulo = "um gasto",
   /** Já entra gravando. É o caminho de quem tocou em "Ditar" na notificação
       e não deveria ter de procurar o microfone depois de abrir a tela. */
   iniciarSozinho = false,
@@ -51,6 +57,8 @@ export function DitarGasto({
   /** Recebe o texto falado. Quem chama decide o que fazer com ele. */
   aoTranscrever: (texto: string) => void
   className?: string
+  compacto?: boolean
+  rotulo?: string
   iniciarSozinho?: boolean
 }) {
   const [suportado, setSuportado] = useState(false)
@@ -198,16 +206,20 @@ export function DitarGasto({
         type="button"
         onClick={ouvindo ? terminar : comecar}
         disabled={enviando}
-        aria-label={ouvindo ? "Parar de gravar" : "Ditar um gasto"}
+        title={ouvindo ? "Parar de gravar" : `Ditar ${rotulo}`}
+        aria-label={ouvindo ? "Parar de gravar" : `Ditar ${rotulo}`}
         className={cn(
-          "toque flex items-center gap-2 rounded-full border px-4 py-2.5 text-[calc(13px*var(--escala-letra))] transition-colors",
+          "toque flex items-center gap-2 rounded-full border transition-colors",
+          compacto
+            ? "size-11 shrink-0 justify-center p-0"
+            : "px-4 py-2.5 text-[calc(13px*var(--escala-letra))]",
           ouvindo
             ? "border-negativo bg-negativo/10 text-negativo"
             : "border-pauta text-muted-fg hover:border-positivo/50 hover:text-foreground",
         )}
       >
         {ouvindo ? <Square className="size-4" /> : <Mic className="size-4" />}
-        {enviando ? "entendendo…" : ouvindo ? "ouvindo… toque para parar" : "ditar"}
+        {!compacto && (enviando ? "entendendo…" : ouvindo ? "ouvindo… toque para parar" : "ditar")}
       </button>
 
       {parcial && <p className="mt-2 text-[calc(13px*var(--escala-letra))] italic text-muted-fg">“{parcial}”</p>}
