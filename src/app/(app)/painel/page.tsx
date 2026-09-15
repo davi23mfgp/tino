@@ -101,7 +101,7 @@ export default async function Painel() {
       <dl className={estilos.numerosDeApoio}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
-      <Cabecalho rotulo="Crédito" titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
+      <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
       {cartoes.length ? <div className={estilos.listaCartoes}>{cartoes.map((cartao) => {
         const atual = valorDoMes(cartao.transacoes, competencia)
         // Fecha, vence e a proxima fatura: as tres perguntas de quem olha um
@@ -111,7 +111,7 @@ export default async function Painel() {
         const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
         const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
         const proxima = confirmadoProximo + previstoProximo
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}><span><small>Fecha</small><b>{cartao.diaFechamento ? `dia ${cartao.diaFechamento}` : "—"}</b></span><span><small>Vence</small><b>{cartao.diaVencimento ? `dia ${cartao.diaVencimento}` : "—"}</b></span><span><small title={previstoProximo ? `Inclui ${formatarMoeda(previstoProximo)} em parcelas previstas` : undefined}>{rotuloCompetencia(proximaCompetencia, true)}{previstoProximo ? " · prev." : ""}</small><b>{formatarMoeda(Math.max(0, proxima))}</b></span></span><ArrowRight className={estilos.seta} /></Link>
+        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoBanco} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties}><IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} /><span className={estilos.dadosLinha}><strong>{cartao.nome}</strong><small>{cartao.instituicao ?? "Cartão de crédito"}</small></span><span className={estilos.faturaAtual}><small>Fatura atual</small><strong>{formatarMoeda(Math.max(0, atual))}</strong></span><span className={estilos.proximas}><span><small>{diasAteVencer(cartao.diaVencimento) === null ? "Vencimento" : "Vence em"}</small><b>{diasAteVencer(cartao.diaVencimento) === null ? "não informado" : `${diasAteVencer(cartao.diaVencimento)} dias`}</b></span><span><small title={previstoProximo ? `Inclui ${formatarMoeda(previstoProximo)} em parcelas previstas` : undefined}>{rotuloCompetencia(proximaCompetencia, true)}</small><b>{formatarMoeda(Math.max(0, proxima))}</b></span></span><ArrowRight className={estilos.seta} /></Link>
       })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
@@ -122,7 +122,7 @@ export default async function Painel() {
     </section>}
 
     <div className={estilos.duasColunas}>
-      <section className={estilos.painel}><Cabecalho rotulo="Este mês" titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
+      <section className={estilos.painel}><Cabecalho titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
         {categorias.length ? <div className={estilos.categorias}>
           {/* Sem rosca. O gráfico do Recharts nascia com largura zero no
               celular: sobrava meia tela preta e um valor perdido no meio. A
@@ -146,7 +146,7 @@ export default async function Painel() {
           return <li key={linha.categoriaId ?? linha.nome}><Link href={`/transacoes?categoriaId=${linha.categoriaId ?? "sem"}`}><span className={estilos.cor} style={{ background: CORES[indice % CORES.length] }} /><span className={estilos.dadosLinha}><strong>{linha.nome}</strong><small>{orcamento ? `${percentual}% do orçamento` : "Definir orçamento"}</small></span><b>{formatarMoeda(linha.totalCentavos)}</b></Link><Barra percentual={percentual} /></li>
         })}</ul></div> : <p className={estilos.vazio}>Os gastos do mês aparecem aqui.</p>}
       </section>
-      <section className={estilos.painel}><Cabecalho rotulo="Últimos movimentos" titulo="Compras recentes" href="/transacoes" acao="Ver todas" />
+      <section className={estilos.painel}><Cabecalho titulo="Compras recentes" href="/transacoes" acao="Ver todas" />
         <div className={estilos.movimentos}>{[{ titulo: "No crédito", linhas: comprasCredito }, { titulo: "Em conta", linhas: despesasConta }].map((grupo) => <div key={grupo.titulo}><h3>{grupo.titulo}</h3>{grupo.linhas.length ? grupo.linhas.map((linha) => { const Icone = iconeDaCategoria(linha.categoria, "DESPESA"); return <Link href="/transacoes" key={linha.id}><span className={estilos.iconeLinha}><Icone /></span><span className={estilos.dadosLinha}><strong>{linha.descricao}</strong><small>{new Date(linha.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })} · {linha.conta.nome}</small></span><b>{formatarMoeda(linha.valorCentavos)}</b></Link> }) : <p>Nenhuma compra no período.</p>}</div>)}</div>
       </section>
     </div>
@@ -195,10 +195,36 @@ export default async function Painel() {
         )}
     </section>
 
-    {panorama.dividas.lista.length > 0 && <section className={estilos.painel}><Cabecalho rotulo="Plano de saída" titulo="Dívidas" href="/dividas" acao="Organizar dívidas" /><div className={estilos.dividas}>{panorama.dividas.lista.slice(0, 3).map((divida, indice) => <Link href="/dividas" key={divida.id}><span className={estilos.numeroEtapa}>{indice + 1}</span><span className={estilos.dadosLinha}><strong>{divida.credor}</strong><small>Parcela {formatarMoeda(divida.parcelaCentavos)}</small></span><b>{formatarMoeda(divida.saldoDevedorCentavos)}</b>{indice === 0 ? <span className={estilos.proxima}><CheckCircle2 /> Próxima ação</span> : <ArrowRight />}</Link>)}</div></section>}
+    {panorama.dividas.lista.length > 0 && <section className={estilos.painel}><Cabecalho titulo="Dívidas" href="/dividas" acao="Organizar dívidas" /><div className={estilos.dividas}>{panorama.dividas.lista.slice(0, 3).map((divida, indice) => <Link href="/dividas" key={divida.id}><span className={estilos.numeroEtapa}>{indice + 1}</span><span className={estilos.dadosLinha}><strong>{divida.credor}</strong><small>Parcela {formatarMoeda(divida.parcelaCentavos)}</small></span><b>{formatarMoeda(divida.saldoDevedorCentavos)}</b>{indice === 0 ? <span className={estilos.proxima}><CheckCircle2 /> Próxima ação</span> : <ArrowRight />}</Link>)}</div></section>}
   </div>
 }
 
-function Cabecalho({ rotulo, titulo, id, href, acao }: { rotulo: string; titulo: string; id?: string; href: string; acao: string }) {
-  return <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>{rotulo}</p><h2 id={id}>{titulo}</h2></div><Link href={href}>{acao} <ArrowRight /></Link></header>
+/**
+ * Cabeçalho de seção.
+ *
+ * O rótulo em caixa alta acima do título saiu. Eram seis só nesta tela
+ * ("CRÉDITO" acima de "Cartões e faturas", "ESTE MÊS" acima de "Para onde
+ * foi"), quase sempre dizendo em outra palavra o que o título já dizia. Caixa
+ * alta cansa de ler e, repetida, deixa de significar qualquer coisa.
+ *
+ * O texto vira apoio em caixa normal, abaixo do título, e só quando ele
+ * acrescenta alguma coisa — "o que entra, o que sai e o que sobra" explica;
+ * "crédito" não.
+ */
+/**
+ * Quantos dias faltam para a fatura vencer.
+ *
+ * "vence dia 6" é insumo: obriga a pessoa a olhar o calendário para saber se é
+ * agora ou daqui a três semanas. A tela responde a pergunta que ela ia fazer.
+ */
+function diasAteVencer(dia: number | null) {
+  if (!dia) return null
+  const hoje = new Date()
+  const alvo = new Date(hoje.getFullYear(), hoje.getMonth(), dia)
+  if (alvo < hoje) alvo.setMonth(alvo.getMonth() + 1)
+  return Math.round((alvo.getTime() - hoje.getTime()) / 86_400_000)
+}
+
+function Cabecalho({ rotulo, titulo, id, href, acao }: { rotulo?: string; titulo: string; id?: string; href: string; acao: string }) {
+  return <header className={estilos.cabecalhoSecao}><div><h2 id={id}>{titulo}</h2>{rotulo && <p className={estilos.apoioSecao}>{rotulo}</p>}</div><Link href={href}>{acao} <ArrowRight /></Link></header>
 }
