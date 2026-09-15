@@ -83,6 +83,12 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
   // Entrada por texto, arquivo e banco continua acessivel sem abas permanentes.
   const extras = [NUCLEO[1], ...gruposPara(Boolean(mei))]
   const principais = apenasLoja ? GRUPO_LOJA_FUNCIONARIO.itens.map(item => ({chave:item.rota, titulo:item.rotulo, itens:[item], pergunta:""})) : NUCLEO.slice(0,3)
+  // A barra lateral mostrava "Extrato" duas vezes: uma no trilho de cima e
+  // outra logo abaixo, como grupo recolhido com Anotar, Importar e Entrada
+  // automática dentro. O trilho de baixo do celular precisa dos três itens
+  // (é ele que sustenta o polegar), então a remoção vale só no desktop, onde
+  // o grupo já mostra tudo o que o atalho mostrava.
+  const trilhoLateral = principais.filter(grupo => !extras.includes(grupo))
   const secundario = !principais.some(grupo => grupo.itens.some(item => estaAtivo(caminho,item.rota)))
   async function sair() { await enviar("/api/auth/logout", {}); router.push("/login"); router.refresh() }
   return <>
@@ -91,7 +97,7 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
       <Link href={apenasLoja ? "/loja" : "/painel"} className="app-brand" aria-label="Tino — início"><TinoMarca className="size-9" /><span>tino.</span></Link>
       <p className="app-sidebar-caption">{apenasLoja ? "Sua loja" : "Seu dia a dia"}</p>
       <nav aria-label="Navegação principal" className="space-y-1">
-        {principais.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}
+        {trilhoLateral.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}
       </nav>
       {/* Os grupos ficam recolhidos, como eram dentro do "Mais": a barra
           mostra o app inteiro sem virar uma lista de vinte linhas. O grupo da

@@ -45,3 +45,27 @@
 }
 .proximoPasso:hover { opacity:.88; }
 .proximoPasso svg { width:15px; height:15px; }
+
+/* Os números que explicam o resultado. Saíram de dentro do herói — lá eles
+   competiam com a resposta, aqui eles a sustentam. Linha própria, tipografia
+   um degrau abaixo, e no celular os três cabem lado a lado. */
+.numerosDeApoio {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+}
+.numerosDeApoio>div {
+  padding:14px 16px; border-radius:16px; border:1px solid var(--pauta); background:var(--papel-1);
+}
+.numerosDeApoio dt {
+  display:block; font-size:calc(10px * var(--escala-letra)); color:var(--texto-3);
+  text-transform:uppercase; letter-spacing:.12em; font-weight:650;
+}
+.numerosDeApoio dd {
+  margin-top:6px; font-size:calc(19px * var(--escala-letra)); font-weight:620;
+  letter-spacing:-.02em; font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.numerosDeApoio dd small { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3) }
+@media(max-width:640px){
+  .numerosDeApoio { gap:8px }
+  .numerosDeApoio>div { padding:11px 12px }
+  .numerosDeApoio dd { font-size:calc(15px * var(--escala-letra)) }
+}

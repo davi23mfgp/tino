@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+
 import Link from "next/link"
 
 import { buscar } from "@/lib/cliente"
 import { Banner } from "@/components/ui/banner"
+import { usePathname } from "next/navigation"
+
 import { usarAlertas } from "@/components/alertas-provider"
 
 /**
@@ -18,6 +20,13 @@ import { usarAlertas } from "@/components/alertas-provider"
  * quando o de verdade aparecer.
  */
 export function AvisoCritico() {
+  // No painel o aviso vira etiqueta dentro do próprio herói. Uma faixa
+  // vermelha de largura inteira ANTES do número fazia o olho bater no
+  // problema antes de saber a situação — o contrário do princípio de tela,
+  // que manda situar primeiro e só então apontar o que está errado.
+  const caminho = usePathname()
+  if (caminho === "/painel") return null
+
   // A lista vem do provedor: era a segunda de quatro requisições idênticas na
   // mesma tela, e chegava num instante diferente das outras.
   const { alertas } = usarAlertas()

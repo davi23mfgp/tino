@@ -21,6 +21,7 @@ import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
 import { ONDE_RESOLVER } from "@/lib/tino/onde-resolver"
+import { AvisoNoHeroi } from "@/components/aviso-no-heroi"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 
 export const dynamic = "force-dynamic"
@@ -76,9 +77,15 @@ export default async function Painel() {
       {/* O número sozinho diz como você está, não o que fazer. A primeira
           prioridade do diagnóstico já existia e só aparecia lá dentro da
           Análise — aqui ela vira o próximo passo, com o destino junto. */}
+      <AvisoNoHeroi />
       {proximoPasso && <Link href={proximoPasso.href} className={estilos.proximoPasso}>{primeiraPrioridade.titulo}<ArrowRight /></Link>}</div>
-      <dl className={estilos.metricas}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
     </section>
+
+    {/* Entrou, saiu e saúde saíram de dentro do herói. Eram três colunas ao
+        lado do número, e o que deveria ser UMA resposta virava quatro coisas
+        do mesmo tamanho na mesma faixa. Aqui embaixo eles explicam, que é o
+        papel deles. */}
+      <dl className={estilos.numerosDeApoio}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho rotulo="Crédito" titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
