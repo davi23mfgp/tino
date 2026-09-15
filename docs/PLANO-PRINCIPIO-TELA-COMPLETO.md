@@ -40,7 +40,7 @@ Levantamento mecânico (27 rotas em `src/app/(app)`):
 Com esses quatro, cada tela abaixo vira trabalho de composição, não de CSS
 novo. Sem eles, cada tela reinventa o mesmo desenho.
 
-## Onda 1 — as três que o Davi já viu
+## Onda 1 — as três que o Davi já viu — FEITA em 15/09/2026
 
 ### `/analise`
 - Abre com `Parecer de <mês>` e 4 tiles de peso igual (Entrou/Saiu/Resultado/

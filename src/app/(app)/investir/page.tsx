@@ -5,8 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { buscar } from "@/lib/cliente"
 import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Cartao, Vazio } from "@/components/ui/painel"
+import { Cartao, Detalhe, Pilula, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
+import Link from "next/link"
 import { GraficoDaDivisao, GraficoDoCorte } from "@/components/graficos"
 import { corteViraPatrimonio } from "@/lib/tino/investir"
 import { cn } from "@/lib/utils"
@@ -103,66 +104,70 @@ export default function Investir() {
     <div className={estilos.pagina}>
       <CarteiraInvestimentos />
 
-      {/* A pergunta e a resposta dividem a mesma faixa: o controle à esquerda,
-          o número que ele produz à direita. */}
-      <section className={estilos.simulador}>
-        <div>
-          <p className={estilos.rotulo}>Simulação</p>
-          <p className={estilos.pergunta}>E se você guardar um pouco todo mês?</p>
-          <div className={estilos.controles}>
-            <span className={estilos.campoValor}>
-              <small>R$</small>
-              <input
-                aria-label="Valor guardado por mês"
-                inputMode="decimal"
-                value={corte}
-                onChange={(evento) => setCorte(evento.target.value)}
-              />
-            </span>
-            <div className={estilos.atalhos}>
-              {ATALHOS.map((valor) => (
-                <button key={valor} type="button" aria-pressed={corte === valor} onClick={() => setCorte(valor)}>
-                  {formatarMoeda(paraCentavos(valor), false)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className={estilos.resposta}>
-          <small>Você teria em {anosNumero} {anosNumero === 1 ? "ano" : "anos"}</small>
-          <strong>{formatarMoeda(futuro.patrimonioCentavos)}</strong>
+      {/* A entrada da seção, no desenho aprovado: a resposta primeiro, com o
+          número dela dentro da frase, e só depois os controles que a mudam. A
+          faixa manual de antes dizia a pergunta em cima e escondia a resposta
+          na coluna da direita, alinhada à direita — o olho batia no controle. */}
+      <Abertura
+        rotulo="Longo prazo"
+        titulo={<>Guardando {formatarMoeda(corteCentavos, false)} por mês, você teria <em>{formatarMoeda(futuro.patrimonioCentavos)}</em> em {anosNumero} {anosNumero === 1 ? "ano" : "anos"}.</>}
+        apoio={<>Você guardou <b>{formatarMoeda(futuro.aportadoCentavos)}</b>; os juros fizeram <b>{formatarMoeda(futuro.jurosCentavos)}</b>.</>}
+      >
+        <div className={estilos.controles}>
+          <span className={estilos.campoValor}>
+            <small>R$</small>
+            <input
+              aria-label="Valor guardado por mês"
+              inputMode="decimal"
+              value={corte}
+              onChange={(evento) => setCorte(evento.target.value)}
+            />
+          </span>
           <label className={estilos.prazo}>
             por
             <input aria-label="Por quantos anos" inputMode="numeric" value={anos} onChange={(evento) => setAnos(evento.target.value)} />
             anos
           </label>
-          <div className={estilos.decomposicao}>
-            <span>você guardou<b>{formatarMoeda(futuro.aportadoCentavos)}</b></span>
-            <span>os juros fizeram<b className="text-positivo">{formatarMoeda(futuro.jurosCentavos)}</b></span>
-          </div>
         </div>
-      </section>
+        <div className={estilos.atalhos}>
+          {ATALHOS.map((valor) => (
+            <button key={valor} type="button" aria-pressed={corte === valor} onClick={() => setCorte(valor)}>
+              {formatarMoeda(paraCentavos(valor), false)}
+            </button>
+          ))}
+        </div>
+      </Abertura>
 
+      {/* Rótulo e número. A frase que explicava cada tile saiu: ela repetia em
+          palavras o que o número já diz, contra a regra de mínimo de texto. O
+          que sobrou virou etiqueta — e o tile que aponta problema ganhou o
+          botão que resolve, em vez de só avisar. */}
       <div className={estilos.numeros}>
         <div className={cn(estilos.numero, sobra < 0 ? estilos.negativo : estilos.positivo)}>
           <p className={estilos.rotulo}>Sobra hoje</p>
           <strong>{formatarMoeda(sobra)}</strong>
-          <small>Média dos últimos meses. É daqui que sai o valor guardado.</small>
+          <div className="mt-2"><Pilula tom="neutro">média dos últimos meses</Pilula></div>
         </div>
         <div className={cn(estilos.numero, estilos.positivo)}>
           <p className={estilos.rotulo}>Em dois anos, a diferença</p>
           <strong>{formatarMoeda(dados?.corte.diferencaCentavos ?? 0)}</strong>
-          <small>Entre guardar {formatarMoeda(corteCentavos)} por mês e não guardar nada.</small>
+          <div className="mt-2"><Pilula tom="positivo">contra não guardar nada</Pilula></div>
         </div>
         <div className={cn(estilos.numero, vermelho && estilos.negativo)}>
           <p className={estilos.rotulo}>Caixa no vermelho</p>
           <strong>{vermelho ? `em ${vermelho} ${vermelho === 1 ? "mês" : "meses"}` : "não chega lá"}</strong>
-          <small>
-            {dados?.corte.mesQueSaiDoVermelho
-              ? `Guardando esse valor, o caixa sai do vermelho no mês ${dados.corte.mesQueSaiDoVermelho}.`
-              : "Mantendo o ritmo de hoje."}
-          </small>
+          {vermelho ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {dados?.corte.mesQueSaiDoVermelho && (
+                <Pilula tom="positivo">sai no mês {dados.corte.mesQueSaiDoVermelho} guardando isso</Pilula>
+              )}
+              <Link href="/orcamento" className="text-[calc(13px*var(--escala-letra))] font-medium text-acao underline-offset-4 hover:underline">
+                Cortar gasto
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-2"><Pilula tom="neutro">no ritmo de hoje</Pilula></div>
+          )}
         </div>
       </div>
 
@@ -174,7 +179,7 @@ export default function Investir() {
 
       <div className={estilos.duas}>
         <section className={estilos.bloco}>
-          <h2>Como sua renda se divide hoje</h2>
+          <h2>Onde colocar cada parte da renda</h2>
           {dados && (
             <>
               <div className="mt-4"><GraficoDaDivisao fatias={dados.divisaoSugerida} total={formatarMoeda(dados.receitaMensalCentavos)} /></div>
@@ -186,27 +191,22 @@ export default function Investir() {
                   </div>
                 ))}
               </div>
-              <p className={estilos.nota}>Referência do Grão (Grupo Primo). Parâmetro, não regra.</p>
+              <p className={estilos.nota}>Referência do Grão (Grupo Primo). Parâmetro, não regra. Cálculo, não recomendação.</p>
             </>
           )}
         </section>
       </div>
 
-      <Accordion type="single" collapsible>
-        <AccordionItem value="conta">
-          <AccordionTrigger>Como esta conta é feita</AccordionTrigger>
-          <AccordionContent>
-            <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
-              O patrimônio é calculado a {formatarDecimal(RENDIMENTO_REAL_ANUAL_BPS / 100, 0)}% ao ano{" "}
-              <strong>acima da inflação</strong>, com aporte mensal constante. É uma hipótese conservadora, não uma
-              promessa: rendimento passado não garante rendimento futuro e nenhum investimento é obrigado a entregar
-              isso. A projeção de caixa dos 24 meses usa a média de receitas e despesas dos seus últimos meses, sem
-              prever imprevisto nem aumento de renda. Escolher onde colocar dinheiro depende do seu prazo, da sua
-              tolerância a perda e da sua situação — coisas que um profissional autorizado avalia com você.
-            </p>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <Detalhe titulo="Como esta conta é feita">
+        <p>
+          O patrimônio é calculado a {formatarDecimal(RENDIMENTO_REAL_ANUAL_BPS / 100, 0)}% ao ano{" "}
+          <strong>acima da inflação</strong>, com aporte mensal constante. É uma hipótese conservadora, não uma
+          promessa: rendimento passado não garante rendimento futuro e nenhum investimento é obrigado a entregar
+          isso. A projeção de caixa dos 24 meses usa a média de receitas e despesas dos seus últimos meses, sem
+          prever imprevisto nem aumento de renda. Escolher onde colocar dinheiro depende do seu prazo, da sua
+          tolerância a perda e da sua situação — coisas que um profissional autorizado avalia com você.
+        </p>
+      </Detalhe>
     </div>
   )
 }

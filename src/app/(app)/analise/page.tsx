@@ -8,8 +8,10 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { balancoMensal } from "@/lib/tino/balanco"
 import { montarDiagnostico, type Faixa } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { GraficoAnel, GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from "@/components/graficos"
+import { Barra, Cartao, Detalhe, Metrica, Pilula, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
+import Link from "next/link"
+import { GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from "@/components/graficos"
 import { MapaDeCalor } from "@/components/mapa-de-calor"
 import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { cn } from "@/lib/utils"
@@ -35,6 +37,27 @@ const ROTULO_FAIXA: Record<Faixa, string> = {
   ATENCAO: "atenção",
   CRITICO: "crítico",
   SEM_DADO: "sem faixa",
+}
+
+/// Para onde vai quem quer resolver cada indicador. Um bloco que aponta
+/// problema sem dizer onde agir devolve o trabalho para a pessoa.
+const ONDE_RESOLVER: Record<string, { href: string; texto: string }> = {
+  "cheque-especial": { href: "/orcamento", texto: "Direcionar a sobra" },
+  renegociar: { href: "/dividas", texto: "Ver minhas dívidas" },
+  folga: { href: "/orcamento", texto: "Onde cortar" },
+  reserva: { href: "/reserva", texto: "Montar a reserva" },
+  classificar: { href: "/transacoes", texto: "Classificar pendentes" },
+  manter: { href: "/metas", texto: "Escolher uma meta" },
+}
+
+/// O mesmo para os indicadores, que têm chaves próprias.
+const ONDE_RESOLVER_INDICADOR: Record<string, { href: string; texto: string }> = {
+  comprometimento: { href: "/dividas", texto: "Ver minhas dívidas" },
+  endividamento: { href: "/dividas", texto: "Ver minhas dívidas" },
+  "taxa-poupanca": { href: "/investir", texto: "Quanto dá para guardar" },
+  liquidez: { href: "/reserva", texto: "Montar a reserva" },
+  "custo-fixo": { href: "/recorrencias", texto: "Rever contas fixas" },
+  essencial: { href: "/orcamento", texto: "Ajustar o orçamento" },
 }
 
 const ROTULO_SITUACAO = {
@@ -95,40 +118,72 @@ export default async function Analise() {
   return (
     <div className={cn(estilos.pagina, "space-y-4")}>
       {/* ── Parecer ───────────────────────────────────── */}
-      <Cartao titulo={`Parecer de ${rotuloCompetencia(competencia)}`}>
-        {/* O parecer em prosa saiu. Ele repetia, em frases, os mesmos números
-            que já estão nos tiles logo abaixo — e empurrava a próxima ação
-            para o fim de um parágrafo de cinco linhas. Agora: veredito numa
-            linha, números em tiles, e a ação em destaque. */}
-        <div className="flex items-center gap-4">
-          <div className="w-[84px] shrink-0">
-            <GraficoAnel percentual={diagnostico.nota} rotulo="saúde" valor={String(diagnostico.nota)} />
-          </div>
-          <p className={cn("text-[calc(15px*var(--escala-letra))] font-semibold", situacao.tom)}>{situacao.texto}</p>
-        </div>
+      {/* A resposta primeiro. Os quatro tiles de peso igual (entrou, saiu,
+          resultado, patrimônio) eram insumo: com todos do mesmo tamanho,
+          nenhum respondia nada. Eles continuam na tela, recolhidos. */}
+      <Abertura
+        rotulo={`Parecer de ${rotuloCompetencia(competencia)}`}
+        titulo={
+          dre.resultadoCentavos >= 0 ? (
+            <>Você fechou o mês com <em>{formatarMoeda(dre.resultadoCentavos)}</em> de sobra.</>
+          ) : (
+            <>Você fechou o mês <em>{formatarMoeda(Math.abs(dre.resultadoCentavos))} no vermelho</em>.</>
+          )
+        }
+        apoio={<>Situação geral: <b>{situacao.texto}</b>, nota {diagnostico.nota} de 100.</>}
+      >
+        <Detalhe titulo="Os números do mês">
+          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { rotulo: "Entrou", valor: dre.receitasCentavos, tom: "text-positivo" },
+              { rotulo: "Saiu", valor: dre.despesasCentavos, tom: "text-negativo" },
+              { rotulo: "Resultado", valor: dre.resultadoCentavos, tom: dre.resultadoCentavos < 0 ? "text-negativo" : "" },
+              { rotulo: "Patrimônio", valor: balanco.patrimonioLiquidoCentavos, tom: balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "" },
+            ].map((linha) => (
+              <div key={linha.rotulo} className="vidro-menu rounded-2xl px-3 py-2.5">
+                <dt className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</dt>
+                <dd className={cn("numero valor-sensivel mt-1 text-[calc(15px*var(--escala-letra))] font-semibold", linha.tom)}>
+                  {formatarMoeda(linha.valor)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Detalhe>
+      </Abertura>
 
-        <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {[
-            { rotulo: "Entrou", valor: diagnostico.dre.receitasCentavos, tom: "text-positivo" },
-            { rotulo: "Saiu", valor: diagnostico.dre.despesasCentavos, tom: "text-negativo" },
-            { rotulo: "Resultado", valor: diagnostico.dre.resultadoCentavos, tom: diagnostico.dre.resultadoCentavos < 0 ? "text-negativo" : "" },
-            { rotulo: "Patrimônio", valor: diagnostico.balanco.patrimonioLiquidoCentavos, tom: diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "" },
-          ].map((linha) => (
-            <div key={linha.rotulo} className="vidro-menu rounded-2xl px-3 py-2.5">
-              <dt className="text-[calc(10px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</dt>
-              <dd className={cn("numero valor-sensivel mt-1 text-[calc(15px*var(--escala-letra))] font-semibold", linha.tom)}>
-                {formatarMoeda(linha.valor)}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        {diagnostico.prioridades[0] && (
-          <p className="mt-3 text-[calc(14px*var(--escala-letra))]">
-            <span className="text-muted-fg">Agora: </span>{diagnostico.prioridades[0].acao}
-          </p>
-        )}
-      </Cartao>
+      {/* O que fazer subiu para cá. Era a última coisa da primeira aba, depois
+          de dois blocos de diagnóstico — e é o que a pessoa veio buscar. Cada
+          item agora termina no botão que executa, não numa frase. */}
+      {diagnostico.prioridades.length > 0 && (
+        <Cartao titulo="O que fazer, nesta ordem">
+          <ol className="space-y-3">
+            {diagnostico.prioridades.map((prioridade) => (
+              <li key={prioridade.ordem} className="flex gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
+                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[calc(12px*var(--escala-letra))] font-semibold">
+                  {prioridade.ordem}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[calc(14px*var(--escala-letra))] font-medium">{prioridade.titulo}</p>
+                  <p className="mt-1 text-[calc(13px*var(--escala-letra))]">{prioridade.acao}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {prioridade.impactoMensalCentavos ? (
+                      <Pilula tom="positivo">
+                        <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span>&nbsp;por mês
+                      </Pilula>
+                    ) : null}
+                    <Link
+                      href={ONDE_RESOLVER[prioridade.chave]?.href ?? "/transacoes"}
+                      className="text-[calc(13px*var(--escala-letra))] font-medium text-acao underline-offset-4 hover:underline"
+                    >
+                      {ONDE_RESOLVER[prioridade.chave]?.texto ?? "Abrir"}
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Cartao>
+      )}
 
       <AbasInternas abas={[{ chave: "indicadores", titulo: "Indicadores", conteudo: (<>
       {/* ── Indicadores ───────────────────────────────── */}
@@ -155,31 +210,20 @@ export default async function Analise() {
               {indicador.escala && (
                 <ReguaDoIndicador numero={indicador.numero} escala={indicador.escala} cor={COR_FAIXA[indicador.faixa]} />
               )}
+
+              {/* Indicador fora da faixa aponta problema; sem um destino ele
+                  devolve o problema para a pessoa resolver sozinha. */}
+              {indicador.faixa !== "BOM" && indicador.faixa !== "SEM_DADO" && ONDE_RESOLVER_INDICADOR[indicador.chave] && (
+                <Link
+                  href={ONDE_RESOLVER_INDICADOR[indicador.chave].href}
+                  className="mt-3 inline-block text-[calc(13px*var(--escala-letra))] font-medium text-acao underline-offset-4 hover:underline"
+                >
+                  {ONDE_RESOLVER_INDICADOR[indicador.chave].texto}
+                </Link>
+              )}
             </div>
           ))}
         </div>
-      </Cartao>
-
-      {/* ── Prioridades ───────────────────────────────── */}
-      <Cartao titulo="O que fazer, nesta ordem">
-        <ol className="space-y-3">
-          {diagnostico.prioridades.map((prioridade) => (
-            <li key={prioridade.ordem} className="flex gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[calc(12px*var(--escala-letra))] font-semibold">
-                {prioridade.ordem}
-              </span>
-              <div className="min-w-0">
-                <p className="text-[calc(14px*var(--escala-letra))] font-medium">{prioridade.titulo}</p>
-                <p className="mt-1 text-[calc(13px*var(--escala-letra))]">{prioridade.acao}</p>
-                {prioridade.impactoMensalCentavos ? (
-                  <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] text-positivo">
-                    <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span> por mês
-                  </p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ol>
       </Cartao>
 
       </>) }, { chave: "entradas", titulo: "Entradas e saídas", conteudo: (<>

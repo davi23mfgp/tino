@@ -9,7 +9,9 @@ import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib
 import { formatarMoeda, formatarMoedaCurta, paraCentavos } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { SelectNative } from "@/components/ui/select-native"
-import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Cartao, Detalhe, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
+import Link from "next/link"
 import { GraficoFluxo } from "@/components/graficos"
 
 /**
@@ -214,8 +216,35 @@ export default function Simulador() {
     ...(base?.meses ?? []).map((mes) => Math.abs(mes.saldoAcumuladoCentavos)),
   )
 
+  const delta = comparacao?.delta
+  const melhora = (delta?.patrimonioFinalCentavos ?? 0) >= 0
+
   return (
     <div className={cn(estilos.pagina, "space-y-4")}>
+      {/* A resposta antes do formulário. Sem hipótese nenhuma a tela já diz
+          onde a pessoa chega sem mudar nada — que é a régua contra a qual
+          qualquer simulação é lida. Antes ela abria perguntando "o que você
+          quer mudar?" sem ter dito o que acontece se não mudar. */}
+      {comparacao && (
+        <Abertura
+          rotulo={temHipotese ? "Com suas hipóteses" : "Sem mudar nada"}
+          titulo={
+            temHipotese ? (
+              <>Suas hipóteses deixam você <em>{formatarMoeda(Math.abs(delta?.patrimonioFinalCentavos ?? 0))}</em> {melhora ? "mais rico" : "mais pobre"} em {meses} meses.</>
+            ) : (
+              <>No ritmo de hoje, em {meses} meses você tem <em>{formatarMoeda(comparacao.base.patrimonioFinalCentavos)}</em>.</>
+            )
+          }
+          apoio={
+            temHipotese ? (
+              <>De {formatarMoeda(comparacao.base.patrimonioFinalCentavos)} para <b>{formatarMoeda(comparacao.cenario.patrimonioFinalCentavos)}</b>.</>
+            ) : (
+              <>Saldo menos dívidas, pela sua média e pelas parcelas já contratadas.</>
+            )
+          }
+        />
+      )}
+
       <Cartao
         titulo="Simulador de cenários"
         acao={
@@ -372,14 +401,11 @@ export default function Simulador() {
 
       {comparacao && cenario && base && (
         <>
-          <Cartao titulo={temHipotese ? "Com as hipóteses, comparado a hoje" : "Seu cenário atual"}>
+          <Cartao titulo={temHipotese ? "O que muda no caminho" : "Seu cenário atual"}>
+            {/* Patrimônio saiu daqui: ele é a resposta e subiu para a abertura.
+                O que fica são os três números que explicam a resposta, e nesse
+                papel eles não competem mais entre si. */}
             <div className="grade-valores">
-              <Metrica
-                rotulo="Patrimônio em"
-                valor={formatarMoeda(cenario.patrimonioFinalCentavos)}
-                detalhe={`${meses} meses (saldo menos dívidas)`}
-                tom={cenario.patrimonioFinalCentavos >= 0 ? "positivo" : "negativo"}
-              />
               <Metrica
                 rotulo="Saldo em conta"
                 valor={formatarMoeda(cenario.saldoFinalCentavos)}
@@ -405,14 +431,25 @@ export default function Simulador() {
               />
             </div>
 
-            {temHipotese && (
-              <div className="mt-4 space-y-1.5">
-                {comparacao.veredito.map((frase) => (
-                  <p key={frase} className="text-[calc(13px*var(--escala-letra))] leading-relaxed">
-                    {frase}
-                  </p>
-                ))}
+            {/* A simulação morria na tela: a pessoa via o número bom e não
+                tinha como transformar isso em compromisso. */}
+            {temHipotese && melhora && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href="/metas" className="rounded-full bg-acao px-4 py-2 text-[calc(13px*var(--escala-letra))] font-semibold text-background">
+                  Transformar em meta
+                </Link>
+                <Link href="/orcamento" className="rounded-full border border-pauta px-4 py-2 text-[calc(13px*var(--escala-letra))] font-medium">
+                  Virar orçamento
+                </Link>
               </div>
+            )}
+
+            {temHipotese && comparacao.veredito.length > 0 && (
+              <Detalhe titulo="Por que esse é o resultado">
+                {comparacao.veredito.map((frase) => (
+                  <p key={frase}>{frase}</p>
+                ))}
+              </Detalhe>
             )}
 
             {cenario.primeiroMesNegativo && (

@@ -97,6 +97,9 @@ export interface Balanco {
 }
 
 export interface Prioridade {
+  /// Identifica a prioridade para a tela saber para onde mandar quem quer
+  /// resolver. Sem isso o item diz o que fazer e não dá onde fazer.
+  chave: string
   ordem: number
   titulo: string
   porque: string
@@ -418,6 +421,7 @@ export function montarDiagnostico(
   if (negativoEmConta > 0) {
     prioridades.push({
       ordem: prioridades.length + 1,
+      chave: "cheque-especial",
       titulo: "Sair do cheque especial",
       porque: `É o juro mais caro que você paga. ${formatarMoeda(negativoEmConta)} a 8% ao mês custam ${formatarMoeda(Math.round(negativoEmConta * 0.08))} por mês só de juros.`,
       acao: "Direcionar toda a sobra do mês para zerar o saldo negativo antes de qualquer outra meta.",
@@ -429,6 +433,7 @@ export function montarDiagnostico(
   if (jurosAlto) {
     prioridades.push({
       ordem: prioridades.length + 1,
+      chave: "renegociar",
       titulo: `Renegociar ${jurosAlto.credor}`,
       porque: `Cobra ${formatarDecimal(jurosAlto.jurosMensalBps / 100, 2)}% ao mês sobre ${formatarMoeda(jurosAlto.saldoDevedorCentavos)}.`,
       acao: "Cotar portabilidade ou crédito com garantia. Trocar juro caro por barato reduz o total sem aumentar a dívida.",
@@ -440,6 +445,7 @@ export function montarDiagnostico(
     const alvo = Math.round(dre.supefluasCentavos * 0.2)
     prioridades.push({
       ordem: prioridades.length + 1,
+      chave: "folga",
       titulo: "Abrir folga no mês",
       porque: `Sua sobra é ${pct(taxaPoupanca)} da renda. Abaixo de 10% não se forma reserva.`,
       acao: `Cortar 20% do que é não essencial libera cerca de ${formatarMoeda(alvo)} por mês.`,
@@ -450,6 +456,7 @@ export function montarDiagnostico(
   if (liquidez < REFERENCIA.liquidez.atencao && negativoEmConta === 0) {
     prioridades.push({
       ordem: prioridades.length + 1,
+      chave: "reserva",
       titulo: "Formar reserva de emergência",
       porque: `Hoje o disponível cobre ${formatarDecimal(liquidez, 1)} mês(es). O alvo é ${panorama.lar.mesesReserva}.`,
       acao: `Guardar até chegar a ${formatarMoeda(custoEssencialMensal * panorama.lar.mesesReserva)}, em algo com liquidez diária.`,
@@ -459,6 +466,7 @@ export function montarDiagnostico(
   if (panorama.mes.naoCategorizadas > 0) {
     prioridades.push({
       ordem: prioridades.length + 1,
+      chave: "classificar",
       titulo: "Fechar a classificação do mês",
       porque: `${panorama.mes.naoCategorizadas} lançamento(s) sem categoria distorcem todo indicador acima.`,
       acao: "Classificar os pendentes. Cada correção vira regra e o próximo mês já vem classificado.",
@@ -468,6 +476,7 @@ export function montarDiagnostico(
   if (prioridades.length === 0) {
     prioridades.push({
       ordem: 1,
+      chave: "manter",
       titulo: "Manter e direcionar a sobra",
       porque: "Os indicadores estão nas faixas saudáveis.",
       acao: "Com reserva completa e sem dívida cara, a sobra pode ir para metas de prazo mais longo.",

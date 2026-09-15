@@ -233,22 +233,51 @@ export function Heroi({
   tom = "neutro",
   apoio,
   acao,
+  etiqueta,
 }: {
   rotulo: string
   valor: string
   tom?: Tom
   apoio?: string
   acao?: React.ReactNode
+  /** A diferença que importa, ao lado do número — nunca a mesma coisa em
+      palavras embaixo dele. "−8 p.p.", "R$ 320 a mais que em agosto". */
+  etiqueta?: { texto: string; tom?: Tom }
 }) {
   return (
     <section className="px-1 pb-1 pt-2">
       <Rotulo>{rotulo}</Rotulo>
-      <Valor tom={tom} className="mt-2">
-        {valor}
-      </Valor>
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+        <Valor tom={tom}>{valor}</Valor>
+        {etiqueta && <Pilula tom={etiqueta.tom ?? "neutro"}>{etiqueta.texto}</Pilula>}
+      </div>
       {apoio && <p className="mt-2 text-[calc(12px*var(--escala-letra))] leading-snug text-[color:var(--texto-2)]">{apoio}</p>}
       {acao && <div className="mt-4">{acao}</div>}
     </section>
+  )
+}
+
+/**
+ * O detalhe que explica o número, recolhido.
+ *
+ * A regra de 14/09 diz que explicação não é apagada, é guardada: o que
+ * justifica um número sai da altura dos olhos e fica atrás de um clique. Antes
+ * cada tela resolvia isso do seu jeito — parágrafo de 11px no meio do cartão,
+ * `Accordion` inteiro para uma frase, ou nada.
+ */
+export function Detalhe({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+  return (
+    <details className="group mt-3 rounded-[var(--raio-campo)] border border-pauta bg-papel-2 px-3.5 py-2.5">
+      <summary className="ios-tap cursor-pointer list-none text-[calc(13px*var(--escala-letra))] font-medium text-[color:var(--texto-2)] marker:content-[''] hover:text-foreground">
+        {titulo}
+        <span aria-hidden className="ml-1.5 inline-block transition-transform group-open:rotate-90">
+          ›
+        </span>
+      </summary>
+      <div className="mt-2.5 space-y-2 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
+        {children}
+      </div>
+    </details>
   )
 }
 
