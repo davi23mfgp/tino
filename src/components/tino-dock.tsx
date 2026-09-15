@@ -6,7 +6,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 
 import { cn } from "@/lib/utils"
 import { buscar } from "@/lib/cliente"
-import { estadoPorAlertas, FRASE, TinoMascote } from "@/components/tino-mascote"
+import { FRASE, TinoMarca, TinoMascote, estadoPorAlertas } from "@/components/tino-mascote"
 import type { EstadoTino } from "@/components/tino-mascote"
 import { usarAlertas } from "@/components/alertas-provider"
 import { DitarGasto } from "@/components/ditar-gasto"
@@ -108,11 +108,11 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
     <Dialog open={aberto} onOpenChange={setAberto}>
       <DialogTrigger asChild>
         {comoItem ? (
-          // Na barra lateral ele é um item de navegação como os outros. O
-          // emoji de porco que ficava aqui não era a marca do Tino — era um
-          // desenho de outro sistema, em outro estilo, do lado de ícones de
-          // traço. Agora é o próprio mascote, no tamanho dos outros ícones.
-          <button className="app-nav-item"><TinoMascote estado={estado} aria-hidden className="size-5 shrink-0" /><span>Seu assistente Tino</span></button>
+          // Na barra lateral ele é um item de navegação como os outros, e o
+          // que aparece ali é o leão da marca — a mesma arte do topo, a traço,
+          // que herda a cor de quem a usa. O mascote colorido ao lado de
+          // ícones de traço lia como adesivo colado na lista.
+          <button className="app-nav-item"><TinoMarca className="size-5 shrink-0" /><span>Seu assistente Tino</span></button>
         ) : (
           <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
             <TinoMascote estado={estado} className="size-8" />

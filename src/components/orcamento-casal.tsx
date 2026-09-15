@@ -61,8 +61,14 @@ export function OrcamentoCasal({ gastoComumCentavos = 0 }: { gastoComumCentavos?
   const pessoas: Pessoa[] = casal?.pessoas?.length
     ? casal.pessoas
     : [
+        // A segunda pessoa nasce com nome. A API exige nome de todo mundo, e
+        // antes ela nascia vazia: ligar a chave disparava o salvamento, o
+        // servidor recusava com "cada pessoa precisa de um nome", e a chave
+        // voltava sozinha para desligado. Do lado de fora parecia que o botão
+        // não funcionava — era a tela mandando um dado que ela mesma sabia ser
+        // inválido. O nome é editável logo abaixo.
         { nome: "Eu", rendaCentavos: 0, mesadaCentavos: 0, quotaBps: 5000 },
-        { nome: "", rendaCentavos: 0, mesadaCentavos: 0, quotaBps: 5000 },
+        { nome: "Quem mora comigo", rendaCentavos: 0, mesadaCentavos: 0, quotaBps: 5000 },
       ]
 
   async function guardar(mudanca: Partial<Casal>) {
@@ -102,9 +108,23 @@ export function OrcamentoCasal({ gastoComumCentavos = 0 }: { gastoComumCentavos?
       apoio={ativo ? undefined : "Ligue para escolher a forma de dividir."}
     >
       <label className="flex min-h-11 items-center gap-3 text-sm sm:col-span-full">
-        <Switch checked={ativo} onCheckedChange={(valor) => void guardar({ ativo: valor })} aria-label="Dividir com o casal" />
-        {ativo ? "Ligado" : "Desligado"}
+        <Switch
+          checked={ativo}
+          disabled={salvando}
+          onCheckedChange={(valor) => void guardar({ ativo: valor })}
+          aria-label="Dividir com o casal"
+        />
+        {salvando ? "Salvando…" : ativo ? "Ligado" : "Desligado"}
       </label>
+
+      {/* O erro fica FORA do bloco que só aparece quando está ligado. Ele
+          morava lá dentro, então uma falha ao ligar não tinha onde aparecer: a
+          chave voltava para desligado e a tela não dizia nada. */}
+      {erro && (
+        <p role="alert" className="text-[calc(13px*var(--escala-letra))] text-negativo sm:col-span-full">
+          {erro}
+        </p>
+      )}
 
       {ativo && (
         <>
@@ -156,7 +176,6 @@ export function OrcamentoCasal({ gastoComumCentavos = 0 }: { gastoComumCentavos?
 
           <div className="flex items-center gap-3 sm:col-span-full">
             <Button disabled={salvando} onClick={() => void guardar({})}>{salvando ? "Salvando…" : "Salvar divisão"}</Button>
-            {erro && <p role="alert" className="text-xs text-negativo">{erro}</p>}
           </div>
         </>
       )}
