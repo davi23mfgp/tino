@@ -9,10 +9,10 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
 import { Cartao, Metrica } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { FluxoDeCaixaNoTempo } from "@/components/graficos"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
+import { Destaque } from "@/components/ui/destaque"
 
 export const dynamic = "force-dynamic"
 
@@ -37,16 +37,16 @@ export default async function Projecao() {
       {/* "Fecha o ano em" é a resposta da tela e estava do mesmo tamanho dos
           três insumos que a produzem. Ela subiu para a abertura; saldo, receita
           e despesa média continuam logo abaixo, no papel de explicar. */}
-      <Abertura
+      {/* O bloco claro da tela: onde você chega, e o caminho para mudar isso. */}
+      <Destaque
         rotulo="Daqui a 12 meses"
         titulo={
-          fechaAno >= 0 ? (
-            <>No ritmo de hoje, você fecha o ano com <em>{formatarMoeda(fechaAno)}</em>.</>
-          ) : (
-            <>No ritmo de hoje, você fecha o ano <em>{formatarMoeda(Math.abs(fechaAno))} no vermelho</em>.</>
-          )
+          fechaAno >= 0
+            ? `No ritmo de hoje, você fecha o ano com ${formatarMoeda(fechaAno)}`
+            : `No ritmo de hoje, você fecha o ano ${formatarMoeda(Math.abs(fechaAno))} no vermelho`
         }
-        apoio={<>Pela sua média, com as parcelas já contratadas.</>}
+        apoio="Pela sua média, com as parcelas já contratadas."
+        acao={{ href: "/simulador", texto: "Simular uma mudança" }}
       />
 
       <Cartao titulo="O que sustenta essa conta">

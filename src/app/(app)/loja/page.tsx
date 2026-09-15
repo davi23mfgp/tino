@@ -6,9 +6,9 @@ import { Plus, Trash2 } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
 import { conferirVenda, totalDaVenda } from "@/lib/loja/venda"
 import type { FormaPagamento, ItemDaVenda, PagamentoInformado, RegraDeRecebimento } from "@/lib/loja/venda"
+import { Destaque } from "@/components/ui/destaque"
 
 /**
  * Balcão.
@@ -190,21 +190,14 @@ export default function Loja() {
       {/* Quatro números de peso igual não dizem como foi o dia. A resposta do
           balcão é uma só: quanto vendeu — e, com o caixa fechado, o que abrir
           o caixa resolve. */}
-      <Abertura
+      {/* O bloco claro da tela: como foi o dia no balcão. */}
+      <Destaque
         rotulo={dados?.loja.nome ?? "Balcão"}
-        titulo={
-          caixa ? (
-            <>Vendeu <em>{formatarMoeda(caixa.resumo.vendidoCentavos)}</em> no caixa de hoje.</>
-          ) : (
-            <>O caixa está fechado.</>
-          )
-        }
+        titulo={caixa ? `Vendeu ${formatarMoeda(caixa.resumo.vendidoCentavos)} no caixa de hoje` : "O caixa está fechado"}
         apoio={
-          caixa ? (
-            <>Esperado na gaveta: <b>{formatarMoeda(caixa.resumo.esperadoNaGavetaCentavos)}</b>.</>
-          ) : (
-            <>Abra o caixa para registrar as vendas do dia.</>
-          )
+          caixa
+            ? `Esperado na gaveta: ${formatarMoeda(caixa.resumo.esperadoNaGavetaCentavos)}.`
+            : "Abra o caixa para registrar as vendas do dia."
         }
       />
 

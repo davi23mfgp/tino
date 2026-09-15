@@ -7,11 +7,11 @@ import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
 import { SelectNative } from "@/components/ui/select-native"
 import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
 import { cn } from "@/lib/utils"
+import { Destaque } from "@/components/ui/destaque"
 
 /**
  * Orçamento por categoria.
@@ -148,24 +148,24 @@ export default function OrcamentoPagina() {
       {/* A tela abria pelo seletor de competência: filtro antes de resposta.
           Agora ela diz quanto do plano já foi embora e onde está o estouro —
           o seletor continua, no lugar de controle do cartão abaixo. */}
-      <Abertura
+      {/* O bloco claro da tela: quanto do plano já foi, e onde está o estouro. */}
+      <Destaque
         rotulo={`Orçamento de ${rotuloCompetencia(competencia)}`}
         titulo={
-          limitePlanejado === 0 ? (
-            <>Você ainda não definiu um orçamento para este mês.</>
-          ) : diasQueFaltam !== null ? (
-            <>Você usou <em>{usado}%</em> do orçamento com {diasQueFaltam} {diasQueFaltam === 1 ? "dia" : "dias"} pela frente.</>
-          ) : (
-            <>Você usou <em>{usado}%</em> do orçamento deste mês.</>
-          )
+          limitePlanejado === 0
+            ? "Você ainda não definiu um orçamento para este mês"
+            : diasQueFaltam !== null
+              ? `Você usou ${usado}% do orçamento com ${diasQueFaltam} ${diasQueFaltam === 1 ? "dia" : "dias"} pela frente`
+              : `Você usou ${usado}% do orçamento deste mês`
         }
         apoio={
-          pior ? (
-            <><b>{pior.categoria.nome}</b> passou {formatarMoeda(pior.gastoCentavos - pior.limiteCentavos)} do limite.</>
-          ) : limitePlanejado > 0 ? (
-            <>Nenhuma categoria estourou. Sobram {formatarMoeda(limitePlanejado - gasto)} do plano.</>
-          ) : undefined
+          pior
+            ? `${pior.categoria.nome} passou ${formatarMoeda(pior.gastoCentavos - pior.limiteCentavos)} do limite.`
+            : limitePlanejado > 0
+              ? `Nenhuma categoria estourou. Sobram ${formatarMoeda(limitePlanejado - gasto)} do plano.`
+              : undefined
         }
+        acao={{ href: "/transacoes", texto: "Ver onde foi" }}
       />
 
       <Cartao
