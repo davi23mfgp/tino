@@ -1335,3 +1335,31 @@ navegador: abertura, composição durante scroll, repetição, pausa/retomada e
 viewport de 390px (391px internos / 376px de conteúdo, sem overflow horizontal).
 Fechamento: TypeScript e build aprovados; 368 testes passaram. A cena foi
 reaberta após restaurar o viewport desktop para conferir também a primeira dobra.
+
+### 14/09/2026 — landing inteira orientada pela referência Pierre
+
+Pedido mais recente substitui a direção da cena 3D anterior: aproximar toda a
+landing de https://lp.pierre.finance/, mantendo as funcionalidades reais do Tino.
+Referência inspecionada no navegador: menu flutuante, hero central com aparelho,
+elementos ao redor, recursos, faixas alternadas, painel claro, preços e FAQ.
+Marca, textos, funcionalidades e preços são do Tino; não são anunciados produtos
+financeiros ou agentes existentes apenas na referência.
+
+`page.tsx` e `landing.css` passam a compor a página. CSS limitado a `.vitrine`.
+O hero antigo e os celulares fictícios não são mais renderizados na landing.
+`DemonstracaoReal` alterna início/cartões/extrato a cada 5,5 segundos também no
+mobile, pausa fora da área visível, respeita movimento reduzido e oferece
+seleção manual e pausa. Preços mensal/anual usam `planosVigentes`, com cobrança
+anual exibida pelo valor total (não confundida com mensalidade).
+
+As sete imagens em `public/demonstracao` são capturas do app local autenticado
+somente na conta demo, em 14/09/2026: início/cartões/extrato no celular;
+início/cartões/extrato/projeção no desktop. Não consultam dados do visitante.
+Os destaques flutuantes usam os mesmos exemplos da conta demo. São capturas
+estáticas alternadas com animação, não uma sessão interativa do app. Quando a
+interface interna mudar, recapturar essas telas; não redesenhá-las à mão.
+
+Verificação: tipos sem erros; 409 testes aprovados. Browser desktop, 390px e
+320px sem overflow horizontal. Confirmados troca automática no mobile,
+pausa, preços mensal/anual e abertura do FAQ. Build de produção verificado
+separadamente no fechamento desta rodada.
