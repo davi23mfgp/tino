@@ -225,7 +225,13 @@ export default function Simulador() {
           onde a pessoa chega sem mudar nada — que é a régua contra a qual
           qualquer simulação é lida. Antes ela abria perguntando "o que você
           quer mudar?" sem ter dito o que acontece se não mudar. */}
-      {comparacao && (
+      {!comparacao ? (
+        <Abertura
+          rotulo="Sem mudar nada"
+          titulo={erro ? "Não consegui montar seu cenário." : "Calculando onde você chega no ritmo de hoje…"}
+          apoio={erro ?? undefined}
+        />
+      ) : (
         <Abertura
           rotulo={temHipotese ? "Com suas hipóteses" : "Sem mudar nada"}
           titulo={

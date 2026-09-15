@@ -110,7 +110,7 @@ export default function Investir() {
           na coluna da direita, alinhada à direita — o olho batia no controle. */}
       <Abertura
         rotulo="Longo prazo"
-        titulo={<>Guardando {formatarMoeda(corteCentavos, false)} por mês, você teria <em>{formatarMoeda(futuro.patrimonioCentavos)}</em> em {anosNumero} {anosNumero === 1 ? "ano" : "anos"}.</>}
+        titulo={<>Guardando {formatarMoeda(corteCentavos)} por mês, você teria <em>{formatarMoeda(futuro.patrimonioCentavos)}</em> em {anosNumero} {anosNumero === 1 ? "ano" : "anos"}.</>}
         apoio={<>Você guardou <b>{formatarMoeda(futuro.aportadoCentavos)}</b>; os juros fizeram <b>{formatarMoeda(futuro.jurosCentavos)}</b>.</>}
       >
         <div className={estilos.controles}>
