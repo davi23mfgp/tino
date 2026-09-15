@@ -111,10 +111,22 @@ function Dica({
   label,
 }: {
   active?: boolean
-  payload?: { name?: string; value?: number; color?: string; dataKey?: string }[]
+  payload?: {
+    name?: string
+    value?: number
+    color?: string
+    dataKey?: string
+    payload?: { entrou?: number; saiu?: number }
+  }[]
   label?: string
 }) {
   if (!active || !payload?.length) return null
+
+  // Quando a barra é a sobra do mês, entrou e saiu explicam de onde ela veio.
+  // Eles saíram do gráfico para não competir com a resposta, mas continuam a
+  // um toque de distância — apagar seria esconder a conta.
+  const ponto = payload[0]?.payload
+  const detalhaSobra = payload.some((linha) => linha.dataKey === "sobra") && ponto?.entrou !== undefined
 
   return (
     /* `papel-1` e translucido: sobre as barras a caixa ficava transparente e o
@@ -129,6 +141,12 @@ function Dica({
           <span className="font-medium">{formatarMoeda(Number(linha.value ?? 0))}</span>
         </p>
       ))}
+
+      {detalhaSobra && (
+        <p className="mt-1.5 border-t border-pauta pt-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
+          {formatarMoeda(Number(ponto?.entrou ?? 0))} entraram · {formatarMoeda(Number(ponto?.saiu ?? 0))} saíram
+        </p>
+      )}
     </div>
   )
 }
@@ -726,6 +744,11 @@ export function FluxoDeCaixaNoTempo({
     rotulo: ponto.rotulo,
     entrou: ponto.entrouCentavos / 100,
     saiu: ponto.saiuCentavos / 100,
+    // A barra do mês é o que SOBROU, não o que entrou e o que saiu. Duas
+    // barras por mês respondiam "quanto girou"; a pergunta de quem abre esta
+    // tela é "sobrou ou faltou" — e com duas barras isso era uma subtração
+    // feita no olho, mês a mês, comparando duas alturas parecidas.
+    sobra: (ponto.entrouCentavos - ponto.saiuCentavos) / 100,
     // Duas chaves para a MESMA linha: o Recharts não sabe pontilhar metade de
     // uma série. O ponto de virada entra nas duas, senão a linha nasce com um
     // buraco entre o último dia realizado e o primeiro previsto.
@@ -818,18 +841,18 @@ export function FluxoDeCaixaNoTempo({
             {/* O caixa é bloco: cada mês tem uma altura, e a comparação entre
                 meses é a leitura direta. Entrada e saída, quando ligadas, são
                 linhas por cima — fluxo, não empilhamento. */}
-            {/* Duas barras por mês, lado a lado: o que entrou em verde e o que
-                saiu em vermelho. É a leitura que responde "eu gasto mais do
-                que ganho?" — a barra única do saldo acumulado respondia outra
-                pergunta, e escondia essa. */}
-            <Bar dataKey="entrou" name="Entrou" radius={[3, 3, 0, 0]} maxBarSize={14}>
+            {/* Uma barra por mês: o que sobrou. Verde para cima quando sobrou,
+                vermelho para baixo quando faltou — a leitura é a mesma do
+                extrato, e o zero vira a linha que separa mês bom de mês ruim.
+                Entrou e saiu continuam existindo: aparecem ao tocar na barra,
+                porque explicam o número sem competir com ele. */}
+            <Bar dataKey="sobra" name="Sobrou" radius={[3, 3, 0, 0]} maxBarSize={22}>
               {dados.map((ponto, indice) => (
-                <Cell key={`e-${indice}`} fill={cores.positivo} fillOpacity={ponto.futuro ? 0.5 : 1} />
-              ))}
-            </Bar>
-            <Bar dataKey="saiu" name="Saiu" radius={[3, 3, 0, 0]} maxBarSize={14}>
-              {dados.map((ponto, indice) => (
-                <Cell key={`s-${indice}`} fill={cores.negativo} fillOpacity={ponto.futuro ? 0.5 : 1} />
+                <Cell
+                  key={`sobra-${indice}`}
+                  fill={ponto.sobra >= 0 ? cores.positivo : cores.negativo}
+                  fillOpacity={ponto.futuro ? 0.5 : 1}
+                />
               ))}
             </Bar>
             {mostrarSaldo && <Line type="monotone" dataKey="caixa" name="Saldo acumulado" stroke={cores.dado} strokeWidth={2} dot={false} />}

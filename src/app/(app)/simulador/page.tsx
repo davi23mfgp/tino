@@ -206,6 +206,10 @@ export default function Simulador() {
   const atualizar = (id: number, mudanca: Partial<Hipotese>) =>
     setHipoteses((atual) => atual.map((item) => (item.id === id ? { ...item, ...mudanca } : item)))
 
+  // Quitar dívida é a única hipótese que não pede número: o valor é o saldo
+  // devedor, que já está no banco.
+  const faltaValor = hipoteses.filter((hipotese) => !hipotese.valor && hipotese.tipo !== "QUITAR_DIVIDA")
+
   const cenario = comparacao?.cenario
   const base = comparacao?.base
   const temHipotese = hipoteses.length > 0
@@ -281,7 +285,12 @@ export default function Simulador() {
             renda, custo e saldo, que já estão nos tiles logo abaixo; e as oito
             pílulas ocupavam meia tela para uma escolha que cabe num campo. */}
         <div className="mt-1 flex flex-wrap items-center gap-2 rounded-full border border-[color-mix(in_oklab,var(--acao),transparent_70%)] bg-[linear-gradient(115deg,color-mix(in_oklab,var(--papel-2),var(--acao)_16%),var(--papel-2)_70%)] p-1.5 backdrop-blur-[var(--desfoque)]">
+          {/* `key` muda a cada hipótese adicionada para o campo voltar ao
+              convite. Sem isso ele ficava mostrando a última escolha, lia como
+              filtro em vez de "adicionar", e escolher o MESMO tipo de novo não
+              fazia nada — o Radix não dispara troca para o mesmo valor. */}
           <SelectNative
+            key={hipoteses.length}
             aria-label="O que mudar na simulação"
             value=""
             onChange={(evento: { target: { value: string } }) => { if (evento.target.value) adicionar(evento.target.value as TipoAjuste) }}
@@ -381,10 +390,21 @@ export default function Simulador() {
             ))}
           </div>
 
+          {/* Hipótese sem número era descartada em silêncio: o "Simular"
+              rodava, o resultado voltava igual ao de antes, e a tela não dizia
+              por quê. Quem escolheu "comprar parcelado" e clicou em simular via
+              a mesma coisa de sempre e concluía que o simulador não funciona. */}
+          {faltaValor.length > 0 && (
+            <p className="mt-4 text-[calc(13px*var(--escala-letra))] text-atencao">
+              Informe o valor {faltaValor.length === 1 ? "de" : "das hipóteses"}{" "}
+              <b>{faltaValor.map((hipotese) => hipotese.rotulo).join(", ")}</b> para simular.
+            </p>
+          )}
+
           <div className="mt-4 flex gap-2">
             <button
               onClick={() => rodar(hipoteses, meses)}
-              disabled={carregando}
+              disabled={carregando || faltaValor.length > 0}
               className="rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
             >
               {carregando ? "Calculando…" : "Simular"}
