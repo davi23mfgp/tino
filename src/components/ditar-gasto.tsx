@@ -44,10 +44,14 @@ function construtorDeFala(): (new () => ReconhecimentoDeFala) | null {
 export function DitarGasto({
   aoTranscrever,
   className,
+  /** Já entra gravando. É o caminho de quem tocou em "Ditar" na notificação
+      e não deveria ter de procurar o microfone depois de abrir a tela. */
+  iniciarSozinho = false,
 }: {
   /** Recebe o texto falado. Quem chama decide o que fazer com ele. */
   aoTranscrever: (texto: string) => void
   className?: string
+  iniciarSozinho?: boolean
 }) {
   const [suportado, setSuportado] = useState(false)
   const [ouvindo, setOuvindo] = useState(false)
@@ -179,6 +183,14 @@ export function DitarGasto({
   const gravandoNoServidor = !suportado
   const comecar = gravandoNoServidor ? gravar : ouvir
   const terminar = gravandoNoServidor ? pararGravacao : parar
+
+  // Uma vez só: sem a trava, cada re-render pediria o microfone de novo.
+  const jaIniciou = useRef(false)
+  useEffect(() => {
+    if (!iniciarSozinho || jaIniciou.current) return
+    jaIniciou.current = true
+    comecar()
+  }, [iniciarSozinho, comecar])
 
   return (
     <div className={className}>

@@ -16,6 +16,8 @@ import { BuscaPaginasProvider } from "@/components/buscar-paginas"
 
 export const metadata: Metadata = { robots: { index: false, follow: false } }
 
+import { RenovarAtalhoDeLancar } from "@/components/atalho-de-lancar"
+
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
   if (!sessao) redirect("/login")
@@ -83,6 +85,8 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           <SubAbas mei={false} apenasLoja={apenasLoja} />
 
           <main className="animate-page-enter">{children}</main>
+          {/* Renova o atalho na barra de notificações de quem já o ligou. */}
+          <RenovarAtalhoDeLancar />
         </div>
 
         {/* O "+" agora mora no meio da barra do polegar (`navegacao.tsx`),

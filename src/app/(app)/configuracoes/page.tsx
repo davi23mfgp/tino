@@ -11,6 +11,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/u
 import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
+import { ConfigAtalhoLancar } from "@/components/config-atalho-lancar"
 import { FotoDePerfil } from "@/components/foto-de-perfil"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -408,6 +409,14 @@ export default function Configuracoes() {
           href="/regras"
           acao="Abrir"
         />
+
+        <LinhaAjuste
+          titulo="Atalho de lançar no celular"
+          descricao="Uma notificação fixa para anotar ou ditar um gasto"
+          acao="Configurar"
+        >
+          <ConfigAtalhoLancar />
+        </LinhaAjuste>
 
         <LinhaAjuste titulo="Avisos do Tino" descricao="O que ele observa e avisa sem você pedir" acao="Configurar">
           <VigiasConfig semMoldura />

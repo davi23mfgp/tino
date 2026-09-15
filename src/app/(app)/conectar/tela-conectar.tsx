@@ -7,6 +7,7 @@ import { Banknote, CreditCard, Landmark, LineChart, PiggyBank, RefreshCw } from 
 
 import { enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
+import { SemOpenFinance } from "@/components/sem-open-finance"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { ContaConectada, EstadoOpenFinance } from "@/lib/open-finance/provedor"
 
@@ -180,30 +181,14 @@ export function TelaConectar({ inicial }: { inicial: EstadoOpenFinance }) {
   }
 
   // ── Ainda não configurado ─────────────────────────────────────────────
-  if (naoConfigurado) {
-    return (
-      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center py-8">
-        <div className="ficha p-6 text-center">
-          <p className="text-[calc(11px*var(--escala-letra))] uppercase tracking-[0.14em] text-[color:var(--texto-3)]">Ainda não configurado</p>
-          <h1 className="mt-3 text-[calc(22px*var(--escala-letra))] font-semibold leading-tight tracking-tight text-foreground">
-            A conexão automática ainda não está ligada
-          </h1>
-          <p className="mt-3 text-[calc(14px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
-            Falta contratar o agregador de Open Finance. Enquanto isso, você manda o extrato do banco em arquivo e o
-            Tino lê tudo igual — OFX, CSV ou PDF.
-          </p>
-          <Link
-            href="/importar"
-            className="ios-tap mt-6 inline-flex min-h-[44px] w-full items-center justify-center rounded-[var(--raio-pilula)] bg-primary px-6 text-[calc(15px*var(--escala-letra))] font-semibold text-primary-foreground"
-          >
-            Enviar meu extrato
-          </Link>
-          <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-[color:var(--texto-3)]">
-            Nada foi conectado. O Tino não inventa lançamento.
-          </p>
-        </div>
-      </div>
-    )
+  // O servidor já sabe que não há agregador: mostrar os caminhos que existem
+  // antes de a pessoa tocar em "Conectar" e ouvir um não. `naoConfigurado`
+  // continua valendo para o caso de o modo cair depois que a tela abriu.
+  if (naoConfigurado || (!estado.configurado && estado.contas.length === 0)) {
+    // O que fazer enquanto não há agregador contratado. Antes esta tela
+    // oferecia um caminho só (mandar arquivo) e parecia que o app estava pela
+    // metade — os outros dois já existiam e ninguém via.
+    return <SemOpenFinance />
   }
 
   // ── Convite ───────────────────────────────────────────────────────────

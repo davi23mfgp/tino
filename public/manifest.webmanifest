@@ -33,7 +33,12 @@
     {
       "name": "Anotar um gasto",
       "short_name": "Anotar",
-      "url": "/capturas"
+      "url": "/lancar"
+    },
+    {
+      "name": "Ditar um gasto",
+      "short_name": "Ditar",
+      "url": "/lancar?modo=voz"
     },
     {
       "name": "Ver a análise",

@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { Pencil, Trash2 } from "lucide-react"
-import { rotuloCompetencia } from "@/lib/datas"
+import { competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
+import { Abertura } from "@/components/abertura"
+import { ComprometidoPorMes } from "@/components/comprometido-por-mes"
 
 import type { CompraParcelada } from "@/lib/cartoes"
 
@@ -29,8 +31,39 @@ export function ParcelamentosDoCartao({
   aoEditar: (parcelamento: Parcelamento) => void
   aoExcluir: (alvo: { id: string; nome: string; tipo: "parcelamentos" }) => void
 }) {
+  // O total que falta e a régua dos próximos meses. Antes a aba abria direto
+  // na lista de compras: cada linha dizia o seu pedaço e nenhuma dizia quanto
+  // do mês que vem já está gasto.
+  const aberto = parcelamentos.flatMap((linha) => linha.parcelas.filter((parcela) => !parcela.paga))
+  const restanteCentavos = aberto.reduce((soma, parcela) => soma + parcela.valorCentavos, 0)
+  const ultima = [...aberto].sort((a, b) => a.competencia.localeCompare(b.competencia)).at(-1)
+  const porMes = Array.from({ length: 5 }, (_, indice) => {
+    const competencia = competenciaMaisMeses(mes, indice)
+    return {
+      competencia,
+      totalCentavos: aberto
+        .filter((parcela) => parcela.competencia === competencia)
+        .reduce((soma, parcela) => soma + parcela.valorCentavos, 0),
+    }
+  })
+
   return (
     <div className={estilos.parcelamentos}>
+      {parcelamentos.length > 0 && (
+        <Abertura
+          rotulo="Gastos parcelados"
+          titulo={<>Faltam <em>{formatarMoeda(restanteCentavos)}</em> nas suas compras parceladas.</>}
+          apoio={
+            <>
+              {parcelamentos.length} {parcelamentos.length === 1 ? "compra" : "compras"}
+              {ultima ? <> · a última fecha em {rotuloCompetencia(ultima.competencia, true)}</> : null}.
+            </>
+          }
+        >
+          <ComprometidoPorMes meses={porMes} className="mt-0 w-full" />
+        </Abertura>
+      )}
+
       {parcelamentos.map((parcelamento) => (
         <Parcelado
           key={parcelamento.id}
