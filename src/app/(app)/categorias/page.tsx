@@ -157,10 +157,6 @@ export default function CategoriasPagina() {
       <EditorIdentidades />
 
       <Cartao titulo="Suas categorias">
-        <p className="mb-3 text-sm text-muted-fg">
-          Personalize nome e emoji. Seus lançamentos continuam preservados.
-        </p>
-
         {/* Busca e grupo lado a lado a partir do `sm`, como a referência. */}
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px]">
           <Input

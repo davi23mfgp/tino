@@ -5,6 +5,7 @@ import { MoreHorizontal, Plus, Power, RefreshCw, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { showToast } from "@/components/ui/toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { TagsSelector } from "@/components/ui/tags-selector"
@@ -152,6 +153,22 @@ export default function Regras() {
 
   return (
     <div className="space-y-4">
+      {/* O título dizia "O que o Tino aprendeu" e não mostrava número nenhum.
+          O que a pessoa quer saber é quanto trabalho isso já poupou. */}
+      <Abertura
+        rotulo="Regras"
+        titulo={
+          totalAcertos > 0 ? (
+            <>Suas regras já classificaram <em>{totalAcertos}</em> {totalAcertos === 1 ? "lançamento" : "lançamentos"} sozinhas.</>
+          ) : regras.length > 0 ? (
+            <>Suas {regras.length} {regras.length === 1 ? "regra" : "regras"} ainda não pegaram nenhum lançamento.</>
+          ) : (
+            <>Corrija a categoria de um lançamento e a primeira regra nasce daqui.</>
+          )
+        }
+        apoio={<>{ativas.length} {ativas.length === 1 ? "regra ativa" : "regras ativas"}{regras.length - ativas.length > 0 ? <> · {regras.length - ativas.length} desligada{regras.length - ativas.length === 1 ? "" : "s"}</> : null}.</>}
+      />
+
       <Cartao
         titulo="O que o Tino aprendeu"
         acao={
@@ -214,11 +231,6 @@ export default function Regras() {
           <Metrica rotulo="Desligadas" valor={String(regras.length - ativas.length)} />
           <Metrica rotulo="Lançamentos classificados" valor={String(totalAcertos)} tom="positivo" />
         </div>
-
-        <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-          Toda vez que você corrige a categoria de um lançamento, o Tino cria uma regra aqui. Quanto mais regras, menos
-          trabalho no mês seguinte.
-        </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button

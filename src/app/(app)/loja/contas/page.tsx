@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { showToast } from "@/components/ui/toast"
 import { TrilhaLoja } from "@/components/trilha-loja"
 
@@ -133,6 +134,24 @@ export default function ContasDaLoja() {
   return (
     <div className="space-y-4">
       <TrilhaLoja pagina="Contas a pagar" />
+      {/* O que aperta primeiro é o vencido; depois o que vence esta semana.
+          Os três tiles diziam isso com o mesmo peso. */}
+      <Abertura
+        rotulo="Contas da loja"
+        titulo={
+          (dados?.resumo.vencidoCentavos ?? 0) > 0 ? (
+            <><em>{formatarMoeda(dados?.resumo.vencidoCentavos ?? 0)}</em> já venceu e continua em aberto.</>
+          ) : (dados?.resumo.daSemanaCentavos ?? 0) > 0 ? (
+            <><em>{formatarMoeda(dados?.resumo.daSemanaCentavos ?? 0)}</em> vencem esta semana.</>
+          ) : (dados?.resumo.abertoCentavos ?? 0) > 0 ? (
+            <>Nada vencendo agora. <em>{formatarMoeda(dados?.resumo.abertoCentavos ?? 0)}</em> em aberto.</>
+          ) : (
+            <>Nenhuma conta em aberto.</>
+          )
+        }
+        apoio={(dados?.resumo.abertoCentavos ?? 0) > 0 ? <>Total em aberto: <b>{formatarMoeda(dados?.resumo.abertoCentavos ?? 0)}</b>.</> : undefined}
+      />
+
       <Cartao titulo="Contas da loja">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Em aberto" valor={formatarMoeda(dados?.resumo.abertoCentavos ?? 0)} />

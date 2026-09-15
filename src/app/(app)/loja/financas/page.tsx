@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { buscar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 
 /**
  * Finanças da loja.
@@ -41,6 +42,19 @@ export default function FinancasDaLoja() {
 
   return (
     <div className="space-y-4">
+      {/* O lucro é a pergunta da tela e estava como o quarto tile de quatro. */}
+      <Abertura
+        rotulo={`Loja · ${JANELAS.find((janela) => janela.dias === dias)?.rotulo ?? `${dias} dias`}`}
+        titulo={
+          (demonstrativo?.lucroCentavos ?? 0) >= 0 ? (
+            <>A loja deu <em>{formatarMoeda(demonstrativo?.lucroCentavos ?? 0)}</em> de lucro.</>
+          ) : (
+            <>A loja deu <em>{formatarMoeda(Math.abs(demonstrativo?.lucroCentavos ?? 0))}</em> de prejuízo.</>
+          )
+        }
+        apoio={<>Receita líquida de <b>{formatarMoeda(demonstrativo?.receitaLiquidaCentavos ?? 0)}</b>{(demonstrativo?.pecasSemCusto ?? 0) > 0 ? <> · {demonstrativo?.pecasSemCusto} peças sem custo lançado, o lucro real é menor</> : null}.</>}
+      />
+
       <Cartao titulo="Demonstrativo da loja">
         <div className="mb-4 flex gap-2">
           {JANELAS.map((janela) => (

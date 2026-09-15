@@ -6,6 +6,7 @@ import { PackagePlus } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { TrilhaLoja } from "@/components/trilha-loja"
 
 /**
@@ -192,6 +193,22 @@ export default function Estoque() {
   return (
     <div className="space-y-4">
       <TrilhaLoja pagina="Prateleira" />
+      {/* "Acabando: 3" era um tile entre três. É a única coisa da prateleira
+          que pede ação hoje, então é ela que abre a tela. */}
+      <Abertura
+        rotulo="Prateleira"
+        titulo={
+          (dados?.acabando ?? 0) > 0 ? (
+            <><em>{dados?.acabando}</em> {dados?.acabando === 1 ? "produto está acabando" : "produtos estão acabando"}.</>
+          ) : prateleira.length === 0 ? (
+            <>Sua prateleira ainda está vazia.</>
+          ) : (
+            <>Nenhum produto abaixo do mínimo.</>
+          )
+        }
+        apoio={<>{prateleira.length} {prateleira.length === 1 ? "produto" : "produtos"} na prateleira{(dados?.semCusto ?? 0) > 0 ? <> · {dados?.semCusto} sem custo lançado, e sem custo não há margem</> : null}.</>}
+      />
+
       <Cartao titulo="Prateleira">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica rotulo="Produtos" valor={String(prateleira.length)} />

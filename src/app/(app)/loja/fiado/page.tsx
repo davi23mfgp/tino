@@ -6,6 +6,7 @@ import { Check, Copy } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { TrilhaLoja } from "@/components/trilha-loja"
 import { textoDeCobranca } from "@/lib/loja/fiado"
 import type { ClienteDevedor } from "@/lib/loja/fiado"
@@ -75,6 +76,24 @@ export default function Fiado() {
   return (
     <div className="space-y-4">
       <TrilhaLoja pagina="Fiado" />
+      {/* O que importa do fiado é quanto está na rua e quanto já passou do
+          combinado — não a contagem de tiles. */}
+      <Abertura
+        rotulo="Fiado"
+        titulo={
+          (dados?.resumo.totalCentavos ?? 0) > 0 ? (
+            <>Você tem <em>{formatarMoeda(dados?.resumo.totalCentavos ?? 0)}</em> na rua.</>
+          ) : (
+            <>Ninguém está devendo hoje.</>
+          )
+        }
+        apoio={
+          (dados?.resumo.totalCentavos ?? 0) > 0 ? (
+            <>{dados?.resumo.clientes} {dados?.resumo.clientes === 1 ? "pessoa devendo" : "pessoas devendo"}{(dados?.resumo.atrasadoCentavos ?? 0) > 0 ? <> · <b>{formatarMoeda(dados?.resumo.atrasadoCentavos ?? 0)}</b> passou de 30 dias</> : null}.</>
+          ) : undefined
+        }
+      />
+
       <Cartao titulo="Fiado">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Metrica

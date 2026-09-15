@@ -8,6 +8,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
 import { CanalWhatsApp } from "@/components/canal-whatsapp"
@@ -197,6 +198,20 @@ export default function Capturas() {
   return (
     <div className="space-y-4">
       {compartilhado && <AvisoCompartilhado resultado={compartilhado} />}
+
+      {/* Quantos esperam por você, antes do campo de anotar: a fila é o motivo
+          de alguém abrir esta tela. */}
+      <Abertura
+        rotulo="Conferência"
+        titulo={
+          pendentes.length > 0 ? (
+            <><em>{pendentes.length}</em> {pendentes.length === 1 ? "lançamento espera" : "lançamentos esperam"} sua conferência.</>
+          ) : (
+            <>Nada esperando conferência.</>
+          )
+        }
+        apoio={pendentes.length > 0 ? <>Somam <b>{formatarMoeda(totalPendente)}</b>, e só entram no saldo depois que você confirmar.</> : undefined}
+      />
 
       <Cartao titulo="Anotar em segundos">
         <form onSubmit={anotarRapido} className="flex gap-2">

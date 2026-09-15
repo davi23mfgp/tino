@@ -9,6 +9,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarData } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { showToast } from "@/components/ui/toast"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
@@ -179,10 +180,20 @@ export default function Recorrencias() {
   const despesas = ativas.filter((linha) => linha.tipo === "DESPESA")
   const receitas = ativas.filter((linha) => linha.tipo === "RECEITA")
   const hoje = new Date()
+  // Mesma regra que a lista usa por linha: proximaData já passou.
+  const atrasadas = despesas.filter((linha) => new Date(linha.proximaData) < hoje).length
 
   return (
     <div className="space-y-4">
       <CompromissosMetas/>
+      {/* O custo fixo é o número que responde "quanto da minha renda já está
+          comprometido antes de eu escolher qualquer coisa". */}
+      <Abertura
+        rotulo="Contas fixas"
+        titulo={<><em>{formatarMoeda(dados?.custoFixoMensalCentavos ?? 0)}</em> saem todo mês antes de qualquer escolha sua.</>}
+        apoio={<>{despesas.length} {despesas.length === 1 ? "conta fixa" : "contas fixas"}{atrasadas > 0 ? <> · <b>{atrasadas}</b> {atrasadas === 1 ? "atrasada" : "atrasadas"}</> : null}.</>}
+      />
+
       <Cartao
         titulo="Contas fixas"
         acao={

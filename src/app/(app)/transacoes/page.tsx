@@ -7,6 +7,7 @@ import { buscar, enviar, TRANSACOES_ATUALIZADAS } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { EditavelTexto, EditavelMoeda } from "@/components/ui/editavel"
 import { FabAdicionar } from "@/components/fab-adicionar"
 import { showToast } from "@/components/ui/toast"
@@ -230,6 +231,22 @@ export default function Transacoes() {
 
   return (
     <div className={estilos.pagina}>
+      {/* O extrato abria direto nos filtros. O saldo do período já existia,
+          escondido numa grade de três no fim do bloco de controles. */}
+      <Abertura
+        rotulo={`Extrato de ${rotuloCompetencia(competencia)}`}
+        titulo={
+          saldo === null ? (
+            <>Carregando seu extrato…</>
+          ) : saldo >= 0 ? (
+            <>Sobraram <em>{formatarMoeda(saldo)}</em> no período.</>
+          ) : (
+            <>Faltaram <em>{formatarMoeda(Math.abs(saldo))}</em> no período.</>
+          )
+        }
+        apoio={totais ? <>Entraram <b>{formatarMoeda(totais.receitasCentavos)}</b> e saíram <b>{formatarMoeda(totais.despesasCentavos)}</b>.</> : undefined}
+      />
+
       <Cartao estatico className={estilos.controles}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold">Movimentações</h2>

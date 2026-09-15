@@ -104,7 +104,7 @@ Faturamento já é número grande (bom). Falta a resposta: *"ainda cabem
 R$ 21.400 até dezembro"*, e o texto entre parênteses sobre proporcionalidade
 vira etiqueta.
 
-## Onda 3 — a loja
+## Onda 3 — a loja — FEITA em 15/09/2026
 
 `/loja` (balcão), `/loja/estoque`, `/loja/fiado`, `/loja/contas`,
 `/loja/financas`: todas abrem com grade de `Metrica` igual. Cada uma ganha
@@ -116,7 +116,7 @@ uma pergunta e uma resposta:
 - Contas: *"R$ 1.100 a pagar nos próximos 7 dias"* + pagar.
 - Finanças: resultado da loja no mês como manchete.
 
-## Onda 4 — as telas de lista e ajuste (as "coisas pequenas")
+## Onda 4 — as telas de lista e ajuste — FEITA em 15/09/2026
 
 - `/transacoes`: abertura com o total do período filtrado e quantos itens
   esperam conferência.
@@ -170,3 +170,27 @@ do viewport e engana a olho).
 - Defeito achado no caminho: `/mei` dizia "Você passou o limite do MEI em
   R$ 0,00" para quem não tem limite cadastrado — alarme falso sobre dado que
   falta. Agora pede o limite.
+
+### Ondas 3 e 4, o que mudou do plano
+
+- `/importar` e `/conectar` **não** foram tocadas. A frase do importador
+  ("Envie OFX, CSV ou PDF. Confira os lançamentos antes de importar") é
+  instrução, não justificativa — a regra manda manter. E `/conectar` já abre
+  com rótulo, saldo total em 36px e uma linha de apoio: é a mesma anatomia da
+  abertura, só escrita à mão.
+- `/parcelamentos` é um `redirect` para `/cartoes?aba=parcelas`, não tem tela.
+- `/configuracoes` ficou como estava: o único texto longo dela explica que o
+  app nunca recebe a senha do banco — isso é confiança, não didatismo.
+- `/categorias` perdeu a justificativa ("Personalize nome e emoji…") e não
+  ganhou manchete: a tela não responde pergunta de dinheiro.
+- `/recorrencias`: a abertura conta as atrasadas com a **mesma regra** que a
+  lista já usava por linha (`proximaData` no passado). Uma segunda regra por
+  dia do vencimento daria número diferente do que a lista mostra.
+
+## Estado final
+
+As 27 rotas foram revistas. Abrem pela resposta: painel, análise, simulador,
+investir, projeção, orçamento, dívidas, empréstimos, cartões, metas, reserva,
+MEI, extrato, capturas, contas fixas, regras, assinatura, e as cinco da loja.
+Ficaram deliberadamente sem manchete: configurações, categorias, importar,
+conectar (já tinha) e parcelamentos (redirect).

@@ -7,6 +7,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { descontoAnualBps, type Plano } from "@/lib/planos"
 import { Aviso, Cartao, Vazio } from "@/components/ui/painel"
+import { Abertura } from "@/components/abertura"
 import { PricingToggle } from "@/components/ui/pricing-toggle"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 
@@ -137,6 +138,26 @@ export default function Assinatura() {
       {erro && <Aviso tom="critico">{erro}</Aviso>}
 
       {/* ── Onde a pessoa está hoje ── */}
+      {/* Plano, valor e status eram uma frase de três partes separadas por
+          ponto médio. Qual plano e quando renova é a resposta da tela. */}
+      <Abertura
+        rotulo="Assinatura"
+        titulo={
+          assinatura ? (
+            <>Você está no <em>{planos.find((linha) => linha.codigo === assinatura.planoId)?.nome ?? assinatura.planoId}</em>, {formatarMoeda(assinatura.valorCentavos)} {assinatura.ciclo === "ANUAL" ? "por ano" : "por mês"}.</>
+          ) : (
+            <>Você ainda não tem uma assinatura ativa.</>
+          )
+        }
+        apoio={
+          assinatura?.proximaCobrancaEm && assinatura.status !== "CANCELADA" ? (
+            <><b>{ROTULO_STATUS[assinatura.status]}</b> · próxima cobrança em {new Date(assinatura.proximaCobrancaEm).toLocaleDateString("pt-BR")}.</>
+          ) : assinatura ? (
+            <><b>{ROTULO_STATUS[assinatura.status]}</b></>
+          ) : undefined
+        }
+      />
+
       <Cartao titulo="Sua assinatura">
         {assinatura ? (
           <>
