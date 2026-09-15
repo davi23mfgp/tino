@@ -144,8 +144,33 @@ sete e cinquenta" → 750 | pão; "Quanto eu tenho hoje?" → nada, como deve se
 14/09/2026** — depende de mensagem iniciada pelo Tino, que é a parte cobrada. "Sua fatura vence hoje, quer o
 relatório?" é o vigia 1.1 com uma ação anexada. Reaproveita `montarPanorama`.
 
-**1.4 Achar documento por conversa.** "Você acha o comprovante do aluguel?" —
-busca nos anexos que o app já guarda. Precisa de índice por descrição e data.
+**1.4 Achar documento por conversa.** ✅ **Feito em 14/09/2026.**
+
+**Correção do plano:** a linha original dizia "busca nos anexos que o app já
+guarda". Fui ver: **não existem anexos.** O único arquivo guardado de verdade
+é `FaturaRecebida` (fatura que chega por e-mail, com os bytes);
+`Importacao` guarda só o NOME do arquivo, e `Transacao` não tem campo de
+anexo nenhum. Não há lugar onde a pessoa anexe um recibo.
+
+Então a resposta ficou honesta em duas partes: entrega o arquivo quando ele
+existe, e quando não existe **mostra o lançamento** — o registro de que
+aquilo foi pago — dizendo com todas as letras que o comprovante não está
+guardado. Responder "não achei" com o gasto na tela seria pior: a pessoa
+procuraria de novo.
+
+- **Onde ficou:** `src/lib/tino/documentos.ts`, ligado no webhook do WhatsApp
+  e no chat do app, **antes** do motor de regras — "acha o comprovante do
+  aluguel" cairia nele como pergunta qualquer e sairia com um panorama que
+  ninguém pediu.
+- **Precisa da coisa E do verbo de procura:** "a fatura fechou?" fala de
+  fatura e não procura papel nenhum; vira pergunta normal.
+- **Provado no chat real:** "você acha o comprovante do aluguel?" trouxe os
+  três últimos pagamentos de aluguel com o aviso de que o papel não está
+  guardado; "quanto eu tenho hoje" continuou indo para o motor de regras.
+
+**Se um dia for para guardar comprovante de verdade**, é outro trabalho:
+armazenamento de arquivo (a Vercel não tem disco), tabela de anexo e um
+lugar na tela para subir. Não está feito e não foi fingido.
 
 ### Onda 2 — painel que a pessoa pede com palavras
 *Sem fornecedor novo. Usa o modelo que já está ligado.*

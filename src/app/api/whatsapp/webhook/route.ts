@@ -9,6 +9,7 @@ import { confirmarImportacao, detectarFormato, previaImportacao } from "@/lib/im
 import { PdfProtegido } from "@/lib/importar/pdf"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { responderPorRegras } from "@/lib/tino/chat"
+import { ehBuscaDeDocumento, procurarDocumento } from "@/lib/tino/documentos"
 import { competenciaAtual } from "@/lib/datas"
 
 export const dynamic = "force-dynamic"
@@ -174,6 +175,14 @@ async function tratarTexto(telefone: string, larId: string, chaveId: string, tex
   // A distinção decide tudo: tratar pergunta como gasto criaria lançamento do
   // nada, e tratar gasto como pergunta perderia o registro. Texto terminado em
   // interrogação, ou começando com palavra de pergunta, é conversa.
+  // Procurar papel vem antes de responder sobre dinheiro: "acha o comprovante
+  // do aluguel" passaria pelo motor de regras como pergunta qualquer e sairia
+  // com um panorama que ninguém pediu.
+  if (ehBuscaDeDocumento(texto)) {
+    await responder(telefone, await procurarDocumento(larId, texto))
+    return
+  }
+
   if (ehPergunta(texto)) {
     const panorama = await montarPanorama(larId, competenciaAtual())
     const resposta = responderPorRegras(texto, panorama)

@@ -3,6 +3,7 @@ import { comSessao, corpo, exigir, ok } from "@/lib/api"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { responderPorRegras } from "@/lib/tino/chat"
+import { ehBuscaDeDocumento, procurarDocumento } from "@/lib/tino/documentos"
 import { modeloDisponivel, responderComModeloStream, type TurnoConversa } from "@/lib/tino/modelo"
 
 // O chat lê o panorama inteiro do banco a cada pergunta: resposta financeira
@@ -30,6 +31,17 @@ export const POST = comSessao(async (sessao, requisicao) => {
   await prisma.mensagem.create({
     data: { conversaId: conversa.id, papel: "USUARIO", texto: pergunta },
   })
+
+  // Procurar papel vem antes do motor de regras: "acha o comprovante do
+  // aluguel" cairia nele como pergunta qualquer e sairia com um panorama que
+  // ninguém pediu.
+  if (ehBuscaDeDocumento(pergunta)) {
+    const texto = await procurarDocumento(sessao.larId, pergunta)
+    await prisma.mensagem.create({
+      data: { conversaId: conversa.id, papel: "ASSISTENTE", texto },
+    })
+    return ok({ texto, fonte: "regras", conversaId: conversa.id })
+  }
 
   const panorama = await montarPanorama(sessao.larId, competenciaAtual())
   const porRegras = responderPorRegras(pergunta, panorama)
