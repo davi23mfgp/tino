@@ -12,6 +12,7 @@ import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
 import { cn } from "@/lib/utils"
 import { Destaque } from "@/components/ui/destaque"
+import { DivisaoDaRenda } from "@/components/divisao-da-renda"
 
 /**
  * Orçamento por categoria.
@@ -246,6 +247,11 @@ export default function OrcamentoPagina() {
       </Cartao>
 
       <OrcamentoCasal gastoComumCentavos={dados?.linhas.reduce((soma, linha) => soma + linha.gastoCentavos, 0) ?? 0} />
+
+      {/* A divisão da renda veio de /investir: é decisão de orçamento —
+          quanto vai para necessidades, lazer, educação, longo prazo e
+          reserva —, e o lugar de decidir isso é aqui. */}
+      <DivisaoDaRenda />
 
       <Cartao titulo="Plano por categoria">
         {dados && dados.linhas.length === 0 && Object.keys(rascunho).length === 0 && (

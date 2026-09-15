@@ -13,6 +13,7 @@ import { Cartao, Detalhe, Metrica, Vazio } from "@/components/ui/painel"
 import { Abertura } from "@/components/abertura"
 import Link from "next/link"
 import { GraficoFluxo } from "@/components/graficos"
+import { GuardarPorMes } from "@/components/guardar-por-mes"
 
 /**
  * Simulador de cenários.
@@ -422,6 +423,11 @@ export default function Simulador() {
           </div>
         </Cartao>
       )}
+
+      {/* "E se eu guardar um pouco todo mês?" veio de /investir: é simulação,
+          e simulação mora aqui. Na carteira ela dividia espaço com o assunto
+          daquela tela, que é o que a pessoa já tem. */}
+      <GuardarPorMes />
 
       {erro && <Cartao><p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p></Cartao>}
 

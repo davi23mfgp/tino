@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import type { PrecoDeAtivo } from "@/lib/cotacoes"
 import { ArcaCarteira } from "@/components/arca-carteira"
 import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
-import { ComposicaoDaCarteira } from "@/components/composicao-da-carteira"
+import { PainelDaCarteira } from "@/components/painel-da-carteira"
 
 interface Conta {
   id: string
@@ -150,11 +150,19 @@ export function CarteiraInvestimentos() {
           que decide o próximo aporte. */}
       {ativos.length > 0 && (
         <div className="mt-6 border-t border-pauta pt-5">
-          <ComposicaoDaCarteira
-            posicoes={ativos.map((conta) => ({
-              classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
-              valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
-            }))}
+          <PainelDaCarteira
+            posicoes={ativos.map((conta) => {
+              const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
+              return {
+                id: conta.id,
+                nome: conta.nome,
+                classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+                valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+                aportadoCentavos: conta.saldoCentavos,
+                ticker: conta.ticker,
+                variacaoPercentual: preco?.variacaoPercentual ?? null,
+              }
+            })}
           />
         </div>
       )}
