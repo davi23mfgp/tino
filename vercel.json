@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "comentario": "23h UTC = 20h em São Paulo, que é a hora padrão do lembrete. O plano gratuito da Vercel só aceita um disparo por dia; a coluna `hora` da inscrição já existe e passa a valer sozinha no dia em que este agendamento virar de hora em hora (`0 * * * *`).",
+      "path": "/api/cron/lembrete",
+      "schedule": "0 23 * * *"
+    }
+  ]
+}

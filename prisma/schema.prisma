@@ -293,6 +293,39 @@ model Lar {
   lojas           Loja[]
 }
 
+/// Um aparelho inscrito para receber o atalho de lançar de volta na barra.
+///
+/// O endereço (`endpoint`) é dado pelo próprio navegador e é a identidade do
+/// aparelho: é ele que diz para qual Chrome ou Firefox mandar. As duas chaves
+/// fecham a caixa — o conteúdo vai cifrado, e nem o Google nem a Mozilla leem
+/// o que o Tino escreveu.
+///
+/// Guarda por USUÁRIO, não por lar: a notificação é do aparelho de uma pessoa,
+/// e quem divide a casa não deve receber o lembrete do celular do outro.
+///
+/// `hora` é local ao fuso do lar. O disparo diário roda de hora em hora e só
+/// acorda quem marcou aquela hora — sem isso, ou todo mundo recebe no mesmo
+/// instante em UTC, ou o servidor precisa de um agendamento por pessoa.
+model InscricaoPush {
+  id        String   @id @default(cuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+
+  /// Hora local do lembrete diário, 0 a 23.
+  hora      Int      @default(20)
+
+  criadoEm  DateTime @default(now())
+  /// Último envio aceito. Serve para não repetir no mesmo dia.
+  ultimoEnvio DateTime?
+
+  @@index([hora])
+  @@index([usuarioId])
+}
+
 model Usuario {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -304,6 +337,7 @@ model Usuario {
   membroId     String?   @unique
   membro       Membro?   @relation(fields: [membroId], references: [id])
   ultimoLogin  DateTime?
+  inscricoesPush InscricaoPush[]
 
   /// Acesso ao painel de administração do produto.
   ///

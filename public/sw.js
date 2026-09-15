@@ -16,6 +16,30 @@
 self.addEventListener("install", () => self.skipWaiting())
 self.addEventListener("activate", (evento) => evento.waitUntil(self.clients.claim()))
 
+/**
+ * O lembrete diário chegando do servidor.
+ *
+ * O push não traz dinheiro nenhum: só o pedido de repor o atalho. Conteúdo de
+ * notificação aparece na tela de bloqueio, e saldo na tela de bloqueio é
+ * problema de quem perde o celular.
+ */
+self.addEventListener("push", (evento) => {
+  evento.waitUntil(
+    self.registration.showNotification("Gastou alguma coisa?", {
+      body: "Toque para anotar em cinco segundos.",
+      tag: "tino-lancar",
+      icon: "/icones/icone-192.png",
+      badge: "/icones/icone-192.png",
+      requireInteraction: true,
+      silent: true,
+      actions: [
+        { action: "anotar", title: "Anotar" },
+        { action: "ditar", title: "Ditar" },
+      ],
+    }),
+  )
+})
+
 self.addEventListener("notificationclick", (evento) => {
   evento.notification.close()
 
