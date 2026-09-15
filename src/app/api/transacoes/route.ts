@@ -28,6 +28,12 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const onde: Prisma.TransacaoWhereInput = { larId: sessao.larId }
 
   if (competencia) {
+    // "xxxx-99" chegava aqui e virava data inválida lá dentro, e a pessoa via
+    // "algo deu errado" com 500 — erro de servidor para um parâmetro de URL.
+    // As outras rotas já conferiam o formato; esta não.
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(competencia)) {
+      throw new ErroDeUso("Competência inválida. Use o formato AAAA-MM.")
+    }
     const lar = await prisma.lar.findUniqueOrThrow({ where: { id: sessao.larId }, select: { diaInicioMes: true } })
     const janela = janelaDoMes(competencia, lar.diaInicioMes)
     onde.data = { gte: janela.de, lte: janela.ate }

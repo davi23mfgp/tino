@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { ErroDeUso, comSessao, corpo, exigir, ok } from "@/lib/api"
 import { compararEstrategias, ordenarDividas, planejarQuitacao } from "@/lib/financeiro"
 
 export const GET = comSessao(async (sessao, requisicao) => {
@@ -32,6 +32,22 @@ export const GET = comSessao(async (sessao, requisicao) => {
   })
 })
 
+/**
+ * Centavos vindos do cliente.
+ *
+ * `Number("muito")` é `NaN`, e `Math.abs(NaN)` continua `NaN`: o valor chegava
+ * inteiro no Prisma, o Postgres recusava e a pessoa via "algo deu errado" com
+ * status 500 — erro de servidor para um dado que ela digitou. Agora é 400 com
+ * o nome do campo.
+ */
+function inteiroDeDinheiro(valor: unknown, rotulo: string) {
+  const numero = Math.abs(Number(exigir(valor, rotulo)))
+  if (!Number.isFinite(numero) || !Number.isSafeInteger(numero) || numero > 2_147_483_647) {
+    throw new ErroDeUso(`${rotulo}: use um valor em centavos.`)
+  }
+  return numero
+}
+
 export const POST = comSessao(async (sessao, requisicao) => {
   const dados = await corpo<{
     credor: string
@@ -50,7 +66,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       larId: sessao.larId,
       credor: exigir(dados.credor, "Informe para quem você deve").trim(),
       tipo: (dados.tipo ?? "OUTRO") as never,
-      saldoDevedorCentavos: Math.abs(Number(exigir(dados.saldoDevedorCentavos, "Informe o saldo devedor"))),
+      saldoDevedorCentavos: inteiroDeDinheiro(dados.saldoDevedorCentavos, "Informe o saldo devedor"),
       jurosMensalBps: dados.jurosMensalBps ?? 0,
       parcelaCentavos: dados.parcelaCentavos ?? 0,
       parcelasTotal: dados.parcelasTotal ?? null,

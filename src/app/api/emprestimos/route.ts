@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { comSessao, corpo, ErroDeUso, exigir, ok } from "@/lib/api"
 import { competenciaAtual } from "@/lib/datas"
 import { analisarEmprestimo } from "@/lib/financeiro"
 import { montarPanorama } from "@/lib/tino/panorama"
@@ -28,8 +28,18 @@ export const POST = comSessao(async (sessao, requisicao) => {
     salvar?: boolean
   }>(requisicao)
 
+  // Valor zero e parcela zero passavam e devolviam 200 com uma simulação sem
+  // sentido — parcela de R$ 0,00 e CET de 450%. Resposta plausível para
+  // entrada impossível é pior do que recusar: a pessoa acredita no número.
   const valorCentavos = Math.abs(Number(exigir(dados.valorCentavos, "Informe o valor do empréstimo")))
-  const parcelas = Math.max(1, Number(exigir(dados.parcelas, "Informe o número de parcelas")))
+  if (!Number.isFinite(valorCentavos) || valorCentavos < 100) {
+    throw new ErroDeUso("Informe o valor do empréstimo, a partir de R$ 1,00.")
+  }
+
+  const parcelas = Math.trunc(Number(exigir(dados.parcelas, "Informe o número de parcelas")))
+  if (!Number.isFinite(parcelas) || parcelas < 1 || parcelas > 480) {
+    throw new ErroDeUso("Número de parcelas: use de 1 a 480.")
+  }
 
   const panorama = await montarPanorama(sessao.larId, competenciaAtual())
 
