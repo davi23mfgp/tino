@@ -116,7 +116,7 @@ export default async function Painel() {
     </section>
 
     {pendentes.length > 0 && <section className={estilos.painel} aria-labelledby="conferir-titulo">
-      <header className={estilos.cabecalhoSecao}><div><p className={estilos.sobretitulo}>Antes de entrar no saldo</p><h2 id="conferir-titulo">{quantidadePendente} {quantidadePendente === 1 ? "compra para conferir" : "compras para conferir"}</h2></div><div className={estilos.totalPendente}><small>Total</small><strong>{formatarMoeda(totalPendente)}</strong></div></header>
+      <header className={estilos.cabecalhoSecao}><div><h2 id="conferir-titulo">{quantidadePendente} {quantidadePendente === 1 ? "compra para conferir" : "compras para conferir"}</h2><p className={estilos.apoioSecao}>Antes de entrar no saldo</p></div><div className={estilos.totalPendente}><small>Total</small><strong>{formatarMoeda(totalPendente)}</strong></div></header>
       <div className={estilos.listaCompacta}>{pendentes.map((linha) => <Link href="/capturas" key={linha.id}><span className={estilos.iconeLinha}><ReceiptText /></span><span className={estilos.dadosLinha}><strong>{linha.estabelecimento ?? "Sem descrição"}</strong><small>{new Date(linha.criadoEm).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · notificação do banco</small></span><b>{formatarMoeda(linha.valorCentavos ?? 0)}</b><ArrowRight /></Link>)}</div>
       <Link href="/capturas" className={estilos.acaoSecundaria}>{quantidadePendente > pendentes.length ? `Conferir as ${quantidadePendente}` : "Conferir agora"} <ArrowRight /></Link>
     </section>}

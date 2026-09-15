@@ -5,7 +5,10 @@ das referências, o que dá para redesenhar, e o que torna o uso mais intuitivo 
 usando shadcn/ui, que já está configurado neste projeto (43 componentes
 instalados, base `radix`, Tailwind v3, ícones `lucide`).
 
-Isto é proposta. Nada aqui foi implementado.
+**Estado em 15/09/2026, fim do dia:** itens 1, 2, 3, 4, 5 e 7 feitos; 8 e 9
+já estavam resolvidos e não precisaram de código; o 6 foi **descartado**, com
+o motivo escrito abaixo. Antes de qualquer um deles veio a escala de espaço,
+raio e letra, que é o que mais mudou a sensação de acabamento.
 
 ## O diagnóstico, olhando a tela
 
@@ -66,12 +69,18 @@ mostram o cartão com a cor da bandeira e profundidade.
 **Proposta:** manter a cor da instituição, subir o raio, e mostrar **uma**
 informação por cartão (a fatura), com o resto atrás do toque.
 
-### 6. Gráfico de verdade onde hoje há barra improvisada
-O projeto tem `chart.tsx` (shadcn, sobre Recharts) instalado e pouco usado:
-`/painel` desenha faixa de categorias na mão e `/analise` usa componentes
-próprios. Blocos prontos que servem: `chart-area-step` para o fluxo de caixa,
-`chart-pie-donut` para categorias, `chart-bar-label` para o comprometido por
-mês.
+### 6. ~~Gráfico do shadcn~~ — DESCARTADO ao abrir o código
+
+A proposta partia de uma leitura errada. O Tino **já tem gráfico de verdade**:
+`src/components/graficos.tsx` são 863 linhas sobre Recharts, com oito gráficos
+já ajustados à linguagem visual daqui. O que o `chart.tsx` do shadcn
+acrescentaria é a convenção de tema e de tooltip — que esta base já implementou
+do seu jeito.
+
+E há um motivo registrado para não voltar atrás na faixa de categorias do
+painel: ela já foi rosca do Recharts e nascia com largura zero no celular,
+deixando meia tela preta. Trocar de volta seria reintroduzir um defeito
+conhecido para ganhar consistência de biblioteca — troca ruim.
 
 ### 7. Consertar a navegação duplicada — **é defeito, não estilo**
 A barra lateral mostra o núcleo (Início, **Extrato**, Cartões, Perfil) e, logo
@@ -82,14 +91,17 @@ três rótulos diferentes — "Perfil", "Ajustes" e "Configurações".
 **Proposta:** núcleo e grupos param de se repetir; `/configuracoes` tem um
 nome só.
 
-### 8. Sheet no lugar de página, para tarefa curta
-Anotar um gasto, criar meta, editar categoria: hoje cada uma troca a tela
-inteira. `Sheet` (painel lateral) e `Drawer` (folha de baixo, no celular) já
-estão instalados e mantêm a pessoa onde ela estava.
+### 8. ~~Sheet para tarefa curta~~ — já resolvido, sem código novo
 
-### 9. Estados vazios que ensinam
-`Empty` está instalado. Várias telas ainda mostram lista vazia sem dizer o que
-fazer — e tela vazia é justamente quando a pessoa mais precisa de caminho.
+Ao conferir: anotar gasto já abre em diálogo pelo botão "+", e editar
+lançamento já é edição no lugar (`EditavelTexto`/`EditavelMoeda`), que é ainda
+melhor do que abrir painel. Trocar por `Sheet` seria mexer no que funciona.
+
+### 9. ~~Estados vazios~~ — já cobertos
+
+Varredura nas 27 rotas: só três telas têm `.map()` sem tratamento de vazio, e
+as três são cálculo (projeção, finanças da loja) ou delegam para um componente
+que já tem o estado vazio (`/cartoes`). O `Vazio` aparece em 48 lugares.
 
 ## O que usar do shadcn, tela a tela
 

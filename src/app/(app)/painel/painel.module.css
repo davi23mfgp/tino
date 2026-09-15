@@ -18,7 +18,7 @@
 .indicadores>div{padding:12px;border:1px solid var(--pauta);border-radius:var(--raio-cartao);background:var(--papel-2)}
 .indicadores>div[data-faixa="BOM"]{border-color:color-mix(in oklab,var(--positivo),transparent 70%);background:color-mix(in oklab,var(--papel-2),var(--positivo) 8%)}
 .indicadores>div[data-faixa="CRITICO"]{border-color:color-mix(in oklab,var(--negativo),transparent 70%);background:color-mix(in oklab,var(--papel-2),var(--negativo) 8%)}
-.pilulaFaixa{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--papel-3);font-size:max(10px, calc(12px * var(--escala-letra)));text-transform:uppercase;letter-spacing:.08em;font-weight:640;color:var(--texto-2)}
+.pilulaFaixa{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--papel-3);font-size:max(10px, calc(12px * var(--escala-letra)));font-weight:640;color:var(--texto-2)}
 .indicadores>div[data-faixa="BOM"] .pilulaFaixa{background:color-mix(in oklab,var(--positivo),transparent 78%);color:var(--positivo)}
 .indicadores>div[data-faixa="CRITICO"] .pilulaFaixa{background:color-mix(in oklab,var(--negativo),transparent 78%);color:var(--negativo)}
 .indicadores dt{margin-top:8px;font-size:calc(12px * var(--escala-letra));color:var(--texto-2)}
@@ -78,3 +78,20 @@
   font-size:calc(12px * var(--escala-letra));
   color:var(--texto-2);
 }
+
+/* O cartão parecendo cartão.
+   Antes era um retângulo com um logo redondo à esquerda: a cor do banco
+   estava lá, mas lida como fundo de linha de tabela. Três coisas resolvem —
+   altura de cartão, o brilho diagonal que todo plástico tem, e a fatura no
+   tamanho de número principal. A cor continua sendo a da instituição. */
+.cartaoBanco { position:relative; overflow:hidden; min-height:80px; }
+.cartaoBanco:after {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(118deg,#ffffff1f 0 22%,transparent 46%);
+}
+.cartaoBanco > * { position:relative; z-index:1 }
+.faturaAtual b,.faturaAtual strong {
+  font-size:calc(19px * var(--escala-letra));
+  font-weight:640; letter-spacing:-.025em; font-variant-numeric:tabular-nums;
+}
+@media(max-width:640px){ .cartaoBanco { min-height:72px } }
