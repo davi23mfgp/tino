@@ -59,16 +59,35 @@
 .vitrine .lp-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:36px; margin-bottom:50px }
 .vitrine .lp-cabecalho p { margin-top:22px }
 .vitrine .lp-recursos-grade { display:grid; grid-template-columns:repeat(4,1fr); gap:22px }
-.vitrine .lp-recurso { color:inherit; display:block }
-.vitrine .lp-recurso-arte { aspect-ratio:1.15; border-radius:18px; background:linear-gradient(140deg,#1b302a,#111a19); border:1px solid #ffffff0c; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; color:#b5d6c7; transition:transform .5s }
-.vitrine .lp-recurso-arte:after { content:""; position:absolute; width:150px; height:150px; border:1px solid currentColor; opacity:.12; border-radius:50%; transform:translate(65px,60px) }
-.vitrine .lp-recurso-arte>span { position:absolute; top:18px; left:20px; color:#ffffff70; font-size:11px }
-.vitrine .lp-recurso-1 .lp-recurso-arte { background:linear-gradient(140deg,#302938,#19161c); color:#d0bfdb }
-.vitrine .lp-recurso-2 .lp-recurso-arte { background:linear-gradient(140deg,#343126,#1c1c15); color:#d6ceb5 }
-.vitrine .lp-recurso-3 .lp-recurso-arte { background:linear-gradient(140deg,#25323e,#141c24); color:#b7cadd }
-.vitrine .lp-recurso:hover .lp-recurso-arte { transform:translateY(-7px) }
-.vitrine .lp-recurso h3 { display:flex; align-items:center; justify-content:space-between; margin-top:22px }
-.vitrine .lp-recurso p { font-size:14px; margin-top:9px }
+/* Os quatro blocos de recurso. Cada um mostra um pedaço da tela de verdade —
+   barra, fatura, progresso, linha — em vez do ícone de contorno gigante que
+   estava ali e servia para qualquer app de finanças. */
+.vitrine .lp-bloco { color:inherit; display:block; padding:22px; border:1px solid #ffffff14; border-radius:22px; background:linear-gradient(160deg,#16191a,#0e1011); transition:transform .45s var(--lp-curva,cubic-bezier(.2,.7,.2,1)),border-color .45s }
+.vitrine .lp-bloco:hover { transform:translateY(-6px); border-color:#45f45c4d }
+.vitrine .lp-bloco-arte { height:172px; border-radius:16px; background:#0b0d0e; border:1px solid #ffffff0f; padding:18px; display:flex; flex-direction:column; justify-content:flex-start; overflow:hidden; position:relative }
+.vitrine .lp-bloco h3 { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:20px; font-size:21px; letter-spacing:-.03em }
+.vitrine .lp-bloco h3 svg { color:#45f45c; flex-shrink:0 }
+.vitrine .lp-bloco p { font-size:14px; margin-top:8px; color:#9aa0a2; line-height:1.5 }
+
+.vitrine .lp-arte-rotulo { font-size:10px; text-transform:uppercase; letter-spacing:.16em; color:#7e8487; font-weight:600 }
+.vitrine .lp-arte-numero { display:block; margin-top:8px; font-size:27px; font-weight:600; letter-spacing:-.04em; color:#45f45c; font-variant-numeric:tabular-nums }
+.vitrine .lp-arte-pilula { display:inline-block; margin-top:10px; padding:5px 11px; border-radius:50px; background:#ffffff0f; color:#b9bec0; font-size:11px }
+
+.vitrine .lp-arte-barras { display:grid; gap:8px; margin-top:auto }
+.vitrine .lp-arte-barras i { display:block; height:9px; border-radius:5px; background:#45f45c }
+.vitrine .lp-arte-barras i[data-tom=saiu] { background:#ffffff26 }
+.vitrine .lp-arte-legenda { display:flex; justify-content:space-between; margin-top:9px; font-size:10.5px; color:#787e81; font-variant-numeric:tabular-nums }
+
+.vitrine .lp-arte-meses { display:flex; align-items:flex-end; gap:7px; height:52px; margin-top:auto }
+.vitrine .lp-arte-meses i { flex:1; border-radius:5px 5px 3px 3px; background:#ffffff1c }
+.vitrine .lp-arte-meses i[data-aceso=true] { background:#45f45c }
+
+.vitrine .lp-arte-trilho { height:9px; border-radius:5px; background:#ffffff14; margin-top:auto; overflow:hidden }
+.vitrine .lp-arte-trilho i { display:block; height:100%; border-radius:5px; background:#45f45c }
+.vitrine .lp-arte-linha { display:flex; justify-content:space-between; align-items:baseline; margin-top:10px; font-size:11.5px; color:#8d9395 }
+.vitrine .lp-arte-linha b { color:#e6e7e7; font-weight:500; font-variant-numeric:tabular-nums }
+
+.vitrine .lp-arte-linha-svg { display:block; width:calc(100% + 36px); margin:auto -18px -18px; height:76px }
 .vitrine .lp-faixa-produto { padding-block:35px 85px }
 .vitrine .lp-produto-grande { position:relative; min-height:590px; overflow:hidden; border-radius:28px; border:1px solid #ffffff0d; background:radial-gradient(ellipse at 100% 50%,#29352e55,transparent 65%),#0c0e0f; display:flex; align-items:center; padding:65px 50px; perspective:1300px }
 .vitrine .lp-produto-texto { max-width:420px; z-index:2; position:relative }
@@ -206,10 +225,12 @@
   .vitrine .lp p { font-size:15px }
   .vitrine .lp-cabecalho { display:block; margin-bottom:32px }
   .vitrine .lp-cabecalho>.lp-botao { margin-top:26px }
-  .vitrine .lp-recurso h3 { font-size:20px; margin-top:17px }
-  .vitrine .lp-recurso p { font-size:12px }
-  .vitrine .lp-recurso-arte { aspect-ratio:1; border-radius:13px }
-  .vitrine .lp-recurso-arte svg { width:45px }
+  .vitrine .lp-bloco h3 { font-size:19px; margin-top:16px }
+  .vitrine .lp-bloco p { font-size:12.5px }
+  .vitrine .lp-bloco { padding:16px; border-radius:18px }
+  .vitrine .lp-bloco-arte { height:148px; padding:14px }
+  .vitrine .lp-arte-numero { font-size:22px }
+
   .vitrine .lp-produto-grande { min-height:570px; padding:30px 23px }
   .vitrine .lp-desktop-inclinado { top:345px; left:6%; width:530px }
   .vitrine .lp-moldura-recurso { padding:12px; border-radius:17px }

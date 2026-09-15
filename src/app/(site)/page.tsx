@@ -6,6 +6,7 @@ import { Leao } from "./leao"
 import { Revelar } from "@/components/landing/movimento"
 import { DemonstracaoReal } from "@/components/landing/demonstracao-real"
 import { Precos } from "@/components/landing/precos"
+import { VitrineRecursos } from "@/components/landing/vitrine-recursos"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = {
@@ -13,12 +14,6 @@ export const metadata: Metadata = {
   description: "Contas, cartões, orçamento e planos em um só lugar. Entenda seu dinheiro e encontre seu próximo passo com o Tino.",
   openGraph: { title: "Tino — Seu dinheiro, mais simples.", description: "Clareza para hoje. Um plano para o que vem depois.", type: "website", locale: "pt_BR", siteName: "Tino" },
 }
-const RECURSOS = [
-  { titulo: "Seu mês", texto: "O que entrou, saiu e sobrou. Tudo começa com uma visão clara.", Icone: Wallet, ancora: "visao" },
-  { titulo: "Seus cartões", texto: "Faturas e parcelas. Os compromissos de hoje e dos próximos meses.", Icone: CreditCard, ancora: "cartoes" },
-  { titulo: "Seu orçamento", texto: "Defina quanto gastar por categoria e acompanhe seu plano.", Icone: SlidersHorizontal, ancora: "planejamento" },
-  { titulo: "Seu futuro", texto: "Projeções e metas para decidir o próximo passo.", Icone: CalendarDays, ancora: "planejamento" },
-]
 const PASSOS = [
   { Icone: Wallet, titulo: "Cadastre sua conta", texto: "Comece pelo saldo que você tem hoje." },
   { Icone: ScanLine, titulo: "Traga seus movimentos", texto: "Anote ou importe. Confira antes de confirmar." },
@@ -56,7 +51,7 @@ export default async function Vitrine() {
       <section className="lp-secao lp-alternada lp-invertida" id="cartoes"><Revelar className="lp-secao-texto"><span className="lp-tag">Cartões e parcelas</span><h2>A próxima fatura<br />já está no radar.</h2><p>Alterne entre seus cartões, confira compras e acompanhe as parcelas dos próximos meses. Defina seu orçamento total e por categoria.</p><Comecar texto="Conhecer meus cartões" /></Revelar><Revelar className="lp-moldura-recurso lp-cartoes-visual"><img src="/demonstracao/cartoes-desktop.png" alt="Tela real de cartões do Tino: cartões empilhados, fatura e previsão mensal" width={1265} height={712} loading="lazy" /></Revelar></section>
       <section className="lp-secao lp-recursos" id="recursos">
         <Revelar className="lp-cabecalho"><div><h2>Um pouco de tino.<br />Em cada decisão.</h2><p>Do gasto de hoje ao plano de amanhã.<br />As ferramentas certas, no mesmo lugar.</p></div><Comecar /></Revelar>
-        <div className="lp-recursos-grade">{RECURSOS.map(({ titulo, texto, Icone, ancora }, i) => <Revelar key={titulo}><a className={`lp-recurso lp-recurso-${i}`} href={`#${ancora}`}><div className="lp-recurso-arte"><Icone size={58} strokeWidth={1} aria-hidden /><span>0{i + 1}</span></div><h3>{titulo}<ArrowRight size={19} /></h3><p>{texto}</p></a></Revelar>)}</div>
+        <VitrineRecursos />
       </section>
       <section className="lp-secao lp-negocio"><Revelar className="lp-negocio-conteudo"><div className="lp-negocio-simbolo"><Store size={62} strokeWidth={1} /><span>tino<span className="lp-mais">+</span></span></div><span className="lp-tag">Para quem empreende</span><h2>Sua vida e sua loja.<br />Cada uma no seu lugar.</h2><p>Vendas, estoque, fiado e MEI.<br />Acompanhe seu negócio sem misturar as contas de casa.</p><div className="lp-chips"><span>Vendas</span><span>Estoque</span><span>Fiado</span><span>MEI</span></div><Comecar texto="Conhecer o Tino para minha loja" /></Revelar></section>
       <section className="lp-secao lp-comecar"><Revelar className="lp-central"><span className="lp-tag">Simples desde o começo</span><h2>Do primeiro registro<br />à próxima conquista.</h2></Revelar><div className="lp-passos">{PASSOS.map(({ Icone, titulo, texto }, i) => <Revelar key={titulo}><span className="lp-numero">0{i+1}</span><Icone size={26} strokeWidth={1.5} /><h3>{titulo}</h3><p>{texto}</p></Revelar>)}</div></section>
