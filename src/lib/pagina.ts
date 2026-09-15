@@ -27,3 +27,4 @@ export async function sessaoDaPagina(): Promise<Sessao> {
 
   return sessao
 }
+

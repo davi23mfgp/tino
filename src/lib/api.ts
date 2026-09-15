@@ -9,6 +9,7 @@
 import { NextResponse } from "next/server"
 
 import { getSessao, type Sessao } from "@/lib/auth"
+import { estadoDoAcesso } from "@/lib/acesso-assinatura"
 
 export class ErroDeUso extends Error {
   constructor(
@@ -31,10 +32,32 @@ export function erro(mensagem: string, status = 400) {
  * Envolve o handler: injeta a sessão e traduz exceções em resposta HTTP.
  * Erro inesperado vira 500 genérico — a mensagem real fica no log do servidor.
  */
+/**
+ * Rotas que continuam aceitando escrita com o acesso bloqueado.
+ *
+ * Contratar o plano, e os direitos do titular: exportar os dados e apagar a
+ * conta (LGPD, art. 18). Sair também — deixar alguém preso na sessão seria
+ * mesquinho e inútil.
+ */
+const ESCRITA_SEMPRE_LIVRE = ["/api/assinatura", "/api/usuario", "/api/auth", "/api/suporte"]
+
 export function comSessao<T>(handler: (sessao: Sessao, requisicao: Request, contexto: T) => Promise<Response>) {
   return async (requisicao: Request, contexto: T): Promise<Response> => {
     const sessao = await getSessao()
     if (!sessao) return erro("Sessão expirada. Entre novamente.", 401)
+
+    // A parede da tela é o que a pessoa vê; esta é a que vale. Sem ela, quem
+    // soubesse montar um POST continuaria escrevendo no Tino depois do teste
+    // vencido. Só leitura passa: ver o que já é seu não é o que se cobra.
+    if (requisicao.method !== "GET") {
+      const caminho = new URL(requisicao.url).pathname
+      if (!ESCRITA_SEMPRE_LIVRE.some((livre) => caminho.startsWith(livre))) {
+        const acesso = await estadoDoAcesso(sessao.usuarioId)
+        if (!acesso.liberado) {
+          return erro("Seu acesso está pausado. Escolha um plano para continuar.", 402)
+        }
+      }
+    }
 
     try {
       return await handler(sessao, requisicao, contexto)

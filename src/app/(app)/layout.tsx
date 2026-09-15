@@ -18,6 +18,8 @@ export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 import { RenovarAtalhoDeLancar } from "@/components/atalho-de-lancar"
 import { AlertasProvider } from "@/components/alertas-provider"
+import { ParedeDeAssinatura } from "@/components/parede-de-assinatura"
+import { estadoDoAcesso } from "@/lib/acesso-assinatura"
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
@@ -38,6 +40,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   // A mesma checagem existe em `sessaoDaPagina`, porque o Next renderiza layout
   // e página em paralelo e a página consulta o banco por conta própria.
   if (!lar) redirect("/login?sessao=invalida")
+
+  // Uma consulta por navegação. O resultado embrulha o conteúdo, não o menu.
+  const acesso = await estadoDoAcesso(sessao.usuarioId)
 
   const apenasLoja = sessao.papel === "FUNCIONARIO_LOJA"
 
@@ -87,7 +92,12 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           {!apenasLoja && <AvisoCritico />}
           <SubAbas mei={false} apenasLoja={apenasLoja} />
 
-          <main className="animate-page-enter">{children}</main>
+          {/* A parede da assinatura embrulha só o conteúdo: o menu, a busca e
+              a barra do topo continuam de pé, porque sair e ir para
+              Configurações precisa continuar possível. */}
+          <main className="animate-page-enter">
+            <ParedeDeAssinatura acesso={acesso}>{children}</ParedeDeAssinatura>
+          </main>
           {/* Renova o atalho na barra de notificações de quem já o ligou. */}
           <RenovarAtalhoDeLancar />
         </div>

@@ -179,3 +179,63 @@ que o Tino devolveu.
 - Teto de juros do cheque especial (8% a.m.) e preços dos planos saíram do
   código para `/admin/configuracoes` — mudam sem deploy, e o padrão do código
   continua visível ao lado.
+
+## 15/09/2026 — o acesso passou a valer, e o admin ganhou um caminho
+
+### O que estava quebrado
+
+O status da assinatura era **mostrado** e nunca conferido. Sem assinatura, com
+assinatura cancelada ou com pagamento em atraso, a pessoa usava o Tino inteiro
+igual. E o "teste de 14 dias" era decorativo: nada criava a assinatura no
+cadastro, então não havia data para vencer e o teste nunca terminava. No banco
+local: 3 usuários, 0 assinaturas.
+
+### As regras agora (`src/lib/acesso-assinatura.ts`)
+
+| Estado | Acesso |
+|---|---|
+| Teste dentro do prazo | liberado |
+| `ATIVA` | liberado |
+| `PENDENTE` (checkout iniciado) | liberado — cortar quem acabou de pagar é o pior momento |
+| `INADIMPLENTE` | liberado por 7 dias; o provedor ainda está tentando |
+| Teste vencido, `CANCELADA` | bloqueado |
+| Conta antiga, sem linha de assinatura | liberado — não punir cliente por defeito nosso |
+
+### Onde o bloqueio acontece
+
+Em dois lugares, e os dois são necessários:
+
+1. **A tela** — `ParedeDeAssinatura` no layout do app. Fica no cliente porque
+   layout de servidor não recebe o caminho da página, e sem o caminho não dá
+   para deixar `/assinatura` de fora (seria um redirecionamento infinito entre
+   a parede e a tela onde se resolve).
+2. **A API** — `comSessao` recusa escrita com 402. É a que vale: sem ela, quem
+   soubesse montar um POST continuaria escrevendo depois do teste vencido.
+   Leitura passa; ver o que já é seu não é o que se cobra.
+
+**Nunca bloqueado, por lei:** exportar os dados e apagar a conta (LGPD,
+art. 18), contratar o plano, sair e falar com o suporte.
+
+### Virar admin
+
+Continua sem tela que promova ninguém — uma tela que concede privilégio é uma
+tela a mais para dar errado, e este é o privilégio que vê a conta de todo
+mundo. O que faltava era o começo, e agora existe:
+
+```
+node scripts/admin.mjs listar
+node scripts/admin.mjs promover voce@exemplo.com
+node scripts/admin.mjs rebaixar alguem@exemplo.com
+```
+
+Em produção, com a URL do banco na frente:
+
+```
+DATABASE_URL="postgres://..." node scripts/admin.mjs promover voce@exemplo.com
+```
+
+O script recusa rebaixar o último admin: sem tela de promoção, isso deixaria o
+painel inalcançável até alguém abrir o banco de novo.
+
+O painel em si (`/admin`) já existia e já era bem guardado: quem não é admin
+recebe **404**, não 403 — 403 confirmaria que o endereço existe.

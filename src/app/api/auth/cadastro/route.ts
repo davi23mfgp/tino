@@ -3,6 +3,7 @@ import { criarToken, gravarCookieSessao, hashSenha } from "@/lib/auth"
 import { corpo, erro, exigir, ok } from "@/lib/api"
 import { consumirLimite, ipDaRequisicao, LimiteEstourado, REGRAS } from "@/lib/limite"
 import { semearLar } from "@/lib/semear"
+import { abrirTeste } from "@/lib/acesso-assinatura"
 
 interface Entrada {
   nome: string
@@ -52,6 +53,11 @@ export async function POST(requisicao: Request) {
   // Categorias e contas padrão nascem junto: app de finanças que abre vazio
   // faz o usuário desistir antes do primeiro lançamento.
   await semearLar(lar.id, { modoMei: dados.modoMei ?? false })
+
+  // O teste começa aqui e tem data de fim gravada. Antes a tela dizia "você
+  // está no teste de 14 dias" e nada criava a assinatura: não havia data para
+  // vencer, e o teste nunca terminava.
+  await abrirTeste(usuario.id)
 
   await gravarCookieSessao(
     await criarToken({ usuarioId: usuario.id, email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel }),
