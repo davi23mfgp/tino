@@ -290,65 +290,77 @@ export default async function Analise() {
             />
           </div>
 
-          {mensal.serie.length > 1 && (
-            <div className="mt-5 border-t border-pauta pt-4">
-              <div className="mb-3 flex items-baseline justify-between gap-3">
-                <p className="text-[calc(13px*var(--escala-letra))] font-medium">Como andou nos últimos meses</p>
-                <p
-                  className={`numero inline-flex items-center gap-0.5 text-[calc(13px*var(--escala-letra))] ${
-                    mensal.variacaoCentavos >= 0 ? "text-positivo" : "text-negativo"
-                  }`}
-                >
-                  {mensal.variacaoCentavos >= 0 ? (
-                    <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
-                  ) : (
-                    <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
-                  )}
-                  <span className="valor-inteiro">{formatarMoeda(mensal.variacaoCentavos)}</span>
-                </p>
-              </div>
-
-              <GraficoBalanco dados={mensal.serie} />
-
-              <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                A série usa saldo em conta e parcelamentos, que têm data em cada lançamento. Fica de fora{" "}
-                {mensal.foraDaSerie.join(", ")} — esses só têm o valor de hoje no banco, e repeti-lo para trás faria o
-                gráfico mostrar uma melhora que não houve.
-              </p>
-            </div>
-          )}
-
-          {(diagnostico.riscos.length > 0 || diagnostico.pontosFortes.length > 0) && (
-            <div className="mt-4 space-y-3">
-              {diagnostico.riscos.length > 0 && (
-                <div>
-                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-negativo">Riscos</p>
-                  <ul className="mt-1.5 space-y-1.5">
-                    {diagnostico.riscos.map((risco) => (
-                      <li key={risco} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                        {risco}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {diagnostico.pontosFortes.length > 0 && (
-                <div>
-                  <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-positivo">Pontos fortes</p>
-                  <ul className="mt-1.5 space-y-1.5">
-                    {diagnostico.pontosFortes.map((ponto) => (
-                      <li key={ponto} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                        {ponto}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
         </Cartao>
       </div>
+
+      {/* O balanço ficava com os números, o gráfico de doze meses E os riscos
+          dentro do mesmo cartão: ele nascia três vezes mais alto que o
+          "Demonstrativo" ao lado, e a coluna da esquerda virava um buraco.
+          Agora o gráfico tem a página inteira — série de doze meses espremida
+          em meia largura achata a variação e faz o mês ruim parecer igual ao
+          bom — e os riscos viram um cartão à parte. */}
+      <Cartao titulo="Como o patrimônio andou">
+        {mensal.serie.length > 1 && (
+          <div>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <p className="text-[calc(13px*var(--escala-letra))] font-medium">Como andou nos últimos meses</p>
+              <p
+                className={`numero inline-flex items-center gap-0.5 text-[calc(13px*var(--escala-letra))] ${
+                  mensal.variacaoCentavos >= 0 ? "text-positivo" : "text-negativo"
+                }`}
+              >
+                {mensal.variacaoCentavos >= 0 ? (
+                  <ArrowUpRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                ) : (
+                  <ArrowDownRight aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+                )}
+                <span className="valor-inteiro">{formatarMoeda(mensal.variacaoCentavos)}</span>
+              </p>
+            </div>
+
+            <GraficoBalanco dados={mensal.serie} />
+
+            <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
+              A série usa saldo em conta e parcelamentos, que têm data em cada lançamento. Fica de fora{" "}
+              {mensal.foraDaSerie.join(", ")} — esses só têm o valor de hoje no banco, e repeti-lo para trás faria o
+              gráfico mostrar uma melhora que não houve.
+            </p>
+          </div>
+        )}
+
+      </Cartao>
+
+      <Cartao titulo="O que pesa e o que ajuda">
+        {(diagnostico.riscos.length > 0 || diagnostico.pontosFortes.length > 0) && (
+          <div className="space-y-3">
+            {diagnostico.riscos.length > 0 && (
+              <div>
+                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-negativo">Riscos</p>
+                <ul className="mt-1.5 space-y-1.5">
+                  {diagnostico.riscos.map((risco) => (
+                    <li key={risco} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
+                      {risco}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {diagnostico.pontosFortes.length > 0 && (
+              <div>
+                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-positivo">Pontos fortes</p>
+                <ul className="mt-1.5 space-y-1.5">
+                  {diagnostico.pontosFortes.map((ponto) => (
+                    <li key={ponto} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
+                      {ponto}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </Cartao>
 
       {/* ── Gráficos ──────────────────────────────────── */}
       </>) }, { chave: "categorias", titulo: "Categorias", conteudo: (<>
