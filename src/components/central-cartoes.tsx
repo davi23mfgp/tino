@@ -12,7 +12,7 @@ import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { orcamentoInicialCentavos } from "@/lib/orcamento-cartao"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
-import { Abertura } from "@/components/abertura"
+import { Destaque } from "@/components/ui/destaque"
 import { AjudaCartao } from "@/components/ajuda-cartao"
 import { CompraCartaoForm } from "@/components/compra-cartao-form"
 import { Importador } from "@/components/importador"
@@ -82,16 +82,22 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
   })()
 
   return <div className={estilos.pagina}>
-    <Abertura
-      rotulo="Cartão"
+    {/* A fatura é a resposta da tela, e aqui ela vira o bloco claro — o único
+        por tela. Antes era a mesma abertura escura de todas as outras, no meio
+        de uma página onde tudo mais também é escuro. */}
+    <Destaque
+      rotulo="Próxima fatura"
       titulo={
-        diasAteVencer === null ? (
-          <>A fatura de {rotuloCompetencia(mes, true)} do {cartao.nome} é <em>{formatarMoeda(resumo.saldo)}</em>.</>
-        ) : (
-          <>Sua próxima fatura é <em>{formatarMoeda(resumo.saldo)}</em> e vence em {diasAteVencer} {diasAteVencer === 1 ? "dia" : "dias"}.</>
-        )
+        diasAteVencer === null
+          ? `${formatarMoeda(resumo.saldo)} na fatura de ${rotuloCompetencia(mes, true)}`
+          : `${formatarMoeda(resumo.saldo)}, vence em ${diasAteVencer} ${diasAteVencer === 1 ? "dia" : "dias"}`
       }
-      apoio={<>{cartao.nome}{cartao.diaFechamento ? <> · fecha dia {cartao.diaFechamento}</> : null}</>}
+      apoio={
+        <>
+          {cartao.nome}
+          {cartao.diaFechamento ? <> · fecha dia {cartao.diaFechamento}</> : null}
+        </>
+      }
     />
     <section className={estilos.topo}>
       <div className={estilos.carteira} aria-label="Seus cartões">

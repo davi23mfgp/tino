@@ -99,7 +99,7 @@ export default async function PagamentosAdmin() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-[calc(13px*var(--escala-letra))]">
               <thead>
-                <tr className="border-b border-pauta text-left text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">
+                <tr className="border-b border-pauta text-left text-[calc(12px*var(--escala-letra))] text-muted-fg">
                   <th className="py-2 pr-3 font-normal">Data</th>
                   <th className="py-2 pr-3 font-normal">Cliente</th>
                   <th className="py-2 pr-3 font-normal">Plano</th>

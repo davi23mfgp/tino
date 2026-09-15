@@ -329,7 +329,7 @@ export default function Estoque() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
-                <tr className="border-b border-pauta text-left text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">
+                <tr className="border-b border-pauta text-left text-[calc(12px*var(--escala-letra))] text-muted-fg">
                   <th className="pb-2 font-normal">produto</th>
                   <th className="pb-2 text-right font-normal">tem</th>
                   <th className="pb-2 text-right font-normal">custou</th>

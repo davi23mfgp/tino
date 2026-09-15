@@ -89,7 +89,7 @@ export default async function VisaoGeralAdmin() {
             { rotulo: "Canceladas", valor: porStatus.CANCELADA },
           ].map((linha) => (
             <div key={linha.rotulo} className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-4 py-3">
-              <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</p>
+              <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">{linha.rotulo}</p>
               <p className="numero mt-1 text-[calc(22px*var(--escala-letra))] font-semibold leading-none">{linha.valor}</p>
             </div>
           ))}
