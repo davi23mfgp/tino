@@ -8,7 +8,12 @@ export const dynamic = "force-dynamic"
 /**
  * O lembrete diário que repõe o atalho de lançar na barra.
  *
- * Roda de hora em hora e acorda só quem marcou aquela hora. O corte é feito no
+ * Agendamento: `vercel.json` dispara `0 23 * * *` — 23h UTC, que é 20h em São
+ * Paulo, a hora padrão do lembrete. O plano gratuito da Vercel só aceita um
+ * disparo por dia; a coluna `hora` da inscrição já existe e passa a valer
+ * sozinha no dia em que este agendamento virar de hora em hora (`0 * * * *`).
+ *
+ * Acorda só quem marcou aquela hora. O corte é feito no
  * fuso do lar, não em UTC: quem escolheu "20h" quer 20h onde mora, e o Tino já
  * guarda `Lar.fusoHorario` justamente para isso.
  *
