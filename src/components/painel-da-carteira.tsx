@@ -74,6 +74,7 @@ interface RetratoMensal {
 export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }) {
   const [aba, setAba] = useState<"classes" | "produtos">("classes")
   const [historico, setHistorico] = useState<RetratoMensal[]>([])
+  const [cdi, setCdi] = useState<{ percentual: number; fonte: string } | null>(null)
 
   const total = posicoes.reduce((soma, linha) => soma + linha.valorCentavos, 0)
   const aportado = posicoes.reduce((soma, linha) => soma + linha.aportadoCentavos, 0)
@@ -102,6 +103,13 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
       .catch(() => setHistorico([]))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total, aportado, posicoes.length])
+
+  useEffect(() => {
+    fetch("/api/cdi")
+      .then((resposta) => resposta.json())
+      .then((valor) => setCdi(valor?.percentual !== undefined ? valor : null))
+      .catch(() => setCdi(null))
+  }, [])
 
   if (total <= 0) return null
 
@@ -271,8 +279,12 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
       {/* ── Evolução: só existe com o que foi guardado ──── */}
       {historico.length >= 2 && <EvolucaoDaCarteira serie={historico} />}
 
-      {/* ── Coluna da direita: onde isso devia estar ────── */}
+      {/* ── Coluna da direita: como foi, e onde devia estar ─ */}
       <section className="space-y-4 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-5">
+        <Desempenho historico={historico} total={total} aportado={aportado} cdi={cdi} />
+
+        <div className="border-t border-pauta pt-4" />
+
         <div>
           <p className="text-[calc(13px*var(--escala-letra))] font-medium">Distância do alvo</p>
           <p className="mt-1 text-[calc(12px*var(--escala-letra))] text-[color:var(--texto-3)]">
@@ -421,4 +433,95 @@ function rotuloCurto(competencia: string) {
   const [ano, mes] = competencia.split("-")
   const nomes = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
   return `${nomes[Number(mes) - 1] ?? mes}/${ano?.slice(2) ?? ""}`
+}
+
+/**
+ * Como a carteira foi.
+ *
+ * Quatro números, como nas referências: o que rendeu no mês, quanto o CDI
+ * rendeu no mesmo mês, quanto isso dá de comparação, e o ganho acumulado sobre
+ * o que foi aportado.
+ *
+ * **A rentabilidade do mês desconta o aporte.** Sem isso, guardar dinheiro
+ * apareceria como rendimento — a carteira "renderia" 10% no mês em que a
+ * pessoa depositou 10%, o que é a mentira mais comum desse tipo de tela.
+ *
+ * O CDI vem do Banco Central (`lib/cdi.ts`), série 4391. Sem ele a comparação
+ * some; ninguém vê um número inventado.
+ */
+function Desempenho({
+  historico,
+  total,
+  aportado,
+  cdi,
+}: {
+  historico: RetratoMensal[]
+  total: number
+  aportado: number
+  cdi: { percentual: number; fonte: string } | null
+}) {
+  const anterior = historico.length >= 2 ? historico[historico.length - 2] : null
+  const atual = historico.at(-1) ?? null
+
+  const aporteDoMes = anterior && atual ? atual.aportadoCentavos - anterior.aportadoCentavos : null
+  const rendimento =
+    anterior && atual && aporteDoMes !== null && anterior.totalCentavos > 0
+      ? ((atual.totalCentavos - aporteDoMes - anterior.totalCentavos) / anterior.totalCentavos) * 100
+      : null
+
+  const ganho = total - aportado
+  const sobreCdi = rendimento !== null && cdi && cdi.percentual > 0 ? (rendimento / cdi.percentual) * 100 : null
+
+  const linhas: { rotulo: string; valor: string; tom?: "positivo" | "negativo" }[] = [
+    {
+      rotulo: "Rentabilidade no mês",
+      valor: rendimento === null ? "—" : `${rendimento >= 0 ? "+" : "−"}${Math.abs(rendimento).toFixed(2).replace(".", ",")}%`,
+      tom: rendimento === null ? undefined : rendimento >= 0 ? "positivo" : "negativo",
+    },
+    {
+      rotulo: "CDI no mês",
+      valor: cdi ? `${cdi.percentual.toFixed(2).replace(".", ",")}%` : "—",
+    },
+    {
+      rotulo: "Carteira sobre o CDI",
+      valor: sobreCdi === null ? "—" : `${sobreCdi.toFixed(0)}%`,
+      tom: sobreCdi === null ? undefined : sobreCdi >= 100 ? "positivo" : "negativo",
+    },
+    {
+      rotulo: "Ganho sobre o aportado",
+      valor: ganho === 0 ? "—" : `${ganho > 0 ? "+" : "−"}${formatarMoeda(Math.abs(ganho))}`,
+      tom: ganho === 0 ? undefined : ganho > 0 ? "positivo" : "negativo",
+    },
+  ]
+
+  return (
+    <div>
+      <p className="text-[calc(13px*var(--escala-letra))] font-medium">Desempenho da carteira</p>
+
+      <dl className="mt-3 space-y-2.5">
+        {linhas.map((linha) => (
+          <div key={linha.rotulo} className="flex items-baseline justify-between gap-3">
+            <dt className="text-[calc(13px*var(--escala-letra))] text-[color:var(--texto-2)]">{linha.rotulo}</dt>
+            <dd
+              className={cn(
+                "numero text-[calc(14px*var(--escala-letra))] font-medium tabular-nums",
+                linha.tom === "positivo" && "text-positivo",
+                linha.tom === "negativo" && "text-negativo",
+                !linha.tom && "text-[color:var(--texto-3)]",
+              )}
+            >
+              {linha.valor}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {rendimento === null && (
+        <p className="mt-3 text-[calc(11.5px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
+          A rentabilidade do mês aparece quando houver dois retratos da carteira — o deste mês e o do mês passado. O
+          cálculo desconta o que você aportou: dinheiro guardado não é rendimento.
+        </p>
+      )}
+    </div>
+  )
 }

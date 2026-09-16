@@ -13,6 +13,7 @@ import type { PrecoDeAtivo } from "@/lib/cotacoes"
 import { ArcaCarteira } from "@/components/arca-carteira"
 import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
 import { PainelDaCarteira } from "@/components/painel-da-carteira"
+import { ListaDeAtivos } from "@/components/lista-de-ativos"
 
 interface Conta {
   id: string
@@ -148,48 +149,34 @@ export function CarteiraInvestimentos() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        {ativos.map((conta) => {
-          const mercado = mercadoDe(conta)
-          const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
-          return (
-            <div key={conta.id} className="rounded-2xl border border-pauta bg-papel-2 p-4">
-              <div className="flex items-center gap-3">
-                <IdentidadeBanco instituicao={conta.instituicao} />
-                <div className="min-w-0">
-                  <h3 className="truncate font-semibold">{conta.nome}</h3>
-                  <p className="text-xs text-muted-fg">
-                    {conta.ticker ? `${conta.ticker}${conta.quantidadeMilesimos ? ` · ${(conta.quantidadeMilesimos / 1000).toLocaleString("pt-BR")} cotas` : ""}` : conta.instituicao ?? "Instituição não informada"}
-                  </p>
-                </div>
-              </div>
-              <p className="my-3 text-xl font-semibold">{formatarMoeda(mercado ?? conta.saldoCentavos)}</p>
-              {mercado !== null && preco && (
-                <p className="mb-3 text-xs text-muted-fg">
-                  R$ {preco.preco.toFixed(2).replace(".", ",")} por cota
-                  {preco.variacaoPercentual !== null && (
-                    <span className={preco.variacaoPercentual >= 0 ? " text-positivo" : " text-negativo"}>
-                      {" "}({preco.variacaoPercentual >= 0 ? "+" : ""}{preco.variacaoPercentual.toFixed(2).replace(".", ",")}% hoje)
-                    </span>
-                  )}
-                  <span className="block">Aportado: {formatarMoeda(conta.saldoCentavos)}</span>
-                </p>
-              )}
-              <label className="mb-3 block text-xs text-muted-fg">
-                Classe na carteira
-                <SelectNative
-                  value={conta.classeDeAtivo ?? ""}
-                  aria-label={`Classe de ${conta.nome}`}
-                  onChange={(evento) => void classificar(conta.id, evento.target.value)}
-                >
-                  <option value="">Escolha a classe</option>
-                  {CLASSES.map((linha) => <option key={linha.classe} value={linha.classe}>{linha.rotulo}</option>)}
-                </SelectNative>
-              </label>
-              <Button variant="outline" onClick={() => { setMovimento(conta); setAbrir(true) }}>Aportar ou resgatar</Button>
-            </div>
-          )
-        })}
+      {/* A lista, agrupada por classe, no desenho do Kinvo: cabeçalho com o
+          total da classe e, em cada ativo, o código, o valor, a variação do dia
+          e as três linhas que explicam o número. */}
+      <div className="mt-7">
+        <ListaDeAtivos
+          ativos={ativos.map((conta) => {
+            const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
+            return {
+              id: conta.id,
+              nome: conta.nome,
+              instituicao: conta.instituicao,
+              classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+              ticker: conta.ticker ?? null,
+              quantidadeMilesimos: conta.quantidadeMilesimos ?? null,
+              precoUnitario: preco?.preco ?? null,
+              variacaoPercentual: preco?.variacaoPercentual ?? null,
+              valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+              aportadoCentavos: conta.saldoCentavos,
+            }
+          })}
+          aoAbrir={(id) => {
+            const conta = ativos.find((linha) => linha.id === id)
+            if (conta) {
+              setMovimento(conta)
+              setAbrir(true)
+            }
+          }}
+        />
       </div>
 
       <ArcaCarteira
