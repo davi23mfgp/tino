@@ -122,28 +122,9 @@ export function CarteiraInvestimentos() {
       titulo="Sua carteira"
       acao={<Button onClick={() => setAbrir(true)}>Cadastrar investimento</Button>}
     >
-      <p className="text-3xl font-semibold tracking-tight">{formatarMoeda(totalHoje)}</p>
-      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-fg">
-        {comTicker.length ? (
-          <>
-            <span>
-              Valor de hoje.{" "}
-              {diferenca !== 0 && (
-                <span className={diferenca > 0 ? "text-positivo" : "text-negativo"}>
-                  {diferenca > 0 ? "+" : "−"}{formatarMoeda(Math.abs(diferenca))} sobre o que você aportou.
-                </span>
-              )}
-            </span>
-            {fonte && <span className="text-[color:var(--texto-3)]">Fonte: {fonte}</span>}
-            <button type="button" onClick={() => void atualizarPrecos()} className="inline-flex items-center gap-1 text-acao" disabled={atualizando}>
-              <RefreshCw className={atualizando ? "size-3.5 animate-spin" : "size-3.5"} aria-hidden />
-              {atualizando ? "Atualizando…" : "Atualizar agora"}
-            </button>
-          </>
-        ) : (
-          <span>Saldo cadastrado e movimentações. Informe o código do ativo para o preço vir sozinho.</span>
-        )}
-      </p>
+      {/* O total e a explicação saíram daqui: o painel logo abaixo já abre
+          com o número, e o mesmo valor três vezes na mesma tela (aqui, no
+          painel e no miolo do anel) fazia a tela parecer gaguejar. */}
 
       {/* Do que a carteira é feita, antes da lista de ativos. A lista responde
           "o que eu tenho"; a composição responde "em que eu estou" — e é essa

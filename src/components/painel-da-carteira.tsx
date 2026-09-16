@@ -30,19 +30,27 @@ import { cn } from "@/lib/utils"
 /**
  * As fatias do anel.
  *
- * Hue diferente por classe, como na referência — aqui a cor É a legenda, e sete
- * tons do mesmo verde não se distinguem num anel de 12px. Contraste de cada uma
- * sobre o fundo escuro, calculado (OKLab → sRGB linear → WCAG): 14,1 · 11,7 ·
- * 9,2 · 7,4 · 10,3 · 5,7 · 3,4:1. A última é só faixa de anel, nunca texto.
+ * Uma rampa análoga, do verde da marca ao azul, com **chroma baixo**. A versão
+ * anterior usava hues saturados de referência (0.24 de chroma) e o resultado na
+ * tela foi neon brigando com neon: sete cores gritando no mesmo anel de 200px,
+ * nenhuma delas deixando a outra ser lida.
+ *
+ * A ordem da rampa é a ordem do risco: verde na ponta de renda variável, azul
+ * escuro no que é caixa. Isso faz a cor dizer alguma coisa em vez de só
+ * separar.
+ *
+ * Contraste sobre o fundo escuro, calculado (OKLab → sRGB linear → WCAG):
+ * 13,4 · 10,1 · 7,4 · 5,3 · 3,8 · 2,7 · 1,9:1. As três últimas são faixa de
+ * anel e ponto de legenda, nunca texto — texto usa a cor do tema.
  */
 const TINTA: Record<ClasseDeAtivo, string> = {
-  ACOES: "oklch(0.85 0.24 145)",
-  RENDA_FIXA: "oklch(0.8 0.13 180)",
-  FII: "oklch(0.74 0.12 225)",
-  INTERNACIONAL: "oklch(0.7 0.14 285)",
-  CRIPTO: "oklch(0.78 0.1 95)",
-  CAIXA: "oklch(0.62 0.02 250)",
-  OUTROS: "oklch(0.5 0.01 250)",
+  ACOES: "oklch(0.84 0.16 150)",
+  FII: "oklch(0.76 0.11 175)",
+  INTERNACIONAL: "oklch(0.68 0.09 200)",
+  CRIPTO: "oklch(0.6 0.07 225)",
+  RENDA_FIXA: "oklch(0.52 0.05 250)",
+  CAIXA: "oklch(0.44 0.03 260)",
+  OUTROS: "oklch(0.36 0.02 265)",
 }
 
 export interface PosicaoDaCarteira {
@@ -126,6 +134,7 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
   })
 
   const produtos = [...posicoes].sort((a, b) => b.valorCentavos - a.valorCentavos)
+  const maior = [...porClasse].sort((a, b) => b.valorCentavos - a.valorCentavos)[0]
 
 
   return (
@@ -154,25 +163,31 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
           )}
         </div>
 
-        <div className="mx-auto w-[min(220px,68vw)]">
+        <div className="mx-auto w-[min(190px,62vw)]">
+          {/* Anel de verdade: o furo vem de `mask`, não de um círculo por cima.
+              Com círculo, a cor do miolo precisa bater com a do cartão — e como
+              a superfície daqui é translúcida, o verde vazava por baixo e o
+              "furo" virava um disco verde claro. Máscara recorta de fato. */}
           <div
             className="relative grid aspect-square place-items-center rounded-full"
-            style={{ background: `conic-gradient(${fatias.join(",")})` }}
+            style={{
+              background: `conic-gradient(${fatias.join(",")})`,
+              mask: "radial-gradient(farthest-side, transparent 62%, #000 62.5%)",
+              WebkitMask: "radial-gradient(farthest-side, transparent 62%, #000 62.5%)",
+            }}
             role="img"
             aria-label={`Carteira dividida em ${porClasse.map((linha) => `${linha.rotulo} ${Math.round(linha.parte * 100)}%`).join(", ")}`}
-          >
-            {/* O miolo é a cor do cartão, não uma máscara: sobre superfície
-                opaca isto é um furo perfeito e custa zero. */}
-            <div className="grid size-[72%] place-items-center rounded-full bg-papel-2 text-center">
-              <div>
-                <p className="numero text-[calc(20px*var(--escala-letra))] font-semibold tabular-nums">
-                  {porClasse.length === 1 ? "100%" : `${porClasse.length}`}
-                </p>
-                <p className="text-[max(10px,calc(11px*var(--escala-letra)))] text-[color:var(--texto-3)]">
-                  {porClasse.length === 1 ? "em uma classe" : "classes"}
-                </p>
-              </div>
-            </div>
+          />
+          {/* No miolo vai a maior fatia, não o total de novo: o total já está
+              grande logo acima, e repetir o mesmo número a 4cm de distância não
+              acrescenta — dizer onde está a maior parte, sim. */}
+          <div className="pointer-events-none -mt-[calc(50%+22px)] mb-[calc(50%-22px)] text-center">
+            <p className="numero text-[calc(21px*var(--escala-letra))] font-semibold tabular-nums">
+              {Math.round((maior?.parte ?? 0) * 100)}%
+            </p>
+            <p className="truncate px-6 text-[max(10px,calc(11px*var(--escala-letra)))] text-[color:var(--texto-3)]">
+              em {maior?.rotulo.toLowerCase() ?? "—"}
+            </p>
           </div>
         </div>
 
