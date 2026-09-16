@@ -238,6 +238,7 @@ enum StatusCaptura {
 model Lar {
   identidades IdentidadeVisual[]
   faturasRecebidas FaturaRecebida[]
+  retratosCarteira RetratoCarteira[]
   id          String  @id @default(cuid())
   nome        String
   tipo        TipoLar @default(SOLO)
@@ -291,6 +292,44 @@ model Lar {
   capturas        Captura[]
   chavesCaptura   ChaveCaptura[]
   lojas           Loja[]
+}
+
+/// O retrato mensal da carteira de investimentos.
+///
+/// O Tino guarda a posição de HOJE: quanto tem em cada conta de investimento.
+/// Isso responde "onde estou", e não responde "como cheguei aqui" — para a
+/// segunda pergunta é preciso ter guardado o passado enquanto ele acontecia.
+///
+/// Por isso existe esta tabela: uma linha por mês, escrita quando a carteira é
+/// aberta. O mês corrente é reescrito a cada visita (a posição ainda está
+/// mudando); os meses fechados ficam como estavam. Nenhum retrato é calculado
+/// para trás — a série começa no primeiro mês em que alguém abriu a tela, e a
+/// tela diz isso em vez de desenhar uma linha que ninguém viveu.
+///
+/// `porClasse` guarda o recorte do mês em JSON: a divisão de outubro não pode
+/// ser recalculada com as classes de hoje, porque a pessoa pode ter mudado a
+/// classificação no meio do caminho.
+model RetratoCarteira {
+  id        String @id @default(cuid())
+  larId     String
+  lar       Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+
+  /// AAAA-MM.
+  competencia String
+
+  /// Valor de mercado quando havia cotação; o aportado quando não havia.
+  totalCentavos    Int
+  /// Soma do que foi colocado, para a linha de aporte poder existir ao lado.
+  aportadoCentavos Int
+
+  /// `{ "ACOES": 1200000, "RENDA_FIXA": 400000 }`, em centavos.
+  porClasse Json
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([larId, competencia])
+  @@index([larId, competencia])
 }
 
 /// Contador de tentativas, para segurar ataque de força bruta e abuso de rota

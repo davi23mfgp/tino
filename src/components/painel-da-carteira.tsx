@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { formatarMoeda } from "@/lib/dinheiro"
 import { CLASSES, LETRAS_DO_ARCA, type ClasseDeAtivo } from "@/lib/tino/investir"
@@ -19,11 +19,12 @@ import { cn } from "@/lib/utils"
  * meia tela preta e um valor perdido no meio. Gradiente cônico é CSS puro, não
  * mede container, não tem ponto de falha, e desenha exatamente o mesmo anel.
  *
- * **O que o Gorila tem e aqui não tem: evolução patrimonial e performance mês a
- * mês.** As duas precisam de histórico da carteira, e o Tino guarda a posição
- * de hoje — não o retrato de cada mês. Desenhar aquela linha exigiria inventar
- * o passado, que é a única coisa que este app não faz. Quando passar a gravar
- * um retrato mensal, o gráfico nasce sozinho com dado de verdade.
+ * **A evolução patrimonial existe a partir de 15/09/2026.** Ela precisa de
+ * histórico, e o Tino guardava só a posição de hoje. Agora cada visita grava o
+ * retrato do mês corrente (`/api/carteira/retrato`), e a linha é desenhada com
+ * o que foi de fato registrado. Nenhum mês é calculado para trás: a série
+ * começa no primeiro mês em que alguém abriu esta tela, e a tela diz isso em
+ * vez de desenhar um passado que ninguém viveu.
  */
 
 /**
@@ -56,12 +57,43 @@ export interface PosicaoDaCarteira {
   variacaoPercentual?: number | null
 }
 
+interface RetratoMensal {
+  competencia: string
+  totalCentavos: number
+  aportadoCentavos: number
+}
+
 export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }) {
   const [aba, setAba] = useState<"classes" | "produtos">("classes")
+  const [historico, setHistorico] = useState<RetratoMensal[]>([])
 
   const total = posicoes.reduce((soma, linha) => soma + linha.valorCentavos, 0)
   const aportado = posicoes.reduce((soma, linha) => soma + linha.aportadoCentavos, 0)
   const ganho = total - aportado
+
+  // Grava o retrato do mês e traz a série de volta. Fica ANTES do `return`
+  // curto de carteira vazia: hook depois de `return` muda de quantidade entre
+  // um render e outro, e o React quebra.
+  useEffect(() => {
+    if (total <= 0) return
+
+    const porClasse: Record<string, number> = {}
+    for (const posicao of posicoes) {
+      const chave = posicao.classe ?? "SEM_CLASSE"
+      porClasse[chave] = (porClasse[chave] ?? 0) + posicao.valorCentavos
+    }
+
+    void fetch("/api/carteira/retrato", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ totalCentavos: total, aportadoCentavos: aportado, porClasse }),
+    })
+      .then(() => fetch("/api/carteira/retrato"))
+      .then((resposta) => resposta.json())
+      .then((serie: RetratoMensal[]) => setHistorico(Array.isArray(serie) ? serie : []))
+      .catch(() => setHistorico([]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [total, aportado, posicoes.length])
 
   if (total <= 0) return null
 
@@ -94,6 +126,7 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
   })
 
   const produtos = [...posicoes].sort((a, b) => b.valorCentavos - a.valorCentavos)
+
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -220,6 +253,9 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
         </div>
       </section>
 
+      {/* ── Evolução: só existe com o que foi guardado ──── */}
+      {historico.length >= 2 && <EvolucaoDaCarteira serie={historico} />}
+
       {/* ── Coluna da direita: onde isso devia estar ────── */}
       <section className="space-y-4 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-5">
         <div>
@@ -286,4 +322,88 @@ export function PainelDaCarteira({ posicoes }: { posicoes: PosicaoDaCarteira[] }
       </section>
     </div>
   )
+}
+
+/**
+ * A linha do patrimônio, mês a mês.
+ *
+ * Desenhada com `polyline` em SVG, não com biblioteca: são poucos pontos, não
+ * há interação, e a série cresce um ponto por mês. Trazer um motor de gráfico
+ * inteiro para isto custaria mais do que o desenho.
+ *
+ * Aparece só a partir de dois retratos. Com um ponto não há linha, e uma linha
+ * reta de um mês só sugeriria estabilidade que ninguém observou.
+ */
+function EvolucaoDaCarteira({ serie }: { serie: RetratoMensal[] }) {
+  const valores = serie.map((ponto) => ponto.totalCentavos)
+  const maior = Math.max(...valores)
+  const menor = Math.min(...valores)
+  const faixa = Math.max(1, maior - menor)
+
+  const pontos = serie
+    .map((ponto, indice) => {
+      const x = (indice / Math.max(1, serie.length - 1)) * 100
+      // 6% de folga em cima e embaixo: linha encostando na borda parece
+      // cortada, e o pico do mês some junto com ela.
+      const y = 94 - ((ponto.totalCentavos - menor) / faixa) * 88
+      return `${x},${y}`
+    })
+    .join(" ")
+
+  const primeiro = serie[0]!
+  const ultimo = serie.at(-1)!
+  const variacao = ultimo.totalCentavos - primeiro.totalCentavos
+
+  return (
+    <section className="space-y-3 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-5 lg:col-span-2">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-[calc(13px*var(--escala-letra))] font-medium">Evolução patrimonial</p>
+        <p
+          className={cn(
+            "numero text-[calc(13px*var(--escala-letra))] tabular-nums",
+            variacao >= 0 ? "text-positivo" : "text-negativo",
+          )}
+        >
+          {variacao >= 0 ? "+" : "−"}
+          {formatarMoeda(Math.abs(variacao))} desde {rotuloCurto(primeiro.competencia)}
+        </p>
+      </div>
+
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-40 w-full" role="img" aria-label="Linha do patrimônio investido mês a mês">
+        <defs>
+          <linearGradient id="carteira-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--acao)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--acao)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={`0,100 ${pontos} 100,100`} fill="url(#carteira-area)" />
+        <polyline
+          points={pontos}
+          fill="none"
+          stroke="var(--acao)"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+
+      <div className="flex justify-between text-[max(10px,calc(11px*var(--escala-letra)))] text-[color:var(--texto-3)]">
+        <span>{rotuloCurto(primeiro.competencia)}</span>
+        <span>{rotuloCurto(ultimo.competencia)}</span>
+      </div>
+
+      <p className="text-[calc(11.5px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
+        A série começa no primeiro mês em que esta tela foi aberta — nenhum mês é calculado para trás. Cada visita
+        atualiza o retrato do mês corrente; meses fechados ficam como estavam.
+      </p>
+    </section>
+  )
+}
+
+/** "2026-09" → "set/26". */
+function rotuloCurto(competencia: string) {
+  const [ano, mes] = competencia.split("-")
+  const nomes = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+  return `${nomes[Number(mes) - 1] ?? mes}/${ano?.slice(2) ?? ""}`
 }
