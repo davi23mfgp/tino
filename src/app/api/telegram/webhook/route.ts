@@ -7,6 +7,7 @@ import { baixarArquivo, responder, type AtualizacaoTelegram } from "@/lib/captur
 import { AudioIndisponivel, AudioLongoDemais, AudioVazio, transcrever } from "@/lib/captura/transcricao"
 import { confirmarImportacao, detectarFormato, previaImportacao } from "@/lib/importar"
 import { PdfProtegido } from "@/lib/importar/pdf"
+import { segredoConfere } from "@/lib/segredo"
 
 export const dynamic = "force-dynamic"
 
@@ -27,8 +28,11 @@ const TAMANHO_MAXIMO = 10 * 1024 * 1024
  * - PDF, CSV ou OFX — importado como extrato ou fatura.
  */
 export async function POST(requisicao: Request) {
-  const segredo = new URL(requisicao.url).searchParams.get("segredo")
-  if (!process.env.TELEGRAM_WEBHOOK_SEGREDO || segredo !== process.env.TELEGRAM_WEBHOOK_SEGREDO) {
+  // O cabeçalho oficial (`secret_token` do setWebhook) não entra em log de
+  // servidor; a query fica aceita só para webhook já cadastrado do jeito antigo.
+  const segredo =
+    requisicao.headers.get("x-telegram-bot-api-secret-token") ?? new URL(requisicao.url).searchParams.get("segredo")
+  if (!segredoConfere(segredo, process.env.TELEGRAM_WEBHOOK_SEGREDO)) {
     return NextResponse.json({ erro: "não autorizado" }, { status: 401 })
   }
 

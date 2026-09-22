@@ -1,15 +1,21 @@
 import { cookies } from "next/headers"
 import { SignJWT, jwtVerify } from "jose"
 import bcrypt from "bcryptjs"
+import { cache } from "react"
+
+import { prisma } from "@/lib/prisma"
 
 // Sem fallback: subir sem JWT_SECRET assinaria token com segredo público, e
 // qualquer pessoa forjaria uma sessão. Falhar na largada é melhor que a brecha.
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET não configurado — defina a variável de ambiente antes de iniciar.")
+// Curto demais é adivinhável por força bruta offline a partir de um token
+// qualquer; 32 caracteres é o piso para HS256.
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  throw new Error("JWT_SECRET ausente ou curto (mínimo 32 caracteres) — defina antes de iniciar.")
 }
 const SEGREDO = new TextEncoder().encode(process.env.JWT_SECRET)
 
-export const COOKIE_SESSAO = "sessao"
+export { COOKIE_SESSAO } from "@/lib/cookie-sessao"
+import { COOKIE_SESSAO } from "@/lib/cookie-sessao"
 
 export interface Sessao {
   usuarioId: string
@@ -32,20 +38,61 @@ export async function criarToken(sessao: Sessao): Promise<string> {
     .sign(SEGREDO)
 }
 
-export async function verificarToken(token: string): Promise<Sessao | null> {
+export async function verificarToken(token: string): Promise<(Sessao & { iat?: number }) | null> {
   try {
-    const { payload } = await jwtVerify(token, SEGREDO)
-    return payload as unknown as Sessao
+    const { payload } = await jwtVerify(token, SEGREDO, { algorithms: ["HS256"] })
+    return payload as unknown as Sessao & { iat?: number }
   } catch {
     return null
   }
 }
 
-export async function getSessao(): Promise<Sessao | null> {
+/**
+ * Sessão da requisição, conferida no banco.
+ *
+ * A assinatura do token só prova que o Tino o emitiu — não que a pessoa ainda
+ * tem acesso. Aqui confere que o usuário existe, continua no mesmo lar, que o
+ * token é posterior a `sessoesValidasDesde` (troca de senha, remoção) e usa o
+ * papel ATUAL do banco, não o gravado no token 30 dias atrás.
+ *
+ * `cache` faz a consulta uma vez por requisição, por mais componentes que peçam.
+ */
+export const getSessao = cache(async (): Promise<Sessao | null> => {
   const jar = await cookies()
   const token = jar.get(COOKIE_SESSAO)?.value
   if (!token) return null
-  return verificarToken(token)
+  const doToken = await verificarToken(token)
+  if (!doToken?.usuarioId) return null
+
+  const usuario = await prisma.usuario.findUnique({
+    where: { id: doToken.usuarioId },
+    select: { larId: true, membroId: true, sessoesValidasDesde: true, membro: { select: { papel: true } } },
+  })
+  if (!usuario || usuario.larId !== doToken.larId) return null
+  if (usuario.sessoesValidasDesde && (doToken.iat ?? 0) * 1000 < usuario.sessoesValidasDesde.getTime()) return null
+
+  return {
+    usuarioId: doToken.usuarioId,
+    email: doToken.email,
+    nome: doToken.nome,
+    larId: usuario.larId,
+    membroId: usuario.membroId,
+    papel: usuario.membro?.papel ?? "TITULAR",
+  }
+})
+
+/**
+ * Derruba todas as sessões abertas do usuário.
+ *
+ * O `iat` do JWT tem resolução de segundo; volta 1 s para não invalidar o token
+ * que a própria requisição vai emitir logo em seguida (ex.: troca de senha que
+ * já loga de novo).
+ */
+export async function revogarSessoes(usuarioId: string) {
+  await prisma.usuario.update({
+    where: { id: usuarioId },
+    data: { sessoesValidasDesde: new Date(Math.floor(Date.now() / 1000) * 1000 - 1000) },
+  })
 }
 
 /** Sessão obrigatória. Lança quando não há — usado nas rotas autenticadas. */

@@ -50,6 +50,15 @@ enum ClasseDeAtivo {
   OUTROS
 }
 
+enum BandeiraCartao {
+  VISA
+  MASTERCARD
+  ELO
+  AMERICAN_EXPRESS
+  HIPERCARD
+  OUTRA
+}
+
 enum TipoConta {
   CORRENTE
   POUPANCA
@@ -398,6 +407,16 @@ model Usuario {
   ultimoLogin  DateTime?
   inscricoesPush InscricaoPush[]
 
+  /// Token emitido antes desta data não vale mais. Trocar a senha, apagar a
+  /// conta ou remover um funcionário grava aqui — sem isso o JWT de 30 dias
+  /// continuaria abrindo a conta mesmo depois de a pessoa perder o acesso.
+  sessoesValidasDesde DateTime?
+
+  /// Prova do consentimento (LGPD, art. 8º, §2º: o ônus da prova é do
+  /// controlador). Guarda qual versão do texto a pessoa aceitou e quando.
+  termosVersao     String?
+  termosAceitosEm  DateTime?
+
   /// Acesso ao painel de administração do produto.
   ///
   /// É um papel na mesma conta, não um login separado: dois sistemas de sessão
@@ -467,6 +486,11 @@ model Conta {
 
   // Cartão de crédito
   limiteCentavos Int?
+
+  /// Bandeira do cartão (Visa, Mastercard, Elo...). Só aparece no cartão de
+  /// crédito, e só quando a pessoa informou: cartão com bandeira errada na
+  /// tela é pior do que cartão sem bandeira nenhuma.
+  bandeira BandeiraCartao?
   diaFechamento  Int?
   diaVencimento  Int?
 
@@ -1725,4 +1749,22 @@ model PessoaDoCasal {
   quotaBps       Int @default(0)
 
   @@index([casalId])
+}
+
+/// Registro de acesso à aplicação — Marco Civil da Internet (Lei 12.965/2014),
+/// art. 15: provedor de aplicação com fins econômicos guarda data, hora e IP
+/// de acesso por 6 meses, em sigilo, e só entrega por ordem judicial.
+///
+/// `usuarioId` é texto solto, sem chave estrangeira, de propósito: a obrigação
+/// de guarda sobrevive à exclusão da conta (LGPD, art. 16, I — cumprimento de
+/// obrigação legal). O cron apaga o que passou de 6 meses.
+model RegistroAcesso {
+  id        String   @id @default(cuid())
+  usuarioId String
+  evento    String
+  ip        String
+  criadoEm  DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([usuarioId])
 }

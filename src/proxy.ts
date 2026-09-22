@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { jwtVerify } from "jose"
 
-import { COOKIE_SESSAO } from "@/lib/auth"
+import { COOKIE_SESSAO } from "@/lib/cookie-sessao"
 import { rotaPermitida, type PapelDeAcesso } from "@/lib/acesso"
 
 /**
@@ -26,7 +26,7 @@ export async function proxy(requisicao: NextRequest) {
 
   let papel: PapelDeAcesso
   try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(segredo))
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(segredo), { algorithms: ["HS256"] })
     papel = (payload.papel as PapelDeAcesso) ?? "TITULAR"
   } catch {
     return NextResponse.next()

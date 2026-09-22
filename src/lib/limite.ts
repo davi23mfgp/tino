@@ -41,6 +41,12 @@ export const REGRAS = {
   caro: { maximo: 30, janelaSegundos: 3600, bloqueioSegundos: 600 },
   /// Captura por chave: um aviso de banco por compra, com folga para rajada.
   captura: { maximo: 120, janelaSegundos: 3600, bloqueioSegundos: 300 },
+  /// Teto geral de toda rota autenticada, por pessoa. Uma tela do Tino dispara
+  /// umas dez leituras; 300 por minuto é navegação muito rápida com folga.
+  apiLeitura: { maximo: 300, janelaSegundos: 60, bloqueioSegundos: 60 },
+  apiEscrita: { maximo: 60, janelaSegundos: 60, bloqueioSegundos: 120 },
+  /// Webhooks e rotas públicas sem sessão, por IP.
+  publico: { maximo: 120, janelaSegundos: 60, bloqueioSegundos: 120 },
 } satisfies Record<string, Regra>
 
 export class LimiteEstourado extends ErroDeUso {
@@ -104,6 +110,11 @@ export async function liberarLimite(chave: string) {
  * comportamento seguro: limita demais em vez de não limitar nada.
  */
 export function ipDaRequisicao(requisicao: Request) {
+  // Na Vercel, `x-vercel-forwarded-for` e `x-real-ip` são gravados pela borda e
+  // não aceitam valor do cliente. `x-forwarded-for` fica por último: fora da
+  // Vercel, o primeiro item dele pode ser forjado para escapar do limite.
+  const daBorda = requisicao.headers.get("x-vercel-forwarded-for") ?? requisicao.headers.get("x-real-ip")
+  if (daBorda) return daBorda.split(",")[0]!.trim()
   const encaminhado = requisicao.headers.get("x-forwarded-for")
   if (encaminhado) return encaminhado.split(",")[0]!.trim()
   return requisicao.headers.get("x-real-ip") ?? "desconhecido"

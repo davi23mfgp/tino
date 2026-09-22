@@ -15,7 +15,7 @@ import { ConfigAtalhoLancar } from "@/components/config-atalho-lancar"
 import { MeusDados } from "@/components/meus-dados"
 import { FotoDePerfil } from "@/components/foto-de-perfil"
 import { Input } from "@/components/ui/input"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { BuscaBancoPerfil, IdentidadeBanco } from "@/components/banco-perfil"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog"
@@ -39,6 +39,17 @@ interface Conexao {
   diasParaExpirar: number | null
 }
 
+/// Bandeiras que o Tino sabe desenhar. "Outra" existe para quem tem uma que
+/// não está na lista e ainda assim quer o campo preenchido.
+const BANDEIRAS = [
+  { valor: "VISA", rotulo: "Visa" },
+  { valor: "MASTERCARD", rotulo: "Mastercard" },
+  { valor: "ELO", rotulo: "Elo" },
+  { valor: "AMERICAN_EXPRESS", rotulo: "American Express" },
+  { valor: "HIPERCARD", rotulo: "Hipercard" },
+  { valor: "OUTRA", rotulo: "Outra" },
+]
+
 const TIPOS_CONTA = [
   { valor: "CORRENTE", rotulo: "Conta corrente" },
   { valor: "POUPANCA", rotulo: "Poupança" },
@@ -54,7 +65,7 @@ export default function Configuracoes() {
   const [openFinance, setOpenFinance] = useState<{ provedor: string; sandbox: boolean; conexoes: Conexao[] } | null>(
     null,
   )
-  const [nova, setNova] = useState({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "" })
+  const [nova, setNova] = useState({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "", bandeira: "" })
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [cadastroAberto, setCadastroAberto] = useState(false)
   const [salvandoConta, setSalvandoConta] = useState(false)
@@ -97,8 +108,9 @@ export default function Configuracoes() {
       saldoInicialCentavos: nova.saldo ? paraCentavos(nova.saldo) : 0,
       limiteCentavos: nova.tipo === "CARTAO_CREDITO" && nova.limite ? paraCentavos(nova.limite) : undefined,
       diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc) : undefined,
+      bandeira: nova.tipo === "CARTAO_CREDITO" && nova.bandeira ? nova.bandeira : undefined,
     })
-    setNova({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "" })
+    setNova({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "", bandeira: "" })
     setCadastroAberto(false)
     showToast("Conta adicionada")
     await recarregar().catch(() => setMensagem("Conta salva. Atualize a página para recarregar."))
@@ -296,6 +308,22 @@ export default function Configuracoes() {
                               onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
                               placeholder="6.000,00"
                             />
+                          </Field>
+                          <Field>
+                            <FieldLabel htmlFor="conta-bandeira">Bandeira</FieldLabel>
+                            <SelectNative
+                              id="conta-bandeira"
+                              value={nova.bandeira}
+                              onChange={(evento) => setNova({ ...nova, bandeira: evento.target.value })}
+                            >
+                              <option value="">Não informar</option>
+                              {BANDEIRAS.map((bandeira) => (
+                                <option key={bandeira.valor} value={bandeira.valor}>
+                                  {bandeira.rotulo}
+                                </option>
+                              ))}
+                            </SelectNative>
+                            <FieldDescription>Aparece no cartão. Fica em branco se você não souber.</FieldDescription>
                           </Field>
                           <Field>
                             <FieldLabel htmlFor="conta-venc">Dia do vencimento</FieldLabel>

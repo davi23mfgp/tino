@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { CLASSES } from "@/lib/tino/investir"
+import { BandeiraCartao, TipoConta } from "@prisma/client"
+import { campo, doLar, validar, z } from "@/lib/validar"
 
 type Contexto = { params: Promise<{ id: string }> }
 
@@ -8,7 +10,27 @@ const CLASSES_VALIDAS = new Set<string>(CLASSES.map((linha) => linha.classe))
 
 export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) => {
   const { id } = await contexto.params
-  const dados = await corpo<Record<string, unknown>>(requisicao)
+  const dados = validar(
+    z
+      .object({
+        nome: campo.textoObrigatorio(80),
+        instituicao: campo.texto(80).nullable(),
+        tipo: z.enum(TipoConta),
+        // Saldo inicial pode ser negativo (conta que já começou no vermelho).
+        saldoInicialCentavos: z.coerce.number().int().min(-2_147_483_647).max(2_147_483_647),
+        limiteCentavos: campo.centavos().nullable(),
+        diaFechamento: campo.dia().nullable(),
+        diaVencimento: campo.dia().nullable(),
+        membroId: campo.id().nullable(),
+        cor: campo.texto(30),
+        arquivada: z.boolean(),
+        classeDeAtivo: z.string().max(30).nullable(),
+        bandeira: z.enum(BandeiraCartao).nullable(),
+      })
+      .partial()
+      .strict(),
+    await corpo(requisicao),
+  )
 
   const conta = await prisma.conta.findFirst({ where: { id, larId: sessao.larId } })
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
@@ -25,6 +47,7 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
     "cor",
     "arquivada",
     "classeDeAtivo",
+    "bandeira",
   ] as const
 
   // Classe de ativo é a carteira do ARCA: aceitar um texto qualquer aqui faria
@@ -34,8 +57,10 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
     if (conta.tipo !== "INVESTIMENTO") throw new ErroDeUso("Só conta de investimento tem classe de ativo.")
   }
 
+  await doLar(sessao.larId, { membro: dados.membroId })
+
   const atualizacao = Object.fromEntries(
-    permitidos.filter((campo) => campo in dados).map((campo) => [campo, dados[campo]]),
+    permitidos.filter((nome) => nome in dados).map((nome) => [nome, dados[nome]]),
   )
 
   return ok(await prisma.conta.update({ where: { id }, data: atualizacao }))

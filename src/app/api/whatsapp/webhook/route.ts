@@ -11,6 +11,7 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { responderPorRegras } from "@/lib/tino/chat"
 import { ehBuscaDeDocumento, procurarDocumento } from "@/lib/tino/documentos"
 import { competenciaAtual } from "@/lib/datas"
+import { assinaturaMetaConfere, segredoConfere } from "@/lib/segredo"
 
 export const dynamic = "force-dynamic"
 
@@ -30,7 +31,7 @@ export async function GET(requisicao: Request) {
   const token = parametros.get("hub.verify_token")
   const desafio = parametros.get("hub.challenge")
 
-  if (modo === "subscribe" && token && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+  if (modo === "subscribe" && segredoConfere(token, process.env.WHATSAPP_VERIFY_TOKEN)) {
     return new Response(desafio ?? "", { status: 200, headers: { "Content-Type": "text/plain" } })
   }
 
@@ -49,7 +50,20 @@ export async function GET(requisicao: Request) {
  * chegando repetidas vezes — ou seja, o gasto lançado várias vezes.
  */
 export async function POST(requisicao: Request) {
-  const evento = (await requisicao.json().catch(() => ({}))) as EventoWhatsApp
+  // Assinatura antes de qualquer coisa: sem ela, qualquer um que soubesse a URL
+  // se passaria pelo telefone de um cliente. Recusa com 401 (a Meta, que assina
+  // certo, nunca cai aqui; quem cai não merece o 200 que evita reenvio).
+  const corpoCru = await requisicao.text()
+  if (!assinaturaMetaConfere(corpoCru, requisicao.headers.get("x-hub-signature-256"), process.env.WHATSAPP_APP_SECRET)) {
+    return NextResponse.json({ erro: "não autorizado" }, { status: 401 })
+  }
+
+  let evento: EventoWhatsApp
+  try {
+    evento = JSON.parse(corpoCru) as EventoWhatsApp
+  } catch {
+    return NextResponse.json({ ok: true })
+  }
   const mensagem = primeiraMensagem(evento)
   if (!mensagem) return NextResponse.json({ ok: true })
 

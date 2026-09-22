@@ -2,7 +2,8 @@ import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { caixaAberto, lojaDoLar, proximoNumero, regrasDeRecebimento, somarNoFaturamentoMei } from "@/lib/loja/dados"
 import { calcularPagamento, conferirVenda, descontarTroco, totalDaVenda } from "@/lib/loja/venda"
-import type { FormaPagamento, ItemDaVenda, PagamentoInformado } from "@/lib/loja/venda"
+import type { FormaPagamento } from "@/lib/loja/venda"
+import { campo, validar, z } from "@/lib/validar"
 
 export const GET = comSessao(async (sessao, requisicao) => {
   const loja = await lojaDoLar(sessao.larId)
@@ -27,23 +28,48 @@ export const GET = comSessao(async (sessao, requisicao) => {
  * numa loja isso seria venda registrada por menos do que foi cobrado.
  */
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{
-    itens: (ItemDaVenda & { produtoId?: string })[]
-    pagamentos: PagamentoInformado[]
-    descontoCentavos?: number
-    clienteNome?: string
-    clienteTelefone?: string
-    observacao?: string
-  }>(requisicao)
-
-  if (!Array.isArray(dados.itens) || dados.itens.length === 0) {
-    throw new ErroDeUso("A venda precisa de pelo menos um item.")
-  }
-  if (!Array.isArray(dados.pagamentos) || dados.pagamentos.length === 0) {
-    throw new ErroDeUso("Informe como o cliente pagou.")
-  }
+  // Preço negativo ou quantidade fracionária virariam venda que abate o total
+  // ou estoque com casa decimal; tudo é conferido antes de qualquer cálculo.
+  const dados = validar(
+    z.object({
+      itens: z
+        .array(
+          z.object({
+            produtoId: campo.id().optional(),
+            descricao: campo.textoObrigatorio(120),
+            quantidade: campo.inteiro(1, 100_000),
+            precoUnitarioCentavos: campo.centavos(),
+          }),
+        )
+        .min(1)
+        .max(200),
+      pagamentos: z
+        .array(
+          z.object({
+            forma: z.enum(["DINHEIRO", "PIX", "DEBITO", "CREDITO_VISTA", "CREDITO_PARCELADO", "FIADO"]),
+            valorCentavos: campo.centavos(),
+            parcelas: campo.inteiro(1, 24).optional(),
+          }),
+        )
+        .min(1)
+        .max(10),
+      descontoCentavos: campo.centavos().optional(),
+      clienteNome: campo.texto(80).optional(),
+      clienteTelefone: campo.texto(20).optional(),
+      observacao: campo.texto(500).optional(),
+    }),
+    await corpo(requisicao),
+  )
 
   const loja = await lojaDoLar(sessao.larId)
+
+  // Produto de outra loja não pode entrar: a baixa de estoque mais abaixo
+  // descontaria da prateleira de outra pessoa.
+  const idsProduto = [...new Set(dados.itens.flatMap((item) => (item.produtoId ? [item.produtoId] : [])))]
+  if (idsProduto.length > 0) {
+    const daLoja = await prisma.produtoLoja.count({ where: { id: { in: idsProduto }, lojaId: loja.id } })
+    if (daLoja !== idsProduto.length) throw new ErroDeUso("Produto não encontrado nesta loja.", 404)
+  }
   const [regras, caixa] = await Promise.all([regrasDeRecebimento(loja.id), caixaAberto(loja.id)])
 
   const totalCentavos = totalDaVenda(dados.itens, dados.descontoCentavos ?? 0)

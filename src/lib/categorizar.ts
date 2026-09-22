@@ -10,6 +10,7 @@
  * na camada 1, com prioridade acima do dicionário.
  */
 
+import { regexSegura } from "@/lib/regex-segura"
 import type { GrupoCategoria } from "@prisma/client"
 
 export interface RegraAplicavel {
@@ -121,6 +122,8 @@ export function categorizar(
   for (const regra of ativas) {
     let bateu = false
     if (regra.regex) {
+      // Regra antiga, salva antes da checagem na criação, ainda pode ser perigosa.
+      if (!regexSegura(regra.padrao)) continue
       try {
         bateu = new RegExp(regra.padrao, "i").test(descricaoBruta)
       } catch {
