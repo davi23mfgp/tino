@@ -5,6 +5,16 @@ const nextConfig = {
   ...(process.env.TINO_BUILD_LEVE === "1" ? { experimental: { cpus: 1 } } : {}),
   allowedDevOrigins: ['lubricant-parcel-elaborate.ngrok-free.dev'],
 
+  // O Prisma só roda no motor binário do Postgres (libquery_engine-*.so.node),
+  // mas o rastreador de arquivos do Next (@vercel/nft) enxerga, dentro do
+  // runtime do @prisma/client, referência textual aos três motores wasm
+  // (mysql, sqlite, postgresql) e empacota os três em TODA rota de API —
+  // uns 6MB por rota que nunca executam. Com 76 rotas isso vira armazenamento
+  // de function inflado sem motivo. Exclui os wasm de todas as rotas.
+  outputFileTracingExcludes: {
+    '/*': ['./node_modules/@prisma/client/runtime/query_engine_bg.*'],
+  },
+
   images: {
     // A lista padrão do Next é 16, 32, 48, 64, 96, 128, 256 e 384. Para uma
     // imagem de tamanho fixo ele monta o srcset com a largura pedida e o dobro
