@@ -95,3 +95,37 @@
   font-weight:640; letter-spacing:-.025em; font-variant-numeric:tabular-nums;
 }
 @media(max-width:640px){ .cartaoBanco { min-height:72px } }
+
+/* Topo do Início: um cartão de vidro com a cor de destaque acesa nos cantos
+   (Davi, 23/09). É o único cartão com brilho de cor na tela — é por onde o
+   olho entra. O vidro vem das mesmas variáveis do resto, então o tema claro
+   e a cor escolhida em Aparência valem aqui sem regra própria. */
+.heroi{position:relative;overflow:hidden;padding:20px;border-radius:28px;border:1px solid var(--vidro-borda);
+  background:radial-gradient(120% 90% at 100% 0%,color-mix(in oklab,var(--acao),transparent 72%),transparent 60%),radial-gradient(90% 80% at 0% 110%,color-mix(in oklab,var(--acao),transparent 84%),transparent 60%),var(--vidro-brilho),var(--vidro-tinta);
+  -webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);box-shadow:var(--vidro-luz),var(--vidro-sombra)}
+.heroiTopo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.ola{font-size:calc(22px * var(--escala-letra));font-weight:720;letter-spacing:-.02em}
+.hoje{margin-top:2px;font-size:max(10px, calc(12px * var(--escala-letra)));color:var(--texto-2)}
+.hoje::first-letter{text-transform:uppercase}
+.saudeHeroi{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.saudeHeroi small{font-size:max(10px, calc(11px * var(--escala-letra)));color:var(--texto-3);white-space:nowrap}
+.anelHeroi{--nota:0deg;--cor:var(--positivo);position:relative;display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:conic-gradient(var(--cor) var(--nota),color-mix(in oklab,var(--foreground),transparent 88%) 0)}
+.anelHeroi::after{content:"";position:absolute;inset:6px;border-radius:50%;background:color-mix(in oklab,var(--background),transparent 15%)}
+.anelHeroi b{position:relative;z-index:1;font-size:calc(19px * var(--escala-letra));font-weight:720;font-variant-numeric:tabular-nums}
+/* Âmbar próprio pelo mesmo motivo de Dívidas: o --atencao global é cinza. */
+.anelHeroi[data-situacao="ATENCAO"],.anelHeroi[data-situacao="APERTADO"]{--cor:oklch(0.8 0.15 80)}
+:global(.light) .anelHeroi[data-situacao="ATENCAO"],:global(.light) .anelHeroi[data-situacao="APERTADO"]{--cor:oklch(0.55 0.13 65)}
+.anelHeroi[data-situacao="CRITICO"]{--cor:var(--negativo)}
+.linhaMes{margin-top:8px;font-size:max(10px, calc(12px * var(--escala-letra)));color:var(--texto-2);line-height:1.6}
+.linhaMes b{font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+.linhaMes b:not([class*="text-"]){color:var(--foreground)}
+.atalhos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.atalhos a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:18px;border:1px solid var(--vidro-borda);background:color-mix(in oklab,var(--foreground),transparent 92%);font-size:calc(14px * var(--escala-letra));font-weight:600;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transition:background var(--tempo) var(--curva)}
+.atalhos a:hover{background:color-mix(in oklab,var(--foreground),transparent 86%)}
+.atalhos svg{width:18px;height:18px}
+@media(min-width:900px){.heroi{padding:24px 28px}.atalhos{max-width:420px}}
+
+/* O cartão do banco é escuro nos dois temas, então o texto dele é sempre
+   claro. Sem isto, no tema claro o "Banco do Brasil" e o "Fatura atual"
+   herdavam o cinza escuro de .dadosLinha e sumiam no fundo do cartão. */
+.cartaoBanco .dadosLinha small,.cartaoBanco .faturaAtual small,.cartaoBanco .proximas small{color:#ffffffc4}

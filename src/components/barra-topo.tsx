@@ -55,7 +55,7 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
   const prioridade:Record<string,number>={CRITICO:0,ATENCAO:1,INFO:2}
   const lista=[...(soNovas ? novas : alertas)].sort((a,b)=>(prioridade[a.severidade]??3)-(prioridade[b.severidade]??3))
   return <header className="app-header">
-    <div className="app-header-title"><h1>{caminho==="/painel" ? "Olá, "+nome.split(" ")[0]+"." : titulo}</h1><p>{apenasLoja ? "Sua loja, organizada." : competencia}</p></div>
+    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1><p>{apenasLoja ? "Sua loja, organizada." : competencia}</p></div>
     <div className="app-header-actions">
       {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
           que existe atalho. A forma de barra e a mesma do resto do app e ja

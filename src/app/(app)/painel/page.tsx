@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import type { CSSProperties } from "react"
 import Link from "next/link"
-import { ArrowRight, CheckCircle2, ReceiptText, WalletCards } from "lucide-react"
+import { ArrowRight, CheckCircle2, Plus, ReceiptText } from "lucide-react"
 
 import estilos from "./painel.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
@@ -20,9 +20,7 @@ import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
-import { ONDE_RESOLVER } from "@/lib/tino/onde-resolver"
 import { AvisoNoHeroi } from "@/components/aviso-no-heroi"
-import { Destaque } from "@/components/ui/destaque"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 
 export const dynamic = "force-dynamic"
@@ -30,6 +28,9 @@ export const metadata: Metadata = { title: "Início — Tino", robots: { index: 
 
 const CORES_FAIXA: Record<string, string> = { BOM: "text-positivo", ATENCAO: "text-atencao", CRITICO: "text-negativo", SEM_DADO: "text-muted-fg" }
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
+
+/** A situação ao lado da nota: 52 sozinho não diz se é bom. */
+const SITUACAO = { SAUDAVEL: "saudável", ATENCAO: "atenção", APERTADO: "apertado", CRITICO: "crítico" } as const
 
 function valorDoMes(transacoes: { competencia: string; tipo: string; valorCentavos: number }[], competencia: string) {
   return transacoes.filter((linha) => linha.competencia === competencia).reduce((total, linha) => total + (linha.tipo === "DESPESA" ? linha.valorCentavos : -linha.valorCentavos), 0)
@@ -67,38 +68,46 @@ export default async function Painel() {
   // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
   const quantidadePendente = totaisPendentes._count._all
   const totalPendente = totaisPendentes._sum.valorCentavos ?? 0
-  const primeiraPrioridade = diagnostico.prioridades[0]
-  const proximoPasso = primeiraPrioridade ? ONDE_RESOLVER[primeiraPrioridade.chave] : undefined
+  const primeiroNome = sessao.nome.trim().split(" ")[0] || "você"
+  // Data no fuso de quem usa o app: o servidor roda em UTC, e às 22h de
+  // Brasília ele já diria que é amanhã.
+  const hoje = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Sao_Paulo" }).format(new Date())
   const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 6)
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
-    <section className={estilos.resumo} aria-labelledby="resumo-mes">
-      <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">{panorama.mes.sobraCentavos >= 0 ? "Sobrou" : "Faltou"} em {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span>{panorama.aplicadoCentavos > 0 && <> · aplicado: <span className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</span></>}</p>
-      {/* O número sozinho diz como você está, não o que fazer. A primeira
-          prioridade do diagnóstico já existia e só aparecia lá dentro da
-          Análise — aqui ela vira o próximo passo, com o destino junto. */}
-      <AvisoNoHeroi /></div>
+    {/* O topo é um cartão só (Davi, 23/09, com um app de banco como
+        referência): quem é, que dia é, quanto tem agora e como está a saúde.
+        Saíram o bloco claro de "próximo passo" — a mesma ação aparecia de
+        novo em Prioridades e em Dívidas, mais abaixo — e as três caixinhas
+        de entrou/saiu/saúde, que viraram uma linha e um anel aqui dentro. */}
+    <section className={estilos.heroi} aria-labelledby="ola">
+      <div className={estilos.heroiTopo}>
+        <div className="min-w-0">
+          <h2 id="ola" className={estilos.ola}>Olá, {primeiroNome}!</h2>
+          <p className={estilos.hoje}>{hoje}</p>
+        </div>
+        <Link href="/analise" className={estilos.saudeHeroi} aria-label={`Saúde financeira: ${diagnostico.nota} de 100, ${SITUACAO[diagnostico.situacao]}`}>
+          <span className={estilos.anelHeroi} data-situacao={diagnostico.situacao} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}>
+            <b>{diagnostico.nota}</b>
+          </span>
+          <small>saúde · {SITUACAO[diagnostico.situacao]}</small>
+        </Link>
+      </div>
+      <div className={estilos.tituloResumo}><p className={estilos.sobretitulo}>Saldo disponível</p><BotaoOcultarValores /></div>
+      <p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
+      <p className={estilos.linhaMes}>
+        {rotuloCompetencia(competencia).split(" ")[0]}: entrou <b className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</b>
+        {" · "}saiu <b className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</b>
+        {" · "}{panorama.mes.sobraCentavos >= 0 ? "sobrou" : "faltou"} <b className="valor-sensivel">{formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}</b>
+        {panorama.aplicadoCentavos > 0 && <>{" · "}aplicado <b className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</b></>}
+      </p>
+      <AvisoNoHeroi />
+      <div className={estilos.atalhos}>
+        <Link href="/lancar"><Plus aria-hidden />Anotar</Link>
+        <Link href="/transacoes"><ReceiptText aria-hidden />Extrato</Link>
+      </div>
     </section>
-
-    {/* O próximo passo saiu do herói e virou o bloco claro da tela. Ele é a
-        única coisa do painel que pede AÇÃO, e no escuro ele se perdia entre
-        seis cartões do mesmo tom. Um bloco claro por tela — dois viram duas
-        chamadas e a hierarquia volta a ser plana. */}
-    {proximoPasso && primeiraPrioridade && (
-      <Destaque
-        rotulo="Seu próximo passo"
-        titulo={primeiraPrioridade.titulo}
-        apoio={primeiraPrioridade.acao}
-        acao={{ href: proximoPasso.href, texto: proximoPasso.texto }}
-      />
-    )}
-
-    {/* Entrou, saiu e saúde saíram de dentro do herói. Eram três colunas ao
-        lado do número, e o que deveria ser UMA resposta virava quatro coisas
-        do mesmo tamanho na mesma faixa. Aqui embaixo eles explicam, que é o
-        papel deles. */}
-      <dl className={estilos.numerosDeApoio}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
