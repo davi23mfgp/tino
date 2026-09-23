@@ -1,19 +1,34 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
+import { GrupoCategoria, TipoTransacao } from "@prisma/client"
+import { campo, doLar, validar, z } from "@/lib/validar"
 
 type Contexto = { params: Promise<{ id: string }> }
 
 export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) => {
   const { id } = await contexto.params
-  const dados = await corpo<Record<string, unknown>>(requisicao)
+  // `strict`: campo fora da lista é recusado, não ignorado em silêncio.
+  const atualizacao = validar(
+    z
+      .object({
+        nome: campo.textoObrigatorio(60),
+        grupo: z.enum(GrupoCategoria),
+        tipo: z.enum(TipoTransacao),
+        essencial: z.boolean(),
+        cor: campo.texto(30),
+        icone: campo.texto(40),
+        paiId: campo.id().nullable(),
+        ordem: campo.inteiro(0, 10_000),
+      })
+      .partial()
+      .strict(),
+    await corpo(requisicao),
+  )
 
   const categoria = await prisma.categoria.findFirst({ where: { id, larId: sessao.larId } })
   if (!categoria) throw new ErroDeUso("Categoria não encontrada.", 404)
-
-  const permitidos = ["nome", "grupo", "tipo", "essencial", "cor", "icone", "paiId", "ordem"] as const
-  const atualizacao = Object.fromEntries(
-    permitidos.filter((campo) => campo in dados).map((campo) => [campo, dados[campo]]),
-  )
+  if (atualizacao.paiId === id) throw new ErroDeUso("Uma categoria não pode ser mãe dela mesma.")
+  await doLar(sessao.larId, { categoria: atualizacao.paiId })
 
   return ok(await prisma.categoria.update({ where: { id }, data: atualizacao }))
 })

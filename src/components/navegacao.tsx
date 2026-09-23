@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { ChevronRight, LogOut, Menu, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { IconeFerramenta } from "@/lib/icone-ferramenta"
 import { enviar } from "@/lib/cliente"
 import { TinoMarca } from "@/components/tino-mascote"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
@@ -25,6 +26,7 @@ import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA_FUNCIONARIO, NUCLEO, 
  * A altura ficou em 40px: o suficiente para o toque, sem a faixa de 44px mais
  * margem que antes empurrava o primeiro número da tela para fora da vista.
  */
+
 export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
   const caminho = usePathname()
   const grupo = grupoDoCaminho(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei)), caminho)
@@ -42,6 +44,7 @@ export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boole
             data-ativo={ativo}
             className="spring-press"
           >
+            <IconeFerramenta rotulo={rotulo} />
             <span className="truncate">{rotulo}</span>
           </Link>
         )
@@ -92,7 +95,7 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
   const secundario = !principais.some(grupo => grupo.itens.some(item => estaAtivo(caminho,item.rota)))
   async function sair() { await enviar("/api/auth/logout", {}); router.push("/login"); router.refresh() }
   return <>
-    {!apenasLoja && <div className="fixed bottom-24 right-4 z-40 lg:hidden"><TinoDock /></div>}
+    {!apenasLoja && <div className="fixed bottom-[104px] right-3 z-40 lg:hidden"><TinoDock /></div>}
     <aside className="app-sidebar">
       <Link href={apenasLoja ? "/loja" : "/painel"} className="app-brand" aria-label="Tino — início"><TinoMarca className="size-9" /><span>tino.</span></Link>
       <p className="app-sidebar-caption">{apenasLoja ? "Sua loja" : "Seu dia a dia"}</p>

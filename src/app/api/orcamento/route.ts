@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, lerCompetencia, ok } from "@/lib/api"
+import { ErroDeUso, comSessao, corpo, lerCompetencia, ok } from "@/lib/api"
+import { campo, validar, z } from "@/lib/validar"
 import { competenciaAtual, competenciaMaisMeses, janelaDoMes, ultimasCompetencias } from "@/lib/datas"
 
 export const GET = comSessao(async (sessao, requisicao) => {
@@ -61,6 +62,16 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     /// não quer refazê-lo do zero todo dia 1º.
     repetirMeses?: number
   }>(requisicao)
+
+  const linhasValidas = validar(
+    z.array(z.object({ categoriaId: campo.id(), limiteCentavos: campo.centavos() })).max(500),
+    dados.linhas ?? [],
+  )
+  const idsCategoria = [...new Set(linhasValidas.map((linha) => linha.categoriaId))]
+  if ((await prisma.categoria.count({ where: { id: { in: idsCategoria }, larId: sessao.larId } })) !== idsCategoria.length) {
+    throw new ErroDeUso("Categoria inválida.")
+  }
+  dados.linhas = linhasValidas
 
   const competencia = lerCompetencia(dados.competencia, competenciaAtual())
   const meses = Math.max(0, Math.min(dados.repetirMeses ?? 0, 24))

@@ -130,7 +130,7 @@ Nenhuma é visual, e todas já foram vistas e registradas.
    `redirect()` para `/cartoes?aba=parcelas` no commit `3af300e` (13/09). São
    62 de 63 passando. **Decisão do Davi:** ajustar a expectativa do teste, ou o
    redirect é que não deveria existir?
-2. **`/api/tino/alertas` é consultado por quatro componentes da mesma página** —
+2. ~~**`/api/tino/alertas` é consultado por quatro componentes da mesma página**~~ **Já resolvido (conferido em 22/09):** `AlertasProvider` em `(app)/layout.tsx` atende os cinco componentes por `usarAlertas()`. *(era:)* —
    cinco a seis requisições por carregamento. Pede um provedor único de
    contexto. É mudança estrutural, não visual, e por isso ficou fora das ondas.
 3. **390px continua sem prova visual.** A ferramenta de redimensionar desta

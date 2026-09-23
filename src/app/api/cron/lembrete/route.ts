@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 
 import { prisma } from "@/lib/prisma"
 import { empurrar, pushConfigurado } from "@/lib/push"
+import { segredoConfere } from "@/lib/segredo"
+import { expurgarRegistrosVencidos } from "@/lib/registro-acesso"
 
 export const dynamic = "force-dynamic"
 
@@ -25,9 +27,16 @@ export const dynamic = "force-dynamic"
 export async function GET(requisicao: Request) {
   const segredo = process.env.CRON_SECRET
   const autorizacao = requisicao.headers.get("authorization")
-  if (!segredo || autorizacao !== `Bearer ${segredo}`) {
+  if (!segredo || !segredoConfere(autorizacao, `Bearer ${segredo}`)) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 })
   }
+
+  // Faxina diária que não depende do push: registro de acesso com mais de 6
+  // meses (Marco Civil) e contador de tentativa vencido há mais de um dia.
+  await expurgarRegistrosVencidos()
+  await prisma.limiteAcesso.deleteMany({
+    where: { janelaInicio: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+  })
 
   if (!pushConfigurado()) {
     return NextResponse.json({ erro: "Push não configurado neste ambiente." }, { status: 503 })

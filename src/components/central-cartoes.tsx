@@ -3,12 +3,13 @@
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2, Upload } from "lucide-react"
+import { CalendarClock, ChevronLeft, ChevronRight, Nfc, Pencil, Plus, ShoppingBag, Tags, Trash2, Upload, type LucideIcon } from "lucide-react"
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
+import { IconeFerramenta } from "@/lib/icone-ferramenta"
 import { orcamentoInicialCentavos } from "@/lib/orcamento-cartao"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
@@ -28,6 +29,17 @@ import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
+
+/// Como cada bandeira é escrita no cartão. Texto, não logo: as marcas são
+/// registradas e o Tino não tem licença para reproduzi-las.
+const ROTULO_BANDEIRA: Record<string, string> = {
+  VISA: "VISA",
+  MASTERCARD: "Mastercard",
+  ELO: "elo",
+  AMERICAN_EXPRESS: "AMEX",
+  HIPERCARD: "Hipercard",
+  OUTRA: "",
+}
 
 export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string }) {
   const router = useRouter()
@@ -101,7 +113,13 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
     />
     <section className={estilos.topo}>
       <div className={estilos.carteira} aria-label="Seus cartões">
-        {cartoes.map((linha, indice) => <button
+        {cartoes.map((linha, indice) => {
+          // A fatura do mês de cada cartão, não só a do selecionado: é o número
+          // que a pessoa procura ao abrir a carteira, e a tira visível da pilha
+          // é onde ele cabe.
+          const faturaDoCartao = resumoDoMes(linha, mesAtual).saldo
+          const usado = linha.limiteCentavos ? Math.min(100, Math.round((faturaDoCartao / linha.limiteCentavos) * 100)) : null
+          return <button
           key={linha.id}
           type="button"
           aria-pressed={linha.id === cartao.id}
@@ -110,9 +128,32 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
           onClick={() => { setId(linha.id); setMes(mesAtual); setCategoria(""); setBusca("") }}
         >
           <span className={estilos.marca}><small>{linha.instituicao ?? "Cartão"}</small><IdentidadeBanco instituicao={linha.instituicao ?? ""} nome={linha.nome} /></span>
-          <strong>{linha.nome}</strong>
-          <span className={estilos.final}>Vence {linha.diaVencimento ? `dia ${linha.diaVencimento}` : "não informado"}</span>
-        </button>)}
+          <span className={estilos.faturaDoCartao}>
+            <small>Fatura de {rotuloCompetencia(mesAtual, true)}</small>
+            <b>{formatarMoeda(faturaDoCartao)}</b>
+          </span>
+          {usado !== null && <span className={estilos.limite}>
+            <i style={{ width: `${usado}%` }} />
+            <em>{usado}% do limite de {formatarMoeda(linha.limiteCentavos ?? 0)}</em>
+          </span>}
+          {/* Peças de cartão de verdade: chip e o símbolo de aproximação. São
+              o que faz a peça parecer cartão e não retângulo colorido. */}
+          <span className={estilos.peças} aria-hidden>
+            <span className={estilos.chip} />
+            <Nfc className={estilos.aproximacao} />
+          </span>
+          <span className={estilos.rodapeCartao}>
+            <span className={estilos.identificacao}>
+              <strong>{linha.nome}</strong>
+              <span className={estilos.final}>Vence {linha.diaVencimento ? `dia ${linha.diaVencimento}` : "não informado"}</span>
+            </span>
+            {/* Bandeira só quando a pessoa informou. Adivinhar pelo nome do
+                cartão poria "Visa" num Mastercard e ninguém confiaria mais na
+                tela. Cadastra-se em Configurações, no cartão. */}
+            {linha.bandeira && <span className={estilos.bandeira}>{ROTULO_BANDEIRA[linha.bandeira] ?? ""}</span>}
+          </span>
+        </button>
+        })}
       </div>
 
       <div className={estilos.detalhes}>
@@ -168,13 +209,38 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
     <div className={estilos.acoes}><Button onClick={() => setForm({})}><Plus />Nova compra</Button><Button variant="outline" onClick={() => setAba("importar")}><Upload />Importar fatura</Button></div>
 
     <Tabs value={aba} onValueChange={setAba}>
-      <TabsList className={estilos.abas}><TabsTrigger value="compras">Compras</TabsTrigger><TabsTrigger value="parcelas">Parcelas</TabsTrigger><TabsTrigger value="categorias">Categorias</TabsTrigger><TabsTrigger value="orcamento">Orçamento</TabsTrigger><TabsTrigger value="ajuda">Ajuda</TabsTrigger><TabsTrigger value="importar">Importar</TabsTrigger></TabsList>
+      <TabsList className={estilos.abas}>
+        {/* Rótulo e valor da aba vêm da mesma lista: seis gatilhos escritos à
+            mão eram seis lugares para o ícone faltar. */}
+        {[["compras","Compras"],["parcelas","Parcelas"],["categorias","Categorias"],["orcamento","Orçamento"],["ajuda","Ajuda"],["importar","Importar"]].map(([valor,rotulo]) => (
+          <TabsTrigger key={valor} value={valor}><IconeFerramenta rotulo={rotulo} /><span className="truncate">{rotulo}</span></TabsTrigger>
+        ))}
+      </TabsList>
 
       <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><Select value={categoria || "todas"} onValueChange={(valor) => setCategoria(valor === "todas" ? "" : valor)}><SelectTrigger aria-label="Filtrar categoria" className="w-full sm:w-[220px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todas">Todas as categorias</SelectItem>{resumo.categorias.map((linha) => <SelectItem key={linha.id} value={linha.id}>{linha.nome}</SelectItem>)}</SelectContent></Select></div>
-        <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.marca36}><MarcaPersonalizada nome={compra.descricao} /><IconeCategoria compra={compra} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
+        {compras.length === 0 ? (
+          <PainelVazio
+            Icone={ShoppingBag}
+            titulo={busca || categoria ? "Nenhuma compra com esse filtro" : "Nenhuma compra neste mês"}
+            apoio={busca || categoria
+              ? "Limpe a busca ou escolha outra categoria."
+              : "As compras entram pelo aviso do banco, pela fatura importada ou lançadas à mão."}
+            acao={busca || categoria
+              ? { rotulo: "Limpar filtros", aoTocar: () => { setBusca(""); setCategoria("") } }
+              : { rotulo: "Nova compra", aoTocar: () => setForm({}) }}
+          />
+        ) : <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.marca36}><MarcaPersonalizada nome={compra.descricao} /><IconeCategoria compra={compra} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
+      }
       </section></TabsContent>
 
-      <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} /><ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} mes={mes} aoEditar={(parcelamento) => setForm({ parcelamento })} aoExcluir={setExcluir} /></section></TabsContent>
+      <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} />{cartao.parcelamentos.length === 0 ? (
+        <PainelVazio
+          Icone={CalendarClock}
+          titulo="Nenhuma compra parcelada"
+          apoio="Compra dividida em vezes aparece aqui com a parcela de cada mês e quanto falta."
+          acao={{ rotulo: "Lançar compra parcelada", aoTocar: () => setForm({}) }}
+        />
+      ) : <ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} mes={mes} aoEditar={(parcelamento) => setForm({ parcelamento })} aoExcluir={setExcluir} />}</section></TabsContent>
 
       <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
 
@@ -190,6 +256,25 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
 
 function Cabecalho({ titulo, apoio }: { titulo: string; apoio: string }) {
   return <header className={estilos.cabecalho}><div><h2>{titulo}</h2><p>{apoio}</p></div></header>
+}
+
+/**
+ * O que cada ferramenta mostra quando não há nada para mostrar.
+ *
+ * Antes não mostrava nada: mês sem compra deixava o painel em branco, e
+ * branco não diz se o Tino está carregando, se quebrou, ou se o mês está
+ * mesmo zerado. Cada vazio agora diz o que é, de onde viria o conteúdo e
+ * oferece a ação que o cria.
+ */
+function PainelVazio({ Icone, titulo, apoio, acao }: { Icone: LucideIcon; titulo: string; apoio: string; acao?: { rotulo: string; aoTocar: () => void } }) {
+  return (
+    <div className={estilos.painelVazio}>
+      <span className={estilos.painelVazioIcone}><Icone aria-hidden /></span>
+      <strong>{titulo}</strong>
+      <p>{apoio}</p>
+      {acao && <Button onClick={acao.aoTocar}>{acao.rotulo}</Button>}
+    </div>
+  )
 }
 
 /**

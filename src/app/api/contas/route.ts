@@ -55,6 +55,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     cor?: string
     ticker?: string
     classeDeAtivo?: string
+    bandeira?: string
     quantidadeMilesimos?: number
   }>(requisicao)
 
@@ -64,6 +65,9 @@ export const POST = comSessao(async (sessao, requisicao) => {
   if(dados.ticker&&!/^[A-Za-z0-9.]{1,12}$/.test(dados.ticker.trim()))throw new ErroDeUso("Código do ativo inválido.")
   if(dados.classeDeAtivo&&!CLASSES.some((linha)=>linha.classe===dados.classeDeAtivo))throw new ErroDeUso("Classe de ativo inválida.")
   if(dados.membroId&&!await prisma.membro.findFirst({where:{id:dados.membroId,larId:sessao.larId}}))throw new ErroDeUso("Membro inválido.")
+  // Bandeira só existe em cartão de crédito, e só o que o banco de dados aceita.
+  const BANDEIRAS = ["VISA","MASTERCARD","ELO","AMERICAN_EXPRESS","HIPERCARD","OUTRA"]
+  if(dados.bandeira&&(!BANDEIRAS.includes(dados.bandeira)||dados.tipo!=="CARTAO_CREDITO"))throw new ErroDeUso("Bandeira inválida.")
   const conta = await prisma.conta.create({
     data: {
       larId: sessao.larId,
@@ -79,6 +83,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       ticker: dados.ticker?.trim().toUpperCase() || null,
       classeDeAtivo: dados.tipo === "INVESTIMENTO" && dados.classeDeAtivo ? (dados.classeDeAtivo as never) : null,
       quantidadeMilesimos: dados.quantidadeMilesimos ?? null,
+      bandeira: (dados.tipo === "CARTAO_CREDITO" && dados.bandeira ? dados.bandeira : null) as never,
     },
   })
 

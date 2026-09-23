@@ -10,7 +10,7 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${id}))`
     const meta = await tx.meta.findFirst({ where: { id, larId: sessao.larId } })
     if (!meta) throw new ErroDeUso("Meta não encontrada.", 404)
-    const entrada = await corpo<Record<string, unknown>>(requisicao)
+    const entrada = await corpo<Record<string, unknown>>(requisicao, { bytes: 720_000, texto: 700_000 })
     if (entrada && "saldoCentavos" in entrada && entrada.saldoCentavos !== meta.saldoCentavos) throw new ErroDeUso("Use aporte ou retirada para alterar o saldo.")
     const dados = await validarDadosMeta(sessao.larId, entrada, meta)
     return tx.meta.update({ where: { id }, data: dados })

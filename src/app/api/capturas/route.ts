@@ -3,6 +3,7 @@ import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { confirmarCaptura, descartarCaptura, gerarChave } from "@/lib/captura"
 import { whatsappDisponivel } from "@/lib/captura/whatsapp"
 import { regraAPartirDeCorrecao } from "@/lib/categorizar"
+import { campo, doLar, validar, z } from "@/lib/validar"
 
 export const dynamic = "force-dynamic"
 
@@ -42,15 +43,19 @@ export const GET = comSessao(async (sessao, requisicao) => {
 
 /** Confirma uma captura, virando lançamento. */
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{
-    capturaId: string
-    contaId?: string
-    categoriaId?: string | null
-    valorCentavos?: number
-    descricao?: string
-    /// Ensina o Tino: a categoria escolhida vira regra para os próximos.
-    criarRegra?: boolean
-  }>(requisicao)
+  const dados = validar(
+    z.object({
+      capturaId: campo.id(),
+      contaId: campo.id().optional(),
+      categoriaId: campo.id().nullish(),
+      valorCentavos: campo.centavos().optional(),
+      descricao: campo.texto(200).optional(),
+      /// Ensina o Tino: a categoria escolhida vira regra para os próximos.
+      criarRegra: z.boolean().optional(),
+    }),
+    await corpo(requisicao),
+  )
+  await doLar(sessao.larId, { conta: dados.contaId, categoria: dados.categoriaId })
 
   const captura = await prisma.captura.findFirst({
     where: { id: dados.capturaId, larId: sessao.larId },

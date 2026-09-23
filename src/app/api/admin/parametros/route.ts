@@ -29,7 +29,10 @@ export const PUT = comAdmin(async (sessao, requisicao) => {
       await gravarParametro(dados.chave, Number(dados.valor), sessao.email)
     }
   } catch (excecao) {
-    return NextResponse.json({ erro: (excecao as Error).message }, { status: 400 })
+    // O detalhe vai para o log; a resposta não repete mensagem de exceção,
+    // que pode vir do banco e descrever o esquema por dentro.
+    console.error("[tino] parâmetro recusado", dados.chave, excecao)
+    return NextResponse.json({ erro: "Valor inválido para este parâmetro." }, { status: 400 })
   }
 
   const valores = await valoresVigentes()

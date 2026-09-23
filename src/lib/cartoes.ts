@@ -4,7 +4,7 @@ export interface CompraCartao { id: string; descricao: string; data: string; com
 export interface ParcelaCartao { id: string; numero: number; competencia: string; valorCentavos: number; paga: boolean }
 export interface CompraParcelada { id: string; descricao: string; categoriaId: string | null; parcelasTotal: number; parcelasPagas: number; valorTotalCentavos: number; parcelaCentavos: number; parcelas: ParcelaCartao[] }
 export interface OrcamentoCartaoMes { competencia: string; totalCentavos: number; categorias: { categoriaId: string; limiteCentavos: number }[] }
-export interface DadosCartao { id: string; nome: string; instituicao: string | null; limiteCentavos: number | null; orcamentoMensalCentavos?: number | null; diaFechamento: number | null; diaVencimento: number | null; compras: CompraCartao[]; parcelamentos: CompraParcelada[]; orcamentos?: OrcamentoCartaoMes[] }
+export interface DadosCartao { id: string; nome: string; instituicao: string | null; limiteCentavos: number | null; bandeira?: string | null; orcamentoMensalCentavos?: number | null; diaFechamento: number | null; diaVencimento: number | null; compras: CompraCartao[]; parcelamentos: CompraParcelada[]; orcamentos?: OrcamentoCartaoMes[] }
 
 export function resumoDoMes(cartao: DadosCartao, mes: string) {
   const compras = cartao.compras.filter(c => c.competencia === mes)

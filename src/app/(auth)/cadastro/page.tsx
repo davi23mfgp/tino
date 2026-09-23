@@ -36,6 +36,7 @@ export default function Cadastro() {
   const [email, setEmail] = useState("")
   const [senha, setSenha] = useState("")
   const [tipoLar, setTipoLar] = useState<"SOLO" | "CASAL" | "FAMILIA">("SOLO")
+  const [aceite, setAceite] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [criando, setCriando] = useState(false)
 
@@ -45,7 +46,7 @@ export default function Cadastro() {
     setErro(null)
 
     try {
-      await enviar("/api/auth/cadastro", { nome, email, senha, tipoLar, modoMei: modoMei === true })
+      await enviar("/api/auth/cadastro", { nome, email, senha, tipoLar, modoMei: modoMei === true, aceiteTermos: aceite })
       router.push("/painel")
       router.refresh()
     } catch (excecao) {
@@ -176,11 +177,34 @@ export default function Cadastro() {
             ))}
           </div>
 
+          {/* Caixa desmarcada por padrão: aceite pré-marcado não é consentimento
+              livre (LGPD, art. 8º) e não vale como prova. */}
+          <label className="flex items-start gap-3 pt-2 text-sm text-muted-fg">
+            <input
+              type="checkbox"
+              checked={aceite}
+              onChange={(evento) => setAceite(evento.target.checked)}
+              required
+              className="mt-0.5 size-4 shrink-0 accent-[var(--positivo)]"
+            />
+            <span>
+              Li e aceito os{" "}
+              <Link href="/termos" target="_blank" className="text-acao hover:underline">
+                Termos de Uso
+              </Link>{" "}
+              e a{" "}
+              <Link href="/privacidade" target="_blank" className="text-acao hover:underline">
+                Política de Privacidade
+              </Link>
+              .
+            </span>
+          </label>
+
           {erro && <p className="text-sm text-negativo">{erro}</p>}
 
           <button
             type="submit"
-            disabled={criando}
+            disabled={criando || !aceite}
             className="w-full rounded-[var(--raio-pilula)] bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
             {criando ? "Criando…" : "Criar conta"}

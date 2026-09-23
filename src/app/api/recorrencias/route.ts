@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { comSessao, corpo, ok } from "@/lib/api"
+import { campo, doLar, validar, z } from "@/lib/validar"
 import { competenciaDe, diaSeguro } from "@/lib/datas"
 
 const PASSO_MESES: Record<string, number> = {
@@ -32,19 +33,23 @@ export const GET = comSessao(async (sessao) => {
 })
 
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{
-    descricao: string
-    valorCentavos: number
-    tipo: "RECEITA" | "DESPESA"
-    periodicidade?: string
-    diaVencimento: number
-    contaId: string
-    categoriaId?: string
-    valorVariavel?: boolean
-    fimEm?: string
-  }>(requisicao)
+  const dados = validar(
+    z.object({
+      descricao: campo.textoObrigatorio(120),
+      valorCentavos: campo.centavos(),
+      tipo: z.enum(["RECEITA", "DESPESA"]).default("DESPESA"),
+      periodicidade: z.enum(["MENSAL", "BIMESTRAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL"]).default("MENSAL"),
+      diaVencimento: campo.dia(),
+      contaId: campo.id(),
+      categoriaId: campo.id().nullish(),
+      valorVariavel: z.boolean().optional(),
+      fimEm: campo.data().nullish(),
+    }),
+    await corpo(requisicao),
+  )
+  await doLar(sessao.larId, { conta: dados.contaId, categoria: dados.categoriaId })
 
-  const dia = Math.min(Math.max(1, Number(exigir(dados.diaVencimento, "Informe o dia do vencimento"))), 31)
+  const dia = dados.diaVencimento
   const hoje = new Date()
 
   // Se o dia do mês já passou, a próxima ocorrência é no mês que vem — senão a
@@ -59,16 +64,16 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const recorrencia = await prisma.recorrencia.create({
     data: {
       larId: sessao.larId,
-      descricao: exigir(dados.descricao, "Descreva a conta").trim(),
-      valorCentavos: Math.abs(Number(exigir(dados.valorCentavos, "Informe o valor"))),
-      tipo: dados.tipo ?? "DESPESA",
-      periodicidade: (dados.periodicidade ?? "MENSAL") as never,
+      descricao: dados.descricao,
+      valorCentavos: dados.valorCentavos,
+      tipo: dados.tipo,
+      periodicidade: dados.periodicidade,
       diaVencimento: dia,
       proximaData,
-      contaId: exigir(dados.contaId, "Escolha a conta"),
+      contaId: dados.contaId,
       categoriaId: dados.categoriaId ?? null,
       valorVariavel: dados.valorVariavel ?? false,
-      fimEm: dados.fimEm ? new Date(dados.fimEm) : null,
+      fimEm: dados.fimEm ?? null,
     },
   })
 

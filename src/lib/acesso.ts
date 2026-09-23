@@ -16,7 +16,7 @@
 
 export type PapelDeAcesso = "TITULAR" | "CONJUGE" | "DEPENDENTE" | "CONVIDADO" | "FUNCIONARIO_LOJA"
 
-const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/login", "/api/auth/logout"]
+const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/login", "/api/auth/logout", "/termos", "/privacidade"]
 
 /// Vive sob "/loja" mas é resultado/lucro do negócio, não operação de balcão —
 /// checado antes do prefixo geral, senão "começa com /loja" liberaria sozinho.

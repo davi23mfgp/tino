@@ -22,7 +22,7 @@ export const GET = comSessao(async (sessao) => {
 const TAMANHO_MAXIMO = 300 * 1024
 
 export const PATCH = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ avatarUrl?: unknown } | null>(requisicao)
+  const dados = await corpo<{ avatarUrl?: unknown } | null>(requisicao, { bytes: TAMANHO_MAXIMO + 1024, texto: TAMANHO_MAXIMO })
 
   if (!dados || typeof dados !== "object" || !("avatarUrl" in dados)) throw new ErroDeUso("Informe uma foto ou remova a atual.")
 

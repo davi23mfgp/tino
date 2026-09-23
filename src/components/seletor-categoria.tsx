@@ -20,13 +20,16 @@ export const GRUPOS_CATEGORIA: Record<string, string> = {
 }
 export function SimboloCategoria({ categoria, tipo }: { categoria?: Partial<CategoriaSelecionavel> | null; tipo?: "RECEITA" | "DESPESA" | "TRANSFERENCIA" }) {
   const Icone = iconeDaCategoria(categoria, tipo)
-  const nome=(categoria?.nome??"").toLowerCase()
-  const padroes:[RegExp,string][]=[[/aluguel|moradia|condom/,"🏠"],[/mercado|alimenta/,"🛒"],[/restaurante/,"🍽️"],[/delivery/,"🛵"],[/combust|posto/,"⛽"],[/transporte|uber/,"🚕"],[/saúde|saude/,"🩺"],[/farm/,"💊"],[/educa/,"📚"],[/lazer/,"🎟️"],[/viagem/,"✈️"],[/salário|salario|receita/,"💰"],[/assinatura|stream/,"📺"],[/energia/,"💡"],[/água|agua/,"💧"],[/pet/,"🐾"]]
-  const emojiPadrao=padroes.find(([padrao])=>padrao.test(nome))?.[1]??(tipo==="RECEITA"?"💰":tipo==="TRANSFERENCIA"?"↔️":"🧾")
-  // Identificadores antigos do Lucide continuam válidos; emojis são texto, nunca HTML.
-  return <span aria-hidden className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-papel-2 text-xl">
-    {categoria?.icone && /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(categoria.icone) ? categoria.icone : emojiPadrao}
-  </span>
+  const escolhido = categoria?.icone ?? ""
+  // Emoji só quando a PESSOA escolheu um. O padrão é o ícone da família que o
+  // resto do app usa: a lista misturava emoji (🏠, 💡) com ícone de traço na
+  // mesma coluna, e duas famílias na mesma lista leem como duas listas.
+  const ehEmoji = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(escolhido)
+  return (
+    <span aria-hidden className="simbolo-categoria">
+      {ehEmoji ? <span className="text-[19px] leading-none">{escolhido}</span> : <Icone className="size-[19px]" strokeWidth={1.75} />}
+    </span>
+  )
 }
 export function SeletorCategoria({ opcoes, valor, aoMudar, rotulo = "Categoria", vazio = "Sem categoria", desabilitado = false, className }: {
   opcoes: CategoriaSelecionavel[]

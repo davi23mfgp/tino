@@ -22,7 +22,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     // Sem agregador contratado não existe conexão possível. Dizer isso com
     // 200 e um destino real é honesto; fingir uma URL seria mentira.
     if (excecao instanceof OpenFinanceNaoConfigurado) {
-      return ok({ naoConfigurado: true, motivo: excecao.message, alternativa: "/importar" })
+      return ok({ naoConfigurado: true, motivo: "Conexão bancária indisponível no momento.", alternativa: "/importar" })
     }
     throw excecao
   }

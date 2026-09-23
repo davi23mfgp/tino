@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { ErroDeUso, comSessao, corpo, ok } from "@/lib/api"
+import { campo, doLar, regexSegura, validar, z } from "@/lib/validar"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 
 export const GET = comSessao(async (sessao) =>
@@ -13,26 +14,31 @@ export const GET = comSessao(async (sessao) =>
 )
 
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{
-    padrao: string
-    categoriaId: string
-    regex?: boolean
-    renomearPara?: string
-    membroId?: string
-    tags?: string[]
-    prioridade?: number
-  }>(requisicao)
+  const dados = validar(
+    z.object({
+      padrao: campo.textoObrigatorio(100),
+      categoriaId: campo.id(),
+      regex: z.boolean().default(false),
+      renomearPara: campo.texto(120).optional(),
+      membroId: campo.id().nullish(),
+      tags: z.array(campo.textoObrigatorio(40)).max(20).default([]),
+      prioridade: campo.inteiro(0, 1000).default(100),
+    }),
+    await corpo(requisicao),
+  )
+  if (dados.regex && !regexSegura(dados.padrao)) throw new ErroDeUso("Expressão regular não permitida.")
+  await doLar(sessao.larId, { categoria: dados.categoriaId, membro: dados.membroId })
 
   const regra = await prisma.regraCategorizacao.create({
     data: {
       larId: sessao.larId,
-      padrao: exigir(dados.padrao, "Informe o texto que a regra procura").trim(),
-      categoriaId: exigir(dados.categoriaId, "Escolha a categoria"),
-      regex: dados.regex ?? false,
-      renomearPara: dados.renomearPara?.trim() || null,
+      padrao: dados.padrao,
+      categoriaId: dados.categoriaId,
+      regex: dados.regex,
+      renomearPara: dados.renomearPara || null,
       membroId: dados.membroId ?? null,
-      tags: dados.tags ?? [],
-      prioridade: dados.prioridade ?? 100,
+      tags: dados.tags,
+      prioridade: dados.prioridade,
     },
   })
 
@@ -40,19 +46,30 @@ export const POST = comSessao(async (sessao, requisicao) => {
 })
 
 export const PATCH = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ id: string; ativa?: boolean; padrao?: string; categoriaId?: string; renomearPara?: string }>(
-    requisicao,
+  const dados = validar(
+    z.object({
+      id: campo.id(),
+      ativa: z.boolean().optional(),
+      padrao: campo.textoObrigatorio(100).optional(),
+      categoriaId: campo.id().optional(),
+      renomearPara: campo.texto(120).optional(),
+    }),
+    await corpo(requisicao),
   )
 
   const regra = await prisma.regraCategorizacao.findFirst({ where: { id: dados.id, larId: sessao.larId } })
-  if (!regra) return ok({ erro: "Regra não encontrada." }, 404)
+  if (!regra) throw new ErroDeUso("Regra não encontrada.", 404)
+  if (regra.regex && dados.padrao !== undefined && !regexSegura(dados.padrao)) {
+    throw new ErroDeUso("Expressão regular não permitida.")
+  }
+  await doLar(sessao.larId, { categoria: dados.categoriaId })
 
   return ok(
     await prisma.regraCategorizacao.update({
       where: { id: dados.id },
       data: {
         ...(dados.ativa !== undefined ? { ativa: dados.ativa } : {}),
-        ...(dados.padrao !== undefined ? { padrao: dados.padrao.trim() } : {}),
+        ...(dados.padrao !== undefined ? { padrao: dados.padrao } : {}),
         ...(dados.categoriaId !== undefined ? { categoriaId: dados.categoriaId } : {}),
         ...(dados.renomearPara !== undefined ? { renomearPara: dados.renomearPara || null } : {}),
       },
@@ -62,7 +79,7 @@ export const PATCH = comSessao(async (sessao, requisicao) => {
 
 export const DELETE = comSessao(async (sessao, requisicao) => {
   const id = new URL(requisicao.url).searchParams.get("id")
-  if (!id) return ok({ erro: "Informe a regra." }, 400)
+  if (!id) throw new ErroDeUso("Informe a regra.")
   await prisma.regraCategorizacao.deleteMany({ where: { id, larId: sessao.larId } })
   return ok({ removida: true })
 })
@@ -74,7 +91,10 @@ export const DELETE = comSessao(async (sessao, requisicao) => {
  * usuário já classificou à mão apagaria o trabalho dele sem aviso.
  */
 export const PUT = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ incluirJaCategorizados?: boolean; competencia?: string }>(requisicao)
+  const dados = validar(
+    z.object({ incluirJaCategorizados: z.boolean().optional(), competencia: campo.competencia().optional() }),
+    await corpo(requisicao),
+  )
 
   const [regras, categorias, transacoes] = await Promise.all([
     prisma.regraCategorizacao.findMany({ where: { larId: sessao.larId, ativa: true } }),

@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 
+import { IconeFerramenta } from "@/lib/icone-ferramenta"
+
 /**
  * Submenu de uma tela: uma área por vez, no lugar de tudo empilhado.
  *
@@ -29,6 +31,7 @@ export function AbasInternas({ abas }: { abas: { chave: string; titulo: string; 
             data-ativo={aba.chave === ativa}
             aria-current={aba.chave === ativa ? "true" : undefined}
           >
+            <IconeFerramenta rotulo={aba.titulo} />
             <span className="truncate">{aba.titulo}</span>
           </button>
         ))}

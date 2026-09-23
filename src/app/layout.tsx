@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
+import "./liquid-glass.css"
 
 /**
  * A tipografia agora é a do SISTEMA, declarada em `--font-ios` no globals.css.
