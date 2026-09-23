@@ -238,3 +238,35 @@ export function resultadoNoPeriodoCentavos(entrada: { valorCentavos: number; qua
   const variacao = (entrada.preco - entrada.precoInicial) / entrada.precoInicial
   return Math.round(entrada.valorCentavos - entrada.valorCentavos / (1 + variacao))
 }
+
+/**
+ * A linha do patrimônio no período, em centavos, somando os ativos.
+ *
+ * Cada ativo cotado vale, em cada ponto, quantidade × preço daquele ponto (ou,
+ * sem quantidade, o valor de hoje escalado pelo preço daquele ponto). Os que
+ * não têm cotação (renda fixa, caixa) entram pelo valor cadastrado, constante:
+ * desenhá-los "rendendo o CDI" seria estimativa com cara de extrato.
+ *
+ * As séries têm tamanhos diferentes — a B3 e a bolsa americana não abrem nos
+ * mesmos dias —, então cada uma é lida pela posição relativa no período: o
+ * ponto do meio de uma casa com o ponto do meio da outra. É o bastante para a
+ * forma da linha; os números exatos continuam nos cartões.
+ */
+export function serieDaCarteira(
+  posicoes: { valorCentavos: number; quantidadeMilesimos: number | null; serie: number[] | null; preco: number | null; cambio: number }[],
+  pontos = 40,
+): number[] {
+  const total = Math.max(2, pontos)
+  return Array.from({ length: total }, (_, indice) => {
+    const fracao = indice / (total - 1)
+    return posicoes.reduce((soma, posicao) => {
+      const serie = posicao.serie
+      if (!serie || serie.length === 0 || !posicao.preco) return soma + posicao.valorCentavos
+      const preco = serie[Math.round(fracao * (serie.length - 1))]
+      const valor = posicao.quantidadeMilesimos
+        ? Math.round((posicao.quantidadeMilesimos / 1000) * preco * posicao.cambio * 100)
+        : Math.round((posicao.valorCentavos * preco) / posicao.preco)
+      return soma + valor
+    }, 0)
+  })
+}

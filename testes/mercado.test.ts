@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { lerGrafico, resultadoNoPeriodoCentavos, simboloNoYahoo } from "../src/lib/mercado"
+import { lerGrafico, resultadoNoPeriodoCentavos, serieDaCarteira, simboloNoYahoo } from "../src/lib/mercado"
 
 // Forma da resposta do gráfico do Yahoo, reduzida ao que o leitor usa.
 const resposta = (close: (number | null)[], meta: Record<string, unknown> = {}) => ({
@@ -60,5 +60,34 @@ describe("resultado no período", () => {
 
   it("sem preço de base não inventa resultado", () => {
     assert.equal(resultadoNoPeriodoCentavos({ valorCentavos: 100_000, quantidadeMilesimos: 1000, preco: 10, precoInicial: 0, cambio: 1 }), 0)
+  })
+})
+
+describe("linha da carteira", () => {
+  it("soma cotados ponto a ponto e renda fixa constante", () => {
+    const linha = serieDaCarteira(
+      [
+        { valorCentavos: 0, quantidadeMilesimos: 2000, serie: [10, 11, 12], preco: 12, cambio: 1 },
+        { valorCentavos: 50_000, quantidadeMilesimos: null, serie: null, preco: null, cambio: 1 },
+      ],
+      3,
+    )
+    // 2 × 10 = R$ 20 + R$ 500; 2 × 11 + 500; 2 × 12 + 500.
+    assert.deepEqual(linha, [52_000, 52_200, 52_400])
+  })
+
+  it("séries de tamanhos diferentes são lidas pela posição relativa", () => {
+    const linha = serieDaCarteira(
+      [
+        { valorCentavos: 0, quantidadeMilesimos: 1000, serie: [10, 20], preco: 20, cambio: 1 },
+        { valorCentavos: 0, quantidadeMilesimos: 1000, serie: [1, 2, 3, 4, 5], preco: 5, cambio: 1 },
+      ],
+      2,
+    )
+    assert.deepEqual(linha, [1_100, 2_500])
+  })
+
+  it("sem quantidade, escala o valor de hoje pelo preço de cada ponto", () => {
+    assert.deepEqual(serieDaCarteira([{ valorCentavos: 10_000, quantidadeMilesimos: null, serie: [50, 100], preco: 100, cambio: 1 }], 2), [5_000, 10_000])
   })
 })

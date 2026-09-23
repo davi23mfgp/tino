@@ -1,34 +1,43 @@
 /* Investimentos com cara de corretora (Davi, 23/09, print de referência):
    mercado do dia e cartões coloridos por classe. */
 .fonte { font-size:max(10px, calc(11px * var(--escala-letra))); line-height:1.5; color:var(--texto-3); }
-.vazio { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
-.variacao { font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:650; color:var(--texto-3); font-variant-numeric:tabular-nums; }
-.variacao[data-sinal="alta"] { color:var(--positivo); }
-.variacao[data-sinal="baixa"] { color:var(--negativo); }
-.linha { display:block; width:100%; height:40px; overflow:visible; }
+.linha { display:block; width:100%; height:34px; overflow:visible; }
 .linha polyline { fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
-.semLinha { display:block; height:40px; }
+.semLinha { display:block; height:34px; }
 
-/* --- mercado agora --- */
-.mercado { display:grid; gap:12px; padding:18px; border-radius:var(--raio-bloco); }
-.mercado header, .seus header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 12px; }
-.mercado h2, .seus h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
-.mercado header small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
-/* Rola de lado no celular, como a faixa de índices das corretoras; no
-   computador os quatro ou cinco cabem lado a lado. */
-.indices { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(138px,1fr); gap:8px; margin:0 -18px; padding:0 18px 2px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; list-style:none; }
-.indices::-webkit-scrollbar { display:none; }
-.indices li { display:grid; gap:2px; padding:12px; border-radius:var(--raio-cartao); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 95%); scroll-snap-align:start; }
-.indiceRotulo { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); }
-.indices b { font-size:calc(15px * var(--escala-letra)); font-weight:720; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.linhaIndice { height:28px; margin-top:6px; color:var(--texto-3); }
-.indices li:has([data-sinal="alta"]) .linhaIndice { color:var(--positivo); }
-.indices li:has([data-sinal="baixa"]) .linhaIndice { color:var(--negativo); }
+/* --- fita do mercado --- */
+/* Uma linha só, rolando de lado, como a barra de cotações das corretoras. */
+.fita { border-radius:var(--raio-pilula); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 95%); backdrop-filter:blur(var(--desfoque)); }
+.fita ul { display:flex; gap:18px; padding:10px 16px; overflow-x:auto; scrollbar-width:none; list-style:none; white-space:nowrap; }
+.fita ul::-webkit-scrollbar { display:none; }
+.fita li { display:flex; align-items:baseline; gap:6px; flex-shrink:0; font-size:max(10px, calc(12px * var(--escala-letra))); font-variant-numeric:tabular-nums; }
+.fita li b { font-weight:700; }
+.fita li span { color:var(--texto-2); }
+.fita li em { font-style:normal; font-weight:650; color:var(--texto-3); }
+.fita li em[data-sinal="alta"] { color:var(--positivo); }
+.fita li em[data-sinal="baixa"] { color:var(--negativo); }
+.fita .hora { color:var(--texto-3); }
+.fita p { padding:10px 16px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); }
+
+/* --- patrimônio --- */
+.patrimonio { --cor:var(--texto-3); display:grid; gap:8px; padding:20px; border-radius:var(--raio-bloco); }
+.patrimonio:has([data-sinal="alta"]) { --cor:var(--positivo); }
+.patrimonio:has([data-sinal="baixa"]) { --cor:var(--negativo); }
+.patrimonio header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.total { font-size:calc(clamp(32px,5vw,40px) * var(--escala-letra)); font-weight:750; letter-spacing:-.035em; line-height:1; font-variant-numeric:tabular-nums; }
+.resultado { font-size:calc(14px * var(--escala-letra)); font-weight:700; color:var(--cor); font-variant-numeric:tabular-nums; }
+.resultado small { font-weight:500; color:var(--texto-3); }
+.grafico { display:block; width:100%; height:120px; margin-top:6px; overflow:visible; }
+.grafico polyline { fill:none; stroke:var(--cor); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+.area { fill:color-mix(in oklab, var(--cor), transparent 84%); stroke:none; }
+.graficoVazio { height:120px; margin-top:6px; border-bottom:2px dashed color-mix(in oklab, var(--foreground), transparent 85%); }
 
 /* --- seus investimentos --- */
 .seus { display:grid; gap:12px; }
 .seus > header { padding:4px 4px 0; }
-.periodos { display:flex; gap:4px; padding:3px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.seus > header small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.periodos { display:flex; justify-self:start; flex-wrap:wrap; gap:4px; padding:3px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 92%); }
 .periodos button { min-height:34px; padding:0 12px; border-radius:var(--raio-pilula); font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 .periodos button[aria-pressed="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 .cartoes { display:grid; gap:12px; list-style:none; }
@@ -39,7 +48,7 @@
 .cartao {
   --fundo:linear-gradient(135deg, oklch(0.3 0.01 250), oklch(0.2 0.01 250));
   --tinta:#fff; --suave:rgb(255 255 255/.75); --icone-fundo:rgb(255 255 255/.14); --icone:#fff;
-  display:grid; gap:12px; width:100%; padding:18px; border-radius:22px; text-align:left;
+  display:grid; gap:8px; width:100%; padding:14px 16px; border-radius:22px; text-align:left;
   background:var(--fundo); color:var(--tinta);
   border:1px solid rgb(255 255 255/.16);
   box-shadow:inset 0 1px 0 rgb(255 255 255/.28), 0 18px 34px -22px rgb(0 0 0/.7);
@@ -52,15 +61,15 @@
 .cartao[data-classe="RENDA_FIXA"], .cartao[data-classe="CAIXA"] { --fundo:linear-gradient(135deg, #fbfcfb, #dfe3e0); --tinta:oklch(0.2 0.01 150); --suave:oklch(0.4 0.01 150); --icone-fundo:oklch(0.9 0.01 150); --icone:oklch(0.3 0.02 150); border-color:rgb(255 255 255/.7); }
 .cartao[data-classe="INTERNACIONAL"] { --fundo:linear-gradient(135deg, oklch(0.62 0.17 255), oklch(0.5 0.19 262)); --icone-fundo:oklch(0.3 0.12 262); }
 .cartao[data-classe="CRIPTO"] { --fundo:linear-gradient(135deg, oklch(0.8 0.15 70), oklch(0.7 0.17 55)); --tinta:oklch(0.2 0.04 60); --suave:oklch(0.3 0.05 60); --icone-fundo:oklch(0.22 0.04 60); --icone:#fff; }
-.topo { display:grid; grid-template-columns:44px minmax(0,1fr) auto; align-items:center; gap:12px; }
-.icone { display:grid; place-items:center; width:44px; height:44px; border-radius:999px; background:var(--icone-fundo); color:var(--icone); }
+.topo { display:grid; grid-template-columns:40px minmax(0,1fr) auto; align-items:center; gap:12px; }
+.icone { display:grid; place-items:center; width:40px; height:40px; border-radius:999px; background:var(--icone-fundo); color:var(--icone); }
 .icone svg { width:20px; height:20px; }
 .nome { min-width:0; }
-.nome strong, .periodo strong { display:block; font-size:calc(17px * var(--escala-letra)); font-weight:750; letter-spacing:-.01em; }
+.nome strong, .periodo strong { display:block; font-size:calc(16px * var(--escala-letra)); font-weight:750; letter-spacing:-.01em; }
 .nome small, .periodo small, .base small { display:block; font-size:max(10px, calc(12.5px * var(--escala-letra))); color:var(--suave); }
 .nome small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .periodo { text-align:right; font-variant-numeric:tabular-nums; }
 .cartao .linha { color:var(--suave); opacity:.85; }
 .base { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
-.base strong { display:block; margin-top:2px; font-size:calc(18px * var(--escala-letra)); font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.base strong { display:block; margin-top:2px; font-size:calc(17px * var(--escala-letra)); font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .direita { text-align:right; }

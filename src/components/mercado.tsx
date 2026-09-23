@@ -11,8 +11,9 @@ import estilos from "./mercado.module.css"
 
 /**
  * A parte "corretora" de Investimentos (Davi, 23/09, com um print de
- * referência): o mercado do dia no alto e cada ativo num cartão colorido, com
- * a linha do período, a variação e o resultado em dinheiro.
+ * referência, e depois a opção A do canvas): a fita do mercado no alto, o
+ * patrimônio com a linha do período, e cada ativo num cartão colorido com a
+ * variação e o resultado em dinheiro.
  */
 
 const porcentagem = (valor: number) => `${valor >= 0 ? "+" : "−"}${Math.abs(valor).toFixed(2).replace(".", ",")}%`
@@ -35,51 +36,106 @@ function Linha({ serie, className }: { serie: number[]; className?: string }) {
   )
 }
 
-function valorDoIndicador(indicador: IndicadorDoMercado) {
-  if (indicador.unidade === "%a.a.") return `${numero(indicador.valor, 2)}% a.a.`
-  if (indicador.unidade === "BRL") return `R$ ${numero(indicador.valor, 2)}`
-  if (indicador.unidade === "USD") return `US$ ${numero(indicador.valor, 0)}`
-  return `${numero(indicador.valor, 0)} pts`
+/** Rótulo curto da fita: é o que cabe numa linha de celular. */
+const SIGLA: Record<string, string> = { ibov: "IBOV", dolar: "USD", sp500: "S&P", bitcoin: "BTC", selic: "SELIC" }
+
+/**
+ * A fita do mercado (Davi, 23/09: opção A do canvas), como a barra de
+ * cotações das corretoras: uma linha fina que rola de lado. Só o que a fonte
+ * trouxe; sem nada, a fita diz que o mercado está indisponível em vez de
+ * mostrar zeros, que pareceriam uma queda de 100%.
+ */
+export function FitaDoMercado({ indices, atualizadoEm, carregando }: { indices: IndicadorDoMercado[]; atualizadoEm: string | null; carregando: boolean }) {
+  const hora = atualizadoEm ? new Date(atualizadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : null
+  const fontes = [...new Set(indices.map((indice) => indice.fonte))].join(", ")
+  return (
+    <div className={estilos.fita} aria-busy={carregando} title={fontes ? `Fontes: ${fontes}. Atraso de até 15 minutos.` : undefined}>
+      {indices.length > 0 ? (
+        <ul aria-label={`Mercado agora${hora ? `, atualizado às ${hora}` : ""}`}>
+          {indices.map((indice) => (
+            <li key={indice.chave}>
+              <b>{SIGLA[indice.chave] ?? indice.rotulo}</b>
+              <span>{indice.unidade === "%a.a." ? `${numero(indice.valor, 2)}%` : numero(indice.valor, indice.unidade === "BRL" ? 2 : 0)}</span>
+              {indice.variacaoPercentual !== null && (
+                <em data-sinal={indice.variacaoPercentual >= 0 ? "alta" : "baixa"}>{porcentagem(indice.variacaoPercentual)}</em>
+              )}
+            </li>
+          ))}
+          {hora && <li className={estilos.hora}>{hora}</li>}
+        </ul>
+      ) : (
+        <p>{carregando ? "Buscando o mercado…" : "Mercado indisponível agora — os valores abaixo são os cadastrados."}</p>
+      )}
+    </div>
+  )
 }
 
 /**
- * Mercado agora. Só o que a fonte trouxe: índice que falhou some da faixa, e
- * se nada veio a faixa diz que o mercado está indisponível — em vez de mostrar
- * zeros, que pareceriam uma queda de 100%.
+ * O patrimônio investido com a linha do período, no topo da tela. O
+ * resultado soma só os ativos com cotação; quando algum ficou de fora (renda
+ * fixa, ou cotação que não chegou), a tela diz, para o percentual não parecer
+ * o da carteira inteira.
  */
-export function MercadoAgora({ indices, atualizadoEm, carregando }: { indices: IndicadorDoMercado[]; atualizadoEm: string | null; carregando: boolean }) {
-  const hora = atualizadoEm ? new Date(atualizadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : null
-  const fontes = [...new Set(indices.map((indice) => indice.fonte))].join(" · ")
+export function PatrimonioInvestido({
+  totalCentavos,
+  resultadoCentavos,
+  baseCentavos,
+  parcial,
+  serie,
+  periodo,
+  aoMudarPeriodo,
+  acao,
+  carregando,
+}: {
+  totalCentavos: number
+  resultadoCentavos: number | null
+  /** Valor dos ativos cotados no começo do período: a base do percentual. */
+  baseCentavos: number
+  parcial: boolean
+  serie: number[]
+  periodo: Periodo
+  aoMudarPeriodo: (periodo: Periodo) => void
+  acao?: React.ReactNode
+  carregando: boolean
+}) {
+  const rotulo = periodo === "1d" ? "hoje" : `em ${PERIODOS.find((item) => item.periodo === periodo)?.rotulo.toLowerCase()}`
+  const percentual = resultadoCentavos !== null && baseCentavos > 0 ? (resultadoCentavos / baseCentavos) * 100 : null
+  const sobe = (resultadoCentavos ?? 0) >= 0
   return (
-    <section className={cn("ficha", estilos.mercado)} aria-busy={carregando}>
+    <section className={cn("ficha", estilos.patrimonio)} aria-busy={carregando}>
       <header>
-        <h2>Mercado agora</h2>
-        <small>{carregando ? "atualizando…" : hora && indices.length > 0 ? `atualizado às ${hora}` : ""}</small>
+        <p className={estilos.rotulo}>Patrimônio investido</p>
+        {acao}
       </header>
-      {indices.length > 0 ? (
-        <>
-          <ul className={estilos.indices}>
-            {indices.map((indice) => (
-              <li key={indice.chave}>
-                <span className={estilos.indiceRotulo}>{indice.rotulo}</span>
-                <b>{valorDoIndicador(indice)}</b>
-                {indice.variacaoPercentual !== null ? (
-                  <span className={estilos.variacao} data-sinal={indice.variacaoPercentual >= 0 ? "alta" : "baixa"}>
-                    {porcentagem(indice.variacaoPercentual)} hoje
-                  </span>
-                ) : (
-                  <span className={estilos.variacao}>meta do Copom</span>
-                )}
-                <Linha serie={indice.serie} className={estilos.linhaIndice} />
-              </li>
-            ))}
-          </ul>
-          <p className={estilos.fonte}>Fontes: {fontes}. Cotações podem ter atraso de até 15 minutos.</p>
-        </>
-      ) : (
-        <p className={estilos.vazio}>{carregando ? "Buscando índices…" : "Mercado indisponível agora. Os valores da carteira abaixo são os cadastrados."}</p>
-      )}
+      <p className={estilos.total}>{formatarMoeda(totalCentavos)}</p>
+      <p className={estilos.resultado} data-sinal={resultadoCentavos === null ? undefined : sobe ? "alta" : "baixa"}>
+        {resultadoCentavos === null
+          ? carregando ? "Buscando cotações…" : "Sem cotação agora: valores cadastrados."
+          : <>{sobe ? "+" : "−"}{formatarMoeda(Math.abs(resultadoCentavos))}{percentual !== null && ` · ${porcentagem(percentual)}`} {rotulo}{parcial && <small> · nos ativos com cotação</small>}</>}
+      </p>
+      <GraficoDoPatrimonio serie={serie} sinal={resultadoCentavos === null ? undefined : sobe ? "alta" : "baixa"} />
+      <div className={estilos.periodos} role="group" aria-label="Período">
+        {PERIODOS.map((item) => (
+          <button key={item.periodo} type="button" aria-pressed={periodo === item.periodo} onClick={() => aoMudarPeriodo(item.periodo)}>
+            {item.rotulo}
+          </button>
+        ))}
+      </div>
     </section>
+  )
+}
+
+/** A linha grande do patrimônio, com a área embaixo. Sem série, um traço reto e apagado. */
+function GraficoDoPatrimonio({ serie, sinal }: { serie: number[]; sinal?: "alta" | "baixa" }) {
+  if (serie.length < 2 || Math.max(...serie) === Math.min(...serie)) return <div className={estilos.graficoVazio} aria-hidden />
+  const menor = Math.min(...serie)
+  const faixa = Math.max(...serie) - menor
+  const pontos = serie.map((valor, indice) => `${((indice / (serie.length - 1)) * 100).toFixed(2)},${(94 - ((valor - menor) / faixa) * 86).toFixed(2)}`)
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={estilos.grafico} data-sinal={sinal} role="img" aria-label={`Patrimônio de ${formatarMoeda(serie[0])} a ${formatarMoeda(serie.at(-1)!)} no período`}>
+      <polygon points={`0,100 ${pontos.join(" ")} 100,100`} className={estilos.area} />
+      <polyline points={pontos.join(" ")} vectorEffect="non-scaling-stroke" />
+    </svg>
   )
 }
 
@@ -129,7 +185,6 @@ export function CartoesDeAtivos({
   series,
   dolar,
   periodo,
-  aoMudarPeriodo,
   aoAbrir,
   carregando,
 }: {
@@ -137,7 +192,6 @@ export function CartoesDeAtivos({
   series: SerieDeAtivo[]
   dolar: number | null
   periodo: Periodo
-  aoMudarPeriodo: (periodo: Periodo) => void
   aoAbrir: (id: string) => void
   carregando: boolean
 }) {
@@ -151,13 +205,7 @@ export function CartoesDeAtivos({
     <section className={estilos.seus} aria-busy={carregando}>
       <header>
         <h2>Seus investimentos</h2>
-        <div className={estilos.periodos} role="group" aria-label="Período">
-          {PERIODOS.map((item) => (
-            <button key={item.periodo} type="button" aria-pressed={periodo === item.periodo} onClick={() => aoMudarPeriodo(item.periodo)}>
-              {item.rotulo}
-            </button>
-          ))}
-        </div>
+        <small>{ativos.length} {ativos.length === 1 ? "ativo" : "ativos"}</small>
       </header>
 
       <ul className={estilos.cartoes}>

@@ -71,13 +71,12 @@ interface RetratoMensal {
   aportadoCentavos: number
 }
 
-export function PainelDaCarteira({ posicoes, acao, depoisDoResumo }: { posicoes: PosicaoDaCarteira[]; acao?: React.ReactNode; depoisDoResumo?: React.ReactNode }) {
+export function PainelDaCarteira({ posicoes, topo, depoisDoResumo }: { posicoes: PosicaoDaCarteira[]; topo?: React.ReactNode; depoisDoResumo?: React.ReactNode }) {
   const [historico, setHistorico] = useState<RetratoMensal[]>([])
   const [cdi, setCdi] = useState<{ percentual: number; fonte: string } | null>(null)
 
   const total = posicoes.reduce((soma, linha) => soma + linha.valorCentavos, 0)
   const aportado = posicoes.reduce((soma, linha) => soma + linha.aportadoCentavos, 0)
-  const ganho = total - aportado
 
   // Grava o retrato do mês e traz a série de volta. Fica ANTES do `return`
   // curto de carteira vazia: hook depois de `return` muda de quantidade entre
@@ -123,64 +122,72 @@ export function PainelDaCarteira({ posicoes, acao, depoisDoResumo }: { posicoes:
     { chave: "fora", cor: "color-mix(in oklab, var(--foreground), transparent 80%)", valor: foraDoMetodoCentavos },
   ].filter((segmento) => segmento.valor > 0)
 
+  // A letra mais atrás do alvo resume o equilíbrio numa linha — é ela que
+  // recebe a maior parte do próximo aporte.
+  const maisAtras = [...letras].sort((a, b) => a.atualBps - a.alvoBps - (b.atualBps - b.alvoBps))[0]
+  const atrasoPontos = maisAtras ? Math.round((maisAtras.alvoBps - maisAtras.atualBps) / 100) : 0
+
   return (
     <>
-      <section className={cn("ficha", estilos.resumo)}>
-        <header>
-          <p className={estilos.rotulo}>Sua carteira</p>
-          {acao}
-        </header>
-        <p className={estilos.total}>{formatarMoeda(total)}</p>
-        {/* O ganho só aparece quando há cotação por trás: sem preço, mercado e
-            aportado são o mesmo número, e "R$ 0,00 de ganho" faria parecer que
-            a carteira não rendeu nada. */}
-        {ganho !== 0 && (
-          <p className={estilos.ganho} data-tom={ganho > 0 ? "positivo" : "negativo"}>
-            {ganho > 0 ? "+" : "−"}{formatarMoeda(Math.abs(ganho))} sobre o aportado
-          </p>
-        )}
+      {topo}
 
-        <div className={estilos.barra} role="img" aria-label={`Carteira: ${letras.map((letra) => `${letra.rotulo} ${Math.round(letra.atualBps / 100)}%`).join(", ")}`}>
-          {segmentos.map((segmento) => (
-            <i key={segmento.chave} style={{ flexGrow: segmento.valor, background: segmento.cor }} />
-          ))}
-        </div>
+      {/* Os ativos, com a cara da corretora, logo depois do patrimônio: é a
+          parte que muda todo dia. */}
+      {depoisDoResumo}
 
-        <ul className={estilos.letras}>
-          {letras.map((letra) => {
-            const pontos = Math.round((letra.atualBps - letra.alvoBps) / 100)
-            return (
-              <li key={`${letra.letra}-${letra.rotulo}`}>
-                <i style={{ background: TINTA[letra.classes[0]] }} aria-hidden />
-                <span>{letra.rotulo}</span>
-                <small>{formatarMoeda(letra.atualCentavos)}</small>
-                <b>{Math.round(letra.atualBps / 100)}%</b>
-                {/* Longe do alvo (5 p.p. ou mais) ganha cor; perto fica neutro,
-                    para a cor apontar só o que pede ação. */}
-                <em data-longe={Math.abs(pontos) >= 5 || undefined}>{pontos > 0 ? "+" : pontos < 0 ? "−" : ""}{Math.abs(pontos)} p.p.</em>
-              </li>
-            )
-          })}
-        </ul>
-        <p className={estilos.nota}>
-          p.p. é a distância do alvo de 25% por letra, do método ARCA (Grupo Primo). Parâmetro escolhido, não recomendação.
-          {foraDoMetodoCentavos > 0 && <> {formatarMoeda(foraDoMetodoCentavos)} fica fora do método (cripto e outros).</>}
-          {semClasse > 0 && <> {semClasse} {semClasse === 1 ? "investimento está" : "investimentos estão"} sem classe: escolha no cartão dele, lá embaixo.</>}
-        </p>
-      </section>
-
-      {noMetodo > 0 && <ProximoAporte carteira={carteira} />}
-
-      {/* Os ativos, com a cara da corretora, logo depois do resumo e do
-          aporte: é a parte que muda todo dia. */}
-      {depoisDoResumo && <div className={estilos.linhaInteira}>{depoisDoResumo}</div>}
-
-      <details className={cn("ficha", estilos.desempenho)}>
+      {/* Equilíbrio e próximo aporte recolhidos numa linha (opção A do
+          canvas): a pergunta do dia é "como estão meus ativos"; a do método,
+          "onde ponho o próximo dinheiro", é de uma vez por mês. */}
+      <details className={cn("ficha", estilos.recolhido)}>
         <summary>
-          <span>Desempenho e evolução</span>
-          <small>{historico.length >= 2 ? `${historico.length} meses registrados` : "começa a contar este mês"}</small>
+          <span>
+            <b>Equilíbrio e próximo aporte</b>
+            <small>
+              {noMetodo > 0 && maisAtras && atrasoPontos > 0
+                ? `${maisAtras.rotulo} −${atrasoPontos} p.p. · o próximo dinheiro vai mais para lá`
+                : "Escolha a classe de cada investimento para o método ARCA enxergar"}
+            </small>
+          </span>
         </summary>
-        <div className={estilos.desempenhoCorpo}>
+        <div className={estilos.recolhidoCorpo}>
+          <div className={estilos.barra} role="img" aria-label={`Carteira: ${letras.map((letra) => `${letra.rotulo} ${Math.round(letra.atualBps / 100)}%`).join(", ")}`}>
+            {segmentos.map((segmento) => (
+              <i key={segmento.chave} style={{ flexGrow: segmento.valor, background: segmento.cor }} />
+            ))}
+          </div>
+          <ul className={estilos.letras}>
+            {letras.map((letra) => {
+              const pontos = Math.round((letra.atualBps - letra.alvoBps) / 100)
+              return (
+                <li key={`${letra.letra}-${letra.rotulo}`}>
+                  <i style={{ background: TINTA[letra.classes[0]] }} aria-hidden />
+                  <span>{letra.rotulo}</span>
+                  <small>{formatarMoeda(letra.atualCentavos)}</small>
+                  <b>{Math.round(letra.atualBps / 100)}%</b>
+                  {/* Longe do alvo (5 p.p. ou mais) ganha cor; perto fica neutro,
+                      para a cor apontar só o que pede ação. */}
+                  <em data-longe={Math.abs(pontos) >= 5 || undefined}>{pontos > 0 ? "+" : pontos < 0 ? "−" : ""}{Math.abs(pontos)} p.p.</em>
+                </li>
+              )
+            })}
+          </ul>
+          <p className={estilos.nota}>
+            p.p. é a distância do alvo de 25% por letra, do método ARCA (Grupo Primo). Parâmetro escolhido, não recomendação.
+            {foraDoMetodoCentavos > 0 && <> {formatarMoeda(foraDoMetodoCentavos)} fica fora do método (cripto e outros).</>}
+            {semClasse > 0 && <> {semClasse} {semClasse === 1 ? "investimento está" : "investimentos estão"} sem classe.</>}
+          </p>
+          {noMetodo > 0 && <ProximoAporte carteira={carteira} />}
+        </div>
+      </details>
+
+      <details className={cn("ficha", estilos.recolhido)}>
+        <summary>
+          <span>
+            <b>Desempenho e evolução</b>
+            <small>{historico.length >= 2 ? `${historico.length} meses registrados` : "começa a contar este mês"}</small>
+          </span>
+        </summary>
+        <div className={estilos.recolhidoCorpo}>
           <Desempenho historico={historico} total={total} aportado={aportado} cdi={cdi} />
           {historico.length >= 2 && <EvolucaoDaCarteira serie={historico} />}
         </div>
@@ -243,9 +250,9 @@ function ProximoAporte({ carteira }: { carteira: { classe: ClasseDeAtivo; valorC
   }
 
   return (
-    <section className={cn("ficha", estilos.aporte)}>
+    <section className={estilos.aporte}>
       <header>
-        <h2>Próximo aporte</h2>
+        <h3>Próximo aporte</h3>
         <small>reequilibra a carteira</small>
       </header>
       <div className={estilos.chips} role="group" aria-label="Quanto vai investir">

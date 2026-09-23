@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { SelectNative } from "@/components/ui/select-native"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import type { IndicadorDoMercado, Periodo, SerieDeAtivo } from "@/lib/mercado"
+import { resultadoNoPeriodoCentavos, serieDaCarteira } from "@/lib/mercado"
 import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
 import { PainelDaCarteira } from "@/components/painel-da-carteira"
-import { CartoesDeAtivos, MercadoAgora } from "@/components/mercado"
+import { CartoesDeAtivos, FitaDoMercado, PatrimonioInvestido } from "@/components/mercado"
 
 interface RespostaDoMercado {
   ativos: SerieDeAtivo[]
@@ -144,7 +145,6 @@ export function CarteiraInvestimentos() {
       series={series}
       dolar={mercado?.dolar ?? null}
       periodo={periodo}
-      aoMudarPeriodo={setPeriodo}
       carregando={atualizando}
       aoAbrir={(id) => {
         const conta = ativos.find((linha) => linha.id === id)
@@ -156,17 +156,51 @@ export function CarteiraInvestimentos() {
     />
   )
 
-  // Blocos soltos, e não um cartão com tudo dentro: o mercado, o resumo, os
-  // ativos e o próximo aporte respondem perguntas diferentes (Davi, 23/09).
+  // O topo da tela: patrimônio, resultado do período e a linha. O resultado
+  // soma só quem tem cotação — e a base do percentual é o valor desses mesmos
+  // ativos no começo do período, para o percentual não se diluir na renda
+  // fixa que não foi medida.
+  const cotados = ativos
+    .map((conta) => ({ conta, serie: serieDe(conta), valor: mercadoDe(conta) ?? conta.saldoCentavos }))
+    .map((linha) => ({ ...linha, cambio: linha.serie?.moeda === "USD" ? mercado?.dolar ?? null : linha.serie ? 1 : null }))
+  const comCotacao = cotados.filter((linha) => linha.serie && linha.cambio !== null)
+  const resultado = comCotacao.length
+    ? comCotacao.reduce((soma, linha) => soma + resultadoNoPeriodoCentavos({ valorCentavos: linha.valor, quantidadeMilesimos: linha.conta.quantidadeMilesimos ?? null, preco: linha.serie!.preco, precoInicial: linha.serie!.precoInicial, cambio: linha.cambio! }), 0)
+    : null
+  const baseDoResultado = comCotacao.reduce((soma, linha) => soma + linha.valor, 0) - (resultado ?? 0)
+  const linhaDaCarteira = serieDaCarteira(
+    cotados.map((linha) => ({
+      valorCentavos: linha.valor,
+      quantidadeMilesimos: linha.conta.quantidadeMilesimos ?? null,
+      serie: linha.cambio !== null ? linha.serie?.serie ?? null : null,
+      preco: linha.cambio !== null ? linha.serie?.preco ?? null : null,
+      cambio: linha.cambio ?? 1,
+    })),
+  )
+
+  // Opção A do canvas (Davi, 23/09): a fita do mercado, o patrimônio com a
+  // linha, os ativos em cartões, e o equilíbrio e o aporte recolhidos.
   return (
-    <div className="grid items-start gap-3 lg:grid-cols-2">
-      <div className="lg:col-span-2">
-        <MercadoAgora indices={mercado?.indices ?? []} atualizadoEm={mercado?.atualizadoEm ?? null} carregando={atualizando} />
-      </div>
+    // `min-w-0` nos filhos: a fita não quebra linha, e sem isso ela alargava a
+    // coluna do grid e a página inteira rolava de lado no celular.
+    <div className="grid items-start gap-3 [&>*]:min-w-0">
+      <FitaDoMercado indices={mercado?.indices ?? []} atualizadoEm={mercado?.atualizadoEm ?? null} carregando={atualizando} />
 
       {ativos.length > 0 ? (
         <PainelDaCarteira
-          acao={cadastrar}
+          topo={
+            <PatrimonioInvestido
+              totalCentavos={cotados.reduce((soma, linha) => soma + linha.valor, 0)}
+              resultadoCentavos={resultado}
+              baseCentavos={baseDoResultado}
+              parcial={comCotacao.length < ativos.length}
+              serie={linhaDaCarteira}
+              periodo={periodo}
+              aoMudarPeriodo={setPeriodo}
+              acao={cadastrar}
+              carregando={atualizando}
+            />
+          }
           depoisDoResumo={cartoes}
           posicoes={ativos.map((conta) => ({
             id: conta.id,
@@ -179,13 +213,13 @@ export function CarteiraInvestimentos() {
           }))}
         />
       ) : (
-        <section className="ficha grid gap-2 rounded-[var(--raio-bloco)] p-5 lg:col-span-2">
+        <section className="ficha grid gap-2 rounded-[var(--raio-bloco)] p-5">
           <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. Com o código na bolsa (PETR4, AAPL) e a quantidade, o preço e o gráfico entram sozinhos." />
           <div className="flex justify-center">{cadastrar}</div>
         </section>
       )}
 
-      {erro && !abrir && <p role="alert" className="text-negativo lg:col-span-2">{erro}</p>}
+      {erro && !abrir && <p role="alert" className="text-negativo">{erro}</p>}
 
       <Dialog open={abrir} onOpenChange={(aberto) => { if (!ocupado) { setAbrir(aberto); if (!aberto) setMovimento(null) } }}>
         <DialogContent>
