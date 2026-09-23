@@ -127,9 +127,9 @@
    quanto do limite já foi usado. Antes a tira só dizia "Vence dia 10", que é
    a informação menos procurada de um cartão.
 
-   O corte é 56% da altura: cabe a linha do banco, o valor e a barra de
-   limite. Em porcentagem da LARGURA, que é contra o que a margem resolve,
-   e a razão da peça é fixa, então vale em qualquer tela sem media query.
+   A sobreposição é discreta para o banco do cartão seguinte continuar
+   visível mesmo quando o primeiro se eleva. A margem percentual acompanha
+   a largura do cartão em qualquer tela.
    ============================================================ */
 .carteira { display: flex; flex-direction: column; padding: 4px 0 8px; }
 .cartaoFisico {
@@ -137,7 +137,7 @@
      pintava por cima do cartão seguinte: o nome do primeiro aparecia
      atravessado na tira do segundo. */
   isolation: isolate;
-  margin-top: calc(-0.63 * 32%);
+  margin-top: -8%;
   scroll-snap-align: none;
   aspect-ratio: 1.585;
   padding: 16px 18px;
