@@ -73,6 +73,7 @@ export function GuardarPorMes() {
   return (
     <div className="space-y-4">
       <Abertura
+        className={estilos.aberturaGuardar}
         rotulo="Guardar todo mês"
         titulo={
           <>

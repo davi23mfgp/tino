@@ -91,3 +91,17 @@
 }
 .filtroAnos button small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); opacity:.75; }
 .filtroAnos button[aria-pressed="true"] { background:var(--acao); border-color:transparent; color:var(--background); font-weight:640; }
+
+/* O roteiro é leitura comparativa: linhas regulares e números alinhados
+   deixam a ordem e o saldo de cada mês claros sem blocos muito altos. */
+.bloco { min-width:0; padding:22px; }
+.fila { gap:0; margin-top:12px; }
+.fila li { padding:13px 0; border-bottom:1px solid var(--pauta); }
+.fila li:last-child { border-bottom:0; }
+.fila strong { line-height:1.25; }
+.barraFila { height:4px; }
+.mes { padding:14px 0; }
+.mesTopo { min-height:52px; align-items:center; }
+.mesTopo > span:first-child { overflow-wrap:anywhere; }
+.mesValor { font-size:calc(clamp(17px,2vw,21px) * var(--escala-letra)); }
+@media(max-width:640px) { .bloco { padding:18px; } .fila li { grid-template-columns:26px minmax(0,1fr); } .fila b { grid-column:2; font-size:calc(16px * var(--escala-letra)); } .barraFila { grid-column:2; } }

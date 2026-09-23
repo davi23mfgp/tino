@@ -130,7 +130,8 @@ body::before {
     width: 244px;
     border-radius: 0;
     border-right: 1px solid var(--superficie-borda);
-    background: oklch(0.165 0 0);
+    /* Preta, como o Davi deixou em 22/09 ("a navegação lateral permanece preta"). */
+    background: oklch(0.11 0 0);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     box-shadow: none;

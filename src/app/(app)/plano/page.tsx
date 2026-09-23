@@ -32,7 +32,6 @@ export default async function Plano() {
   const primeiroMes = plano.passos[0]
   const alvoDaVez = plano.ordem[0]
   const totalDivida = alvos.reduce((soma, alvo) => soma + alvo.saldoCentavos, 0)
-  const maiorSaldo = Math.max(1, ...plano.ordem.map((alvo) => alvo.saldoCentavos))
   const pagamentoDoMes = primeiroMes?.pagamentos.reduce((soma, item) => soma + item.valorCentavos, 0) ?? 0
   // "14 meses" obriga a contar no calendário. A data é a resposta.
   const mesLivre = plano.mesesAteLimpar ? competenciaMaisMeses(competencia, plano.mesesAteLimpar) : null
@@ -114,7 +113,7 @@ export default async function Plano() {
                   <small>{alvo.jurosMensalBps > 0 ? `${formatarPercentual(alvo.jurosMensalBps)} ao mês` : "sem juros enquanto for paga integral"}</small>
                 </span>
                 <b>{formatarMoeda(alvo.saldoCentavos)}</b>
-                <span className={estilos.barraFila}><i style={{ width: `${(alvo.saldoCentavos / maiorSaldo) * 100}%` }} /></span>
+                <span className={estilos.barraFila}><i style={{ width: `${(alvo.saldoCentavos / Math.max(1, totalDivida)) * 100}%` }} /></span>
               </li>
             ))}
           </ol>

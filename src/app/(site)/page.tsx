@@ -47,7 +47,7 @@ export default async function Vitrine() {
     </header>
     <main id="conteudo">
       <section className="lp-hero">
-        <div className="lp-hero-texto"><Abertura><h1>Seu dinheiro organizado.<br />Sua vida com espaço<br />para acontecer.</h1></Abertura><Abertura atraso={0.08}><p>Contas, cartões e planos em um só lugar.<br />Entenda como você está e o que fazer a seguir.</p></Abertura><Abertura atraso={0.16}><Comecar /></Abertura></div>
+        <div className="lp-hero-texto"><Abertura><span className="lp-hero-selo">Tino para sua vida</span><h1>O dinheiro é seu.<br />A clareza também.</h1></Abertura><Abertura atraso={0.08}><p>Saldo, gastos e compromissos em uma visão só.<br />Entenda o que fazer agora e o que vem depois.</p></Abertura><Abertura atraso={0.16}><Comecar /><small>{dias} dias para conhecer. Sem cartão para começar.</small></Abertura></div>
         <DemonstracaoReal />
         <EmSequencia className="lp-confianca" passo={0.09}>
           {[<span key="contas"><Wallet size={18} /> Contas e cartões juntos</span>,

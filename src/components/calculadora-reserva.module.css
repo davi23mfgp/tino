@@ -24,3 +24,19 @@
 
 .rodape { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid var(--pauta); font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
 .erro { margin-top:8px; font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+
+/* Perguntas compactas no mesmo bloco; os marcadores não criam uma segunda
+   linha vazia só porque a grade automática ganhou quatro colunas. */
+.painel { max-width:100%; }
+.painel h2 { max-width:30ch; font-size:calc(clamp(22px,2.7vw,32px) * var(--escala-letra)); }
+.apoio { max-width:72ch; }
+.progresso { display:block; width:min(100%,720px); height:8px; margin-top:16px; appearance:none; border:0; border-radius:999px; background:oklch(1 0 0 / 13%); overflow:hidden; }
+.progresso::-webkit-progress-bar { background:oklch(1 0 0 / 13%); border-radius:999px; }
+.progresso::-webkit-progress-value { background:linear-gradient(90deg,oklch(0.7 0.16 145),var(--acao)); border-radius:999px; }
+.progresso::-moz-progress-bar { background:var(--acao); border-radius:999px; }
+.perguntas { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; max-width:900px; }
+.perguntas>.marcavel { margin:0; padding:10px 12px; min-height:48px; border:1px solid var(--pauta); border-radius:var(--raio-campo); background:var(--papel-1); }
+.conta { max-width:900px; margin-top:16px; }
+.conta li { padding:10px 0; }
+.rodape { max-width:900px; }
+@media(max-width:640px) { .painel { padding:18px; } .perguntas { grid-template-columns:minmax(0,1fr); gap:10px; } .somatorio { align-items:flex-start !important; flex-direction:column; gap:4px !important; } }

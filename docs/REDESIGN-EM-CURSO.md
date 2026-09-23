@@ -1368,3 +1368,60 @@ separadamente no fechamento desta rodada.
 real, e não se repetir abaixo. Confirmado: uma única `DemonstracaoReal` no
 hero; seções seguintes usam capturas desktop e painéis, sem aparelhos móveis.
 Build de produção aprovado (63 páginas); prévia local reaberta e conferida.
+
+### 22/09/2026 — comparação visual antes da nova rodada
+
+O usuário enviou 30 referências no ZIP de 22/09 e pediu ver o estado atual
+antes de implementar. Capturas locais da landing e do login, e captura do
+painel publicado, foram apresentadas nesta conversa antes das edições.
+
+A primeira dobra estava centralizada, com a demonstração quase toda abaixo do
+viewport. Ela agora reúne mensagem e captura real do app lado a lado em tela
+grande; no celular preserva a demonstração animada da implementação anterior.
+O login, antes um formulário isolado, passa a mostrar a captura real do painel
+ao lado do acesso, com campos rotulados e controle de exibição da senha.
+
+As imagens do ZIP são referência de hierarquia, densidade e interação, não
+assets a copiar: a identidade e as telas demonstradas continuam sendo do Tino.
+Ainda falta conferir e refinar os fluxos internos de Ajustes, ações e cartões,
+inclusive contraste das superfícies translúcidas, antes de afirmar paridade
+com as referências.
+
+Em Ajustes, as linhas internas agora formam listas mais leves com divisórias.
+Os verbos genéricos repetidos à direita deixam de ocupar espaço visual;
+título, descrição e seta mantêm o destino identificável. Login validado em
+390px e acesso à conta de demonstração local confirmado. Tipos e 410 testes
+aprovados nesta rodada; as capturas visuais continuam sendo a prova do layout.
+
+### 22/09/2026 — correção após retorno visual
+
+O usuário rejeitou o verde-claro do botão de login e o conjunto de três
+blocos do topo do painel. O botão passou a branco neutro sobre grafite, com
+foco visível. No painel, o saldo, o próximo passo e os três valores de apoio
+foram reunidos em uma superfície escura e compacta; o valor continua sendo o
+primeiro elemento da hierarquia, e o destino da ação permanece explícito.
+Os dados e cálculos não mudaram. A integração preservou o motion da landing
+adicionado em paralelo. Tipos e 423 testes passaram depois da integração.
+O painel ainda requer comparação visual ao vivo: o banco local contém tabelas
+de migrações antigas sem registro correspondente, e o servidor atual não
+consegue ler o campo de sessão novo. Não tratar essa limitação como prova
+de aprovação visual.
+
+Após o push, a captura de produção confirmou que a nova composição do painel
+entrou no ar. Ela também mostrou que a névoa verde global ainda dominava a
+tela; o fundo e a tinta do vidro foram neutralizados para grafite com luz fria
+discreta. O verde da marca permanece nas ações e indicadores sem pintar toda
+a área de leitura. Essa mudança exige nova captura de produção para validação.
+
+### 22/09/2026 — trechos apontados nas 13 capturas
+
+Escopo limitado aos recortes enviados: filtros e resumo do extrato, anotação
+rápida, campo de limite do orçamento, cálculo da reserva, primeira ação em
+dívidas, lista e roteiro do plano, empréstimo, seletor do simulador, aporte
+mensal e carteira vazia. O restante da interface do Claude e a animação dos
+cartões permanecem como estão. O destaque da primeira dívida recebia fundo
+escuro de `.alvo` sobre texto escuro de `Destaque`; a superfície clara voltou
+com texto e links legíveis. A barra da fila de dívidas agora divide pelo total,
+coerente com sua legenda. A reserva apresenta progresso e formatação decimal
+brasileira. Tipos e 423 testes passaram; falta inspeção visual publicada após
+o push, pois o banco local ainda impede a navegação autenticada.

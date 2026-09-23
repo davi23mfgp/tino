@@ -127,9 +127,9 @@
    quanto do limite já foi usado. Antes a tira só dizia "Vence dia 10", que é
    a informação menos procurada de um cartão.
 
-   O corte é 56% da altura: cabe a linha do banco, o valor e a barra de
-   limite. Em porcentagem da LARGURA, que é contra o que a margem resolve,
-   e a razão da peça é fixa, então vale em qualquer tela sem media query.
+   A sobreposição é discreta para o banco do cartão seguinte continuar
+   visível mesmo quando o primeiro se eleva. A margem percentual acompanha
+   a largura do cartão em qualquer tela.
    ============================================================ */
 .carteira { display: flex; flex-direction: column; padding: 4px 0 8px; }
 .cartaoFisico {
@@ -137,7 +137,7 @@
      pintava por cima do cartão seguinte: o nome do primeiro aparecia
      atravessado na tira do segundo. */
   isolation: isolate;
-  margin-top: calc(-0.63 * 32%);
+  margin-top: -8%;
   scroll-snap-align: none;
   aspect-ratio: 1.585;
   padding: 16px 18px;
@@ -154,19 +154,27 @@
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 28%), 0 16px 32px -18px oklch(0 0 0 / 88%);
 }
 .cartaoFisico:first-child { margin-top: 0; }
-/* Empilhamento de carteira: cada cartão cobre a metade de baixo do anterior,
-   e de cada um atrás sobra a tira de CIMA, com banco, fatura e limite.
-   O selecionado NÃO sobe de camada: se subisse, taparia o topo dos que vêm
-   depois e a tira deles viraria um valor sem nome de banco. O anel verde já
-   diz qual está aberto. */
+/* Empilhamento de carteira: a tira superior continua legível em repouso.
+   Ao apontar, a peça sobe por transform (sem deslocar a página); ao selecionar,
+   fica elevada até outra ser escolhida. O cartão seguinte continua acessível
+   na parte inferior da pilha. */
 .cartaoFisico[aria-pressed="true"] {
-  outline: 2px solid oklch(var(--lch-acao));
+  outline: 2px solid oklch(1 0 0 / 72%);
   outline-offset: 2px;
+  /* Mantém a ordem da pilha: o cartão seguinte cobre só a borda inferior,
+     sem esconder seu banco e seu valor quando o primeiro está selecionado. */
   z-index: auto;
+  transform: translateY(-14px);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 35%), 0 26px 48px -14px oklch(0 0 0 / 85%);
 }
-/* O levante no toque some junto: com a pilha em ordem natural, subir o cartão
-   abriria um vão na carteira e cortaria o cartão de trás. */
-.cartaoFisico:hover, .cartaoFisico:focus-visible { transform: none; z-index: auto; }
+.cartaoFisico:hover, .cartaoFisico:focus-visible {
+  z-index: 4;
+  transform: translateY(-20px);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 35%), 0 30px 52px -12px oklch(0 0 0 / 90%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cartaoFisico { transition: none; }
+}
 .marca { font-weight: 640; color: oklch(1 0 0 / 90%); }
 
 /* Fatura: o número que a pessoa abre a carteira para ver. */
