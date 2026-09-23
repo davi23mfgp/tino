@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import type { CSSProperties } from "react"
 import Link from "next/link"
-import { ArrowRight, CheckCircle2, Plus, ReceiptText } from "lucide-react"
+import { ArrowRight, CheckCircle2, CreditCard, Plus, ReceiptText, TrendingUp } from "lucide-react"
 
 import estilos from "./painel.module.css"
 import { sessaoDaPagina } from "@/lib/pagina"
@@ -76,38 +76,43 @@ export default async function Painel() {
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
-    {/* O topo é um cartão só (Davi, 23/09, com um app de banco como
-        referência): quem é, que dia é, quanto tem agora e como está a saúde.
-        Saíram o bloco claro de "próximo passo" — a mesma ação aparecia de
-        novo em Prioridades e em Dívidas, mais abaixo — e as três caixinhas
-        de entrou/saiu/saúde, que viraram uma linha e um anel aqui dentro. */}
-    <section className={estilos.heroi} aria-labelledby="ola">
-      <div className={estilos.heroiTopo}>
+    {/* O topo é uma faixa de cor, como a dos apps de banco (Davi, 23/09,
+        opção A do canvas): branco em cima descendo para a cor de destaque
+        embaixo. É o único bloco colorido da tela — é por onde o olho entra.
+        Dentro dela só o que se lê de relance: quem é, o saldo, o mês numa
+        linha, a saúde e o aviso crítico. Saíram o bloco claro de "próximo
+        passo" (a mesma ação reaparecia em Prioridades e em Dívidas) e as
+        três caixinhas de entrou/saiu/saúde. */}
+    <section className={estilos.faixa} aria-labelledby="ola">
+      <div className={estilos.faixaTopo}>
         <div className="min-w-0">
           <h2 id="ola" className={estilos.ola}>Olá, {primeiroNome}!</h2>
           <p className={estilos.hoje}>{hoje}</p>
         </div>
-        <Link href="/analise" className={estilos.saudeHeroi} aria-label={`Saúde financeira: ${diagnostico.nota} de 100, ${SITUACAO[diagnostico.situacao]}`}>
-          <span className={estilos.anelHeroi} data-situacao={diagnostico.situacao} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}>
+        <Link href="/analise" className={estilos.saudeFaixa} aria-label={`Saúde financeira: ${diagnostico.nota} de 100, ${SITUACAO[diagnostico.situacao]}`}>
+          <span className={estilos.anelFaixa} data-situacao={diagnostico.situacao} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}>
             <b>{diagnostico.nota}</b>
           </span>
           <small>saúde · {SITUACAO[diagnostico.situacao]}</small>
         </Link>
       </div>
-      <div className={estilos.tituloResumo}><p className={estilos.sobretitulo}>Saldo disponível</p><BotaoOcultarValores /></div>
-      <p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
+      <div className={estilos.rotuloSaldo}><p>Saldo disponível</p><BotaoOcultarValores /></div>
+      <p className={cn(estilos.saldoFaixa, "valor-sensivel")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
       <p className={estilos.linhaMes}>
-        {rotuloCompetencia(competencia).split(" ")[0]}: entrou <b className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</b>
-        {" · "}saiu <b className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</b>
+        {rotuloCompetencia(competencia).split(" ")[0]}: entrou <b className="valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</b>
+        {" · "}saiu <b className="valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</b>
         {" · "}{panorama.mes.sobraCentavos >= 0 ? "sobrou" : "faltou"} <b className="valor-sensivel">{formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}</b>
         {panorama.aplicadoCentavos > 0 && <>{" · "}aplicado <b className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</b></>}
       </p>
-      <AvisoNoHeroi />
-      <div className={estilos.atalhos}>
-        <Link href="/lancar"><Plus aria-hidden />Anotar</Link>
-        <Link href="/transacoes"><ReceiptText aria-hidden />Extrato</Link>
-      </div>
+      <div className={estilos.avisoFaixa}><AvisoNoHeroi /></div>
     </section>
+
+    <nav className={estilos.atalhos} aria-label="Atalhos">
+      <Link href="/lancar"><span><Plus aria-hidden /></span>Anotar</Link>
+      <Link href="/transacoes"><span><ReceiptText aria-hidden /></span>Extrato</Link>
+      <Link href="/cartoes"><span><CreditCard aria-hidden /></span>Faturas</Link>
+      <Link href="/analise"><span><TrendingUp aria-hidden /></span>Análise</Link>
+    </nav>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
