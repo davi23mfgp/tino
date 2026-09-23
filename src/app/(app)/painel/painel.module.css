@@ -87,6 +87,42 @@
   .visaoGeral .passoIntegrado { margin:0 0 22px; padding:20px; border:1px solid #fff; }
 }
 
+/* Recupera a luz e a transparência do painel, com a navegação preta como
+   moldura. O reflexo fica nas bordas; o miolo sob o saldo permanece escuro. */
+.visaoGeral {
+  border-color:oklch(1 0 0 / 16%);
+  background:
+    radial-gradient(85% 145% at 0% 0%, oklch(0.53 0.12 145 / 24%), transparent 67%),
+    radial-gradient(65% 130% at 100% 100%, oklch(0.37 0.075 155 / 17%), transparent 72%),
+    linear-gradient(128deg, oklch(1 0 0 / 12%), oklch(1 0 0 / 3%) 39%, oklch(1 0 0 / 7%)),
+    oklch(0.15 0.012 145 / 72%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:inset 0 1px 0 oklch(1 0 0 / 18%), 0 24px 50px -32px #000b;
+}
+.visaoGeral .passoIntegrado {
+  background:linear-gradient(145deg, #fff, #ecefeb 92%);
+  box-shadow:inset 0 1px 0 #fff, 0 18px 38px -24px #0009;
+}
+.visaoGeral .numerosDeApoio {
+  gap:10px;
+  margin-bottom:22px;
+  border-top:0;
+}
+.visaoGeral .numerosDeApoio>div,
+.visaoGeral .numerosDeApoio>div+div {
+  padding:14px 16px;
+  border:1px solid oklch(1 0 0 / 12%);
+  border-radius:15px;
+  background:linear-gradient(150deg, oklch(1 0 0 / 11%), oklch(1 0 0 / 3%) 75%);
+  box-shadow:inset 0 1px 0 oklch(1 0 0 / 9%);
+}
+@media(max-width:560px) {
+  .visaoGeral .numerosDeApoio { gap:6px; margin-bottom:18px; }
+  .visaoGeral .numerosDeApoio>div,
+  .visaoGeral .numerosDeApoio>div+div { padding:12px 9px; border-radius:12px; }
+}
+
 /* Os números que explicam o resultado. Saíram de dentro do herói — lá eles
    competiam com a resposta, aqui eles a sustentam. Linha própria, tipografia
    um degrau abaixo, e no celular os três cabem lado a lado. */

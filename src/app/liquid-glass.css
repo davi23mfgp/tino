@@ -1,6 +1,6 @@
 /* ============================================================
-   Vidro líquido com fundo grafite. A névoa verde da versão inicial foi
-   rejeitada no retorno visual de 22/09/2026.
+   Vidro líquido com gradiente verde e grafite. O brilho colorido voltou
+   com menos saturação; a navegação lateral permanece preta.
    Protótipo de referência: public/prototipos/liquid-glass.html.
 
    Aproximação web do Liquid Glass da Apple. A Apple não publica esse
@@ -14,8 +14,8 @@
      o que passa por baixo vira borrão.
 
    Contraste: todo vidro tem tinta escura por baixo, então o texto não
-   depende do ponto do fundo que está atrás. A cor da marca fica nas ações
-   pontuais, enquanto o fundo grafite deixa os números em primeiro plano.
+   depende do ponto do fundo que está atrás. O brilho mora nas bordas,
+   enquanto o centro escuro deixa os números em primeiro plano.
    ============================================================ */
 
 :root {
@@ -55,11 +55,11 @@
   --muted-fg: oklch(0.45 0.01 145);
 }
 
-/* ---------- fundo: grafite com luz fria discreta ----------
+/* ---------- fundo: profundidade verde e grafite ----------
    Num pseudo-elemento fixo, não em `background-attachment: fixed`, que o
    Safari do iPhone ignora (o fundo rolaria junto e esticaria). */
 body {
-  background-color: oklch(0.12 0.004 255);
+  background-color: oklch(0.12 0.01 145);
   background-image: none;
 }
 body::before {
@@ -69,9 +69,10 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.65 0.035 255 / 12%), transparent 62%),
-    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.64 0.025 255 / 8%), transparent 65%),
-    linear-gradient(180deg, oklch(0.16 0.006 255), oklch(0.105 0.003 255));
+    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.72 0.16 145 / 19%), transparent 62%),
+    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.69 0.12 145 / 10%), transparent 65%),
+    radial-gradient(70vmax 55vmax at 15% 105%, oklch(0.4 0.09 145 / 30%), transparent 65%),
+    linear-gradient(180deg, oklch(0.16 0.015 145), oklch(0.105 0.008 145));
 }
 .light body { background-color: oklch(0.96 0.004 255); background-image: none; }
 .light body::before {
@@ -149,7 +150,7 @@ body::before {
     width: 244px;
     border-radius: 0;
     border-right: 1px solid oklch(1 0 0 / 10%);
-    background: oklch(0.145 0.012 145);
+    background: oklch(0.105 0.004 145);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     box-shadow: none;
