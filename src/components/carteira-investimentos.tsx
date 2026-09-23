@@ -3,14 +3,13 @@ import { useCallback, useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Vazio } from "@/components/ui/painel"
+import { Vazio } from "@/components/ui/painel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SelectNative } from "@/components/ui/select-native"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import type { PrecoDeAtivo } from "@/lib/cotacoes"
-import { ArcaCarteira } from "@/components/arca-carteira"
 import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
 import { PainelDaCarteira } from "@/components/painel-da-carteira"
 import { ListaDeAtivos } from "@/components/lista-de-ativos"
@@ -118,79 +117,70 @@ export function CarteiraInvestimentos() {
     } finally { setOcupado(false) }
   }
 
-  return (
-    <Cartao
-      titulo="Sua carteira"
-      acao={<Button onClick={() => setAbrir(true)}>Cadastrar investimento</Button>}
-    >
-      {/* O total e a explicação saíram daqui: o painel logo abaixo já abre
-          com o número, e o mesmo valor três vezes na mesma tela (aqui, no
-          painel e no miolo do anel) fazia a tela parecer gaguejar. */}
+  const cadastrar = <Button onClick={() => setAbrir(true)}>Cadastrar</Button>
 
-      {/* Do que a carteira é feita, antes da lista de ativos. A lista responde
-          "o que eu tenho"; a composição responde "em que eu estou" — e é essa
-          que decide o próximo aporte. */}
-      {ativos.length > 0 && (
-        <div className="mt-6 border-t border-pauta pt-5">
-          <PainelDaCarteira
-            posicoes={ativos.map((conta) => {
-              const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
-              return {
-                id: conta.id,
-                nome: conta.nome,
-                classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
-                valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
-                aportadoCentavos: conta.saldoCentavos,
-                ticker: conta.ticker,
-                variacaoPercentual: preco?.variacaoPercentual ?? null,
-              }
-            })}
-          />
-        </div>
+  // Três blocos de vidro soltos, e não um cartão com tudo dentro: o resumo, o
+  // próximo aporte e a lista respondem perguntas diferentes, e aninhados um
+  // dentro do outro viravam caixa dentro de caixa (Davi, 23/09: opção A).
+  return (
+    <div className="grid items-start gap-3 lg:grid-cols-2">
+      {ativos.length > 0 ? (
+        <PainelDaCarteira
+          acao={cadastrar}
+          posicoes={ativos.map((conta) => {
+            const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
+            return {
+              id: conta.id,
+              nome: conta.nome,
+              classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+              valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+              aportadoCentavos: conta.saldoCentavos,
+              ticker: conta.ticker,
+              variacaoPercentual: preco?.variacaoPercentual ?? null,
+            }
+          })}
+        />
+      ) : (
+        <section className="ficha grid gap-2 rounded-[var(--raio-bloco)] p-5 lg:col-span-2">
+          <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. O saldo passa a compor seu patrimônio." />
+          <div className="flex justify-center">{cadastrar}</div>
+        </section>
       )}
 
       {/* A lista, agrupada por classe, no desenho do Kinvo: cabeçalho com o
           total da classe e, em cada ativo, o código, o valor, a variação do dia
           e as três linhas que explicam o número. */}
-      <div className="mt-7">
-        <ListaDeAtivos
-          ativos={ativos.map((conta) => {
-            const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
-            return {
-              id: conta.id,
-              nome: conta.nome,
-              instituicao: conta.instituicao,
-              classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
-              ticker: conta.ticker ?? null,
-              quantidadeMilesimos: conta.quantidadeMilesimos ?? null,
-              precoUnitario: preco?.preco ?? null,
-              variacaoPercentual: preco?.variacaoPercentual ?? null,
-              valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
-              aportadoCentavos: conta.saldoCentavos,
-            }
-          })}
-          aoAbrir={(id) => {
-            const conta = ativos.find((linha) => linha.id === id)
-            if (conta) {
-              setMovimento(conta)
-              setAbrir(true)
-            }
-          }}
-        />
-      </div>
+      {ativos.length > 0 && (
+        <section className="ficha rounded-[var(--raio-bloco)] p-5 lg:col-span-2">
+          <h2 className="mb-4 text-[calc(16px*var(--escala-letra))] font-semibold">O que você tem</h2>
+          <ListaDeAtivos
+            ativos={ativos.map((conta) => {
+              const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
+              return {
+                id: conta.id,
+                nome: conta.nome,
+                instituicao: conta.instituicao,
+                classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+                ticker: conta.ticker ?? null,
+                quantidadeMilesimos: conta.quantidadeMilesimos ?? null,
+                precoUnitario: preco?.preco ?? null,
+                variacaoPercentual: preco?.variacaoPercentual ?? null,
+                valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+                aportadoCentavos: conta.saldoCentavos,
+              }
+            })}
+            aoAbrir={(id) => {
+              const conta = ativos.find((linha) => linha.id === id)
+              if (conta) {
+                setMovimento(conta)
+                setAbrir(true)
+              }
+            }}
+          />
+        </section>
+      )}
 
-      <ArcaCarteira
-        contas={ativos.map((conta) => ({ id: conta.id, nome: conta.nome, classeDeAtivo: conta.classeDeAtivo }))}
-        carteira={ativos.map((conta) => ({
-          // Quem ainda não escolheu a classe entra como "outros": some da conta
-          // do método, mas não some da carteira nem do total.
-          classe: (conta.classeDeAtivo ?? "OUTROS") as ClasseDeAtivo,
-          valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
-        }))}
-      />
-
-      {!ativos.length && <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. O saldo passa a compor seu patrimônio." />}
-      {erro && !abrir && <p role="alert" className="text-negativo">{erro}</p>}
+      {erro && !abrir && <p role="alert" className="text-negativo lg:col-span-2">{erro}</p>}
 
       <Dialog open={abrir} onOpenChange={(aberto) => { if (!ocupado) { setAbrir(aberto); if (!aberto) setMovimento(null) } }}>
         <DialogContent>
@@ -222,6 +212,6 @@ export function CarteiraInvestimentos() {
           </form>
         </DialogContent>
       </Dialog>
-    </Cartao>
+    </div>
   )
 }

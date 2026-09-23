@@ -1,0 +1,63 @@
+/* Carteira de investimentos (Davi, 23/09): opção A do canvas — total, barra
+   pelas letras do ARCA e o próximo aporte. */
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.nota { font-size:max(10px, calc(11.5px * var(--escala-letra))); line-height:1.5; color:var(--texto-3); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+
+.resumo { display:grid; gap:12px; padding:20px; border-radius:var(--raio-bloco); }
+.resumo header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.total { font-size:calc(clamp(30px,5vw,38px) * var(--escala-letra)); font-weight:750; letter-spacing:-.035em; line-height:1; font-variant-numeric:tabular-nums; }
+.ganho { margin-top:-4px; font-size:calc(13px * var(--escala-letra)); font-variant-numeric:tabular-nums; }
+.ganho[data-tom="positivo"] { color:var(--positivo); }
+.ganho[data-tom="negativo"] { color:var(--negativo); }
+
+.barra { display:flex; gap:2px; height:12px; border-radius:999px; overflow:hidden; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.barra i { display:block; min-width:3px; height:100%; }
+
+.letras { display:grid; gap:9px; list-style:none; }
+.letras li { display:grid; grid-template-columns:8px minmax(0,1fr) auto 38px 58px; align-items:center; gap:10px; font-size:calc(13px * var(--escala-letra)); }
+.letras li > i { width:8px; height:8px; border-radius:999px; }
+.letras li > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--texto-2); }
+.letras small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.letras b { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+.letras em { text-align:right; font-style:normal; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.letras em[data-longe] { color:oklch(0.8 0.15 80); font-weight:650; }
+:global(.light) .letras em[data-longe] { color:oklch(0.55 0.13 65); }
+
+.aporte { display:grid; gap:12px; padding:18px; border-radius:var(--raio-bloco); }
+.aporte header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.aporte h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.aporte header small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chips button {
+  min-height:40px; padding:0 14px; border-radius:var(--raio-pilula);
+  border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 94%);
+  font-size:calc(13px * var(--escala-letra)); color:inherit; font-variant-numeric:tabular-nums;
+}
+.chips button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.chips button small { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:500; opacity:.8; }
+.linhaValor { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.valorDigitado { display:flex; align-items:center; gap:4px; font-size:calc(16px * var(--escala-letra)); font-weight:700; color:var(--foreground); }
+.valorDigitado input { width:10ch; min-height:44px; padding:0 8px; border-radius:10px; border:1px solid var(--vidro-borda); background:transparent; text-align:right; font:inherit; font-variant-numeric:tabular-nums; color:inherit; }
+
+.partes { display:grid; gap:10px; list-style:none; }
+.partes li { display:grid; grid-template-columns:8px minmax(0,1fr) auto; align-items:center; gap:10px; font-size:calc(14px * var(--escala-letra)); }
+.partes li > i { width:8px; height:8px; border-radius:999px; }
+.partes li > span small { display:block; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.partes b { font-weight:700; font-variant-numeric:tabular-nums; }
+.partes li[data-zero] { opacity:.6; }
+.rodapeAporte { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding-top:10px; border-top:1px solid var(--vidro-borda); font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.5; color:var(--texto-2); }
+.rodapeAporte > span { flex:1 1 200px; }
+.combinar { min-height:40px; padding:0 16px; border-radius:var(--raio-pilula); background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(13px * var(--escala-letra)); font-weight:650; }
+.combinar:disabled { opacity:.5; }
+
+.desempenho { border-radius:var(--raio-bloco); }
+/* No computador o resumo e o próximo aporte ficam lado a lado; o desempenho
+   ocupa a linha inteira embaixo. */
+@media (min-width:1024px) { .desempenho { grid-column:1 / -1; } .resumo, .aporte { height:100%; align-content:start; } }
+.desempenho summary { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px; padding:0 18px; cursor:pointer; list-style:none; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.desempenho summary::-webkit-details-marker { display:none; }
+.desempenho summary span::after { content:" ›"; display:inline-block; margin-left:4px; transition:transform .2s var(--curva); }
+.desempenho[open] summary span::after { transform:rotate(90deg); }
+.desempenho summary small { font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:500; color:var(--texto-3); }
+.desempenhoCorpo { display:grid; gap:14px; padding:0 18px 18px; }
