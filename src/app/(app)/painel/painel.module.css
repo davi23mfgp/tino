@@ -65,6 +65,28 @@
 @media(max-width:850px) { .visaoGeral { grid-template-columns:1fr; padding:24px 24px 0 } .visaoGeral .resumo { padding-bottom:20px } .passoIntegrado { padding:20px 0 22px; border-left:0; border-top:1px solid var(--pauta) } }
 @media(max-width:560px) { .visaoGeral { padding:20px 20px 0 } .visaoGeral .numerosDeApoio>div { padding:14px 8px 16px 0 } .visaoGeral .numerosDeApoio>div+div { padding-left:10px } .visaoGeral .numerosDeApoio dd { font-size:calc(15px * var(--escala-letra)) } }
 
+/* A próxima ação ganha uma superfície clara: leitura imediata e contraste
+   com o saldo escuro, sem clarear o painel inteiro. */
+.visaoGeral .passoIntegrado {
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  margin:0 0 24px;
+  padding:22px 26px;
+  border:1px solid #fff;
+  border-radius:20px;
+  background:#f4f4f0;
+  color:#171a18;
+  box-shadow:0 16px 38px #0002;
+}
+.visaoGeral .passoIntegrado .sobretitulo { color:#575d59; }
+.visaoGeral .passoIntegrado>p:not(.sobretitulo) { color:#434a45; }
+.visaoGeral .passoIntegrado a { color:#171a18; text-decoration-color:#8b918c; }
+@media(max-width:850px) {
+  .visaoGeral .passoIntegrado { margin:0 0 22px; padding:20px; border:1px solid #fff; }
+}
+
 /* Os números que explicam o resultado. Saíram de dentro do herói — lá eles
    competiam com a resposta, aqui eles a sustentam. Linha própria, tipografia
    um degrau abaixo, e no celular os três cabem lado a lado. */

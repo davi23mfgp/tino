@@ -154,19 +154,25 @@
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 28%), 0 16px 32px -18px oklch(0 0 0 / 88%);
 }
 .cartaoFisico:first-child { margin-top: 0; }
-/* Empilhamento de carteira: cada cartão cobre a metade de baixo do anterior,
-   e de cada um atrás sobra a tira de CIMA, com banco, fatura e limite.
-   O selecionado NÃO sobe de camada: se subisse, taparia o topo dos que vêm
-   depois e a tira deles viraria um valor sem nome de banco. O anel verde já
-   diz qual está aberto. */
+/* Empilhamento de carteira: a tira superior continua legível em repouso.
+   Ao apontar, a peça sobe por transform (sem deslocar a página); ao selecionar,
+   fica elevada até outra ser escolhida. O cartão seguinte continua acessível
+   na parte inferior da pilha. */
 .cartaoFisico[aria-pressed="true"] {
-  outline: 2px solid oklch(var(--lch-acao));
+  outline: 2px solid oklch(1 0 0 / 72%);
   outline-offset: 2px;
-  z-index: auto;
+  z-index: 3;
+  transform: translateY(-14px);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 35%), 0 26px 48px -14px oklch(0 0 0 / 85%);
 }
-/* O levante no toque some junto: com a pilha em ordem natural, subir o cartão
-   abriria um vão na carteira e cortaria o cartão de trás. */
-.cartaoFisico:hover, .cartaoFisico:focus-visible { transform: none; z-index: auto; }
+.cartaoFisico:hover, .cartaoFisico:focus-visible {
+  z-index: 4;
+  transform: translateY(-20px);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 35%), 0 30px 52px -12px oklch(0 0 0 / 90%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cartaoFisico { transition: none; }
+}
 .marca { font-weight: 640; color: oklch(1 0 0 / 90%); }
 
 /* Fatura: o número que a pessoa abre a carteira para ver. */
