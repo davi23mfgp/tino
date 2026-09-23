@@ -161,7 +161,9 @@
 .cartaoFisico[aria-pressed="true"] {
   outline: 2px solid oklch(1 0 0 / 72%);
   outline-offset: 2px;
-  z-index: 3;
+  /* Mantém a ordem da pilha: o cartão seguinte cobre só a borda inferior,
+     sem esconder seu banco e seu valor quando o primeiro está selecionado. */
+  z-index: auto;
   transform: translateY(-14px);
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 35%), 0 26px 48px -14px oklch(0 0 0 / 85%);
 }
