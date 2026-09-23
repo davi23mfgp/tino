@@ -1,11 +1,8 @@
-/* Detalhe do mês, gráfico e lista mês a mês. No computador, detalhe e
-   gráfico ficam lado a lado (os dois respondem "este mês") e a lista ocupa
-   a largura toda embaixo. */
+/* Detalhe do mês, gráfico e lista mês a mês, empilhados em qualquer largura.
+   Lado a lado no computador, o detalhe (mais curto) deixava um buraco — e
+   esticado, o buraco só passava para dentro do cartão (Davi, 23/09: "não
+   deixe espaço"). */
 .grade { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; }
-@media (min-width:900px) {
-  .grade { grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; }
-  .lista { grid-column:1 / -1; }
-}
 
 .detalhe, .bloco { padding:18px; border-radius:var(--raio-bloco); }
 .detalhe header, .bloco header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }

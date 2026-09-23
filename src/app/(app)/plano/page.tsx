@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import estilos from "./plano.module.css"
 import { PlanoMesAMes } from "./mes-a-mes"
@@ -8,6 +7,9 @@ import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { montarPlanoDoLar } from "@/lib/tino/plano-do-lar"
+import { pesoDoJuro, referenciaDoJuro } from "@/lib/tino/leitura-dividas"
+import { cn } from "@/lib/utils"
+import pesos from "@/components/peso-do-juro.module.css"
 import { Cartao, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
@@ -61,22 +63,22 @@ export default async function Plano() {
         </div>
       </section>
 
+      {/* Uma faixa, como o "Ataque agora" de Dívidas (Davi, 23/09: o cartão
+          grande ocupava a tela inteira no celular para dizer uma linha). */}
       {alvoDaVez && (
-        <section className={estilos.alvo}>
-          <div>
+        <section className={cn("ficha", estilos.alvo, pesos.peso)} data-peso={pesoDoJuro(alvoDaVez.jurosMensalBps)}>
+          <div className="min-w-0">
             <p className={estilos.rotulo}>Ataque esta primeiro</p>
-            <h2>{alvoDaVez.nome}</h2>
-            <p>
+            <p className={estilos.alvoNome}>{alvoDaVez.nome}</p>
+            <p className={estilos.alvoApoio}>
               {alvoDaVez.jurosMensalBps > 0
-                ? `Cobra ${formatarPercentual(alvoDaVez.jurosMensalBps)} ao mês — o juro mais caro da sua fila. Todo real extra rende mais aqui do que em qualquer outra dívida.`
-                : "Sem juros enquanto for paga integral. Mantenha em dia para não virar rotativo."}
+                ? `${formatarPercentual(alvoDaVez.jurosMensalBps)} a.m. (${referenciaDoJuro(pesoDoJuro(alvoDaVez.jurosMensalBps))})`
+                : "sem juros se paga integral"}
+              {" · "}
+              {formatarMoeda(alvoDaVez.saldoCentavos)} em aberto
             </p>
-            <Button asChild className="mt-4"><Link href="/dividas">Registrar um pagamento</Link></Button>
           </div>
-          <div className={estilos.alvoValor}>
-            <b>{formatarMoeda(alvoDaVez.saldoCentavos)}</b>
-            <small>saldo em aberto</small>
-          </div>
+          <Link href="/dividas" className={estilos.alvoBotao}>Registrar</Link>
         </section>
       )}
 

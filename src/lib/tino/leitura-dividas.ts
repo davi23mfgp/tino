@@ -7,6 +7,8 @@
  * diagnóstico e a tela de dívidas precisam chamar de "caro" a mesma dívida.
  */
 
+import { formatarPercentual } from "@/lib/dinheiro"
+
 export type PesoDoJuro = "caro" | "medio" | "leve" | "sem-juro"
 
 /**
@@ -30,6 +32,16 @@ export function pesoDoJuro(jurosMensalBps: number): PesoDoJuro {
   if (jurosMensalBps >= REFERENCIA_JURO_MENSAL.caro) return "caro"
   if (jurosMensalBps >= REFERENCIA_JURO_MENSAL.medio) return "medio"
   return "leve"
+}
+
+/** A régua da faixa, dita junto com o juro — percentual sem faixa não informa. */
+export function referenciaDoJuro(peso: PesoDoJuro) {
+  const caro = formatarPercentual(REFERENCIA_JURO_MENSAL.caro, 0)
+  const medio = formatarPercentual(REFERENCIA_JURO_MENSAL.medio, 0)
+  if (peso === "caro") return `caro: acima de ${caro} a.m.`
+  if (peso === "medio") return `médio: entre ${medio} e ${caro} a.m.`
+  if (peso === "leve") return `leve: abaixo de ${medio} a.m.`
+  return "sem juros"
 }
 
 /**

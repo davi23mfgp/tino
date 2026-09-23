@@ -16,11 +16,11 @@ import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
 import {
-  REFERENCIA_JURO_MENSAL,
   comprometimentoBps,
   composicaoPorPeso,
   faixaComprometimento,
   pesoDoJuro,
+  referenciaDoJuro,
   type PesoDoJuro,
 } from "@/lib/tino/leitura-dividas"
 
@@ -87,14 +87,6 @@ const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-
 const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", parcela: "", parcelasTotal: "", pagas: "0", dia: "10" }
 
 
-/** A régua de cada faixa, dita junto com o juro — percentual sem faixa não informa. */
-function referenciaDoJuro(peso: PesoDoJuro) {
-  const caro = formatarPercentual(REFERENCIA_JURO_MENSAL.caro, 0)
-  const medio = formatarPercentual(REFERENCIA_JURO_MENSAL.medio, 0)
-  if (peso === "caro") return `caro: acima de ${caro} a.m.`
-  if (peso === "medio") return `médio: entre ${medio} e ${caro} a.m.`
-  return `leve: abaixo de ${medio} a.m.`
-}
 
 const NOME_DO_PESO: Record<PesoDoJuro, string> = { caro: "Caro", medio: "Médio", leve: "Leve", "sem-juro": "Sem juro" }
 
