@@ -211,7 +211,7 @@ async function main() {
 
   // ── Investimentos ────────────────────────────────────────
   // Uma carteira pequena e desequilibrada de propósito: quase tudo em renda
-  // fixa, nada fora do país. É o que faz a tela de investimentos ter o que
+  // fixa e pouco fora do país. É o que faz a tela de investimentos ter o que
   // mostrar no ARCA — uma carteira certinha não exercita nenhum aviso.
   await prisma.conta.createMany({
     data: [
@@ -219,6 +219,7 @@ async function main() {
       { larId: lar.id, nome: "CDB Liquidez Diária", instituicao: "Banco Inter", tipo: "INVESTIMENTO", classeDeAtivo: "CAIXA", saldoInicialCentavos: reais(3200), cor: "orange" },
       { larId: lar.id, nome: "BOVA11", instituicao: "XP", tipo: "INVESTIMENTO", classeDeAtivo: "ACOES", ticker: "BOVA11", quantidadeMilesimos: 20_000, saldoInicialCentavos: reais(2640), cor: "blue" },
       { larId: lar.id, nome: "HGLG11", instituicao: "XP", tipo: "INVESTIMENTO", classeDeAtivo: "FII", ticker: "HGLG11", quantidadeMilesimos: 8_000, saldoInicialCentavos: reais(1270), cor: "blue" },
+      { larId: lar.id, nome: "Apple", instituicao: "Avenue", tipo: "INVESTIMENTO", classeDeAtivo: "INTERNACIONAL", ticker: "AAPL", quantidadeMilesimos: 2_000, saldoInicialCentavos: reais(2100), cor: "blue" },
     ],
   })
 

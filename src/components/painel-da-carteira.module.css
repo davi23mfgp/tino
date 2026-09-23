@@ -21,6 +21,9 @@
 .letras small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .letras b { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
 .letras em { text-align:right; font-style:normal; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+/* No celular estreito o valor em reais sai da linha: sem ele o nome da letra
+   cabe inteiro, e o valor está na lista de investimentos logo abaixo. */
+@media (max-width:420px) { .letras li { grid-template-columns:8px minmax(0,1fr) 38px 58px; } .letras small { display:none; } }
 .letras em[data-longe] { color:oklch(0.8 0.15 80); font-weight:650; }
 :global(.light) .letras em[data-longe] { color:oklch(0.55 0.13 65); }
 
@@ -54,7 +57,8 @@
 .desempenho { border-radius:var(--raio-bloco); }
 /* No computador o resumo e o próximo aporte ficam lado a lado; o desempenho
    ocupa a linha inteira embaixo. */
-@media (min-width:1024px) { .desempenho { grid-column:1 / -1; } .resumo, .aporte { height:100%; align-content:start; } }
+.linhaInteira { min-width:0; }
+@media (min-width:1024px) { .desempenho, .linhaInteira { grid-column:1 / -1; } .resumo, .aporte { height:100%; align-content:start; } }
 .desempenho summary { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px; padding:0 18px; cursor:pointer; list-style:none; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
 .desempenho summary::-webkit-details-marker { display:none; }
 .desempenho summary span::after { content:" ›"; display:inline-block; margin-left:4px; transition:transform .2s var(--curva); }

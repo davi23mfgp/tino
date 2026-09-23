@@ -71,7 +71,7 @@ interface RetratoMensal {
   aportadoCentavos: number
 }
 
-export function PainelDaCarteira({ posicoes, acao }: { posicoes: PosicaoDaCarteira[]; acao?: React.ReactNode }) {
+export function PainelDaCarteira({ posicoes, acao, depoisDoResumo }: { posicoes: PosicaoDaCarteira[]; acao?: React.ReactNode; depoisDoResumo?: React.ReactNode }) {
   const [historico, setHistorico] = useState<RetratoMensal[]>([])
   const [cdi, setCdi] = useState<{ percentual: number; fonte: string } | null>(null)
 
@@ -170,6 +170,10 @@ export function PainelDaCarteira({ posicoes, acao }: { posicoes: PosicaoDaCartei
       </section>
 
       {noMetodo > 0 && <ProximoAporte carteira={carteira} />}
+
+      {/* Os ativos, com a cara da corretora, logo depois do resumo e do
+          aporte: é a parte que muda todo dia. */}
+      {depoisDoResumo && <div className={estilos.linhaInteira}>{depoisDoResumo}</div>}
 
       <details className={cn("ficha", estilos.desempenho)}>
         <summary>

@@ -1,18 +1,23 @@
 "use client"
 import { useCallback, useEffect, useState } from "react"
-import { RefreshCw } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { Vazio } from "@/components/ui/painel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SelectNative } from "@/components/ui/select-native"
-import { IdentidadeBanco } from "@/components/banco-perfil"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import type { PrecoDeAtivo } from "@/lib/cotacoes"
+import type { IndicadorDoMercado, Periodo, SerieDeAtivo } from "@/lib/mercado"
 import { CLASSES, type ClasseDeAtivo } from "@/lib/tino/investir"
 import { PainelDaCarteira } from "@/components/painel-da-carteira"
-import { ListaDeAtivos } from "@/components/lista-de-ativos"
+import { CartoesDeAtivos, MercadoAgora } from "@/components/mercado"
+
+interface RespostaDoMercado {
+  ativos: SerieDeAtivo[]
+  indices: IndicadorDoMercado[]
+  dolar: number | null
+  atualizadoEm: string
+}
 
 interface Conta {
   id: string
@@ -27,8 +32,9 @@ interface Conta {
 
 export function CarteiraInvestimentos() {
   const [contas, setContas] = useState<Conta[]>([])
-  const [precos, setPrecos] = useState<PrecoDeAtivo[]>([])
-  const [atualizando, setAtualizando] = useState(false)
+  const [mercado, setMercado] = useState<RespostaDoMercado | null>(null)
+  const [periodo, setPeriodo] = useState<Periodo>("1mo")
+  const [atualizando, setAtualizando] = useState(true)
   const [abrir, setAbrir] = useState(false)
   const [movimento, setMovimento] = useState<Conta | null>(null)
   const [erro, setErro] = useState("")
@@ -42,32 +48,36 @@ export function CarteiraInvestimentos() {
 
   const ativos = contas.filter((conta) => conta.tipo === "INVESTIMENTO")
   const origens = contas.filter((conta) => !["CARTAO_CREDITO", "INVESTIMENTO"].includes(conta.tipo))
-  const comTicker = ativos.filter((conta) => conta.ticker && conta.quantidadeMilesimos)
+  const tickers = ativos.map((conta) => conta.ticker?.trim().toUpperCase()).filter(Boolean).join(",")
 
-  // As cotações chegam sozinhas quando há posição cadastrada. Antes a tela
-  // avisava que "cotações não são atualizadas automaticamente" e deixava o
-  // trabalho para a pessoa.
-  const atualizarPrecos = useCallback(async () => {
-    if (!comTicker.length) return
+  // Cotações, histórico do período e o mercado do dia numa chamada só. Chega
+  // sozinha ao abrir a tela e ao trocar o período; a resposta de um período
+  // antigo que chegue atrasada é descartada.
+  useEffect(() => {
+    let valendo = true
     setAtualizando(true)
-    try { setPrecos(await buscar<PrecoDeAtivo[]>(`/api/cotacoes?tickers=${comTicker.map((c) => c.ticker).join(",")}`)) }
-    catch { /* sem preço a tela mostra só o saldo cadastrado */ }
-    finally { setAtualizando(false) }
-  }, [comTicker.map((c) => c.ticker).join(",")]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { void atualizarPrecos() }, [atualizarPrecos])
+    buscar<RespostaDoMercado>(`/api/mercado?tickers=${encodeURIComponent(tickers)}&periodo=${periodo}`)
+      .then((resposta) => { if (valendo) setMercado(resposta) })
+      .catch(() => { /* sem mercado a tela mostra os valores cadastrados */ })
+      .finally(() => { if (valendo) setAtualizando(false) })
+    return () => { valendo = false }
+  }, [tickers, periodo])
 
+  const series = mercado?.ativos ?? []
+  const serieDe = (conta: Conta) => series.find((linha) => linha.ticker === conta.ticker?.trim().toUpperCase())
+
+  /**
+   * Valor de mercado em reais. Ativo cotado em dólar só vira reais com o
+   * câmbio do dia; sem câmbio, fica no valor cadastrado — supor um dólar
+   * seria inventar o número.
+   */
   function mercadoDe(conta: Conta): number | null {
-    const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
-    if (!preco || !conta.quantidadeMilesimos) return null
-    return Math.round((preco.preco * conta.quantidadeMilesimos) / 1000 * 100)
+    const serie = serieDe(conta)
+    if (!serie || !conta.quantidadeMilesimos) return null
+    const cambio = serie.moeda === "BRL" ? 1 : serie.moeda === "USD" ? mercado?.dolar ?? null : null
+    if (cambio === null) return null
+    return Math.round(((serie.preco * conta.quantidadeMilesimos) / 1000) * cambio * 100)
   }
-
-  const totalCadastrado = ativos.reduce((soma, conta) => soma + conta.saldoCentavos, 0)
-  // Cada ativo entra pelo valor de mercado quando existe preço, e pelo saldo
-  // cadastrado quando não existe — nunca por uma estimativa.
-  const totalHoje = ativos.reduce((soma, conta) => soma + (mercadoDe(conta) ?? conta.saldoCentavos), 0)
-  const diferenca = totalHoje - totalCadastrado
-  const fonte = precos[0]?.fonte
 
   /**
    * Sem a classe, o investimento não entra em nenhuma letra do ARCA — a conta
@@ -119,64 +129,59 @@ export function CarteiraInvestimentos() {
 
   const cadastrar = <Button onClick={() => setAbrir(true)}>Cadastrar</Button>
 
-  // Três blocos de vidro soltos, e não um cartão com tudo dentro: o resumo, o
-  // próximo aporte e a lista respondem perguntas diferentes, e aninhados um
-  // dentro do outro viravam caixa dentro de caixa (Davi, 23/09: opção A).
+  const cartoes = (
+    <CartoesDeAtivos
+      ativos={ativos.map((conta) => ({
+        id: conta.id,
+        nome: conta.nome,
+        instituicao: conta.instituicao,
+        classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+        ticker: conta.ticker ?? null,
+        quantidadeMilesimos: conta.quantidadeMilesimos ?? null,
+        valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+        aportadoCentavos: conta.saldoCentavos,
+      }))}
+      series={series}
+      dolar={mercado?.dolar ?? null}
+      periodo={periodo}
+      aoMudarPeriodo={setPeriodo}
+      carregando={atualizando}
+      aoAbrir={(id) => {
+        const conta = ativos.find((linha) => linha.id === id)
+        if (conta) {
+          setMovimento(conta)
+          setAbrir(true)
+        }
+      }}
+    />
+  )
+
+  // Blocos soltos, e não um cartão com tudo dentro: o mercado, o resumo, os
+  // ativos e o próximo aporte respondem perguntas diferentes (Davi, 23/09).
   return (
     <div className="grid items-start gap-3 lg:grid-cols-2">
+      <div className="lg:col-span-2">
+        <MercadoAgora indices={mercado?.indices ?? []} atualizadoEm={mercado?.atualizadoEm ?? null} carregando={atualizando} />
+      </div>
+
       {ativos.length > 0 ? (
         <PainelDaCarteira
           acao={cadastrar}
-          posicoes={ativos.map((conta) => {
-            const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
-            return {
-              id: conta.id,
-              nome: conta.nome,
-              classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
-              valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
-              aportadoCentavos: conta.saldoCentavos,
-              ticker: conta.ticker,
-              variacaoPercentual: preco?.variacaoPercentual ?? null,
-            }
-          })}
+          depoisDoResumo={cartoes}
+          posicoes={ativos.map((conta) => ({
+            id: conta.id,
+            nome: conta.nome,
+            classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
+            valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
+            aportadoCentavos: conta.saldoCentavos,
+            ticker: conta.ticker,
+            variacaoPercentual: serieDe(conta)?.variacaoPercentual ?? null,
+          }))}
         />
       ) : (
         <section className="ficha grid gap-2 rounded-[var(--raio-bloco)] p-5 lg:col-span-2">
-          <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. O saldo passa a compor seu patrimônio." />
+          <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. Com o código na bolsa (PETR4, AAPL) e a quantidade, o preço e o gráfico entram sozinhos." />
           <div className="flex justify-center">{cadastrar}</div>
-        </section>
-      )}
-
-      {/* A lista, agrupada por classe, no desenho do Kinvo: cabeçalho com o
-          total da classe e, em cada ativo, o código, o valor, a variação do dia
-          e as três linhas que explicam o número. */}
-      {ativos.length > 0 && (
-        <section className="ficha rounded-[var(--raio-bloco)] p-5 lg:col-span-2">
-          <h2 className="mb-4 text-[calc(16px*var(--escala-letra))] font-semibold">O que você tem</h2>
-          <ListaDeAtivos
-            ativos={ativos.map((conta) => {
-              const preco = precos.find((linha) => linha.ticker === conta.ticker?.toUpperCase())
-              return {
-                id: conta.id,
-                nome: conta.nome,
-                instituicao: conta.instituicao,
-                classe: (conta.classeDeAtivo as ClasseDeAtivo | null) ?? null,
-                ticker: conta.ticker ?? null,
-                quantidadeMilesimos: conta.quantidadeMilesimos ?? null,
-                precoUnitario: preco?.preco ?? null,
-                variacaoPercentual: preco?.variacaoPercentual ?? null,
-                valorCentavos: mercadoDe(conta) ?? conta.saldoCentavos,
-                aportadoCentavos: conta.saldoCentavos,
-              }
-            })}
-            aoAbrir={(id) => {
-              const conta = ativos.find((linha) => linha.id === id)
-              if (conta) {
-                setMovimento(conta)
-                setAbrir(true)
-              }
-            }}
-          />
         </section>
       )}
 
