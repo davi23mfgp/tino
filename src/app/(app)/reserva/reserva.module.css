@@ -3,12 +3,10 @@
    retirar. O âmbar é local, como em Dívidas: o --atencao global é cinza. */
 .pagina { display:grid; gap:12px; min-width:0; --ambar:oklch(0.8 0.15 80); }
 :global(.light) .pagina { --ambar:oklch(0.55 0.13 65); }
-/* No computador, o plano e o alvo lado a lado debaixo do topo: empilhados em
-   1.300px de largura, a régua do valor mensal atravessava a tela inteira. */
+/* No computador, a resposta e o plano lado a lado: empilhados em 1.300px de
+   largura, a régua do valor mensal atravessava a tela inteira. */
 @media (min-width:1024px) {
   .pagina { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
-  .topo { grid-column:1 / -1; }
-  .botoes { max-width:520px; }
 }
 .pagina a { font-weight:600; color:var(--acao); text-decoration:underline; text-underline-offset:3px; }
 .pagina button, .pagina select, .pagina input:not([type="range"]) { min-height:44px; }
@@ -90,5 +88,12 @@
 .conta li { display:flex; justify-content:space-between; gap:12px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
 .conta b { flex-shrink:0; color:var(--foreground); font-weight:650; }
 .conta b[data-negativo] { color:var(--acao); }
-.soma { padding-top:8px; border-top:1px solid var(--vidro-borda); }
-.soma b { color:var(--acao); }
+
+/* "Por que 6 meses?" recolhido dentro do cartão do plano. */
+.porQue { border-radius:var(--raio-cartao); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 96%); }
+.porQue summary { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:44px; padding:0 14px; cursor:pointer; list-style:none; font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+.porQue summary::-webkit-details-marker { display:none; }
+.porQue summary span::after { content:" ›"; display:inline-block; margin-left:4px; transition:transform .2s var(--curva); }
+.porQue[open] summary span::after { transform:rotate(90deg); }
+.porQue summary small { font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:500; color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.porQueCorpo { display:grid; gap:10px; padding:4px 14px 14px; }

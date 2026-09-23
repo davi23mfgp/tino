@@ -136,10 +136,15 @@ export function TelaReserva({
           sobraCentavos={sobraCentavos}
           meta={meta}
           contas={contas}
+          porQue={<PorQueOAlvo essencialCentavos={essencialCentavos} mesesAlvo={mesesAlvo} alvoCentavos={alvoCentavos} />}
         />
       )}
 
-      <SeuAlvo essencialCentavos={essencialCentavos} mesesAlvo={mesesAlvo} />
+      {semEssencial && (
+        <section className={cn("ficha", estilos.bloco)}>
+          <PorQueOAlvo essencialCentavos={essencialCentavos} mesesAlvo={mesesAlvo} alvoCentavos={alvoCentavos} />
+        </section>
+      )}
     </div>
   )
 }
@@ -273,6 +278,7 @@ function FormasDeJuntar({
   sobraCentavos,
   meta,
   contas,
+  porQue,
 }: {
   hoje: string
   falta: number
@@ -282,6 +288,7 @@ function FormasDeJuntar({
   sobraCentavos: number
   meta: MetaReserva | null
   contas: ContaMeta[]
+  porQue: React.ReactNode
 }) {
   const router = useRouter()
   const planoAtual = meta?.aporteMensalCentavos ?? 0
@@ -343,6 +350,7 @@ function FormasDeJuntar({
         <h2>Reserva completa</h2>
         <p className={estilos.apoio}>Você já tem os {mesesAlvo} meses do alvo. Daqui em diante, o que sobrar pode ir para metas e investimentos.</p>
         <Link href="/investir" className={estilos.link}>Ver investimentos</Link>
+        {porQue}
       </section>
     )
   }
@@ -353,6 +361,7 @@ function FormasDeJuntar({
         <h2>Para chegar aos {mesesAlvo} meses</h2>
         <small>falta {formatarMoeda(falta)}</small>
       </header>
+      {porQue}
 
       <p className={estilos.pergunta}>Como você quer juntar?</p>
       <div className={estilos.formas} role="group" aria-label="Forma de juntar">
@@ -446,7 +455,9 @@ function FormasDeJuntar({
           "Nesse ritmo a reserva não chega ao alvo."
         ) : (
           <>
-            {formatarMoeda(plano.porMesCentavos)} por mês · completa em <b>{pronto}</b>
+            {/* Em "valor por mês" o valor já está no campo logo acima; repetir
+                aqui era o terceiro "R$ 400" do mesmo cartão. */}
+            {forma !== "POR_MES" && <>{formatarMoeda(plano.porMesCentavos)} por mês · </>}Completa em <b>{pronto}</b>
             <small>
               {plano.meses} {plano.meses === 1 ? "mês" : "meses"}, sem contar rendimento
             </small>
@@ -457,7 +468,7 @@ function FormasDeJuntar({
       {meta && (
         <div className={estilos.plano}>
           <span>
-            {planoAtual > 0 ? <>Seu plano: {formatarMoeda(planoAtual)} por mês · guardou {formatarMoeda(meta.realizadoCentavos)} este mês</> : "Nenhum valor mensal planejado ainda."}
+            {planoAtual > 0 ? <>Este mês: guardou {formatarMoeda(meta.realizadoCentavos)} de {formatarMoeda(planoAtual)}</> : "Nenhum valor mensal planejado ainda."}
           </span>
           {forma !== "DE_UMA_VEZ" && mudouPlano && (
             <button type="button" onClick={() => void usarComoPlano()} disabled={salvando} className={estilos.usar}>
@@ -474,11 +485,15 @@ function FormasDeJuntar({
 }
 
 /**
- * O alvo em meses e por quê. As respostas não ficam gravadas — só o número de
- * meses —, então a tela começa pelo perfil mais comum e mostra o alvo
- * vigente ao lado do sugerido.
+ * Por que o alvo tem esse número de meses — recolhido dentro do cartão do
+ * plano (Davi, 23/09: "ficou um pouquinho repetitivo"). Como bloco próprio ele
+ * repetia os 6 meses e o valor do alvo que o cartão ao lado já dizia.
+ *
+ * As respostas não ficam gravadas — só o número de meses —, então as
+ * perguntas começam no perfil mais comum, e o total só aparece quando elas
+ * dão um alvo diferente do que vale hoje.
  */
-function SeuAlvo({ essencialCentavos, mesesAlvo }: { essencialCentavos: number; mesesAlvo: number }) {
+function PorQueOAlvo({ essencialCentavos, mesesAlvo, alvoCentavos }: { essencialCentavos: number; mesesAlvo: number; alvoCentavos: number }) {
   const router = useRouter()
   const [tipoDeRenda, setTipoDeRenda] = useState<TipoDeRenda>("ASSALARIADO")
   const [dependentes, setDependentes] = useState(0)
@@ -510,44 +525,43 @@ function SeuAlvo({ essencialCentavos, mesesAlvo }: { essencialCentavos: number; 
   )
 
   return (
-    <section className={cn("ficha", estilos.bloco)}>
-      <header>
-        <h2>Seu alvo: {mesesAlvo} meses</h2>
-        {essencialCentavos > 0 && <small>{formatarMoeda(alvoEmCentavos(essencialCentavos, mesesAlvo))}</small>}
-      </header>
-      <p className={estilos.pergunta}>Como entra o seu dinheiro</p>
-      <div className={estilos.chips} role="group" aria-label="Como entra o seu dinheiro">
-        {chip(tipoDeRenda === "ASSALARIADO", "Salário fixo", () => setTipoDeRenda("ASSALARIADO"))}
-        {chip(tipoDeRenda === "MISTA", "Fixo e variável", () => setTipoDeRenda("MISTA"))}
-        {chip(tipoDeRenda === "VARIAVEL", "Tudo variável", () => setTipoDeRenda("VARIAVEL"))}
-      </div>
-      <p className={estilos.pergunta}>Quem depende de você</p>
-      <div className={estilos.chips} role="group" aria-label="Quantas pessoas dependem de você">
-        {[0, 1, 2, 3, 4].map((quantas) => chip(dependentes === quantas, quantas === 0 ? "Só eu" : quantas === 4 ? "4 ou mais" : String(quantas), () => setDependentes(quantas)))}
-      </div>
-      <div className={estilos.chips} role="group" aria-label="Outras situações">
-        {chip(rendaUnica, "A casa vive de uma renda só", () => setRendaUnica(!rendaUnica))}
-        {chip(planoDeSaude, "Tenho plano de saúde", () => setPlanoDeSaude(!planoDeSaude))}
-      </div>
+    <details className={estilos.porQue}>
+      <summary>
+        <span>Por que {mesesAlvo} meses?</span>
+        {alvoCentavos > 0 && <small>alvo de {formatarMoeda(alvoCentavos)}</small>}
+      </summary>
+      <div className={estilos.porQueCorpo}>
+        <div className={estilos.chips} role="group" aria-label="Como entra o seu dinheiro">
+          {chip(tipoDeRenda === "ASSALARIADO", "Salário fixo", () => setTipoDeRenda("ASSALARIADO"))}
+          {chip(tipoDeRenda === "MISTA", "Fixo e variável", () => setTipoDeRenda("MISTA"))}
+          {chip(tipoDeRenda === "VARIAVEL", "Tudo variável", () => setTipoDeRenda("VARIAVEL"))}
+        </div>
+        <p className={estilos.pergunta}>Quem depende de você</p>
+        <div className={estilos.chips} role="group" aria-label="Quantas pessoas dependem de você">
+          {[0, 1, 2, 3, 4].map((quantas) => chip(dependentes === quantas, quantas === 0 ? "Só eu" : quantas === 4 ? "4 ou mais" : String(quantas), () => setDependentes(quantas)))}
+        </div>
+        <div className={estilos.chips} role="group" aria-label="Outras situações">
+          {chip(rendaUnica, "A casa vive de uma renda só", () => setRendaUnica(!rendaUnica))}
+          {chip(planoDeSaude, "Tenho plano de saúde", () => setPlanoDeSaude(!planoDeSaude))}
+        </div>
 
-      <ul className={estilos.conta}>
-        {sugestao.partes.map((parte) => (
-          <li key={parte.rotulo}>
-            <span>{parte.rotulo}</span>
-            <b data-negativo={parte.meses < 0 || undefined}>{parte.meses > 0 ? "+" : ""}{parte.meses} {Math.abs(parte.meses) === 1 ? "mês" : "meses"}</b>
-          </li>
-        ))}
-        <li className={estilos.soma}>
-          <span>Com essas respostas</span>
-          <b>{sugestao.meses} meses{essencialCentavos > 0 ? ` · ${formatarMoeda(alvoEmCentavos(essencialCentavos, sugestao.meses))}` : ""}</b>
-        </li>
-      </ul>
-      {diferente && (
-        <button type="button" onClick={() => void aplicar()} disabled={salvando} className={estilos.usar}>
-          {salvando ? "Salvando…" : `Mudar o alvo para ${sugestao.meses} meses`}
-        </button>
-      )}
-      {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
-    </section>
+        <ul className={estilos.conta}>
+          {sugestao.partes.map((parte) => (
+            <li key={parte.rotulo}>
+              <span>{parte.rotulo}</span>
+              <b data-negativo={parte.meses < 0 || undefined}>{parte.meses > 0 ? "+" : ""}{parte.meses} {Math.abs(parte.meses) === 1 ? "mês" : "meses"}</b>
+            </li>
+          ))}
+        </ul>
+        {diferente && (
+          <button type="button" onClick={() => void aplicar()} disabled={salvando} className={estilos.usar}>
+            {salvando
+              ? "Salvando…"
+              : `Mudar o alvo para ${sugestao.meses} meses${essencialCentavos > 0 ? ` · ${formatarMoeda(alvoEmCentavos(essencialCentavos, sugestao.meses))}` : ""}`}
+          </button>
+        )}
+        {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
+      </div>
+    </details>
   )
 }
