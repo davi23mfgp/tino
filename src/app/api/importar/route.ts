@@ -54,6 +54,8 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     arquivoNome: string
     formato: FormatoImportacao
     membroId?: string | null
+    competenciaFatura?: string
+    diaVencimento?: number
     lancamentos: Parameters<typeof confirmarImportacao>[0]["lancamentos"]
   }>(requisicao, { bytes: 5 * 1024 * 1024, itens: 10_000 })
 
@@ -62,6 +64,14 @@ export const PUT = comSessao(async (sessao, requisicao) => {
   if(!await prisma.conta.findFirst({where:{id:dados.contaId,larId:sessao.larId,arquivada:false}}))throw new ErroDeUso("Conta inválida.")
   await doLar(sessao.larId, { membro: dados.membroId })
   if(dados.lancamentos.length>10000||dados.lancamentos.some(l=>!Number.isSafeInteger(l.valorCentavos)||l.valorCentavos<=0||l.valorCentavos>2147483647))throw new ErroDeUso("Valores do arquivo inválidos.")
+  if (dados.competenciaFatura != null && !/^\d{4}-(0[1-9]|1[0-2])$/.test(dados.competenciaFatura)) throw new ErroDeUso("Mês da fatura inválido.")
+  if (dados.diaVencimento != null && !(Number.isInteger(dados.diaVencimento) && dados.diaVencimento >= 1 && dados.diaVencimento <= 31)) throw new ErroDeUso("Dia de vencimento inválido.")
+  const parcelaValida = (l: (typeof dados.lancamentos)[number]) =>
+    l.parcelasTotal == null ||
+    (Number.isInteger(l.parcelasTotal) && Number.isInteger(l.parcelaAtual) && l.parcelasTotal >= 2 && l.parcelasTotal <= 120 &&
+      (l.parcelaAtual as number) >= 1 && (l.parcelaAtual as number) <= l.parcelasTotal &&
+      (l.dataCompra == null || !Number.isNaN(new Date(l.dataCompra).getTime())))
+  if (!dados.lancamentos.every(parcelaValida)) throw new ErroDeUso("Parcela inválida.")
   const ids=[...new Set(dados.lancamentos.flatMap(l=>l.categoriaId?[l.categoriaId]:[]))]
   if(await prisma.categoria.count({where:{id:{in:ids},larId:sessao.larId}})!==ids.length)throw new ErroDeUso("Categoria inválida.")
   const importacao = await confirmarImportacao({
@@ -70,6 +80,8 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     arquivoNome: dados.arquivoNome,
     formato: dados.formato,
     membroId: dados.membroId ?? sessao.membroId,
+    competenciaFatura: dados.competenciaFatura ?? undefined,
+    diaVencimento: dados.diaVencimento ?? undefined,
     lancamentos: dados.lancamentos,
   })
 

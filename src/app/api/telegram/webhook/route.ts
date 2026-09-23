@@ -5,7 +5,13 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { autenticarChave, hashDeChave, registrarCaptura } from "@/lib/captura"
 import { baixarArquivo, responder, type AtualizacaoTelegram } from "@/lib/captura/telegram"
 import { AudioIndisponivel, AudioLongoDemais, AudioVazio, transcrever } from "@/lib/captura/transcricao"
-import { confirmarImportacao, detectarFormato, previaImportacao } from "@/lib/importar"
+import {
+  confirmarImportacao,
+  dadosParaConfirmar,
+  detectarFormato,
+  motivoParaNaoImportarSozinho,
+  previaImportacao,
+} from "@/lib/importar"
 import { PdfProtegido } from "@/lib/importar/pdf"
 import { segredoConfere } from "@/lib/segredo"
 
@@ -125,21 +131,18 @@ export async function POST(requisicao: Request) {
         return NextResponse.json({ ok: true })
       }
 
+      const motivo = motivoParaNaoImportarSozinho(previa)
+      if (motivo) {
+        await responder(chatId, motivo)
+        return NextResponse.json({ ok: true })
+      }
+
       const importacao = await confirmarImportacao({
         larId: chave.larId,
         contaId: conta.id,
         arquivoNome: nome,
         formato,
-        lancamentos: previa.lancamentos.map((lancamento) => ({
-          data: lancamento.data.toISOString(),
-          descricao: lancamento.descricaoSugerida,
-          descricaoOriginal: lancamento.descricao,
-          valorCentavos: lancamento.valorCentavos,
-          tipo: lancamento.tipo,
-          categoriaId: lancamento.categoriaId ?? null,
-          hashImport: lancamento.hashImport,
-          duplicada: lancamento.duplicada,
-        })),
+        ...dadosParaConfirmar(previa),
       })
 
       const total = previa.lancamentos

@@ -23,6 +23,12 @@ describe("limparDescricao", () => {
     assert.match(limparDescricao("MP*TERABYTESHOP"), /^TERABYTESHOP/)
   })
 
+  it("não come o começo da palavra seguinte ao prefixo", () => {
+    assert.equal(limparDescricao("PAGAMENTO DEB AUTOMATIC"), "DEB AUTOMATIC")
+    assert.equal(limparDescricao("PIX PARAISO DAS FLORES"), "PARAISO DAS FLORES")
+    assert.equal(limparDescricao("PAGAMENTO DE BOLETO"), "BOLETO")
+  })
+
   it("tira a numeração de parcela", () => {
     assert.ok(!limparDescricao("LOJA X 3/12").includes("3/12"))
     assert.ok(!limparDescricao("LOJA X PARCELA 2 DE 6").includes("PARCELA"))

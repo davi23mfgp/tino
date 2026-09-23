@@ -5,7 +5,13 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { autenticarChave, registrarCaptura } from "@/lib/captura"
 import { baixarMidia, primeiraMensagem, responder, type EventoWhatsApp } from "@/lib/captura/whatsapp"
 import { AudioIndisponivel, AudioLongoDemais, AudioVazio, transcrever } from "@/lib/captura/transcricao"
-import { confirmarImportacao, detectarFormato, previaImportacao } from "@/lib/importar"
+import {
+  confirmarImportacao,
+  dadosParaConfirmar,
+  detectarFormato,
+  motivoParaNaoImportarSozinho,
+  previaImportacao,
+} from "@/lib/importar"
 import { PdfProtegido } from "@/lib/importar/pdf"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { responderPorRegras } from "@/lib/tino/chat"
@@ -278,21 +284,18 @@ async function tratarDocumento(
       return
     }
 
+    const motivo = motivoParaNaoImportarSozinho(previa)
+    if (motivo) {
+      await responder(telefone, motivo)
+      return
+    }
+
     const importacao = await confirmarImportacao({
-      larId,
+      larId: larId,
       contaId: conta.id,
       arquivoNome: nome,
       formato,
-      lancamentos: previa.lancamentos.map((lancamento) => ({
-        data: lancamento.data.toISOString(),
-        descricao: lancamento.descricaoSugerida,
-        descricaoOriginal: lancamento.descricao,
-        valorCentavos: lancamento.valorCentavos,
-        tipo: lancamento.tipo,
-        categoriaId: lancamento.categoriaId ?? null,
-        hashImport: lancamento.hashImport,
-        duplicada: lancamento.duplicada,
-      })),
+      ...dadosParaConfirmar(previa),
     })
 
     const total = previa.lancamentos

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  * O que NÃO é chute e está escrito aqui porque é verdade verificável no código:
  * quais dados o app guarda, quem são os terceiros que recebem alguma coisa
  * e como exercer cada direito. A lista de terceiros foi conferida contra os
- * endereços que o código chama em 22/09/2026 — ao ligar integração nova,
+ * endereços que o código chama em 23/09/2026 — ao ligar integração nova,
  * atualize a seção "Quem mais vê alguma coisa" e suba `VERSAO_TERMOS`.
  */
 
@@ -55,6 +55,7 @@ const SECOES = [
     conteudo: [
       "Hospedagem e banco: Vercel e Neon, onde o aplicativo roda e os dados ficam guardados — fora do Brasil.",
       "Transcrição de áudio e o assessor: Groq e Anthropic, nos Estados Unidos. Quando você manda um áudio ou pergunta ao assessor, esse conteúdo — e os números da sua conta necessários para a resposta — é enviado para lá para virar texto ou resposta.",
+      "Importação de fatura: Groq, nos Estados Unidos. Os nomes das lojas que o Tino não soube categorizar sozinho vão para lá, para sugerir a categoria — transferências e Pix para pessoas não vão. Se a leitura automática de uma fatura em PDF não fechar com o total do banco, as linhas da fatura com data ou valor vão para uma releitura, com CPF e CEP apagados antes do envio. Sem a chave do Groq configurada, nada disso é enviado.",
       "Se você ligar: WhatsApp (Meta) e Telegram recebem as mensagens trocadas com o Tino por esses canais; Resend recebe as faturas que você encaminhar por e-mail; Focus NFe recebe os dados da venda para emitir a nota do MEI.",
       "Notificações no celular passam pelo serviço de push do navegador (Google, Apple ou Mozilla), que recebe só o aviso, não seus lançamentos.",
       "Pagamento: Stripe e Mercado Pago recebem o necessário para cobrar. O Tino nunca guarda o número do seu cartão.",
@@ -103,7 +104,7 @@ export default function Privacidade() {
           O que o Tino guarda, por quê, quem mais vê e como você leva embora ou apaga. Escrito para ser lido, não para
           ser aceito sem ler.
         </p>
-        <small>Atualizada em 22 de setembro de 2026.</small>
+        <small>Atualizada em 23 de setembro de 2026.</small>
       </header>
 
       {SECOES.map((secao) => (

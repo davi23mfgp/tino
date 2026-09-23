@@ -5,4 +5,4 @@
  * aceitou a anterior passa a ver o pedido de novo aceite (LGPD, art. 8º, §6º —
  * mudança de finalidade exige informar o titular).
  */
-export const VERSAO_TERMOS = "2026-09-22"
+export const VERSAO_TERMOS = "2026-09-23"

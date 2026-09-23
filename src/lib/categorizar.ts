@@ -45,7 +45,9 @@ export interface Sugestao {
 export function limparDescricao(bruta: string): string {
   let texto = bruta.toUpperCase().trim()
 
-  texto = texto.replace(/^(COMPRA|PAGAMENTO|PAGTO|DEBITO|DÉBITO|CREDITO|CRÉDITO|TRANSF|TED|DOC|PIX)\s+(DE|PARA|A)?\s*/g, "")
+  // O "DE" só sai como palavra inteira: sem o espaço exigido, "PAGAMENTO DEB
+  // AUTOMATIC" perdia o "DE" de "DEB" e virava "b Automatic".
+  texto = texto.replace(/^(COMPRA|PAGAMENTO|PAGTO|DEBITO|DÉBITO|CREDITO|CRÉDITO|TRANSF|TED|DOC|PIX)\s+(?:(?:DE|PARA|A)\s+)?/g, "")
   texto = texto.replace(/^(PAG\*|PG\*|MP\*|MERCPAGO\*|PAYPAL\s*\*|IFD\*|EC\*|APL\*)/g, "")
   texto = texto.replace(/\s*\d{1,2}\s*\/\s*\d{1,2}\s*$/g, "") // "3/12"
   texto = texto.replace(/\s*-?\s*PARCELA\s*\d+(\s*DE\s*\d+)?/g, "")

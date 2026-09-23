@@ -4,6 +4,7 @@ import { FaturasEmail } from "@/components/faturas-email"
 import { useEffect, useState } from "react"
 
 import { buscar, enviar } from "@/lib/cliente"
+import { rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
@@ -29,6 +30,9 @@ interface LancamentoPrevia {
   categoriaNome?: string
   confianca: number
   dataCompra?: string
+  parcelaAtual?: number
+  parcelasTotal?: number
+  categoriaPelaIa?: boolean
 }
 
 interface Previa {
@@ -40,6 +44,12 @@ interface Previa {
   lancamentos: LancamentoPrevia[]
   avisos: string[]
   conferencia?: { informadoCentavos: number; lidoCentavos: number }
+  faturaPdf?: boolean
+  lidoPelaIa?: boolean
+  competenciaFatura?: string
+  diaVencimento?: number
+  parcelasFuturas?: { compras: number; totalCentavos: number; porMes: { competencia: string; totalCentavos: number }[] }
+  futuroInformadoCentavos?: number
 }
 
 export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: string; aoConcluir?: () => void }) {
@@ -105,6 +115,8 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
           contaId,
           arquivoNome: arquivo.name,
           formato: previa.formato,
+          competenciaFatura: previa.competenciaFatura,
+          diaVencimento: previa.diaVencimento,
           lancamentos: previa.lancamentos.map((lancamento) => ({
             data: lancamento.data,
             descricao: lancamento.descricaoSugerida,
@@ -114,6 +126,9 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
             categoriaId: lancamento.categoriaId ?? null,
             hashImport: lancamento.hashImport,
             duplicada: lancamento.duplicada,
+            parcelaAtual: lancamento.parcelaAtual,
+            parcelasTotal: lancamento.parcelasTotal,
+            dataCompra: lancamento.dataCompra,
           })),
         },
         "PUT",
@@ -216,6 +231,31 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
             </p>
           )}
 
+          {previa.parcelasFuturas && previa.parcelasFuturas.compras > 0 && (
+            <div className="mt-3 rounded-xl border border-pauta p-3 text-xs">
+              <p className="font-medium">
+                {previa.parcelasFuturas.compras} compra(s) parcelada(s) continuam nas próximas faturas:{" "}
+                {formatarMoeda(previa.parcelasFuturas.totalCentavos)} ao todo.
+              </p>
+              {previa.futuroInformadoCentavos !== undefined && (
+                <p className="mt-1 text-muted-fg">
+                  Referência: o banco informa {formatarMoeda(previa.futuroInformadoCentavos)} comprometidos nas próximas faturas.
+                </p>
+              )}
+              {previa.parcelasFuturas.porMes.length > 0 && (
+                <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                  {previa.parcelasFuturas.porMes.slice(0, 6).map((mes) => (
+                    <li key={mes.competencia} className="flex justify-between gap-2">
+                      <span className="text-muted-fg">{rotuloCompetencia(mes.competencia, true)}</span>
+                      <span>{formatarMoeda(mes.totalCentavos)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-2 text-muted-fg">Ao importar, essas parcelas entram na projeção e no plano de pagamento.</p>
+            </div>
+          )}
+
           {previa.avisos.map((aviso) => (
             <p key={aviso} className="mt-3 rounded-xl border border-atencao/40 bg-atencao/10 p-2.5 text-xs text-atencao">
               {aviso}
@@ -237,6 +277,7 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
                   {lancamento.categoriaNome && (
                     <span className="ml-2 rounded-full bg-papel-2 px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))]">
                       {lancamento.categoriaNome}
+                      {lancamento.categoriaPelaIa && <span title="Sugerida pela IA: confira"> · IA</span>}
                     </span>
                   )}
                   {lancamento.dataCompra && (

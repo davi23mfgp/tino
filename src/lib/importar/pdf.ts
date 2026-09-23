@@ -34,6 +34,11 @@ export interface ResultadoPdf {
   naoReconhecidas: string[]
   textoBruto: string
   conferencia?: ConferenciaFatura
+  /// Vencimento impresso na fatura. Dele sai a competência da fatura ("a fatura
+  /// de setembro é a que vence em setembro") — fato do documento, não cálculo.
+  vencimento?: Date
+  /// Quanto o banco diz que já está comprometido nas próximas faturas.
+  futuroInformadoCentavos?: number
 }
 
 export interface OpcoesPdf {
@@ -75,14 +80,19 @@ export async function lerPdf(dados: ArrayBuffer, opcoes: OpcoesPdf = {}): Promis
 export function interpretarTextoPdf(
   texto: string,
   opcoes: Pick<OpcoesPdf, "faturaCartao" | "hoje"> = {},
-): Pick<ResultadoPdf, "lancamentos" | "naoReconhecidas" | "conferencia"> {
-  const linhas = texto
-    .split(/\r?\n/)
-    // O Nubank escreve o menos como U+2212, não como hífen.
-    .map((linha) => linha.replace(/−/g, "-").replace(/\s{2,}/g, " ").trim())
-    .filter(Boolean)
+): Pick<ResultadoPdf, "lancamentos" | "naoReconhecidas" | "conferencia" | "vencimento" | "futuroInformadoCentavos"> {
+  const linhas = linhasDoTexto(texto)
   const hoje = opcoes.hoje ?? new Date()
   return opcoes.faturaCartao ? lerFatura(linhas, hoje) : lerExtrato(linhas, hoje.getUTCFullYear())
+}
+
+/** Mesma limpeza de linha que a leitura usa; a releitura pela IA precisa das mesmas linhas. */
+export function linhasDoTexto(texto: string): string[] {
+  return texto
+    .split(/\r?\n/)
+    // O Nubank escreve o menos como U+2212, não como hífen.
+    .map((linha) => linha.replace(/\u2212/g, "-").replace(/\s{2,}/g, " ").trim())
+    .filter(Boolean)
 }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +184,13 @@ const REPASSE_IOF = new RegExp(`^repasse de iof\\b.*?${NUMERO}$`, "i")
 const SECAO_FUTURA = /compras parceladas\s*-\s*pr[óo]ximas faturas|^pr[óo]ximas faturas$|^lan[çc]amentos futuros$/i
 const SECAO_ATUAL = /^(transa[çc][õo]es\b|lan[çc]amentos[:\s]|despesas da fatura|detalhes de consumo|movimenta[çc][õo]es)/i
 
+/// O que o banco declara como já comprometido nas faturas seguintes.
+const FUTURO_INFORMADO = [
+  new RegExp(`^total para pr[óo]ximas faturas\\s+(?:R\\$\\s*)?${NUMERO}$`, "i"), // Itaú
+  new RegExp(`^saldo em aberto total\\s+(?:R\\$\\s*)?${NUMERO}$`, "i"), // Inter, Nubank
+  new RegExp(`^compras parceladas\\s+R\\$\\s*${NUMERO}$`, "i"), // Mercado Pago
+]
+
 const TOTAL_UNICO = [
   new RegExp(`^(?:total dos )?lan[çc]amentos atuais\\s+(?:R\\$\\s*)?${NUMERO}$`, "i"), // Itaú
   new RegExp(`^despesas do m[êe]s\\s+R\\$\\s*${NUMERO}$`, "i"), // Inter
@@ -199,7 +216,8 @@ function lerFatura(linhas: string[], hoje: Date) {
   // Compra na fatura vem sem ano. A âncora é o vencimento: nenhuma compra da
   // fatura é posterior a ele, então "04/11" numa fatura que vence em 08/09/2026
   // é de 2025. Sem vencimento legível, hoje serve — compra nunca é futura.
-  const ancora = acharVencimento(linhas) ?? hoje
+  const vencimento = acharVencimento(linhas)
+  const ancora = vencimento ?? hoje
 
   const lancamentos: LancamentoBruto[] = []
   const naoReconhecidas: string[] = []
@@ -207,8 +225,8 @@ function lerFatura(linhas: string[], hoje: Date) {
   let pendente: Pendente | null = null
   let indiceDoUltimo = -2
   let totalUnico: number | undefined
+  let futuroInformadoCentavos: number | undefined
   const partesTotal = new Map<string, number>()
-  const creditoPorLancamento = new WeakMap<LancamentoBruto, { pagamento: boolean }>()
 
   const registrar = (dia: number, mes: number, ano: number | undefined, texto: string, casaValor: RegExpExecArray, i: number, linha: string) => {
     const valorCentavos = paraCentavos(casaValor[3])
@@ -249,7 +267,6 @@ function lerFatura(linhas: string[], hoje: Date) {
       ...(ehParcela && atual > 1 ? { dataCompra: dataImpressa } : {}),
     }
     lancamentos.push(lancamento)
-    creditoPorLancamento.set(lancamento, { pagamento: credito && PAGAMENTO.test(texto) })
     indiceDoUltimo = i
   }
 
@@ -259,6 +276,10 @@ function lerFatura(linhas: string[], hoje: Date) {
     for (const padrao of TOTAL_UNICO) {
       const casa = padrao.exec(linha)
       if (casa && totalUnico === undefined) totalUnico = paraCentavos(casa[1])
+    }
+    for (const padrao of FUTURO_INFORMADO) {
+      const casa = padrao.exec(linha)
+      if (casa && futuroInformadoCentavos === undefined) futuroInformadoCentavos = paraCentavos(casa[1])
     }
     const parte = PARTES_TOTAL.exec(linha)
     if (parte && !partesTotal.has(parte[1].toLowerCase())) partesTotal.set(parte[1].toLowerCase(), paraCentavos(parte[2]))
@@ -318,34 +339,44 @@ function lerFatura(linhas: string[], hoje: Date) {
     if (iof && lancamentos.length > 0) {
       const valorCentavos = paraCentavos(iof[1])
       if (valorCentavos > 0) {
-        const lancamento: LancamentoBruto = {
+        lancamentos.push({
           data: lancamentos[lancamentos.length - 1].data,
           descricao: "Repasse de IOF",
           valorCentavos,
           tipo: "DESPESA",
-        }
-        lancamentos.push(lancamento)
-        creditoPorLancamento.set(lancamento, { pagamento: false })
+        })
       }
     }
   }
   if (pendente) naoReconhecidas.push(pendente.linha.slice(0, 140))
 
   const informado = totalUnico ?? (partesTotal.size > 0 ? [...partesTotal.values()].reduce((a, b) => a + b, 0) : undefined)
-  let conferencia: ConferenciaFatura | undefined
-  if (informado !== undefined) {
-    let lido = 0
-    for (const lancamento of lancamentos) {
-      if (lancamento.tipo === "DESPESA") lido += lancamento.valorCentavos
-      else if (!creditoPorLancamento.get(lancamento)?.pagamento) lido -= lancamento.valorCentavos
-    }
-    conferencia = { informadoCentavos: informado, lidoCentavos: lido }
-  }
+  const conferencia =
+    informado === undefined ? undefined : { informadoCentavos: informado, lidoCentavos: somaDaFatura(lancamentos) }
 
-  return { lancamentos, naoReconhecidas, conferencia }
+  return {
+    lancamentos,
+    naoReconhecidas,
+    conferencia,
+    vencimento: vencimento ?? undefined,
+    futuroInformadoCentavos,
+  }
 }
 
-function lerInicio(linha: string): { dia: number; mes: number; ano?: number; texto: string } | null {
+/**
+ * O total que o banco imprime: gastos menos estornos e créditos, sem o
+ * pagamento da fatura anterior — esse pertence à fatura passada.
+ */
+export function somaDaFatura(lancamentos: LancamentoBruto[]): number {
+  let soma = 0
+  for (const lancamento of lancamentos) {
+    if (lancamento.tipo === "DESPESA") soma += lancamento.valorCentavos
+    else if (!PAGAMENTO.test(lancamento.descricao)) soma -= lancamento.valorCentavos
+  }
+  return soma
+}
+
+export function lerInicio(linha: string): { dia: number; mes: number; ano?: number; texto: string } | null {
   const barra = INICIO_BARRA.exec(linha)
   if (barra) {
     return { dia: Number(barra[1]), mes: Number(barra[2]), ano: barra[3] ? Number(barra[3]) : undefined, texto: barra[4] }
@@ -359,7 +390,7 @@ function lerInicio(linha: string): { dia: number; mes: number; ano?: number; tex
   return null
 }
 
-function acharVencimento(linhas: string[]): Date | null {
+export function acharVencimento(linhas: string[]): Date | null {
   for (let i = 0; i < linhas.length; i += 1) {
     if (!/venc/i.test(linhas[i])) continue
     for (let j = i; j <= Math.min(i + 2, linhas.length - 1); j += 1) {
@@ -378,14 +409,14 @@ function dataCompletaEm(linha: string): Date | null {
   return null
 }
 
-function dataSemAno(dia: number, mes: number, ancora: Date): Date | null {
+export function dataSemAno(dia: number, mes: number, ancora: Date): Date | null {
   const ano = ancora.getUTCFullYear()
   const mesmoAno = lerData(`${dia}/${mes}/${ano}`)
   if (mesmoAno && mesmoAno <= ancora) return mesmoAno
   return lerData(`${dia}/${mes}/${ano - 1}`)
 }
 
-function somarMeses(data: Date, meses: number): Date {
+export function somarMeses(data: Date, meses: number): Date {
   const ano = data.getUTCFullYear()
   const mes = data.getUTCMonth() + meses
   // 31/01 mais um mês é 28/02 (ou 29), não 03/03.

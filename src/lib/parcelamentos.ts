@@ -7,6 +7,8 @@
  * projeção mostre o compromisso antes de ele chegar.
  */
 
+import type { Prisma } from "@prisma/client"
+
 import { prisma } from "@/lib/prisma"
 import { competenciaMaisMeses, diaSeguro, partesCompetencia } from "@/lib/datas"
 import { ratear } from "@/lib/dinheiro"
@@ -32,11 +34,11 @@ export interface EntradaParcelamento {
  * 12 × R$ 247,58 exatos, e é essa diferença de centavos que faz a soma das
  * parcelas não bater com a fatura do banco.
  */
-export async function criarParcelamento(entrada: EntradaParcelamento) {
+export async function criarParcelamento(entrada: EntradaParcelamento, cliente: Prisma.TransactionClient = prisma) {
   const valores = ratear(entrada.valorTotalCentavos, entrada.parcelasTotal)
   const pagas = entrada.parcelasPagas ?? 0
 
-  return prisma.parcelamento.create({
+  return cliente.parcelamento.create({
     data: {
       larId: entrada.larId,
       contaId: entrada.contaId,
