@@ -50,12 +50,33 @@ export function faixaComprometimento(valorBps: number): "BOM" | "ATENCAO" | "CRI
   return "CRITICO"
 }
 
+const ORDEM_DOS_PESOS: PesoDoJuro[] = ["caro", "medio", "leve", "sem-juro"]
+
 /**
- * Juros que R$ 100 pagos a mais nesta dívida deixam de gerar no mês seguinte.
+ * Quanto do saldo devedor está em cada faixa de juro, do mais caro ao sem
+ * juro. Faixa vazia não aparece.
  *
- * É a conta de um mês só, de propósito: o efeito acumulado depende do plano
- * inteiro e aparece na simulação de pagar mais, que é onde ele é calculado.
+ * As partes somam exatamente 10.000 bps (maior resto): arredondar cada uma
+ * por conta própria dava 99% ou 101% na legenda, e a pessoa desconfia do
+ * resto da tela quando a soma não fecha.
  */
-export function jurosEvitadosPorCemReais(jurosMensalBps: number): number {
-  return Math.round((10_000 * Math.max(0, jurosMensalBps)) / 10_000)
+export function composicaoPorPeso(dividas: { saldoDevedorCentavos: number; jurosMensalBps: number }[]) {
+  const total = dividas.reduce((soma, divida) => soma + Math.max(0, divida.saldoDevedorCentavos), 0)
+  if (total <= 0) return []
+
+  const partes = ORDEM_DOS_PESOS.map((peso) => {
+    const centavos = dividas
+      .filter((divida) => pesoDoJuro(divida.jurosMensalBps) === peso)
+      .reduce((soma, divida) => soma + Math.max(0, divida.saldoDevedorCentavos), 0)
+    const exato = (centavos / total) * 100
+    return { peso, centavos, pontos: Math.floor(exato), resto: exato - Math.floor(exato) }
+  }).filter((parte) => parte.centavos > 0)
+
+  let falta = 100 - partes.reduce((soma, parte) => soma + parte.pontos, 0)
+  for (const parte of [...partes].sort((a, b) => b.resto - a.resto)) {
+    if (falta <= 0) break
+    parte.pontos += 1
+    falta -= 1
+  }
+  return partes.map(({ peso, centavos, pontos }) => ({ peso, centavos, percentual: pontos }))
 }

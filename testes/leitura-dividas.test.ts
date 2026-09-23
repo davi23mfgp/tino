@@ -4,7 +4,7 @@ import { describe, it } from "node:test"
 import {
   comprometimentoBps,
   faixaComprometimento,
-  jurosEvitadosPorCemReais,
+  composicaoPorPeso,
   pesoDoJuro,
 } from "@/lib/tino/leitura-dividas"
 
@@ -32,9 +32,33 @@ describe("comprometimento da renda", () => {
   })
 })
 
-describe("juros evitados por R$ 100", () => {
-  it("12,90% ao mês sobre R$ 100 são R$ 12,90 no mês seguinte", () => {
-    assert.equal(jurosEvitadosPorCemReais(1290), 1290)
-    assert.equal(jurosEvitadosPorCemReais(0), 0)
+describe("composição por peso", () => {
+  it("as partes da legenda somam exatamente 100%", () => {
+    // Três terços: arredondando cada um, a legenda diria 33+33+33 = 99%.
+    const partes = composicaoPorPeso([
+      { saldoDevedorCentavos: 100_000, jurosMensalBps: 1290 },
+      { saldoDevedorCentavos: 100_000, jurosMensalBps: 349 },
+      { saldoDevedorCentavos: 100_000, jurosMensalBps: 139 },
+    ])
+    assert.deepEqual(partes.map((parte) => parte.peso), ["caro", "medio", "leve"])
+    assert.equal(partes.reduce((soma, parte) => soma + parte.percentual, 0), 100)
+  })
+
+  it("junta dívidas da mesma faixa e omite faixa vazia", () => {
+    assert.deepEqual(
+      composicaoPorPeso([
+        { saldoDevedorCentavos: 384_000, jurosMensalBps: 1290 },
+        { saldoDevedorCentavos: 116_000, jurosMensalBps: 800 },
+        { saldoDevedorCentavos: 500_000, jurosMensalBps: 0 },
+      ]),
+      [
+        { peso: "caro", centavos: 500_000, percentual: 50 },
+        { peso: "sem-juro", centavos: 500_000, percentual: 50 },
+      ],
+    )
+  })
+
+  it("sem saldo não há composição", () => {
+    assert.deepEqual(composicaoPorPeso([]), [])
   })
 })

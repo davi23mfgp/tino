@@ -14,12 +14,11 @@ import { Cartao, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
-import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import {
   REFERENCIA_JURO_MENSAL,
   comprometimentoBps,
+  composicaoPorPeso,
   faixaComprometimento,
-  jurosEvitadosPorCemReais,
   pesoDoJuro,
   type PesoDoJuro,
 } from "@/lib/tino/leitura-dividas"
@@ -91,10 +90,12 @@ const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", pa
 function referenciaDoJuro(peso: PesoDoJuro) {
   const caro = formatarPercentual(REFERENCIA_JURO_MENSAL.caro, 0)
   const medio = formatarPercentual(REFERENCIA_JURO_MENSAL.medio, 0)
-  if (peso === "caro") return `acima de ${caro} ao mês já é caro`
-  if (peso === "medio") return `entre ${medio} e ${caro} ao mês é médio`
-  return `abaixo de ${medio} ao mês é leve`
+  if (peso === "caro") return `caro: acima de ${caro} a.m.`
+  if (peso === "medio") return `médio: entre ${medio} e ${caro} a.m.`
+  return `leve: abaixo de ${medio} a.m.`
 }
+
+const NOME_DO_PESO: Record<PesoDoJuro, string> = { caro: "Caro", medio: "Médio", leve: "Leve", "sem-juro": "Sem juro" }
 
 const ORDEM_DA_ESTRATEGIA: Record<Resposta["estrategia"], string> = {
   AVALANCHE: "maior juro primeiro",
@@ -238,24 +239,7 @@ export default function Dividas() {
 
   const mesesHoje = prazo(base?.plano ?? null, abertas.length)
   const mesesSimulados = prazo(dados?.plano ?? null, abertas.length)
-  // Mês 1 do plano é o mês que vem — a mesma conta que a tela do plano faz
-  // para dizer "livre em". A posição de cada ponto é a fração do caminho até
-  // quitar tudo; a cor é o peso do juro, que é o que diz se a ordem faz
-  // sentido (vermelho no fim da linha é dívida cara durando demais).
-  const hoje = competenciaAtual()
-  const marcos = mesesHoje !== null && base?.plano
-    ? base.plano.quitacoes
-        .map((quitacao) => ({ ...quitacao, divida: porId.get(quitacao.id) }))
-        .filter((marco): marco is typeof marco & { divida: Divida } => !!marco.divida)
-        .sort((a, b) => a.mes - b.mes)
-        .map((marco) => ({
-          id: marco.id,
-          credor: marco.credor,
-          peso: pesoDoJuro(marco.divida.jurosMensalBps),
-          quando: rotuloCompetencia(competenciaMaisMeses(hoje, marco.mes), true),
-          posicao: (marco.mes / Math.max(1, mesesHoje)) * 100,
-        }))
-    : []
+  const composicao = composicaoPorPeso(abertas)
   const renda = base?.rendaMensalCentavos ?? 0
   const peso = base ? comprometimentoBps(base.parcelaMensalCentavos, renda) : null
 
@@ -364,7 +348,7 @@ export default function Dividas() {
           <p className={topo.total}>{formatarMoeda(base.totalCentavos)}</p>
           {mesesHoje !== null ? (
             <p className={topo.prazo}>
-              Livre em <b>{rotuloCompetencia(competenciaMaisMeses(hoje, mesesHoje), true)}</b> · {mesesHoje} {mesesHoje === 1 ? "mês" : "meses"} pagando {formatarMoeda(base.parcelaMensalCentavos)}/mês
+              Livre em <b>{mesesHoje} {mesesHoje === 1 ? "mês" : "meses"}</b> pagando {formatarMoeda(base.parcelaMensalCentavos)}/mês
             </p>
           ) : (
             <p className={topo.prazo} data-fecha="nao">
@@ -372,23 +356,26 @@ export default function Dividas() {
             </p>
           )}
 
-          {marcos.length > 0 && (
-            <div className={topo.linhaDoTempo}>
-              <div className={topo.trilho} aria-hidden>
-                {marcos.map((marco) => (
-                  <i key={marco.id} className={topo.peso} data-peso={marco.peso} style={{ left: `${marco.posicao}%` }} />
+          {/* A barra divide o saldo por faixa de juro: responde "quanto do que
+              eu devo é do tipo que cresce rápido" sem ler taxa por taxa. Com
+              uma faixa só, a barra seria um bloco inteiro de uma cor e não
+              diria nada que a lista não diga. */}
+          {composicao.length > 1 && (
+            <>
+              <div className={topo.composicao} aria-hidden>
+                {composicao.map((parte) => (
+                  <i key={parte.peso} className={topo.peso} data-peso={parte.peso} style={{ width: `${parte.percentual}%` }} />
                 ))}
               </div>
-              <p className={topo.pontas} aria-hidden><span>Hoje</span><span>{marcos[marcos.length - 1].quando}</span></p>
-              <ul className={topo.marcos}>
-                {marcos.map((marco) => (
-                  <li key={marco.id} className={topo.peso} data-peso={marco.peso}>
-                    <span><i /><em>{marco.credor}</em></span>
-                    <span>quita em {marco.quando}</span>
-                  </li>
+              <p className={topo.legenda}>
+                {composicao.map((parte) => (
+                  <span key={parte.peso} className={topo.peso} data-peso={parte.peso}>
+                    <i />
+                    {NOME_DO_PESO[parte.peso]} {parte.percentual}%
+                  </span>
                 ))}
-              </ul>
-            </div>
+              </p>
+            </>
           )}
 
           {peso !== null ? (
@@ -407,19 +394,22 @@ export default function Dividas() {
         </section>
       )}
 
+      {/* Uma linha, uma ação: qual atacar, quanto custa e a régua do custo.
+          O Davi trocou o cartão grande de "próximo passo" por esta faixa
+          (23/09) — a explicação longa já mora no plano, a um toque. */}
       {primeira && (
-        <section className={cn("ficha", topo.proximo, topo.peso)} data-peso={pesoDoJuro(primeira.jurosMensalBps)}>
-          <p className={topo.marca}><i /><span className={topo.rotulo}>Próximo passo</span></p>
-          <h2>Quite {primeira.credor} primeiro</h2>
-          <p>
-            {primeira.jurosMensalBps > 0
-              ? <>{formatarPercentual(primeira.jurosMensalBps)} ao mês — {referenciaDoJuro(pesoDoJuro(primeira.jurosMensalBps))}. Cada R$ 100 a mais aqui deixa de gerar {formatarMoeda(jurosEvitadosPorCemReais(primeira.jurosMensalBps))} de juros no mês seguinte.</>
-              : <>Sem juros informados. Se cobra juros, cadastre a taxa: sem ela a ordem de ataque fica errada.</>}
-          </p>
-          <div className={topo.acoes}>
-            <Link href="/plano">Ver o plano</Link>
-            <Link href="/orcamento">De onde tirar</Link>
+        <section className={cn("ficha", topo.ataque, topo.peso)} data-peso={pesoDoJuro(primeira.jurosMensalBps)}>
+          <div className="min-w-0">
+            <p className={topo.rotulo}>Ataque agora</p>
+            <p className={topo.alvo}>
+              {primeira.credor}
+              {primeira.jurosMensalBps > 0 && <> · {formatarPercentual(primeira.jurosMensalBps)} a.m.</>}
+            </p>
+            <p className={topo.regua}>
+              {primeira.jurosMensalBps > 0 ? referenciaDoJuro(pesoDoJuro(primeira.jurosMensalBps)) : "sem juros informados — cadastre a taxa"}
+            </p>
           </div>
+          <Link href="/plano" className={topo.botaoPlano}>Plano</Link>
         </section>
       )}
 

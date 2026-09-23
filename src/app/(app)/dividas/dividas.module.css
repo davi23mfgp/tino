@@ -1,7 +1,7 @@
 /* Dívidas — desenho "um número, uma ação" (opção A, aprovada pelo Davi em
-   23/09 no canvas do Claude Design). A tela responde, nesta ordem: quanto eu
-   devo e quando fico livre, qual dívida ataco agora e por quê, e o que muda se
-   eu pagar mais. Cada número aparece uma vez só — antes o total, a parcela e o
+   23/09 no canvas do Claude Design, com a faixa "Ataque agora" da opção B no
+   lugar do cartão grande). A tela responde, nesta ordem: quanto eu devo e
+   quando fico livre, qual dívida ataco agora, e o que muda se eu pagar mais. Cada número aparece uma vez só — antes o total, a parcela e o
    prazo se repetiam num segundo cartão logo abaixo do topo. */
 
 .resumo { padding:20px; border-radius:var(--raio-bloco); }
@@ -11,21 +11,12 @@
 .prazo b { color:var(--acao); font-weight:650; }
 .prazo[data-fecha="nao"] b { color:var(--negativo); }
 
-/* Linha do tempo até ficar livre (veio da opção B, pedida pelo Davi dentro
-   da A). Cada ponto é uma dívida acabando; a distância entre os pontos é o
-   tempo real, não espaçamento igual — "o carro só acaba no fim" tem de
-   aparecer como distância. */
-.linhaDoTempo { margin-top:16px; }
-.trilho { position:relative; height:14px; margin:0 7px; }
-.trilho::before { content:""; position:absolute; left:0; right:0; top:5px; height:4px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 86%); }
-.trilho i { position:absolute; top:0; width:14px; height:14px; margin-left:-7px; border-radius:999px; background:var(--peso); box-shadow:0 0 0 3px var(--background); }
-.pontas { display:flex; justify-content:space-between; margin-top:6px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
-.marcos { display:grid; gap:6px; margin-top:10px; font-size:calc(13px * var(--escala-letra)); }
-.marcos li { display:flex; justify-content:space-between; gap:12px; }
-.marcos li span:first-child { display:inline-flex; align-items:center; gap:8px; min-width:0; }
-.marcos em { font-style:normal; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.marcos li span:last-child { flex-shrink:0; color:var(--texto-2); }
-.marcos i { width:8px; height:8px; flex-shrink:0; border-radius:999px; background:var(--peso); }
+/* A barra divide o saldo por faixa de juro. */
+.composicao { display:flex; gap:3px; height:10px; margin-top:16px; border-radius:999px; overflow:hidden; }
+.composicao i { display:block; height:100%; background:var(--peso); }
+.legenda { display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 12px; margin-top:6px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.legenda span { display:inline-flex; align-items:center; gap:6px; }
+.legenda i { width:8px; height:8px; border-radius:999px; background:var(--peso); }
 
 .peso[data-peso="caro"] { --peso:var(--negativo); }
 /* O âmbar é desta tela: o `--atencao` global é cinza de propósito (pele
@@ -44,16 +35,12 @@
 .renda[data-faixa="CRITICO"] b { color:var(--negativo); }
 .renda a { color:var(--acao); font-weight:600; }
 
-/* Próximo passo: a borda leva a cor do peso do juro da dívida da vez. */
-.proximo { padding:18px; border-radius:var(--raio-bloco); border-color:color-mix(in oklab, var(--peso), transparent 55%) !important; }
-.proximo .marca { display:flex; align-items:center; gap:8px; }
-.proximo .marca i { width:8px; height:8px; border-radius:999px; background:var(--peso); }
-.proximo h2 { margin-top:8px; font-size:calc(20px * var(--escala-letra)); font-weight:680; letter-spacing:-.02em; line-height:1.2; }
-.proximo p { margin-top:6px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); line-height:1.45; }
-.acoes { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:14px; }
-.acoes a { display:flex; align-items:center; justify-content:center; min-height:44px; padding:0 14px; border-radius:var(--raio-pilula); font-size:calc(14px * var(--escala-letra)); font-weight:600; text-align:center; }
-.acoes a:first-child { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); }
-.acoes a:last-child { background:color-mix(in oklab, var(--foreground), transparent 93%); border:1px solid var(--vidro-borda); }
+/* Ataque agora: a borda leva a cor do peso do juro da dívida da vez. */
+.ataque { display:flex; align-items:center; gap:12px; padding:16px 18px; border-radius:var(--raio-bloco); border-color:color-mix(in oklab, var(--peso), transparent 55%) !important; }
+.ataque > div { flex:1; }
+.alvo { margin-top:4px; font-size:calc(16px * var(--escala-letra)); font-weight:650; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.regua { margin-top:2px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.botaoPlano { flex-shrink:0; display:flex; align-items:center; min-height:44px; padding:0 20px; border-radius:var(--raio-pilula); background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14px * var(--escala-letra)); font-weight:650; }
 
 /* --- lista --- */
 .cabecalhoLista { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 4px; }
@@ -86,5 +73,5 @@
 .dica { margin-top:10px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 
 @media (min-width:900px) {
-  .resumo, .proximo { padding:24px; }
+  .resumo { padding:24px; }
 }
