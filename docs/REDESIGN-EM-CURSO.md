@@ -1392,3 +1392,17 @@ Os verbos genéricos repetidos à direita deixam de ocupar espaço visual;
 título, descrição e seta mantêm o destino identificável. Login validado em
 390px e acesso à conta de demonstração local confirmado. Tipos e 410 testes
 aprovados nesta rodada; as capturas visuais continuam sendo a prova do layout.
+
+### 22/09/2026 — correção após retorno visual
+
+O usuário rejeitou o verde-claro do botão de login e o conjunto de três
+blocos do topo do painel. O botão passou a branco neutro sobre grafite, com
+foco visível. No painel, o saldo, o próximo passo e os três valores de apoio
+foram reunidos em uma superfície escura e compacta; o valor continua sendo o
+primeiro elemento da hierarquia, e o destino da ação permanece explícito.
+Os dados e cálculos não mudaram. A integração preservou o motion da landing
+adicionado em paralelo. Tipos e 423 testes passaram depois da integração.
+O painel ainda requer comparação visual ao vivo: o banco local contém tabelas
+de migrações antigas sem registro correspondente, e o servidor atual não
+consegue ler o campo de sessão novo. Não tratar essa limitação como prova
+de aprovação visual.
