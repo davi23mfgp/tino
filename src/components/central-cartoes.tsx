@@ -27,19 +27,9 @@ import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
+import { ROTULO_BANDEIRA } from "@/lib/bandeiras"
 
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
-
-/// Como cada bandeira é escrita no cartão. Texto, não logo: as marcas são
-/// registradas e o Tino não tem licença para reproduzi-las.
-const ROTULO_BANDEIRA: Record<string, string> = {
-  VISA: "VISA",
-  MASTERCARD: "Mastercard",
-  ELO: "elo",
-  AMERICAN_EXPRESS: "AMEX",
-  HIPERCARD: "Hipercard",
-  OUTRA: "",
-}
 
 export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string }) {
   const router = useRouter()
