@@ -28,6 +28,7 @@ interface LancamentoPrevia {
   categoriaId?: string
   categoriaNome?: string
   confianca: number
+  dataCompra?: string
 }
 
 interface Previa {
@@ -38,6 +39,7 @@ interface Previa {
   semCategoria: number
   lancamentos: LancamentoPrevia[]
   avisos: string[]
+  conferencia?: { informadoCentavos: number; lidoCentavos: number }
 }
 
 export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: string; aoConcluir?: () => void }) {
@@ -208,6 +210,12 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
             />
           </div>
 
+          {previa.conferencia && previa.conferencia.lidoCentavos === previa.conferencia.informadoCentavos && (
+            <p className="mt-3 rounded-xl border border-positivo/40 bg-positivo/10 p-2.5 text-xs text-positivo">
+              A soma dos lançamentos lidos fecha com o total da fatura: {formatarMoeda(previa.conferencia.informadoCentavos)}.
+            </p>
+          )}
+
           {previa.avisos.map((aviso) => (
             <p key={aviso} className="mt-3 rounded-xl border border-atencao/40 bg-atencao/10 p-2.5 text-xs text-atencao">
               {aviso}
@@ -229,6 +237,11 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
                   {lancamento.categoriaNome && (
                     <span className="ml-2 rounded-full bg-papel-2 px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))]">
                       {lancamento.categoriaNome}
+                    </span>
+                  )}
+                  {lancamento.dataCompra && (
+                    <span className="ml-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
+                      compra em {new Date(lancamento.dataCompra).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                     </span>
                   )}
                   {lancamento.duplicada && <span className="ml-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{lancamento.possivelDuplicada?"Possível repetição do celular":"Já importado"}</span>}

@@ -7,10 +7,11 @@ import { createHash } from "crypto"
 
 import { prisma } from "@/lib/prisma"
 import { competenciaDe } from "@/lib/datas"
-import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
+import { categoriaPeloRamo, categorizar, type RegraAplicavel } from "@/lib/categorizar"
+import { formatarMoeda } from "@/lib/dinheiro"
 import { lerOfx, type LancamentoBruto } from "@/lib/importar/ofx"
 import { lerCsv, lerCsvFaturaCartao } from "@/lib/importar/csv"
-import { lerPdf } from "@/lib/importar/pdf"
+import { lerPdf, type ConferenciaFatura } from "@/lib/importar/pdf"
 
 export type FormatoImportacao = "ofx" | "csv" | "pdf"
 
@@ -74,6 +75,8 @@ export interface PreviaImportacao {
   semCategoria: number
   lancamentos: PreviaLancamento[]
   avisos: string[]
+  /// Fatura em PDF: soma lida contra o total que a própria fatura declara.
+  conferencia?: ConferenciaFatura
 }
 
 /**
@@ -96,14 +99,26 @@ export async function previaImportacao(params: {
   const avisos: string[] = []
 
   let brutos: LancamentoBruto[] = []
+  let conferencia: ConferenciaFatura | undefined
   if (formato === "ofx") {
     brutos = lerOfx(texto).lancamentos
   } else if (formato === "pdf") {
-    const resultado = await lerPdf(params.conteudo, new Date().getUTCFullYear(), params.senhaPdf)
+    const resultado = await lerPdf(params.conteudo, { senha: params.senhaPdf, faturaCartao: params.faturaCartao })
     brutos = resultado.lancamentos
+    conferencia = resultado.conferencia
     if (resultado.naoReconhecidas.length > 0) {
       avisos.push(
         `${resultado.naoReconhecidas.length} linha(s) do PDF não foram reconhecidas. Confira o extrato antes de confirmar.`,
+      )
+    }
+    // A fatura declara o próprio total. Se a soma lida não fecha com ele, o
+    // leitor perdeu ou inventou lançamento — e isso tem de aparecer antes de
+    // gravar, não três meses depois no saldo.
+    if (conferencia && conferencia.lidoCentavos !== conferencia.informadoCentavos) {
+      const diferenca = Math.abs(conferencia.lidoCentavos - conferencia.informadoCentavos)
+      avisos.push(
+        `Os lançamentos lidos somam ${formatarMoeda(conferencia.lidoCentavos)}, mas a fatura informa ${formatarMoeda(conferencia.informadoCentavos)}. ` +
+          `Diferença de ${formatarMoeda(diferenca)}: confira a fatura antes de importar.`,
       )
     }
   } else {
@@ -143,8 +158,25 @@ export async function previaImportacao(params: {
 
   const capturados=await prisma.transacao.findMany({where:{larId:params.larId,contaId:params.contaId,observacao:{startsWith:"Capturado do celular"},valorCentavos:{in:brutos.map(b=>Math.abs(b.valorCentavos))}},select:{data:true,valorCentavos:true,descricao:true}})
   const normalizar=(t:string)=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")
+  const nomePorId = new Map(categorias.map((categoria) => [categoria.id, categoria.nome]))
   const lancamentos: PreviaLancamento[] = brutos.map((bruto, indice) => {
     const sugestao = categorizar(bruto.descricao, regras as unknown as RegraAplicavel[], mapaCategorias)
+    if (!sugestao.categoriaId && !sugestao.categoriaNome && bruto.categoriaBanco) {
+      const nome = categoriaPeloRamo(bruto.categoriaBanco)
+      if (nome) {
+        sugestao.categoriaNome = nome
+        sugestao.categoriaId = mapaCategorias.get(nome)
+        sugestao.confianca = 60
+      }
+    }
+    // Regra do lar devolve só o id; sem o nome, a prévia mostrava a compra
+    // como se estivesse sem categoria.
+    if (sugestao.categoriaId && !sugestao.categoriaNome) sugestao.categoriaNome = nomePorId.get(sugestao.categoriaId)
+    // A limpeza tira o "10/12" do nome para a regra aprendida valer para
+    // todas as parcelas; na descrição gravada ele volta, senão ninguém sabe
+    // se aquela é a primeira ou a décima.
+    const parcela = bruto.parcelasTotal ? ` (${bruto.parcelaAtual}/${bruto.parcelasTotal})` : ""
+    sugestao.descricaoLimpa += parcela
     const possivelDuplicada=capturados.some(c=>c.data.toISOString().slice(0,10)===bruto.data.toISOString().slice(0,10)&&c.valorCentavos===Math.abs(bruto.valorCentavos)&&normalizar(c.descricao).length>=3&&normalizar(bruto.descricao).includes(normalizar(c.descricao)))
     return {
       ...bruto,
@@ -167,6 +199,7 @@ export async function previaImportacao(params: {
     semCategoria: lancamentos.filter((lancamento) => !lancamento.categoriaId && !lancamento.duplicada).length,
     lancamentos,
     avisos,
+    conferencia,
   }
 }
 

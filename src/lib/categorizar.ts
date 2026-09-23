@@ -68,18 +68,20 @@ interface EntradaDicionario {
  * maioria dos extratos brasileiros para o primeiro import não vir todo em branco.
  */
 export const DICIONARIO: EntradaDicionario[] = [
-  { termos: ["IFOOD", "RAPPI", "UBER EATS", "AIQFOME", "ZE DELIVERY", "ZÉ DELIVERY"], categoria: "Delivery", grupo: "ALIMENTACAO" },
-  { termos: ["UBER", "99APP", "99 TAXI", "CABIFY", "BLABLACAR"], categoria: "Aplicativos de transporte", grupo: "TRANSPORTE" },
+  // "IFD*" é como o iFood aparece na fatura do Itaú.
+  { termos: ["IFOOD", "IFD*", "RAPPI", "UBER EATS", "AIQFOME", "ZE DELIVERY", "ZÉ DELIVERY"], categoria: "Delivery", grupo: "ALIMENTACAO" },
+  { termos: ["UBER", "99APP", "99 TAXI", "99 RIDE", "CABIFY", "BLABLACAR"], categoria: "Aplicativos de transporte", grupo: "TRANSPORTE" },
   { termos: ["SHELL", "IPIRANGA", "PETROBRAS", "BR MANIA", "POSTO", "ALE COMBUS"], categoria: "Combustível", grupo: "TRANSPORTE" },
   { termos: ["ESTACIONAMENTO", "ESTAPAR", "ZONA AZUL", "SEM PARAR", "CONECTCAR", "VELOE"], categoria: "Estacionamento e pedágio", grupo: "TRANSPORTE" },
   { termos: ["CARREFOUR", "PAO DE ACUCAR", "PÃO DE AÇÚCAR", "EXTRA", "ASSAI", "ASSAÍ", "ATACADAO", "ATACADÃO", "BIG BOMPRECO", "SUPERMERC", "MERCADO", "HORTIFRUTI", "SAMS CLUB"], categoria: "Supermercado", grupo: "ALIMENTACAO" },
   { termos: ["PADARIA", "PANIFIC", "CAFETERIA", "STARBUCKS", "CAFE "], categoria: "Padaria e café", grupo: "ALIMENTACAO" },
-  { termos: ["RESTAURANTE", "PIZZARIA", "BURGER", "MC DONALD", "MCDONALD", "BURGER KING", "SUBWAY", "OUTBACK", "HABIBS", "BOB S", "GIRAFFAS"], categoria: "Restaurante", grupo: "ALIMENTACAO" },
+  { termos: ["RESTAURANTE", "PIZZARIA", "PIZZA", "LANCHES", "BURGER", "MC DONALD", "MCDONALD", "BURGER KING", "SUBWAY", "OUTBACK", "HABIBS", "BOB S", "GIRAFFAS"], categoria: "Restaurante", grupo: "ALIMENTACAO" },
   { termos: ["DROGARIA", "DROGASIL", "RAIA", "PACHECO", "PAGUE MENOS", "FARMACIA", "FARMÁCIA", "ULTRAFARMA", "PANVEL"], categoria: "Farmácia", grupo: "SAUDE" },
   { termos: ["UNIMED", "AMIL", "BRADESCO SAUDE", "SULAMERICA SAUDE", "HAPVIDA", "NOTREDAME", "PORTO SEGURO SAUDE"], categoria: "Plano de saúde", grupo: "SAUDE" },
   { termos: ["LABORATORIO", "FLEURY", "DASA", "HOSPITAL", "CLINICA", "CLÍNICA", "ODONTO", "DENTISTA", "PSICOL"], categoria: "Consultas e exames", grupo: "SAUDE" },
   { termos: ["NETFLIX", "SPOTIFY", "DISNEY", "HBO", "MAX ", "PRIME VIDEO", "GLOBOPLAY", "DEEZER", "YOUTUBE PREMIUM", "PARAMOUNT", "APPLE.COM/BILL", "APPLE TV"], categoria: "Assinaturas e streaming", grupo: "LAZER" },
-  { termos: ["SMART FIT", "SMARTFIT", "ACADEMIA", "BLUEFIT", "GYMPASS", "TOTALPASS", "WELLHUB"], categoria: "Academia", grupo: "SAUDE" },
+  // "ACADEMI" e não "ACADEMIA": o Itaú corta o nome em 14 letras ("SKYFIT ACADEMI").
+  { termos: ["SMART FIT", "SMARTFIT", "SKYFIT", "ACADEMI", "BLUEFIT", "GYMPASS", "TOTALPASS", "WELLHUB"], categoria: "Academia", grupo: "SAUDE" },
   { termos: ["VIVO", "CLARO", "TIM ", "OI FIXO", "OI MOVEL", "NEXTEL", "ALGAR"], categoria: "Telefone e internet", grupo: "SERVICOS" },
   { termos: ["ENEL", "CEMIG", "COPEL", "LIGHT ", "CPFL", "ELEKTRO", "EQUATORIAL", "NEOENERGIA", "CELESC", "ENERGISA"], categoria: "Energia elétrica", grupo: "MORADIA" },
   { termos: ["SABESP", "CEDAE", "COPASA", "SANEPAR", "CAESB", "EMBASA", "CAGECE"], categoria: "Água", grupo: "MORADIA" },
@@ -90,12 +92,12 @@ export const DICIONARIO: EntradaDicionario[] = [
   { termos: ["RENNER", "C&A", "RIACHUELO", "ZARA", "HERING", "CENTAURO", "NIKE", "ADIDAS"], categoria: "Vestuário", grupo: "PESSOAL" },
   { termos: ["ESCOLA", "COLEGIO", "COLÉGIO", "FACULDADE", "UNIVERSIDADE", "UDEMY", "ALURA", "COURSERA", "CURSO"], categoria: "Educação", grupo: "EDUCACAO" },
   { termos: ["CINEMA", "CINEMARK", "UCI ", "INGRESSO.COM", "TICKET360", "SYMPLA", "EVENTIM"], categoria: "Lazer e eventos", grupo: "LAZER" },
-  { termos: ["LATAM", "GOL LINHAS", "AZUL LINHAS", "DECOLAR", "BOOKING", "AIRBNB", "HOTEL", "123MILHAS", "CVC"], categoria: "Viagem", grupo: "LAZER" },
+  { termos: ["LATAM", "GOL LINHAS", "AZUL LINHAS", "DECOLAR", "BOOKING", "AIRBNB", "HOTEL", "123MILHAS", "CVC", "BUSER", "CLICKBUS"], categoria: "Viagem", grupo: "LAZER" },
   { termos: ["SALARIO", "SALÁRIO", "PAGAMENTO SALARIO", "PROVENTOS", "FOLHA PGTO", "REMUNERACAO"], categoria: "Salário", grupo: "RENDA" },
   { termos: ["RENDIMENTO", "JUROS SOBRE", "DIVIDENDO", "RESGATE CDB", "TESOURO DIRETO", "CDB ", "LCI ", "LCA "], categoria: "Rendimentos", grupo: "INVESTIMENTO" },
   { termos: ["EMPRESTIMO", "EMPRÉSTIMO", "CREDITO PESSOAL", "CONSIGNADO", "FINANCIAMENTO", "CDC "], categoria: "Empréstimos", grupo: "DIVIDAS" },
   { termos: ["JUROS ROTATIVO", "ENCARGOS", "IOF", "MULTA", "TARIFA", "ANUIDADE", "CESTA DE SERVICOS"], categoria: "Tarifas e juros", grupo: "DIVIDAS" },
-  { termos: ["SEGURO", "PORTO SEGURO", "ALLIANZ", "AZUL SEGUROS", "PRUDENTIAL", "METLIFE"], categoria: "Seguros", grupo: "SERVICOS" },
+  { termos: ["SEGURO", "SEG CARTAO", "PORTO SEGURO", "ALLIANZ", "AZUL SEGUROS", "PRUDENTIAL", "METLIFE"], categoria: "Seguros", grupo: "SERVICOS" },
   { termos: ["PETZ", "COBASI", "PET SHOP", "VETERINAR"], categoria: "Pet", grupo: "PESSOAL" },
   { termos: ["MERCADO PAGO", "PICPAY", "PAGSEGURO", "STONE", "CIELO", "GETNET", "INFINITEPAY", "SUMUP"], categoria: "Recebimentos de vendas", grupo: "NEGOCIO_MEI" },
 ]
@@ -162,6 +164,27 @@ export function categorizar(
   }
 
   return { descricaoLimpa: capitalizar(limpa), tags: [], confianca: 0 }
+}
+
+/**
+ * Ramo que o banco imprime ao lado da compra (hoje, o Itaú). Vem do código de
+ * atividade do lojista, então acerta onde o nome truncado não diz nada:
+ * "PERCI MATIELOSAO JOSE D" é restaurante. Entra só depois das regras e do
+ * dicionário, e só para ramos que apontam uma categoria sem ambiguidade —
+ * "saúde" pode ser farmácia ou consulta; "serviços" e "outros" não dizem nada.
+ */
+const CATEGORIA_DO_RAMO: Record<string, string> = {
+  VESTUARIO: "Vestuário",
+  LAZER: "Lazer e eventos",
+  SUPERMERCADO: "Supermercado",
+  RESTAURANTE: "Restaurante",
+  EDUCACAO: "Educação",
+  HOSPEDAGEM: "Viagem",
+  TURISMO: "Viagem",
+}
+
+export function categoriaPeloRamo(ramo: string): string | undefined {
+  return CATEGORIA_DO_RAMO[NORMALIZAR(ramo).trim()]
 }
 
 export function capitalizar(texto: string): string {

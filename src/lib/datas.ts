@@ -117,18 +117,28 @@ export function lerData(texto: string): Date | null {
   const limpo = texto.trim()
 
   const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(limpo)
-  if (iso) return diaUtc(Number(iso[1]), Number(iso[2]), Number(iso[3]))
+  if (iso) return dataValida(Number(iso[1]), Number(iso[2]), Number(iso[3]))
 
   const br = /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/.exec(limpo)
   if (br) {
     const ano = Number(br[3])
-    return diaUtc(ano < 100 ? 2000 + ano : ano, Number(br[2]), Number(br[1]))
+    return dataValida(ano < 100 ? 2000 + ano : ano, Number(br[2]), Number(br[1]))
   }
 
   const compacto = /^(\d{4})(\d{2})(\d{2})$/.exec(limpo)
-  if (compacto) return diaUtc(Number(compacto[1]), Number(compacto[2]), Number(compacto[3]))
+  if (compacto) return dataValida(Number(compacto[1]), Number(compacto[2]), Number(compacto[3]))
 
   return null
+}
+
+/**
+ * `Date.UTC` não recusa dia 35 nem mês 34: rola para a frente em silêncio.
+ * Foi assim que "R$ 63.352,00" numa fatura virou lançamento em 2029 — o leitor
+ * de PDF tomou "63.35" por data. Data impossível tem de ser `null`.
+ */
+function dataValida(ano: number, mes1a12: number, dia: number): Date | null {
+  const data = diaUtc(ano, mes1a12, dia)
+  return data.getUTCMonth() === mes1a12 - 1 && data.getUTCDate() === dia ? data : null
 }
 
 export function diasEntre(de: Date, ate: Date): number {

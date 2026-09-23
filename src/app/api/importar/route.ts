@@ -31,7 +31,9 @@ export const POST = comSessao(async (sessao, requisicao) => {
       contaId,
       arquivoNome: arquivo.name,
       conteudo: await arquivo.arrayBuffer(),
-      faturaCartao,
+      // Arquivo importado numa conta de cartão é fatura, marcada a caixa ou não.
+      // Sem isso a compra entrava como receita.
+      faturaCartao: faturaCartao || conta.tipo === "CARTAO_CREDITO",
       senhaPdf,
     })
     return ok(previa)

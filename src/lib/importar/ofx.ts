@@ -16,6 +16,13 @@ export interface LancamentoBruto {
   tipo: "RECEITA" | "DESPESA"
   identificadorExterno?: string
   documento?: string
+  /// Compra parcelada em fatura de cartão: "10/12" vira atual 10, total 12.
+  parcelaAtual?: number
+  parcelasTotal?: number
+  /// Data original da compra, quando difere de `data` (parcela 2 em diante).
+  dataCompra?: Date
+  /// Categoria que o próprio banco imprime na fatura ("restaurante", "vestuário").
+  categoriaBanco?: string
 }
 
 export interface ExtratoOfx {
