@@ -64,3 +64,13 @@
   .decomposicao { justify-content:flex-start; }
   .duas { grid-template-columns:minmax(0,1fr); }
 }
+
+/* O valor mensal e o prazo são uma decisão; atalhos só ajudam a preenchê-la.
+   Ficam próximos e com alvo de toque completo, sem círculos altos. */
+.aberturaGuardar :global(.app-abertura-titulo) { max-width:34ch; }
+.aberturaGuardar :global(.app-abertura-guia) { display:flex; flex-wrap:wrap; align-items:end; gap:12px 20px; }
+.aberturaGuardar .controles { margin-top:0; }
+.aberturaGuardar .atalhos { gap:6px; }
+.aberturaGuardar .atalhos button { min-height:44px; border-radius:12px; }
+.aberturaGuardar .campoValor input { width:92px; }
+@media(max-width:640px) { .aberturaGuardar :global(.app-abertura-guia) { display:grid; gap:12px; } .aberturaGuardar .atalhos { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); } .aberturaGuardar .atalhos button { padding:0 4px; font-size:calc(12px * var(--escala-letra)); } }

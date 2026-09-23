@@ -41,3 +41,29 @@
 .valor button { width: auto; min-height: 44px; }
 @media(max-width:700px) { .pagina .controles,.pagina .movimentos { padding:16px; }.resumo dl { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:0; }.resumo dl > div { padding:0 8px; }.resumo dl > div:last-child { margin-left: 0; border-left: 1px solid var(--pauta); }.resumo dd { font-size: calc(15px * var(--escala-letra)); white-space: normal; overflow-wrap: anywhere; }.resumo dl > div:last-child dd { font-size: calc(17px * var(--escala-letra)); }.resumo dt { font-size: max(10px, calc(11px * var(--escala-letra))); }.busca { grid-template-columns: 128px minmax(0,1fr); gap:8px; }.busca label>span:not(.sr) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }.pagina .controles { gap:8px; padding:12px; }.calendario { grid-template-columns: minmax(0,1fr); }.filtros { grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; }.maisFiltros summary { min-height: 36px; }.linha { grid-template-columns: 32px minmax(0,1fr) auto; gap:4px 8px; padding:8px 0; }.categoria { grid-column: 2; grid-row: 2; }.categoria button { padding:0; min-height: 32px; }.valor { grid-column: 3; grid-row: 1/3; }.linha p { font-size: 11px; }.movimentos>div:first-child>p:last-child { display: none; } }
 @media(max-width:360px) { .resumo dd { font-size: 15px; }.valor,.valor button { font-size: 12px; }.pagina .controles,.pagina .movimentos { padding:12px; } }
+
+/* O período e os filtros formam uma ferramenta só. A grade evita que quatro
+   controles disputem a mesma linha e mantém os números juntos na leitura. */
+.pagina .controles { gap:16px; }
+.resumo { padding:20px 24px; background:linear-gradient(120deg,oklch(0.29 0.045 145 / 72%),oklch(0.17 0.012 145 / 80%)); }
+.resumo dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.resumo dl>div,.resumo dl>div:first-child,.resumo dl>div:last-child {
+  margin:0; padding:12px 16px; min-width:0; text-align:left;
+  border:1px solid oklch(1 0 0 / 12%); border-radius:14px;
+  background:linear-gradient(145deg,oklch(1 0 0 / 10%),oklch(1 0 0 / 3%));
+}
+.resumo dl>div:last-child { background:oklch(1 0 0 / 14%); }
+.resumo dd,.resumo dl>div:last-child dd { font-size:calc(clamp(19px,2.2vw,27px) * var(--escala-letra)); font-weight:670; }
+.contagem { margin-top:10px; font-size:calc(12px * var(--escala-letra)); }
+.busca { grid-template-columns:minmax(180px,240px) minmax(0,1fr); }
+.filtros { grid-template-columns:auto auto minmax(190px,1fr) minmax(180px,1fr); gap:10px; }
+.filtros select,.filtros button { min-height:44px; }
+@media(max-width:1050px) { .filtros { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) {
+  .resumo { margin:-12px -12px 4px; padding:16px 12px; }
+  .resumo dl { gap:6px; }
+  .resumo dl>div,.resumo dl>div:first-child,.resumo dl>div:last-child { padding:10px 8px; }
+  .resumo dd,.resumo dl>div:last-child dd { font-size:calc(clamp(13px,3.7vw,18px) * var(--escala-letra)); overflow-wrap:anywhere; white-space:normal; }
+  .busca { grid-template-columns:minmax(112px,38%) minmax(0,1fr); }
+  .filtros { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}

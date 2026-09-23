@@ -1412,3 +1412,16 @@ entrou no ar. Ela também mostrou que a névoa verde global ainda dominava a
 tela; o fundo e a tinta do vidro foram neutralizados para grafite com luz fria
 discreta. O verde da marca permanece nas ações e indicadores sem pintar toda
 a área de leitura. Essa mudança exige nova captura de produção para validação.
+
+### 22/09/2026 — trechos apontados nas 13 capturas
+
+Escopo limitado aos recortes enviados: filtros e resumo do extrato, anotação
+rápida, campo de limite do orçamento, cálculo da reserva, primeira ação em
+dívidas, lista e roteiro do plano, empréstimo, seletor do simulador, aporte
+mensal e carteira vazia. O restante da interface do Claude e a animação dos
+cartões permanecem como estão. O destaque da primeira dívida recebia fundo
+escuro de `.alvo` sobre texto escuro de `Destaque`; a superfície clara voltou
+com texto e links legíveis. A barra da fila de dívidas agora divide pelo total,
+coerente com sua legenda. A reserva apresenta progresso e formatação decimal
+brasileira. Tipos e 423 testes passaram; falta inspeção visual publicada após
+o push, pois o banco local ainda impede a navegação autenticada.

@@ -285,7 +285,7 @@ export default function Simulador() {
         {/* Um controle, e não oito botões. O paragrafo de abertura repetia
             renda, custo e saldo, que já estão nos tiles logo abaixo; e as oito
             pílulas ocupavam meia tela para uma escolha que cabe num campo. */}
-        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-full border border-[color-mix(in_oklab,var(--acao),transparent_70%)] bg-[linear-gradient(115deg,color-mix(in_oklab,var(--papel-2),var(--acao)_16%),var(--papel-2)_70%)] p-1.5 backdrop-blur-[var(--desfoque)]">
+        <div className="mt-2 max-w-xl">
           {/* `key` muda a cada hipótese adicionada para o campo voltar ao
               convite. Sem isso ele ficava mostrando a última escolha, lia como
               filtro em vez de "adicionar", e escolher o MESMO tipo de novo não
@@ -295,7 +295,7 @@ export default function Simulador() {
             aria-label="O que mudar na simulação"
             value=""
             onChange={(evento: { target: { value: string } }) => { if (evento.target.value) adicionar(evento.target.value as TipoAjuste) }}
-            className="min-w-0 flex-1 border-0 bg-transparent"
+            className="min-h-12 w-full rounded-xl border border-pauta bg-papel-2 px-4 text-foreground focus:border-acao"
           >
             <option value="">O que você quer mudar?</option>
             {MODELOS.map((modelo) => (
