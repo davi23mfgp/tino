@@ -528,6 +528,9 @@
 .app-brand { display:flex;align-items:center;gap:8px;margin:4px 10px 42px;font-size: calc(32px * var(--escala-letra));font-weight:700;letter-spacing:-.06em; }
 .app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size: max(10px, calc(12px * var(--escala-letra)));letter-spacing:.12em;text-transform:uppercase; }
 .app-header { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px; }
+/* No celular o Início traz sino e conta dentro do cartão do topo; a barra
+   repetiria os dois e o título. */
+@media (max-width:639px) { .app-header.app-header-inicio { display:none; } }
 .app-header-title { min-width:0; }
 .app-header-title h1 { font-size: calc(clamp(20px,3vw,28px) * var(--escala-letra));font-weight:600;letter-spacing:-.04em;overflow-wrap:anywhere; }
 .app-header-title p { margin-top:4px;font-size: calc(12px * var(--escala-letra));color:var(--texto-2); }

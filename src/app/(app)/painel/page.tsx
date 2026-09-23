@@ -21,6 +21,7 @@ import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
 import { IdentidadeBanco } from "@/components/banco-perfil"
+import { AcoesDaConta } from "@/components/barra-topo"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
@@ -37,7 +38,7 @@ export default async function Painel() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
   const mesesFuturos = [competencia, competenciaMaisMeses(competencia, 1), competenciaMaisMeses(competencia, 2)]
-  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos] = await Promise.all([
+  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos, usuario] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
     prisma.captura.findMany({ where: { larId: sessao.larId, status: "PENDENTE" }, orderBy: { criadoEm: "desc" }, take: 4 }),
     prisma.captura.aggregate({ where: { larId: sessao.larId, status: "PENDENTE" }, _count: { _all: true }, _sum: { valorCentavos: true } }),
@@ -53,6 +54,8 @@ export default async function Painel() {
       include: { conta: { select: { nome: true, tipo: true } }, categoria: { select: { nome: true, icone: true } } },
     }),
     compromissosFuturos(sessao.larId, 36), resumoParcelamentos(sessao.larId),
+    // Para o sino e a conta dentro do cartão do topo, no celular.
+    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true } }),
   ])
 
   // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
@@ -72,38 +75,51 @@ export default async function Painel() {
   const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 6)
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
+  const atalhos = <>
+    <Link href="/lancar"><span><Plus aria-hidden /></span>Anotar</Link>
+    <Link href="/transacoes"><span><ReceiptText aria-hidden /></span>Extrato</Link>
+    <Link href="/cartoes"><span><CreditCard aria-hidden /></span>Faturas</Link>
+    <Link href="/analise"><span><TrendingUp aria-hidden /></span>Análise</Link>
+  </>
+
   return <div className={estilos.pagina}>
-    {/* O topo é um bloco branco, como o dos apps de banco (Davi, 23/09): é
-        o único claro da tela, com o gradiente do fundo logo abaixo — é por
-        onde o olho entra. O degradê verde que veio antes ficou feio, e a
-        saúde e o aviso saíram daqui: a saúde tem bloco próprio mais abaixo e
-        o aviso continua no sino. Dentro só o que se lê de relance: quem é, o
-        saldo e o mês numa linha. Saíram o bloco claro de "próximo
-        passo" (a mesma ação reaparecia em Prioridades e em Dívidas) e as
-        três caixinhas de entrou/saiu/saúde. */}
-    <section className={estilos.faixa} aria-labelledby="ola">
-      <div className={estilos.faixaTopo}>
+    {/* O topo é um cartão, como o de um banco (Davi, 23/09, depois de três
+        rodadas no canvas): "tino." no canto, o leão ao fundo e só o que se lê
+        de relance — quem é, o saldo e o mês. Branco com texto escuro no tema
+        claro; verde-escuro com texto branco no escuro, porque branco no meio
+        do escuro apagava o resto da tela e o verde claro ficou feio.
+
+        No celular o sino e a conta moram aqui dentro e a barra de cima some
+        (ver .app-header-inicio); os atalhos ficam logo abaixo. No computador
+        a barra continua e os atalhos entram no cartão, onde sobrava espaço. */}
+    <section className={estilos.cartaoTopo} aria-labelledby="ola">
+      {/* eslint-disable-next-line @next/next/no-img-element -- desenho decorativo, sem ganho do otimizador */}
+      <img src="/mascote/tino-leao-marca.png" alt="" aria-hidden className={estilos.leao} />
+      <div className={estilos.cartaoCabeca}>
+        <span className={estilos.marca}>tino.</span>
+        <div className={estilos.acoesCartao}>
+          <AcoesDaConta nome={sessao.nome} admin={usuario?.admin ?? false} avatarUrl={usuario?.avatarUrl ?? null} />
+        </div>
+      </div>
+      <div className={estilos.cartaoCorpo}>
         <div className="min-w-0">
           <h2 id="ola" className={estilos.ola}>Olá, {primeiroNome}!</h2>
           <p className={estilos.hoje}>{hoje}</p>
+          <div className={estilos.rotuloSaldo}><p>Saldo disponível</p><BotaoOcultarValores /></div>
+          <p className={cn(estilos.saldoCartao, "valor-sensivel")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
+          {/* Três colunas numa linha só: em texto corrido, com centavos, o mês
+              quebrava em duas linhas no celular. */}
+          <dl className={estilos.mesCartao}>
+            <div><dt>Entrou</dt><dd className="valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div>
+            <div><dt>Saiu</dt><dd className="valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div>
+            <div><dt>{panorama.mes.sobraCentavos >= 0 ? "Sobrou" : "Faltou"}</dt><dd className="valor-sensivel">{formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}</dd></div>
+          </dl>
         </div>
+        <nav className={cn(estilos.atalhos, estilos.atalhosDentro)} aria-label="Atalhos">{atalhos}</nav>
       </div>
-      <div className={estilos.rotuloSaldo}><p>Saldo disponível</p><BotaoOcultarValores /></div>
-      <p className={cn(estilos.saldoFaixa, "valor-sensivel")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
-      <p className={estilos.linhaMes}>
-        {rotuloCompetencia(competencia).split(" ")[0]}: entrou <b className="valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</b>
-        {" · "}saiu <b className="valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</b>
-        {" · "}{panorama.mes.sobraCentavos >= 0 ? "sobrou" : "faltou"} <b className="valor-sensivel">{formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}</b>
-        {panorama.aplicadoCentavos > 0 && <>{" · "}aplicado <b className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</b></>}
-      </p>
     </section>
 
-    <nav className={estilos.atalhos} aria-label="Atalhos">
-      <Link href="/lancar"><span><Plus aria-hidden /></span>Anotar</Link>
-      <Link href="/transacoes"><span><ReceiptText aria-hidden /></span>Extrato</Link>
-      <Link href="/cartoes"><span><CreditCard aria-hidden /></span>Faturas</Link>
-      <Link href="/analise"><span><TrendingUp aria-hidden /></span>Análise</Link>
-    </nav>
+    <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
