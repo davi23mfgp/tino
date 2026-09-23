@@ -47,13 +47,3 @@
    dizia em palavras o que o número já diz — a diferença que importa vira
    etiqueta, não frase. */
 .etiquetas { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-
-/* O destaque claro era sobrescrito pelo fundo escuro de .alvo, deixando
-   texto escuro sobre vidro cinza. A ação volta a ser legível e prioritária. */
-.topo { grid-template-columns:minmax(0,1fr) minmax(320px,.85fr); gap:20px; }
-.topo .alvo { align-self:stretch; display:flex; flex-direction:column; justify-content:center; padding:22px; background:linear-gradient(145deg,#fff,#ecefeb); border:1px solid #fff; color:#171a18; box-shadow:0 18px 35px -26px #000b; }
-.topo .alvo h2 { color:#171a18; }
-.topo .alvo p { color:#414942; }
-.topo .alvo :global(.apoio-claro) { color:#414942; }
-.topo .alvo :global(.acao-clara) { color:#fff; background:#171a18; }
-@media(max-width:900px) { .topo { grid-template-columns:minmax(0,1fr); } }

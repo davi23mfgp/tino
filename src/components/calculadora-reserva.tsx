@@ -60,11 +60,10 @@ export function CalculadoraReserva({
         </h2>
         {custoEssencialCentavos > 0 && (
           <p className={estilos.apoio}>
-            Essencial: {formatarMoeda(custoEssencialCentavos)}/mês · cobre {cobertura.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} {cobertura === 1 ? "mês" : "meses"}
+            Seu essencial é {formatarMoeda(custoEssencialCentavos)} por mês. Hoje a reserva cobre {cobertura.toFixed(1)} {cobertura === 1 ? "mês" : "meses"}
             {falta > 0 ? <> e faltam <b>{formatarMoeda(falta)}</b> para chegar no alvo.</> : <> — você já passou do alvo.</>}
           </p>
         )}
-        {alvo > 0 && <progress className={estilos.progresso} max={alvo} value={Math.min(alvo, reservadoCentavos)} aria-label="Progresso da reserva" />}
       </header>
 
       <div className={estilos.perguntas}>

@@ -272,7 +272,7 @@ export default function OrcamentoPagina() {
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold">{linha.categoria.nome}</span>
                 <button
                   onClick={() => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: "0" }))}
-                  className="grid size-11 shrink-0 place-items-center rounded-full text-muted-fg transition hover:text-negativo"
+                  className="grid size-8 shrink-0 place-items-center rounded-full text-muted-fg transition hover:text-negativo"
                   aria-label={`Zerar orçamento de ${linha.categoria.nome}`}
                   title="zerar limite"
                 >
@@ -287,13 +287,13 @@ export default function OrcamentoPagina() {
                   </b>
                   <small className="text-[calc(12px*var(--escala-letra))] text-muted-fg">gastos</small>
                 </span>
-                <label className="flex min-w-[146px] shrink-0 items-center gap-2 rounded-xl border border-pauta bg-background px-3 focus-within:border-acao">
-                  <span className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">Limite R$</span>
+                <label className="flex shrink-0 items-center gap-1 rounded-full border border-pauta bg-background px-3 focus-within:border-acao">
+                  <span className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">limite</span>
                   <input
                     aria-label={`Orçamento de ${linha.categoria.nome}`}
                     value={rascunho[linha.categoriaId] ?? ""}
                     onChange={(evento) => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))}
-                    className="h-11 w-24 min-w-0 border-0 bg-transparent text-right text-[calc(15px*var(--escala-letra))] font-semibold tabular-nums text-foreground outline-none"
+                    className="h-10 w-20 border-0 bg-transparent text-right text-[calc(14px*var(--escala-letra))] font-semibold tabular-nums outline-none"
                     inputMode="decimal"
                     placeholder="0,00"
                   />

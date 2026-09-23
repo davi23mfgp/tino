@@ -215,24 +215,31 @@ export default function Capturas() {
       />
 
       <Cartao titulo="Anotar em segundos">
-        <form onSubmit={anotarRapido} className="flex flex-wrap items-start gap-2">
+        <form onSubmit={anotarRapido} className="flex gap-2">
           <input
             aria-label="Descreva o gasto ou recebimento"
             value={rapido}
             onChange={(evento) => setRapido(evento.target.value)}
             placeholder="mercado 52,30"
-            className="min-h-12 min-w-[180px] flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[calc(14px*var(--escala-letra))] outline-none focus:border-acao/50"
+            className="min-w-0 flex-1 rounded-[var(--raio-campo)] border border-pauta bg-background px-4 py-3 text-[calc(14px*var(--escala-letra))] outline-none focus:border-acao/50"
           />
           <button
             type="submit"
             disabled={ocupado || !rapido.trim()}
-            className="flex min-h-12 items-center gap-2 rounded-[var(--raio-pilula)] bg-primary px-5 text-[calc(13px*var(--escala-letra))] font-semibold text-primary-foreground disabled:opacity-40"
+            className="rounded-[var(--raio-pilula)] bg-primary px-5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
           >
-            <Send className="size-4" /> Anotar
+            <Send className="size-4" />
           </button>
-          <DitarGasto compacto rotulo="um lançamento" aoTranscrever={(texto) => anotar(texto)} />
         </form>
-        <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">Ex.: mercado 52,30 · confira a categoria antes de salvar.</p>
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+          <p className="max-w-md text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
+            Informe nome e valor: <b>Uber 18</b>, <b>farmácia 38,90</b> ou <b>almoço 45</b>. Confira a categoria sugerida.
+          </p>
+
+          {/* Ditar é o caminho para quem está saindo do caixa com a sacola na
+              mão. O texto falado entra no mesmo leitor do texto escrito. */}
+          <DitarGasto aoTranscrever={(texto) => anotar(texto)} />
+        </div>
       </Cartao>
 
       {carregando && (

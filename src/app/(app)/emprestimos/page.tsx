@@ -118,16 +118,15 @@ export default function Emprestimos() {
           analise ? (
             <>Você recebe <b>{formatarMoeda(analise.liberadoCentavos)}</b> e devolve <b>{formatarMoeda(analise.totalPagoCentavos)}</b>. Compromete {(analise.comprometimentoBps / 100).toFixed(0)}% da renda.</>
           ) : (
-            <>Informe a proposta abaixo para comparar o valor recebido com o custo total.</>
+            <>Preencha ao lado para ver quanto recebe, quanto devolve e o quanto sobra da sua renda.</>
           )
         }
       />
 
       <Cartao titulo="Os números do empréstimo">
-        <div className="max-w-3xl">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <label className="space-y-1.5">
-            <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Valor recebido (R$)</span>
+            <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Valor</span>
             <input value={valor} onChange={(e) => setValor(e.target.value)} placeholder="10.000,00" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
@@ -135,7 +134,7 @@ export default function Emprestimos() {
             <input value={parcelas} onChange={(e) => setParcelas(e.target.value)} placeholder="24" className={campo} inputMode="numeric" />
           </label>
           <label className="space-y-1.5">
-            <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Juros (% ao mês)</span>
+            <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Juros % ao mês</span>
             <input value={juros} onChange={(e) => setJuros(e.target.value)} placeholder="2,5" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
@@ -157,7 +156,7 @@ export default function Emprestimos() {
             disabled={ocupado || !valor}
             className="rounded-full bg-primary px-5 py-2.5 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
           >
-            {ocupado ? "Calculando…" : "Simular empréstimo"}
+            {ocupado ? "Calculando…" : "Simular"}
           </Button>
           {analise && (
             <Button
@@ -171,7 +170,6 @@ export default function Emprestimos() {
         </div>
 
         {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
-        </div>
       </Cartao>
 
       {analise && parecer && (

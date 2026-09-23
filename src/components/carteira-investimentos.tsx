@@ -179,7 +179,6 @@ export function CarteiraInvestimentos() {
         />
       </div>
 
-      <div className={ativos.length ? "mt-6" : "mt-5 grid items-start gap-4 lg:grid-cols-2"}>
       <ArcaCarteira
         contas={ativos.map((conta) => ({ id: conta.id, nome: conta.nome, classeDeAtivo: conta.classeDeAtivo }))}
         carteira={ativos.map((conta) => ({
@@ -191,7 +190,6 @@ export function CarteiraInvestimentos() {
       />
 
       {!ativos.length && <Vazio titulo="Cadastre o que você já investe" texto="Use o nome do ativo ou da aplicação. O saldo passa a compor seu patrimônio." />}
-      </div>
       {erro && !abrir && <p role="alert" className="text-negativo">{erro}</p>}
 
       <Dialog open={abrir} onOpenChange={(aberto) => { if (!ocupado) { setAbrir(aberto); if (!aberto) setMovimento(null) } }}>

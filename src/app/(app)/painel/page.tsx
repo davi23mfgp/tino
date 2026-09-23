@@ -22,6 +22,7 @@ import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
 import { ONDE_RESOLVER } from "@/lib/tino/onde-resolver"
 import { AvisoNoHeroi } from "@/components/aviso-no-heroi"
+import { Destaque } from "@/components/ui/destaque"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 
 export const dynamic = "force-dynamic"
@@ -72,29 +73,32 @@ export default async function Painel() {
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
-    <section className={estilos.visaoGeral} aria-labelledby="resumo-mes">
-      <div className={estilos.resumo}>
+    <section className={estilos.resumo} aria-labelledby="resumo-mes">
       <div><div className={estilos.tituloResumo}><p className={estilos.sobretitulo} id="resumo-mes">{panorama.mes.sobraCentavos >= 0 ? "Sobrou" : "Faltou"} em {rotuloCompetencia(competencia)}</p><BotaoOcultarValores /></div><p className={cn(estilos.saldo, "valor-sensivel")}>{formatarMoeda(panorama.mes.sobraCentavos)}</p><p className={estilos.apoio}>Saldo disponível: <span className="valor-sensivel">{formatarMoeda(panorama.saldoTotalCentavos)}</span>{panorama.aplicadoCentavos > 0 && <> · aplicado: <span className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</span></>}</p>
       {/* O número sozinho diz como você está, não o que fazer. A primeira
           prioridade do diagnóstico já existia e só aparecia lá dentro da
           Análise — aqui ela vira o próximo passo, com o destino junto. */}
       <AvisoNoHeroi /></div>
-      </div>
+    </section>
 
-    {/* O resultado e a decisão ficam na mesma superfície. A faixa branca anterior
-        ocupava uma dobra inteira e quebrava a leitura do mês em duas peças. */}
+    {/* O próximo passo saiu do herói e virou o bloco claro da tela. Ele é a
+        única coisa do painel que pede AÇÃO, e no escuro ele se perdia entre
+        seis cartões do mesmo tom. Um bloco claro por tela — dois viram duas
+        chamadas e a hierarquia volta a ser plana. */}
     {proximoPasso && primeiraPrioridade && (
-      <div className={estilos.passoIntegrado}>
-        <p className={estilos.sobretitulo}>Seu próximo passo</p>
-        <h2>{primeiraPrioridade.titulo}</h2>
-        <p>{primeiraPrioridade.acao}</p>
-        <Link href={proximoPasso.href}>{proximoPasso.texto}<ArrowRight size={16} aria-hidden /></Link>
-      </div>
+      <Destaque
+        rotulo="Seu próximo passo"
+        titulo={primeiraPrioridade.titulo}
+        apoio={primeiraPrioridade.acao}
+        acao={{ href: proximoPasso.href, texto: proximoPasso.texto }}
+      />
     )}
 
-    {/* Os valores de apoio explicam o resultado sem competir com ele. */}
+    {/* Entrou, saiu e saúde saíram de dentro do herói. Eram três colunas ao
+        lado do número, e o que deveria ser UMA resposta virava quatro coisas
+        do mesmo tamanho na mesma faixa. Aqui embaixo eles explicam, que é o
+        papel deles. */}
       <dl className={estilos.numerosDeApoio}><div><dt>Entrou</dt><dd className="text-positivo valor-sensivel">{formatarMoeda(panorama.mes.receitasCentavos)}</dd></div><div><dt>Saiu</dt><dd className="text-negativo valor-sensivel">{formatarMoeda(panorama.mes.despesasCentavos)}</dd></div><div><dt>Saúde</dt><dd>{diagnostico.nota}<small>/100</small></dd></div></dl>
-    </section>
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />

@@ -47,7 +47,7 @@ export function GrupoAjustes({
         <CardTitle className="text-[calc(15px*var(--escala-letra))] font-semibold tracking-tight">{titulo}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ItemGroup className="divide-y divide-pauta/70">{children}</ItemGroup>
+        <ItemGroup className="gap-2">{children}</ItemGroup>
       </CardContent>
     </Card>
   )
@@ -62,7 +62,7 @@ interface BaseLinha {
   desabilitado?: boolean
 }
 
-const LINHA = "min-h-[64px] rounded-none px-3.5 text-left transition-colors hover:bg-papel-2/70 sm:px-4"
+const LINHA = "min-h-14 rounded-[14px] px-3.5 text-left sm:px-4"
 
 function Miolo({
   titulo,
@@ -72,7 +72,7 @@ function Miolo({
 }: {
   titulo: string
   descricao?: string
-  acao?: string
+  acao: string
   girado?: boolean
 }) {
   return (
@@ -82,7 +82,7 @@ function Miolo({
         {descricao && <ItemDescription className="text-[calc(13px*var(--escala-letra))]">{descricao}</ItemDescription>}
       </ItemContent>
       <ItemActions className="shrink-0 gap-1 text-[calc(14px*var(--escala-letra))] text-muted-fg">
-        {acao && !["Abrir", "Ver", "Configurar", "Gerenciar"].includes(acao) && <span className="hidden sm:inline">{acao}</span>}
+        {acao}
         <ChevronRight
           aria-hidden
           className={cn("size-4 text-[color:var(--texto-3)] transition-transform", girado && "rotate-90")}
@@ -105,7 +105,7 @@ export function LinhaAjuste(
 
   if (props.href) {
     return (
-      <Item variant="default" className={LINHA} asChild>
+      <Item variant="muted" className={LINHA} asChild>
         <Link href={props.href}>
           <Miolo titulo={titulo} descricao={descricao} acao={acao ?? "Abrir"} />
         </Link>
@@ -115,7 +115,7 @@ export function LinhaAjuste(
 
   if (props.aoTocar) {
     return (
-      <Item variant="default" className={cn(LINHA, "disabled:opacity-50")} asChild>
+      <Item variant="muted" className={cn(LINHA, "disabled:opacity-50")} asChild>
         <button type="button" onClick={props.aoTocar} disabled={desabilitado}>
           <Miolo titulo={titulo} descricao={descricao} acao={acao ?? "Editar"} />
         </button>
@@ -124,8 +124,8 @@ export function LinhaAjuste(
   }
 
   return (
-    <div>
-      <Item variant="default" className={cn(LINHA, "w-full disabled:opacity-50")} asChild>
+    <div className="rounded-[14px] bg-papel-2">
+      <Item variant="muted" className={cn(LINHA, "w-full bg-transparent disabled:opacity-50")} asChild>
         <button
           type="button"
           onClick={() => setAberto((atual) => !atual)}
