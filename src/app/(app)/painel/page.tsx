@@ -20,9 +20,9 @@ import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
-import { IdentidadeBanco } from "@/components/banco-perfil"
 import { AcoesDaConta } from "@/components/barra-topo"
 import { ROTULO_BANDEIRA, finalDoCartao } from "@/lib/bandeiras"
+import { CarteiraCartoes } from "@/components/carteira-cartoes"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
@@ -124,10 +124,9 @@ export default async function Painel() {
 
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
-      {/* Cada cartão com cara de cartão (Davi, 23/09: "mais reais"): cor do
-          banco, chip, final do número e bandeira quando existem, e a fatura
-          por cima. No celular é uma fileira que se arrasta de lado. */}
-      {cartoes.length ? <div className={estilos.fileiraCartoes}>{cartoes.map((cartao) => {
+      {/* Cartões numa carteira (Davi, 23/09): um atrás do outro, o tocado
+          levanta. Os números saem daqui, do servidor; a pilha só anima. */}
+      {cartoes.length ? <CarteiraCartoes cartoes={cartoes.map((cartao) => {
         const atual = valorDoMes(cartao.transacoes, competencia)
         // Fecha, vence e a proxima fatura: as tres perguntas de quem olha um
         // cartao. Lancado e parcela ainda nao lancada somam, e o rotulo avisa
@@ -135,26 +134,21 @@ export default async function Painel() {
         const proximaCompetencia = mesesFuturos[1]
         const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
         const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
-        const proxima = confirmadoProximo + previstoProximo
         const dias = diasAteVencer(cartao.diaVencimento)
-        const final = finalDoCartao(cartao.nome)
-        const bandeira = cartao.bandeira ? ROTULO_BANDEIRA[cartao.bandeira] : ""
-        return <Link href="/cartoes" key={cartao.id} className={estilos.cartaoReal} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties} aria-label={`${cartao.nome}: fatura atual ${formatarMoeda(Math.max(0, atual))}`}>
-          <span className={estilos.cartaoRealTopo}>
-            <IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.iconeBanco} />
-            <span className={estilos.dadosLinha}><strong>{cartao.instituicao ?? "Cartão de crédito"}</strong><small>{cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, "")}</small></span>
-            {bandeira && <span className={estilos.bandeira}>{bandeira}</span>}
-          </span>
-          <span className={estilos.cartaoRealMeio}><i className={estilos.chip} aria-hidden />{final && <span className={estilos.final}>•••• {final}</span>}</span>
-          <span className={estilos.cartaoRealBase}>
-            <span><small>Fatura atual</small><strong className="valor-sensivel">{formatarMoeda(Math.max(0, atual))}</strong></span>
-            <span className={estilos.vencimento}>
-              <small>{dias === null ? "vencimento não informado" : `vence em ${dias} ${dias === 1 ? "dia" : "dias"}`}</small>
-              <small title={previstoProximo ? `Inclui ${formatarMoeda(previstoProximo)} em parcelas previstas` : undefined}>{rotuloCompetencia(proximaCompetencia, true)} <b className="valor-sensivel">{formatarMoeda(Math.max(0, proxima))}</b></small>
-            </span>
-          </span>
-        </Link>
-      })}</div> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
+        return {
+          id: cartao.id,
+          nome: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, ""),
+          instituicao: cartao.instituicao,
+          cor: corDoBanco(cartao.instituicao),
+          final: finalDoCartao(cartao.nome),
+          bandeira: cartao.bandeira ? ROTULO_BANDEIRA[cartao.bandeira] ?? "" : "",
+          faturaAtualCentavos: Math.max(0, atual),
+          vencimento: dias === null ? "vencimento não informado" : `vence em ${dias} ${dias === 1 ? "dia" : "dias"}`,
+          proximaRotulo: rotuloCompetencia(proximaCompetencia, true),
+          proximaCentavos: Math.max(0, confirmadoProximo + previstoProximo),
+          previstoProximoCentavos: previstoProximo,
+        }
+      })} /> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
 
     {pendentes.length > 0 && <section className={estilos.painel} aria-labelledby="conferir-titulo">

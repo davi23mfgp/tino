@@ -191,6 +191,7 @@ async function main() {
       diaFechamento: 28,
       diaVencimento: 6,
       cor: "purple",
+      bandeira: "VISA",
     },
   })
 
@@ -204,6 +205,7 @@ async function main() {
       limiteCentavos: reais(4500),
       diaVencimento: 10,
       cor: "purple",
+      bandeira: "MASTERCARD",
     },
   })
 
