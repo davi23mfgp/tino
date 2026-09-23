@@ -15,9 +15,15 @@ import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { usarAlertas } from "@/components/alertas-provider"
 import { showToast } from "@/components/ui/toast"
 
-export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean}) {
+/**
+ * O sino de notificações e o menu da conta.
+ *
+ * Separado da barra porque o Início, no celular, mostra os dois dentro do
+ * bloco branco do topo. `sobreClaro` troca a borda e a cor para o fundo
+ * branco daquele bloco — a borda do tema escuro é branca e sumia ali.
+ */
+export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:string;admin?:boolean;avatarUrl?:string|null;apenasLoja?:boolean;sobreClaro?:boolean}) {
   const router=useRouter()
-  const caminho=usePathname()
   const [aberto,setAberto]=useState(false)
   // Os avisos vêm do provedor: quatro componentes desta mesma tela pediam a
   // mesma lista, cada um no seu tempo, e marcar como lido num não apagava a
@@ -50,20 +56,13 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
     try { await enviar("/api/auth/logout",{});router.push("/login");router.refresh() }
     catch { showToast("Não consegui sair. Tente novamente.",{variant:"error"}) }
   }
-  const titulo=tituloDaRota(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(true),caminho) ?? "Tino"
   const novas=alertas.filter(a=>!a.lido)
   const prioridade:Record<string,number>={CRITICO:0,ATENCAO:1,INFO:2}
   const lista=[...(soNovas ? novas : alertas)].sort((a,b)=>(prioridade[a.severidade]??3)-(prioridade[b.severidade]??3))
-  return <header className="app-header">
-    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1><p>{apenasLoja ? "Sua loja, organizada." : competencia}</p></div>
-    <div className="app-header-actions">
-      {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
-          que existe atalho. A forma de barra e a mesma do resto do app e ja
-          carrega o rotulo e a pista `Ctrl K`. */}
-      {!apenasLoja && <div className="hidden sm:block"><GatilhoBuscaPaginas variant="barra" /></div>}
-      {!apenasLoja && <FabAdicionar ancorado />}
+  const borda=sobreClaro ? "border-[oklch(0_0_0/0.12)] text-[oklch(0.17_0.02_145)]" : "border-pauta"
+  return <>
       {!apenasLoja && <Sheet open={aberto} onOpenChange={setAberto}>
-        <SheetTrigger asChild><button aria-label="Notificações" className="relative grid size-11 place-items-center rounded-full border border-pauta sm:size-10"><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{novas.length>0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-acao" />}</button></SheetTrigger>
+        <SheetTrigger asChild><button aria-label="Notificações" className={"relative grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{novas.length>0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-acao" />}</button></SheetTrigger>
         {/* Painel na forma da referência aprovada (13/09): título forte,
             segmentado Todas/Não lidas com a contagem, cartões compactos com
             ícone circular, e o rodapé fixo com as duas ações em texto.
@@ -132,7 +131,7 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
           </footer>
         </SheetContent>
       </Sheet>}
-      <DropdownMenu><DropdownMenuTrigger asChild><button aria-label="Minha conta" className="grid size-11 place-items-center rounded-full border border-pauta sm:size-10"><Avatar className="size-8 sm:size-7">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
+      <DropdownMenu><DropdownMenuTrigger asChild><button aria-label="Minha conta" className={"grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Avatar className="size-8 sm:size-7">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60"><DropdownMenuLabel>{nome}</DropdownMenuLabel><DropdownMenuSeparator/>
           {!apenasLoja && <DropdownMenuItem asChild><Link href="/configuracoes"><Settings className="mr-2 size-4"/>Minha conta</Link></DropdownMenuItem>}
           {admin && !apenasLoja && <DropdownMenuItem asChild><Link href="/admin"><ShieldCheck className="mr-2 size-4"/>Administração</Link></DropdownMenuItem>}
@@ -140,6 +139,23 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:st
           <DropdownMenuSeparator/><DropdownMenuItem onClick={()=>void sair()}><LogOut className="mr-2 size-4"/>Sair</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+  </>
+}
+
+export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean}) {
+  const caminho=usePathname()
+  const titulo=tituloDaRota(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(true),caminho) ?? "Tino"
+  // No celular o Início traz o sino e a conta dentro do bloco branco do topo
+  // (Davi, 23/09); a barra ali repetiria os dois e o título "Início".
+  return <header className={caminho==="/painel" ? "app-header app-header-inicio" : "app-header"}>
+    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1><p>{apenasLoja ? "Sua loja, organizada." : competencia}</p></div>
+    <div className="app-header-actions">
+      {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
+          que existe atalho. A forma de barra e a mesma do resto do app e ja
+          carrega o rotulo e a pista `Ctrl K`. */}
+      {!apenasLoja && <div className="hidden sm:block"><GatilhoBuscaPaginas variant="barra" /></div>}
+      {!apenasLoja && <FabAdicionar ancorado />}
+      <AcoesDaConta nome={nome} admin={admin} avatarUrl={avatarUrl} apenasLoja={apenasLoja} />
     </div>
   </header>
 }
