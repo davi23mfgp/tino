@@ -87,22 +87,21 @@
   .visaoGeral .passoIntegrado { margin:0 0 22px; padding:20px; border:1px solid #fff; }
 }
 
-/* Recupera a luz e a transparência do painel, com a navegação preta como
-   moldura. O reflexo fica nas bordas; o miolo sob o saldo permanece escuro. */
+/* Superfície lisa com um brilho da cor de destaque no canto (23/09). O vidro
+   verde que estava aqui era desenhado só para o escuro: no tema claro o
+   bloco ficava cinza-escuro com texto escuro ("Sobrou", "Entrou", "Saiu"
+   ilegíveis), e o verde fixo ignorava a cor que a pessoa escolhe. */
 .visaoGeral {
-  border-color:oklch(1 0 0 / 16%);
+  border-color:var(--superficie-borda);
   background:
-    radial-gradient(85% 145% at 0% 0%, oklch(0.53 0.12 145 / 24%), transparent 67%),
-    radial-gradient(65% 130% at 100% 100%, oklch(0.37 0.075 155 / 17%), transparent 72%),
-    linear-gradient(128deg, oklch(1 0 0 / 12%), oklch(1 0 0 / 3%) 39%, oklch(1 0 0 / 7%)),
-    oklch(0.15 0.012 145 / 72%);
-  -webkit-backdrop-filter:blur(22px) saturate(160%);
-  backdrop-filter:blur(22px) saturate(160%);
-  box-shadow:inset 0 1px 0 oklch(1 0 0 / 18%), 0 24px 50px -32px #000b;
+    radial-gradient(90% 140% at 0% 0%, oklch(var(--lch-acao) / 12%), transparent 65%),
+    var(--superficie);
+  box-shadow:var(--superficie-sombra);
 }
 .visaoGeral .passoIntegrado {
-  background:linear-gradient(145deg, #fff, #ecefeb 92%);
-  box-shadow:inset 0 1px 0 #fff, 0 18px 38px -24px #0009;
+  background:#fff;
+  border-color:oklch(0 0 0 / 8%);
+  box-shadow:0 18px 38px -24px #0009;
 }
 .visaoGeral .numerosDeApoio {
   gap:10px;
@@ -112,10 +111,9 @@
 .visaoGeral .numerosDeApoio>div,
 .visaoGeral .numerosDeApoio>div+div {
   padding:14px 16px;
-  border:1px solid oklch(1 0 0 / 12%);
+  border:1px solid var(--superficie-borda);
   border-radius:15px;
-  background:linear-gradient(150deg, oklch(1 0 0 / 11%), oklch(1 0 0 / 3%) 75%);
-  box-shadow:inset 0 1px 0 oklch(1 0 0 / 9%);
+  background:var(--papel-1);
 }
 @media(max-width:560px) {
   .visaoGeral .numerosDeApoio { gap:6px; margin-bottom:18px; }

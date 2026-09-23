@@ -1425,3 +1425,39 @@ com texto e links legíveis. A barra da fila de dívidas agora divide pelo total
 coerente com sua legenda. A reserva apresenta progresso e formatação decimal
 brasileira. Tipos e 423 testes passaram; falta inspeção visual publicada após
 o push, pois o banco local ainda impede a navegação autenticada.
+
+### 23/09/2026 — superfície lisa, cor de destaque e correções das telas (sessão autônoma)
+
+O Davi mandou 12 capturas do app (23h36 de 22/09, já com os commits de
+vidro e gradiente daquela noite) e 30 referências (Pierre, Vaulta, Lumin,
+conceitos do Dribbble), com o pedido: "não parecem práticas modernas e
+intuitivas", destaque nas ferramentas, resumir, menos tempo do usuário,
+tema escuro e claro e cores para cada um escolher.
+
+Decisões, e por que substituem o vidro de 22/09:
+- **Fundo liso** (quase preto / quase branco) e **cartão sólido** com borda
+  fina, sem desfoque. O vidro sobre névoa verde deixava título escuro sobre
+  tinta escura e competia com o verde dos números. O desfoque ficou só na
+  barra de baixo, onde o conteúdo passa por baixo de verdade.
+- **Cor de destaque escolhida pela pessoa**, em Perfil › Aparência: verde
+  Tino (padrão), azul, turquesa, grafite, laranja, rosa e lilás, nos dois
+  temas. `data-acento` no `<html>`; os pares estão em `globals.css`, cada
+  um medido (texto na cor ≥ 4,5:1 sobre fundo e cartão; texto do botão
+  ≥ 4,5:1 sobre o preenchimento). Nenhum verde fixo sobrou nas superfícies.
+- **Aba ativa das ferramentas** em pílula cheia na cor de destaque.
+- **Rótulo em caixa normal**, não versal espaçada (fica só no nome do banco
+  no cartão físico e no site).
+- **Assistente com o leão**, não o porquinho antigo.
+
+Defeitos achados e corrigidos (todos vistos na captura antes e depois):
+dia escolhido do extrato ilegível (`--primary-foreground` usado cru como
+cor); número de métrica cortado no celular (regra de 26px vencendo a de
+17px); botão desabilitado parecendo quebrado; placeholder com número
+parecendo valor digitado; reserva com dois alvos diferentes na mesma tela;
+dívidas com os mesmos três números duas vezes; campo de limite com caixa
+dentro de caixa; topo do painel ilegível no tema claro.
+
+Pendente, fora do alcance desta sessão: a seção "Seus investimentos ·
+Exemplos visuais · dados fictícios" que aparece nas capturas não está em
+nenhum branch do GitHub — está só na máquina do Davi — e contraria a regra
+3 do CLAUDE.md se for publicada.
