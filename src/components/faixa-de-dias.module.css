@@ -12,15 +12,18 @@
 .faixa li > button b { font-size: calc(16px * var(--escala-letra)); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--foreground); }
 
 /* Hoje é sublinhado; o dia escolhido é preenchido. Dois sinais diferentes
-   porque os dois podem acontecer no mesmo dia. */
+   porque os dois podem acontecer no mesmo dia.
+   `--primary` e `--primary-foreground` guardam só o trio do oklch: usados
+   crus em `color`, viravam cor inválida, e o número do dia escolhido saía
+   em cinza claro sobre o verde, ilegível. */
 .faixa li > button[data-hoje="true"] b { text-decoration: underline; text-underline-offset: 3px; }
-.faixa li > button[aria-pressed="true"] { background: var(--acao); }
+.faixa li > button[aria-pressed="true"] { background: oklch(var(--primary)); }
 .faixa li > button[aria-pressed="true"] b,
-.faixa li > button[aria-pressed="true"] small { color: var(--primary-foreground, #000); }
+.faixa li > button[aria-pressed="true"] small { color: oklch(var(--primary-foreground)); }
 
 .faixa li i { display: block; width: 4px; height: 4px; border-radius: 50%; background: transparent; }
 .faixa li i[data-tem="true"] { background: var(--acao); }
-.faixa li > button[aria-pressed="true"] i[data-tem="true"] { background: var(--primary-foreground, #000); }
+.faixa li > button[aria-pressed="true"] i[data-tem="true"] { background: oklch(var(--primary-foreground)); }
 
 @media (max-width: 380px) {
   .faixa li > button b { font-size: calc(14px * var(--escala-letra)); }

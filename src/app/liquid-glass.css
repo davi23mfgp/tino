@@ -230,7 +230,7 @@ body::before {
 
 /* Placeholder precisa passar em contraste como qualquer texto: 3,4:1 era o
    valor antigo, abaixo do mínimo de 4,5. */
-.area-do-app ::placeholder { color: var(--texto-3); opacity: 1; }
+.area-do-app ::placeholder { color: var(--texto-3); opacity: 1; font-weight: 400; }
 
 /* Foco visível em tudo, com a cor da marca. Sem isto, quem navega por teclado
    fica sem saber onde está. */
@@ -256,6 +256,16 @@ body::before {
   transition: transform .14s var(--curva), background .16s var(--curva), opacity .16s var(--curva);
 }
 .area-do-app [data-slot="button"]:active { transform: scale(.97); }
+
+/* Botão principal desabilitado: cinza neutro, não o verde a 40%. O verde
+   esmaecido sobre fundo escuro lia como botão quebrado (o "Simular" do
+   empréstimo), e não como "falta preencher". */
+.area-do-app :is(button, a).bg-primary:is(:disabled, [aria-disabled="true"]) {
+  background: var(--papel-2);
+  color: var(--texto-3);
+  opacity: 1;
+  box-shadow: none;
+}
 
 /* Gaveta e diálogo: cantos grandes, vidro grosso e alça visível. */
 .area-do-app [data-slot="drawer-content"], [data-slot="drawer-content"] { border-radius: 28px 28px 0 0; }

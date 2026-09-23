@@ -664,7 +664,9 @@
 @media (max-width: 479px) {
   .area-do-app .grid:has(> .tino-metrica) { grid-template-columns: minmax(0, 1fr); }
   .tino-metrica { padding:8px 12px; }
-  .tino-metrica > .numero { font-size: calc(22px * var(--escala-letra)); }
+  /* Sem tamanho fixo aqui: 22px com `nowrap` cortava "R$ 13.861,00" no tile
+     de duas colunas. O tamanho vem do `cqi` da regra de baixo, que acompanha
+     a largura do tile. */
 }
 
 /* iOS: superfícies agrupadas, controles de sistema e navegação discreta.

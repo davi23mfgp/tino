@@ -307,7 +307,7 @@ export default function Configuracoes() {
                               id="conta-limite"
                               value={nova.limite}
                               onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
-                              placeholder="6.000,00"
+                              placeholder="ex.: 6.000,00"
                             />
                           </Field>
                           <Field>
@@ -336,7 +336,7 @@ export default function Configuracoes() {
                               min={1}
                               max={31}
                               step={1}
-                              placeholder="10"
+                              placeholder="ex.: 10"
                             />
                           </Field>
                         </>

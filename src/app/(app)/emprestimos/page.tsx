@@ -128,15 +128,15 @@ export default function Emprestimos() {
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-1.5">
             <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Valor recebido (R$)</span>
-            <input value={valor} onChange={(e) => setValor(e.target.value)} placeholder="10.000,00" className={campo} inputMode="decimal" />
+            <input value={valor} onChange={(e) => setValor(e.target.value)} placeholder="ex.: 10.000,00" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
             <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Parcelas</span>
-            <input value={parcelas} onChange={(e) => setParcelas(e.target.value)} placeholder="24" className={campo} inputMode="numeric" />
+            <input value={parcelas} onChange={(e) => setParcelas(e.target.value)} placeholder="ex.: 24" className={campo} inputMode="numeric" />
           </label>
           <label className="space-y-1.5">
             <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">Juros (% ao mês)</span>
-            <input value={juros} onChange={(e) => setJuros(e.target.value)} placeholder="2,5" className={campo} inputMode="decimal" />
+            <input value={juros} onChange={(e) => setJuros(e.target.value)} placeholder="ex.: 2,5" className={campo} inputMode="decimal" />
           </label>
           <label className="space-y-1.5">
             <span className="text-[calc(12px*var(--escala-letra))] text-muted-fg">IOF e tarifas</span>
