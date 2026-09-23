@@ -87,12 +87,6 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   para direção visual, e `find-skills` quando faltar skill para o caso.
 - Registrar aqui qualquer instrução nova de escopo permanente, para não
   precisar repetir a cada sessão.
-- Em 23/09: toda tela deve fazer a pessoa gastar o mínimo de tempo — o mesmo
-  número não aparece duas vezes, texto de apoio curto, uma ação por bloco.
-  Visual: superfície lisa e cartão sólido (o vidro saiu, ver
-  `docs/REDESIGN-EM-CURSO.md`), com a cor de destaque que a pessoa escolhe
-  em Perfil › Aparência. Cor nova em CSS usa `oklch(var(--lch-acao))` ou
-  `oklch(var(--primary))`, nunca o verde fixo.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

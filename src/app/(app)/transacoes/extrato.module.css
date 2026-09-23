@@ -7,7 +7,7 @@
 .resumo dl > div { padding:0 20px; border-left: 1px solid var(--pauta); }
 .resumo dl > div:first-child { padding-left: 0; border-left: 0; }
 .resumo dl > div:last-child { margin-left: auto; text-align: right; border-left: 0; }
-.resumo dt { font-size: max(10px, calc(12px * var(--escala-letra))); text-transform:none; letter-spacing:0; font-weight: 650; color: var(--texto-3); }
+.resumo dt { font-size: max(10px, calc(12px * var(--escala-letra))); text-transform: uppercase; letter-spacing: .12em; font-weight: 650; color: var(--texto-3); }
 .resumo dd { font-size: calc(21px * var(--escala-letra)); font-weight: 600; letter-spacing: -.03em; margin-top:4px; font-variant-numeric: tabular-nums; }
 .resumo dl > div:last-child dd { font-size: calc(30px * var(--escala-letra)); font-weight: 680; }
 .contagem { color: var(--texto-3); font-size: 11px; margin-top:8px; }

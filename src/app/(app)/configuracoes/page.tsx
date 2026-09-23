@@ -13,7 +13,6 @@ import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
 import { ConfigAtalhoLancar } from "@/components/config-atalho-lancar"
 import { MeusDados } from "@/components/meus-dados"
-import { Aparencia } from "@/components/aparencia"
 import { FotoDePerfil } from "@/components/foto-de-perfil"
 import { Input } from "@/components/ui/input"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -307,7 +306,7 @@ export default function Configuracoes() {
                               id="conta-limite"
                               value={nova.limite}
                               onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
-                              placeholder="ex.: 6.000,00"
+                              placeholder="6.000,00"
                             />
                           </Field>
                           <Field>
@@ -336,7 +335,7 @@ export default function Configuracoes() {
                               min={1}
                               max={31}
                               step={1}
-                              placeholder="ex.: 10"
+                              placeholder="10"
                             />
                           </Field>
                         </>
@@ -420,10 +419,6 @@ export default function Configuracoes() {
           href="/assinatura"
           acao="Ver"
         />
-      </GrupoAjustes>
-
-      <GrupoAjustes titulo="Aparência">
-        <Aparencia />
       </GrupoAjustes>
 
       <GrupoAjustes titulo="Sistema">

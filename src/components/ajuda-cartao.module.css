@@ -20,8 +20,8 @@
 .resultado { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; margin-top:16px; }
 .contexto, .meta { padding:16px; border-radius:var(--raio-cartao); background:var(--papel-2); }
 .contexto > small, .meta > small:first-child {
-  display:block; font-size:max(10px, calc(12px * var(--escala-letra))); text-transform:none;
-  letter-spacing:0; font-weight:640; color:var(--texto-3);
+  display:block; font-size:max(10px, calc(12px * var(--escala-letra))); text-transform:uppercase;
+  letter-spacing:.12em; font-weight:640; color:var(--texto-3);
 }
 .contexto select {
   width:100%; min-height:44px; margin-top:8px; padding:0 12px;

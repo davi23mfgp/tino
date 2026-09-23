@@ -21,13 +21,10 @@ export function CalculadoraReserva({
   custoEssencialCentavos,
   mesesAtuais,
   reservadoCentavos,
-  alvoGravadoCentavos,
 }: {
   custoEssencialCentavos: number
   mesesAtuais: number
   reservadoCentavos: number
-  /// Alvo guardado na meta de reserva, quando ela existe.
-  alvoGravadoCentavos?: number | null
 }) {
   const router = useRouter()
   const [tipoDeRenda, setTipoDeRenda] = useState<TipoDeRenda>("ASSALARIADO")
@@ -41,13 +38,6 @@ export function CalculadoraReserva({
   const alvo = alvoEmCentavos(custoEssencialCentavos, sugestao.meses)
   const falta = Math.max(0, alvo - reservadoCentavos)
   const cobertura = custoEssencialCentavos > 0 ? reservadoCentavos / custoEssencialCentavos : 0
-  // Os meses iguais não bastam para dizer que o alvo está valendo: o custo
-  // essencial muda todo mês e o valor gravado na meta fica para trás. A tela
-  // chegou a mostrar "É o alvo que já está valendo" com R$ 34.063,02 aqui e
-  // R$ 31.200,00 na meta logo abaixo.
-  const metaDesatualizada =
-    alvoGravadoCentavos != null && custoEssencialCentavos > 0 && alvoGravadoCentavos !== alvo
-  const emVigor = mesesAtuais === sugestao.meses && !metaDesatualizada
 
   async function aplicar() {
     setSalvando(true); setErro("")
@@ -124,15 +114,9 @@ export function CalculadoraReserva({
       </ul>
 
       <footer className={estilos.rodape}>
-        <span>
-          {emVigor
-            ? "É o alvo que já está valendo."
-            : metaDesatualizada && mesesAtuais === sugestao.meses
-              ? `Sua meta ainda está em ${formatarMoeda(alvoGravadoCentavos ?? 0)}, do custo de antes.`
-              : `Hoje seu alvo é de ${mesesAtuais} meses.`}
-        </span>
-        <Button onClick={() => void aplicar()} disabled={salvando || emVigor}>
-          {salvando ? "Salvando…" : mesesAtuais === sugestao.meses ? "Atualizar alvo" : "Usar este alvo"}
+        <span>{mesesAtuais === sugestao.meses ? "É o alvo que já está valendo." : `Hoje seu alvo é de ${mesesAtuais} meses.`}</span>
+        <Button onClick={() => void aplicar()} disabled={salvando || mesesAtuais === sugestao.meses}>
+          {salvando ? "Salvando…" : "Usar este alvo"}
         </Button>
       </footer>
       {erro && <p role="alert" className={estilos.erro}>{erro}</p>}

@@ -189,14 +189,14 @@ export default function BemVindo() {
         <div className="space-y-3">
           <label className="block space-y-1.5">
             <span className="text-xs uppercase tracking-widest text-muted-fg">Renda mensal</span>
-            <input value={renda} onChange={(e) => setRenda(e.target.value)} placeholder="ex.: 5.000,00" className={campo} inputMode="decimal" />
+            <input value={renda} onChange={(e) => setRenda(e.target.value)} placeholder="5.000,00" className={campo} inputMode="decimal" />
           </label>
 
           <label className="block space-y-1.5">
             <span className="text-xs uppercase tracking-widest text-muted-fg">
               Gasto médio por mês (aproximado)
             </span>
-            <input value={custo} onChange={(e) => setCusto(e.target.value)} placeholder="ex.: 3.500,00" className={campo} inputMode="decimal" />
+            <input value={custo} onChange={(e) => setCusto(e.target.value)} placeholder="3.500,00" className={campo} inputMode="decimal" />
           </label>
 
           <label className="block space-y-1.5">
@@ -206,7 +206,7 @@ export default function BemVindo() {
             <input
               value={diaInicioMes}
               onChange={(e) => setDiaInicioMes(e.target.value)}
-              placeholder="ex.: 5"
+              placeholder="5"
               className={campo}
               inputMode="numeric"
             />

@@ -135,13 +135,11 @@ export function Valor({
   const Seta = tom === "positivo" ? ArrowUpRight : tom === "negativo" ? ArrowDownRight : null
 
   return (
-    <p className={cn("numero inline-flex max-w-full items-baseline gap-0.5 font-semibold", escala, TOM[tom], className)}>
+    <p className={cn("numero inline-flex items-baseline gap-0.5 font-semibold", escala, TOM[tom], className)}>
       {Seta && (
         <Seta aria-hidden className="relative top-[0.09em] size-[0.72em] shrink-0" strokeWidth={2.5} />
       )}
-      {/* `min-w-0`: sem ele o número não encolhe abaixo do próprio texto e
-          vaza do tile em vez de caber nele. */}
-      <span className="min-w-0">{children}</span>
+      {children}
     </p>
   )
 }

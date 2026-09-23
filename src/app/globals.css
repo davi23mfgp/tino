@@ -291,99 +291,6 @@
     --sombra-alta: var(--sombra-flutuante);
   }
 
-  /* --- cor de destaque escolhida pela pessoa ---
-     Pedido do Davi em 23/09: cores para cada um brincar, no claro e no
-     escuro. Sem `data-acento` vale o verde da marca, definido acima. Cada
-     par foi medido (OKLab -> sRGB linear -> WCAG): texto na cor de destaque
-     passa de 4,5:1 sobre o fundo e sobre o cartão, e o texto do botão passa
-     de 4,5:1 sobre o preenchimento, nos dois temas. Pior caso: turquesa no
-     claro, 4,6:1. No claro, quem precisa ficar escuro para o texto passar
-     troca o texto do botão para branco. */
-  :root[data-acento="azul"] {
-    --lch-acao: 0.74 0.15 250;
-    --primary: 0.74 0.15 250;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.27 0.05 250;
-    --sidebar-accent: oklch(0.27 0.05 250);
-  }
-  .light[data-acento="azul"] {
-    --lch-acao: 0.50 0.17 258;
-    --primary: 0.52 0.19 262;
-    --primary-foreground: 1 0 0;
-    --accent: 0.94 0.04 250;
-    --sidebar-accent: oklch(0.94 0.04 250);
-  }
-  :root[data-acento="turquesa"] {
-    --lch-acao: 0.82 0.13 195;
-    --primary: 0.82 0.13 195;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.27 0.05 195;
-    --sidebar-accent: oklch(0.27 0.05 195);
-  }
-  .light[data-acento="turquesa"] {
-    --lch-acao: 0.52 0.10 200;
-    --primary: 0.52 0.10 200;
-    --primary-foreground: 1 0 0;
-    --accent: 0.94 0.04 195;
-    --sidebar-accent: oklch(0.94 0.04 195);
-  }
-  :root[data-acento="grafite"] {
-    --lch-acao: 0.93 0 0;
-    --primary: 0.93 0 0;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.28 0 0;
-    --sidebar-accent: oklch(0.28 0 0);
-  }
-  .light[data-acento="grafite"] {
-    --lch-acao: 0.25 0 0;
-    --primary: 0.2 0 0;
-    --primary-foreground: 1 0 0;
-    --accent: 0.93 0 0;
-    --sidebar-accent: oklch(0.93 0 0);
-  }
-  :root[data-acento="laranja"] {
-    --lch-acao: 0.78 0.16 55;
-    --primary: 0.78 0.16 55;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.27 0.05 55;
-    --sidebar-accent: oklch(0.27 0.05 55);
-  }
-  .light[data-acento="laranja"] {
-    --lch-acao: 0.55 0.17 45;
-    --primary: 0.62 0.19 45;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.94 0.04 55;
-    --sidebar-accent: oklch(0.94 0.04 55);
-  }
-  :root[data-acento="rosa"] {
-    --lch-acao: 0.78 0.15 355;
-    --primary: 0.78 0.15 355;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.27 0.05 355;
-    --sidebar-accent: oklch(0.27 0.05 355);
-  }
-  .light[data-acento="rosa"] {
-    --lch-acao: 0.55 0.2 360;
-    --primary: 0.58 0.21 360;
-    --primary-foreground: 1 0 0;
-    --accent: 0.94 0.04 355;
-    --sidebar-accent: oklch(0.94 0.04 355);
-  }
-  :root[data-acento="lilas"] {
-    --lch-acao: 0.76 0.14 305;
-    --primary: 0.76 0.14 305;
-    --primary-foreground: 0.14 0 0;
-    --accent: 0.27 0.05 305;
-    --sidebar-accent: oklch(0.27 0.05 305);
-  }
-  .light[data-acento="lilas"] {
-    --lch-acao: 0.52 0.19 300;
-    --primary: 0.55 0.2 300;
-    --primary-foreground: 1 0 0;
-    --accent: 0.94 0.04 305;
-    --sidebar-accent: oklch(0.94 0.04 305);
-  }
-
   * {
     @apply border-border;
   }
@@ -619,7 +526,7 @@
 .app-nav-item:hover,.app-nav-item.is-active { background:var(--papel-1);color:var(--foreground); }
 .app-nav-item.is-active { font-weight:600; }
 .app-brand { display:flex;align-items:center;gap:8px;margin:4px 10px 42px;font-size: calc(32px * var(--escala-letra));font-weight:700;letter-spacing:-.06em; }
-.app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size: max(10px, calc(12px * var(--escala-letra)));letter-spacing:0;text-transform:none; }
+.app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size: max(10px, calc(12px * var(--escala-letra)));letter-spacing:.12em;text-transform:uppercase; }
 .app-header { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px; }
 .app-header-title { min-width:0; }
 .app-header-title h1 { font-size: calc(clamp(20px,3vw,28px) * var(--escala-letra));font-weight:600;letter-spacing:-.04em;overflow-wrap:anywhere; }
@@ -664,9 +571,7 @@
 @media (max-width: 479px) {
   .area-do-app .grid:has(> .tino-metrica) { grid-template-columns: minmax(0, 1fr); }
   .tino-metrica { padding:8px 12px; }
-  /* Sem tamanho fixo aqui: 22px com `nowrap` cortava "R$ 13.861,00" no tile
-     de duas colunas. O tamanho vem do `cqi` da regra de baixo, que acompanha
-     a largura do tile. */
+  .tino-metrica > .numero { font-size: calc(22px * var(--escala-letra)); }
 }
 
 /* iOS: superfícies agrupadas, controles de sistema e navegação discreta.
@@ -790,7 +695,7 @@
    docs/PRINCIPIO-DE-TELA.md. É o começo padrão de toda tela do app. */
 .app-abertura { padding:20px; border:1px solid var(--pauta); border-radius:var(--raio-bloco);
   background:linear-gradient(125deg,color-mix(in oklab,var(--papel-1),var(--acao) 10%),var(--papel-1) 62%); }
-.app-abertura-rotulo { font-size:max(10px, calc(12px * var(--escala-letra)));text-transform:none;letter-spacing:0;font-weight:650;color:var(--texto-3); }
+.app-abertura-rotulo { font-size:max(10px, calc(12px * var(--escala-letra)));text-transform:uppercase;letter-spacing:.14em;font-weight:650;color:var(--texto-3); }
 .app-abertura-titulo { margin-top:8px;font-size:calc(clamp(20px,3vw,28px) * var(--escala-letra));font-weight:670;line-height:1.15;letter-spacing:-.03em; }
 .app-abertura-titulo em { font-style:normal;color:var(--acao); }
 .app-abertura-apoio { margin-top:8px;font-size:calc(13px * var(--escala-letra));color:var(--texto-2);max-width:62ch; }

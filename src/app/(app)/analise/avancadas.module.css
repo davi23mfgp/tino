@@ -44,13 +44,7 @@
   .pagina :global(.tino-metrica) > span[aria-hidden]:first-child { display: none; }
 }
 .pagina :global(.tino-metrica) { min-width: 0; }
-/* Só em tela larga: declarada depois do bloco do celular, com a mesma
-   especificidade, ela vencia os 17px de lá, e o número de 26px cortava no
-   tile de duas colunas ("R$ 13.861,0" no fluxo de caixa, "R$ 31.750,0" nas
-   dívidas). */
-@media (min-width: 641px) {
-  .pagina :global(.tino-metrica .numero) { font-size: calc(26px * var(--escala-letra)); }
-}
+.pagina :global(.tino-metrica .numero) { font-size: calc(26px * var(--escala-letra)); }
 .pagina button, .pagina input, .pagina select, .pagina summary { min-height: 44px; }
 .pagina input, .pagina select { min-width: 0; }
 .pagina button:focus-visible, .pagina summary:focus-visible {

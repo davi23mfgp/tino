@@ -10,7 +10,7 @@ import { Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Pilula, Vazio } from "@/components/ui/painel"
+import { Barra, Cartao, Metrica, Pilula, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
@@ -271,10 +271,18 @@ export default function Dividas() {
           </Button>
         }
       >
-        {/* Total devido, parcela do mês e "livre em" saíram daqui: o topo da
-            tela já mostra os três, e a mesma conta em dois lugares é o que faz
-            a pessoa reler a tela para ver se mudou alguma coisa. */}
-        <form onSubmit={simularExtra} className="rounded-[20px] border border-foreground/20 bg-papel-2 p-4 sm:p-5">
+        <div className="grade-valores">
+          <Metrica rotulo="Total devido" valor={dados ? formatarMoeda(dados.totalCentavos) : "—"} tom="negativo" />
+          <Metrica rotulo="Parcelas por mês" valor={dados ? formatarMoeda(dados.parcelaMensalCentavos) : "—"} />
+          <Metrica
+            rotulo="Livre em"
+            valor={dados?.plano ? dados.plano.quitacoes.length === abertas.length ? dados.plano.meses + " meses" : "Além de 50 anos" : "—"}
+            detalhe={dados?.plano ? `${formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho` : undefined}
+            tom={dados?.plano ? "atencao" : "neutro"}
+          />
+        </div>
+
+        <form onSubmit={simularExtra} className="mt-4 rounded-[20px] border border-foreground/20 bg-papel-2 p-4 sm:p-5">
           {/* Titulo, subtitulo, rotulo do campo, campo, botao e ressalva eram
               seis linhas empilhadas para pedir um numero. Agora o titulo diz o
               que a tela faz e o campo e o botao dividem a mesma linha. */}
@@ -282,7 +290,6 @@ export default function Dividas() {
           <div className="mt-3 flex items-center gap-2 rounded-full border border-pauta bg-papel-2 p-1.5">
             <input
               id="pagamento-extra"
-              data-embutido
               aria-label="Pagamento extra mensal"
               value={extra}
               onChange={(evento) => setExtra(evento.target.value)}

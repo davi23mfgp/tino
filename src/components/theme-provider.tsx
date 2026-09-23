@@ -25,38 +25,11 @@ import * as React from "react";
 
 type Tema = "light" | "dark";
 
-/**
- * Cor de destaque que a pessoa escolhe em Perfil > Aparência. Os pares de
- * cada uma, medidos para contraste nos dois temas, estão em `globals.css`
- * (`[data-acento]`). "verde" é a marca e não precisa de atributo.
- */
-export const ACENTOS = [
-  { id: "verde", nome: "Verde Tino", amostra: "oklch(0.85 0.24 145)" },
-  { id: "azul", nome: "Azul", amostra: "oklch(0.74 0.15 250)" },
-  { id: "turquesa", nome: "Turquesa", amostra: "oklch(0.82 0.13 195)" },
-  { id: "grafite", nome: "Grafite", amostra: "oklch(0.93 0 0)" },
-  { id: "laranja", nome: "Laranja", amostra: "oklch(0.78 0.16 55)" },
-  { id: "rosa", nome: "Rosa", amostra: "oklch(0.78 0.15 355)" },
-  { id: "lilas", nome: "Lilás", amostra: "oklch(0.76 0.14 305)" },
-] as const;
-
-export type Acento = (typeof ACENTOS)[number]["id"];
-
-type ContextoTema = {
-  theme: Tema;
-  setTheme: (tema: Tema) => void;
-  acento: Acento;
-  setAcento: (acento: Acento) => void;
-};
+type ContextoTema = { theme: Tema; setTheme: (tema: Tema) => void };
 
 const ContextoTema = React.createContext<ContextoTema | undefined>(undefined);
 
 const CHAVE_ARMAZENAMENTO = "theme";
-const CHAVE_ACENTO = "acento";
-
-function ehAcento(valor: string | null): valor is Acento {
-  return ACENTOS.some((acento) => acento.id === valor);
-}
 
 export function ThemeProvider({
   children,
@@ -68,29 +41,20 @@ export function ThemeProvider({
   defaultTheme?: Tema;
 }) {
   const [theme, setThemeState] = React.useState<Tema>(defaultTheme);
-  const [acento, setAcentoState] = React.useState<Acento>("verde");
 
   React.useEffect(() => {
     let salvo: string | null = null;
-    let acentoSalvo: string | null = null;
     try {
       salvo = localStorage.getItem(CHAVE_ARMAZENAMENTO);
-      acentoSalvo = localStorage.getItem(CHAVE_ACENTO);
     } catch {
       // Storage indisponível (modo privado, política do navegador) — segue no padrão.
     }
     if (salvo === "dark" || salvo === "light") setThemeState(salvo);
-    if (ehAcento(acentoSalvo)) setAcentoState(acentoSalvo);
   }, []);
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
   }, [theme]);
-
-  React.useEffect(() => {
-    if (acento === "verde") delete document.documentElement.dataset.acento;
-    else document.documentElement.dataset.acento = acento;
-  }, [acento]);
 
   const setTheme = React.useCallback((tema: Tema) => {
     setThemeState(tema);
@@ -101,16 +65,7 @@ export function ThemeProvider({
     }
   }, []);
 
-  const setAcento = React.useCallback((novo: Acento) => {
-    setAcentoState(novo);
-    try {
-      localStorage.setItem(CHAVE_ACENTO, novo);
-    } catch {
-      // A troca vale na sessão, só não persiste.
-    }
-  }, []);
-
-  const valor = React.useMemo(() => ({ theme, setTheme, acento, setAcento }), [theme, setTheme, acento, setAcento]);
+  const valor = React.useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
 
   return <ContextoTema.Provider value={valor}>{children}</ContextoTema.Provider>;
 }

@@ -287,10 +287,9 @@ export default function OrcamentoPagina() {
                   </b>
                   <small className="text-[calc(12px*var(--escala-letra))] text-muted-fg">gastos</small>
                 </span>
-                <label className="flex min-w-[146px] shrink-0 items-center gap-2 rounded-[14px] border border-pauta bg-papel-1 px-3 focus-within:border-acao">
+                <label className="flex min-w-[146px] shrink-0 items-center gap-2 rounded-xl border border-pauta bg-background px-3 focus-within:border-acao">
                   <span className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">Limite R$</span>
                   <input
-                    data-embutido
                     aria-label={`Orçamento de ${linha.categoria.nome}`}
                     value={rascunho[linha.categoriaId] ?? ""}
                     onChange={(evento) => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))}

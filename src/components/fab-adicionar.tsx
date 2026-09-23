@@ -289,7 +289,7 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
                             setErro(null)
                           }
                         }}
-                        placeholder="ex.: 52,30"
+                        placeholder="52,30"
                         inputMode="decimal"
                         aria-invalid={erroValor}
                         aria-describedby={cn(`${id}-valor-ajuda`, erroValor && `${id}-erro`)}
