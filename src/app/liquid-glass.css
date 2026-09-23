@@ -1,5 +1,6 @@
 /* ============================================================
-   Vidro líquido, opção A ("névoa verde"), aprovada pelo Davi em 22/09/2026.
+   Vidro líquido com fundo grafite. A névoa verde da versão inicial foi
+   rejeitada no retorno visual de 22/09/2026.
    Protótipo de referência: public/prototipos/liquid-glass.html.
 
    Aproximação web do Liquid Glass da Apple. A Apple não publica esse
@@ -13,20 +14,17 @@
      o que passa por baixo vira borrão.
 
    Contraste: todo vidro tem tinta escura por baixo, então o texto não
-   depende do ponto do fundo que está atrás. O brilho verde mora nas bordas
-   do viewport, longe do miolo onde fica o texto.
-
-   Paleta: a mesma do Tino. O verde do fundo é o verde da marca (#45f45c)
-   em baixa opacidade; nenhuma cor nova entrou.
+   depende do ponto do fundo que está atrás. A cor da marca fica nas ações
+   pontuais, enquanto o fundo grafite deixa os números em primeiro plano.
    ============================================================ */
 
 :root {
-  --vidro-tinta: oklch(0.17 0.012 145 / 52%);
+  --vidro-tinta: oklch(0.17 0.005 255 / 52%);
   --vidro-brilho: linear-gradient(160deg, oklch(1 0 0 / 13%), oklch(1 0 0 / 3%) 42%, oklch(1 0 0 / 6%));
   --vidro-borda: oklch(1 0 0 / 13%);
   --vidro-luz: inset 0 1px 0 oklch(1 0 0 / 20%), inset 0 -1px 0 oklch(0 0 0 / 22%);
   --vidro-sombra: 0 18px 40px -24px oklch(0 0 0 / 85%);
-  --vidro-grosso-tinta: oklch(0.16 0.012 145 / 66%);
+  --vidro-grosso-tinta: oklch(0.16 0.005 255 / 66%);
   --raio-bloco: 26px;
   --raio-cartao: 22px;
   /* Superfícies internas (linhas de lista, trilhos, chips) seguem o vidro. */
@@ -35,7 +33,7 @@
   --papel-2: oklch(1 0 0 / 11%);
   /* Painéis que abrem por cima (diálogo, gaveta, menu) precisam ser quase
      opacos: o conteúdo atrás deles é texto, não fundo. */
-  --papel-3: oklch(0.2 0.012 145 / 88%);
+  --papel-3: oklch(0.2 0.005 255 / 88%);
   --texto-2: oklch(0.79 0.005 145);
   --texto-3: oklch(0.76 0.005 145);
   --muted-fg: oklch(0.76 0.005 145);
@@ -57,11 +55,11 @@
   --muted-fg: oklch(0.45 0.01 145);
 }
 
-/* ---------- fundo: névoa verde ----------
+/* ---------- fundo: grafite com luz fria discreta ----------
    Num pseudo-elemento fixo, não em `background-attachment: fixed`, que o
    Safari do iPhone ignora (o fundo rolaria junto e esticaria). */
 body {
-  background-color: oklch(0.13 0.012 145);
+  background-color: oklch(0.12 0.004 255);
   background-image: none;
 }
 body::before {
@@ -71,17 +69,15 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.85 0.24 145 / 24%), transparent 62%),
-    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.85 0.24 145 / 11%), transparent 65%),
-    radial-gradient(70vmax 55vmax at 15% 105%, oklch(0.4 0.09 145 / 45%), transparent 65%),
-    linear-gradient(180deg, oklch(0.17 0.02 145), oklch(0.11 0.008 145));
+    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.65 0.035 255 / 12%), transparent 62%),
+    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.64 0.025 255 / 8%), transparent 65%),
+    linear-gradient(180deg, oklch(0.16 0.006 255), oklch(0.105 0.003 255));
 }
-.light body { background-color: oklch(0.95 0.01 145); background-image: none; }
+.light body { background-color: oklch(0.96 0.004 255); background-image: none; }
 .light body::before {
   background:
-    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.85 0.24 145 / 30%), transparent 62%),
-    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.85 0.24 145 / 16%), transparent 65%),
-    linear-gradient(180deg, oklch(0.96 0.012 145), oklch(0.91 0.012 145));
+    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.78 0.025 255 / 22%), transparent 62%),
+    linear-gradient(180deg, oklch(0.97 0.004 255), oklch(0.92 0.006 255));
 }
 
 /* ---------- o vidro ---------- */

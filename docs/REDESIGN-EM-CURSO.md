@@ -1406,3 +1406,9 @@ O painel ainda requer comparação visual ao vivo: o banco local contém tabelas
 de migrações antigas sem registro correspondente, e o servidor atual não
 consegue ler o campo de sessão novo. Não tratar essa limitação como prova
 de aprovação visual.
+
+Após o push, a captura de produção confirmou que a nova composição do painel
+entrou no ar. Ela também mostrou que a névoa verde global ainda dominava a
+tela; o fundo e a tinta do vidro foram neutralizados para grafite com luz fria
+discreta. O verde da marca permanece nas ações e indicadores sem pintar toda
+a área de leitura. Essa mudança exige nova captura de produção para validação.
