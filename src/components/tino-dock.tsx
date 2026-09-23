@@ -6,7 +6,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 
 import { cn } from "@/lib/utils"
 import { buscar } from "@/lib/cliente"
-import { FRASE, TinoMarca, TinoMascote, estadoPorAlertas } from "@/components/tino-mascote"
+import { FRASE, TinoMarca, estadoPorAlertas } from "@/components/tino-mascote"
 import type { EstadoTino } from "@/components/tino-mascote"
 import { usarAlertas } from "@/components/alertas-provider"
 import { DitarGasto } from "@/components/ditar-gasto"
@@ -114,8 +114,10 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
           // ícones de traço lia como adesivo colado na lista.
           <button className="app-nav-item"><TinoMarca className="size-5 shrink-0" /><span>Seu assistente Tino</span></button>
         ) : (
-          <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
-            <TinoMascote estado={estado} className="size-8" />
+          // O leão é a marca desde 22/09; o porquinho que ficou aqui era o
+          // único lugar do app ainda com a marca antiga.
+          <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta bg-papel-3 text-acao">
+            <TinoMarca className="size-6" />
           </button>
         )}
       </DialogTrigger>

@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Menu } from "lucide-react"
 
-import { TinoMascote } from "@/components/tino-mascote"
+import { TinoMarca } from "@/components/tino-mascote"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 /**
@@ -36,7 +36,7 @@ export function SiteNavbar() {
     <header className="sticky top-0 z-40 border-b border-pauta bg-background/80 backdrop-blur-xl backdrop-saturate-[1.8]">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-5">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <TinoMascote estado="tranquilo" animado={false} className="size-7" />
+          <TinoMarca className="size-7" />
           <span className="font-display text-[calc(15px*var(--escala-letra))] font-semibold">Tino</span>
         </Link>
 

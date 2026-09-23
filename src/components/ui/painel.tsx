@@ -123,7 +123,9 @@ export function Valor({
   const escala = {
     heroi: "text-[calc(30px*var(--escala-letra))] leading-none tracking-tight sm:text-[calc(36px*var(--escala-letra))]",
     cartao: "text-[calc(28px*var(--escala-letra))] leading-[1.1] tracking-[-0.03em]",
-    medio: "text-[calc(30px*var(--escala-letra))] leading-none tracking-tight",
+    // `medio` segue a largura do próprio tile (`cqi`), com teto nos 30px: em
+    // grade de duas colunas no celular, 30px fixos cortavam "R$ 13.861,00".
+    medio: "text-[clamp(16px,13.5cqi,calc(30px*var(--escala-letra)))] leading-none tracking-tight [overflow-wrap:anywhere]",
     linha: "text-[calc(15px*var(--escala-letra))] leading-snug tracking-[-0.01em]",
   }[tamanho]
 
@@ -181,7 +183,7 @@ export function Metrica({
   }
 
   return (
-    <div className={cn("tino-metrica ios-tap relative min-w-0 rounded-[var(--raio-cartao)] border p-4", fundoPorTom[tom] ?? fundoPorTom.neutro)}>
+    <div className={cn("tino-metrica ios-tap relative min-w-0 rounded-[var(--raio-cartao)] border p-4 [container-type:inline-size]", fundoPorTom[tom] ?? fundoPorTom.neutro)}>
       {Icone && (
         // Círculo sólido — bg-card (não papel translúcido, pra destacar do
         // fundo do tile) + borda de 1px, ícone em foreground. Chroma zero:

@@ -7,7 +7,7 @@ import { ArrowLeft, ShoppingBag, Wallet } from "lucide-react"
 
 import { enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
-import { TinoMascote } from "@/components/tino-mascote"
+import { TinoMarca } from "@/components/tino-mascote"
 
 /**
  * Criar conta, em dois passos.
@@ -61,7 +61,7 @@ export default function Cadastro() {
       <main className="flex min-h-screen items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="flex items-center gap-3">
-            <TinoMascote estado="tranquilo" className="size-11" />
+            <TinoMarca className="size-11 text-acao" />
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-muted-fg">Tino</p>
               <h1 className="font-display text-2xl font-bold tracking-tight">O que você quer organizar?</h1>

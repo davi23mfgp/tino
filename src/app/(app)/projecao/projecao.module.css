@@ -12,7 +12,7 @@
 .mesNome { font-size:calc(15px * var(--escala-letra)); font-weight:620; }
 .mesSaldo { font-size:calc(22px * var(--escala-letra)); font-weight:660; font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; color:var(--positivo); }
 .mes[data-negativo="true"] .mesSaldo { color:var(--negativo); }
-.mesSaldo small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:500; text-transform:uppercase; letter-spacing:.1em; color:var(--texto-3); }
+.mesSaldo small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:500; text-transform:none; letter-spacing:0; color:var(--texto-3); }
 
 .balanca { display:grid; gap:4px; margin-top:12px; }
 .entra, .sai { display:block; height:7px; border-radius:999px; background:var(--papel-3); overflow:hidden; }

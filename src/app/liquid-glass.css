@@ -1,67 +1,60 @@
 /* ============================================================
-   Vidro líquido, opção A ("névoa verde"), aprovada pelo Davi em 22/09/2026.
-   Protótipo de referência: public/prototipos/liquid-glass.html.
+   Superfícies do app: sólidas, lisas, com um destaque só.
 
-   Aproximação web do Liquid Glass da Apple. A Apple não publica esse
-   material para web; aqui é `backdrop-filter` + camadas de brilho.
+   Substitui o vidro líquido ("névoa verde", 22/09) em 23/09/2026. Pedido do
+   Davi, olhando as telas: "não parecem práticas modernas e intuitivas". As
+   referências que ele mandou (Pierre, Vaulta, Lumin) têm três coisas em comum,
+   e o vidro contrariava as três:
+   1. fundo liso, quase preto no escuro e quase branco no claro — o verde do
+      fundo competia com o verde dos números e dos botões;
+   2. cartão sólido com borda fina — o vidro deixava título escuro sobre tinta
+      escura (o "Pague esta primeira" das dívidas era ilegível);
+   3. uma cor de destaque só, usada no que se toca e no número que importa.
 
-   Por que o vidro volta depois de ter saído em 08/09 (SPEC-CALEN-PRECISO,
-   PARTE 1.3): o defeito era a barra fixa deixar o texto da página legível
-   por trás ao rolar. A correção é de receita, não de proibição:
-   - cartão: vidro de verdade. Atrás dele só existe o fundo, nada vaza;
-   - barra fixa e gavetas: vidro grosso (desfoque 34px + tinta densa),
-     o que passa por baixo vira borrão.
-
-   Contraste: todo vidro tem tinta escura por baixo, então o texto não
-   depende do ponto do fundo que está atrás. O brilho verde mora nas bordas
-   do viewport, longe do miolo onde fica o texto.
-
-   Paleta: a mesma do Tino. O verde do fundo é o verde da marca (#45f45c)
-   em baixa opacidade; nenhuma cor nova entrou.
+   A cor de destaque é da pessoa: `data-acento` no <html> (ver
+   `components/aparencia.tsx`), com os pares medidos em `globals.css`.
+   O nome do arquivo ficou para não mexer no import do layout.
    ============================================================ */
 
 :root {
-  --vidro-tinta: oklch(0.17 0.012 145 / 52%);
-  --vidro-brilho: linear-gradient(160deg, oklch(1 0 0 / 13%), oklch(1 0 0 / 3%) 42%, oklch(1 0 0 / 6%));
-  --vidro-borda: oklch(1 0 0 / 13%);
-  --vidro-luz: inset 0 1px 0 oklch(1 0 0 / 20%), inset 0 -1px 0 oklch(0 0 0 / 22%);
-  --vidro-sombra: 0 18px 40px -24px oklch(0 0 0 / 85%);
-  --vidro-grosso-tinta: oklch(0.16 0.012 145 / 66%);
-  --raio-bloco: 26px;
-  --raio-cartao: 22px;
-  /* Superfícies internas (linhas de lista, trilhos, chips) seguem o vidro. */
-  --papel-solido: oklch(1 0 0 / 6%);
-  --papel-1: oklch(1 0 0 / 7%);
-  --papel-2: oklch(1 0 0 / 11%);
-  /* Painéis que abrem por cima (diálogo, gaveta, menu) precisam ser quase
-     opacos: o conteúdo atrás deles é texto, não fundo. */
-  --papel-3: oklch(0.2 0.012 145 / 88%);
-  --texto-2: oklch(0.79 0.005 145);
-  --texto-3: oklch(0.76 0.005 145);
-  --muted-fg: oklch(0.76 0.005 145);
+  --superficie: oklch(0.2 0 0);
+  --superficie-2: oklch(0.235 0 0);
+  --superficie-borda: oklch(1 0 0 / 7%);
+  --superficie-sombra: 0 1px 0 oklch(1 0 0 / 4%) inset;
+  --barra-tinta: oklch(0.18 0 0 / 82%);
+  --raio-bloco: 24px;
+  --raio-cartao: 20px;
+  /* Superfícies internas (linhas de lista, trilhos, chips). */
+  --papel-solido: oklch(1 0 0 / 5%);
+  --papel-1: oklch(1 0 0 / 5%);
+  --papel-2: oklch(1 0 0 / 9%);
+  /* Painéis que abrem por cima (diálogo, gaveta, menu): opacos. */
+  --papel-3: oklch(0.21 0 0);
+  --texto-2: oklch(0.78 0 0);
+  --texto-3: oklch(0.72 0 0);
+  --muted-fg: oklch(0.72 0 0);
 }
 
 .light {
-  --vidro-tinta: oklch(1 0 0 / 45%);
-  --vidro-brilho: linear-gradient(160deg, oklch(1 0 0 / 70%), oklch(1 0 0 / 35%) 45%, oklch(1 0 0 / 50%));
-  --vidro-borda: oklch(1 0 0 / 80%);
-  --vidro-luz: inset 0 1px 0 oklch(1 0 0 / 100%), inset 0 -1px 0 oklch(0 0 0 / 5%);
-  --vidro-sombra: 0 18px 40px -26px oklch(0.3 0.05 145 / 35%);
-  --vidro-grosso-tinta: oklch(0.99 0.005 145 / 72%);
-  --papel-solido: oklch(1 0 0 / 55%);
-  --papel-1: oklch(0 0 0 / 5%);
-  --papel-2: oklch(0 0 0 / 8%);
-  --papel-3: oklch(0.99 0.004 145 / 92%);
-  --texto-2: oklch(0.4 0.01 145);
-  --texto-3: oklch(0.45 0.01 145);
-  --muted-fg: oklch(0.45 0.01 145);
+  --superficie: oklch(1 0 0);
+  --superficie-2: oklch(0.975 0 0);
+  --superficie-borda: oklch(0 0 0 / 7%);
+  --superficie-sombra: 0 1px 2px oklch(0 0 0 / 4%), 0 8px 24px -16px oklch(0 0 0 / 18%);
+  --barra-tinta: oklch(1 0 0 / 86%);
+  --papel-solido: oklch(0 0 0 / 3%);
+  --papel-1: oklch(0 0 0 / 3.5%);
+  --papel-2: oklch(0 0 0 / 6%);
+  --papel-3: oklch(1 0 0);
+  --texto-2: oklch(0.4 0 0);
+  --texto-3: oklch(0.46 0 0);
+  --muted-fg: oklch(0.46 0 0);
 }
 
-/* ---------- fundo: névoa verde ----------
-   Num pseudo-elemento fixo, não em `background-attachment: fixed`, que o
-   Safari do iPhone ignora (o fundo rolaria junto e esticaria). */
+/* ---------- fundo: liso ----------
+   Um brilho só, bem fraco, da cor de destaque no alto da tela: dá
+   profundidade sem ficar atrás do texto. */
 body {
-  background-color: oklch(0.13 0.012 145);
+  background-color: oklch(0.145 0 0);
   background-image: none;
 }
 body::before {
@@ -70,124 +63,110 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.85 0.24 145 / 24%), transparent 62%),
-    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.85 0.24 145 / 11%), transparent 65%),
-    radial-gradient(70vmax 55vmax at 15% 105%, oklch(0.4 0.09 145 / 45%), transparent 65%),
-    linear-gradient(180deg, oklch(0.17 0.02 145), oklch(0.11 0.008 145));
+  background: radial-gradient(90vmax 38vmax at 50% -12%, oklch(var(--lch-acao) / 7%), transparent 70%);
 }
-.light body { background-color: oklch(0.95 0.01 145); background-image: none; }
-.light body::before {
-  background:
-    radial-gradient(70vmax 55vmax at 0% 0%, oklch(0.85 0.24 145 / 30%), transparent 62%),
-    radial-gradient(55vmax 45vmax at 105% 40%, oklch(0.85 0.24 145 / 16%), transparent 65%),
-    linear-gradient(180deg, oklch(0.96 0.012 145), oklch(0.91 0.012 145));
-}
+.light body { background-color: oklch(0.965 0 0); background-image: none; }
+.light body::before { background: radial-gradient(90vmax 38vmax at 50% -12%, oklch(var(--lch-acao) / 9%), transparent 70%); }
 
-/* ---------- o vidro ---------- */
+/* ---------- cartões ---------- */
 .ficha,
 .ios-card,
 .home-balance,
 .app-abertura,
-.area-do-app .tino-metrica,
-.superficie-clara {
-  background: var(--vidro-brilho), var(--vidro-tinta);
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-  backdrop-filter: blur(22px) saturate(170%);
-  border: 1px solid var(--vidro-borda);
-  box-shadow: var(--vidro-luz), var(--vidro-sombra);
+.area-do-app .tino-metrica {
+  background: var(--superficie);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--superficie-borda);
+  box-shadow: var(--superficie-sombra);
 }
 .ficha,
 .ios-card { border-radius: var(--raio-cartao); }
 .home-balance,
 .app-abertura,
 .superficie-clara { border-radius: var(--raio-bloco); }
-.area-do-app .ficha { border-color: var(--vidro-borda); box-shadow: var(--vidro-luz), var(--vidro-sombra); }
+.area-do-app .ficha { border-color: var(--superficie-borda); box-shadow: var(--superficie-sombra); }
 
-/* O bloco branco volta (Davi, 22/09: "pode usar o branco pra contrastar
-   também em algumas ocasiões"). É o único claro da tela, e é isso que o faz
-   funcionar: no meio do escuro, o olho vai nele primeiro. Dois por tela
-   viram duas chamadas e a hierarquia some.
-
-   Contraste medido sobre o branco (OKLab -> sRGB linear -> WCAG):
-   título 16,7:1, apoio 7,5:1, botão preto com texto claro 17,2:1. */
+/* O bloco de destaque de cada tela ("seu próximo passo", "próxima fatura").
+   Um por tela. No escuro é o único claro; no claro vira o único escuro —
+   nos dois casos é onde o olho vai primeiro. */
 .superficie-clara {
-  background: oklch(0.97 0.004 145);
-  color: oklch(0.18 0.01 145);
-  border: 1px solid oklch(0.88 0.01 145);
+  background: oklch(0.97 0 0);
+  color: oklch(0.17 0 0);
+  border: 1px solid oklch(0.9 0 0);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   box-shadow: 0 20px 44px -26px oklch(0 0 0 / 70%);
 }
-.superficie-clara .apoio-claro { color: oklch(0.42 0.01 145); }
-.superficie-clara .acao-clara { background: oklch(0.18 0.01 145); color: oklch(0.97 0 0); }
+.superficie-clara .apoio-claro { color: oklch(0.4 0 0); }
+.superficie-clara .acao-clara { background: oklch(0.17 0 0); color: oklch(0.97 0 0); }
+.light .superficie-clara { background: oklch(0.19 0 0); color: oklch(0.97 0 0); border-color: oklch(0.19 0 0); }
+.light .superficie-clara .apoio-claro { color: oklch(0.8 0 0); }
+.light .superficie-clara .acao-clara { background: oklch(var(--primary)); color: oklch(var(--primary-foreground)); }
 .superficie-clara .acao-clara:active { transform: scale(.97); }
 
-/* ---------- barra de baixo: pílula de vidro grosso ---------- */
+/* ---------- barra de baixo: pílula flutuante ----------
+   Aqui o desfoque fica: o conteúdo passa por baixo dela de verdade. */
 .app-bottom-nav {
   inset: auto 14px calc(14px + env(safe-area-inset-bottom) * .4);
   border-radius: 999px;
   padding: 7px 8px;
-  background: var(--vidro-brilho), var(--vidro-grosso-tinta);
-  -webkit-backdrop-filter: blur(34px) saturate(180%);
-  backdrop-filter: blur(34px) saturate(180%);
-  border: 1px solid var(--vidro-borda);
-  box-shadow: var(--vidro-luz), 0 24px 50px -24px oklch(0 0 0 / 90%);
+  background: var(--barra-tinta);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--superficie-borda);
+  box-shadow: 0 24px 50px -24px oklch(0 0 0 / 80%);
 }
 .app-bottom-item { border-radius: 999px; min-height: 52px; }
-/* Aba atual: pílula de vidro mais claro com o verde no ícone e no texto.
-   O verde CHEIO fica só no "+" do meio: duas bolas verdes iguais lado a lado
-   pareciam dois botões de ação. */
-.app-bottom-item.is-active { background: oklch(1 0 0 / 12%); box-shadow: inset 0 1px 0 oklch(1 0 0 / 18%); color: oklch(var(--lch-acao)); font-weight: 650; }
-.light .app-bottom-item.is-active { background: oklch(1 0 0 / 80%); box-shadow: 0 4px 14px -8px oklch(0.3 0.05 145 / 40%); }
+/* Aba atual: o destaque no ícone e no texto, sobre uma pílula neutra. A cor
+   cheia fica só no "+" do meio: duas bolas iguais pareciam dois botões. */
+.app-bottom-item.is-active { background: oklch(1 0 0 / 9%); color: oklch(var(--lch-acao)); font-weight: 650; }
+.light .app-bottom-item.is-active { background: oklch(0 0 0 / 6%); }
 
-/* ---------- barra lateral (desktop): sólida, não de vidro ----------
-   Pedido do Davi em 22/09: vidro na navegação lateral não ajuda. Ele está
-   certo pelo desenho: a lateral fica parada e sempre visível, então o
-   desfoque não tem o que revelar, e translucidez em texto pequeno de menu
-   custa contraste sem devolver nada. O vidro fica onde há profundidade real:
-   conteúdo passando por baixo (barra do celular, gavetas, diálogos). */
+/* ---------- barra lateral (desktop): sólida ---------- */
 @media (min-width: 1024px) {
   .app-sidebar {
     inset: 0 auto 0 0;
     width: 244px;
     border-radius: 0;
-    border-right: 1px solid oklch(1 0 0 / 10%);
-    background: oklch(0.145 0.012 145);
+    border-right: 1px solid var(--superficie-borda);
+    background: oklch(0.165 0 0);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     box-shadow: none;
     padding: 22px 14px;
   }
-  .light .app-sidebar { background: oklch(0.985 0.006 145); border-right-color: oklch(0 0 0 / 8%); }
+  .light .app-sidebar { background: oklch(1 0 0); }
   .area-do-app { padding-left: 276px; }
 }
 
-/* ---------- tipografia e ícones: uma escala só ----------
-   O app misturava 11px, 12px, 13px e 13,5px para a mesma função, e traço de
-   ícone entre 1,5 e 2. Isso é o que faz uma tela parecer montada por partes.
-   Uma escala, um traço. */
+/* ---------- tipografia e ícones: uma escala só ---------- */
 .area-do-app { --tipo-nota: calc(12px * var(--escala-letra)); --tipo-apoio: calc(13px * var(--escala-letra)); --tipo-corpo: calc(14.5px * var(--escala-letra)); }
 .area-do-app svg { stroke-width: 1.75; }
 .area-do-app h1 { font-weight: 680; letter-spacing: -.035em; }
 .area-do-app h2, .area-do-app h3 { font-weight: 640; letter-spacing: -.02em; }
-/* Rótulo em maiúsculas: menor, mais espaçado e mais claro, para ser etiqueta
-   e não competir com o título logo abaixo. */
+/* Rótulo acima do título: em frase normal, não em VERSAL espaçada. Versal
+   com 0,16em de espaço lia como carimbo e ocupava o olho antes do número —
+   as referências usam rótulo curto, claro e em caixa normal. */
 .app-abertura-rotulo, .sobretitulo, .home-balance-label {
-  font-size: max(10px, calc(11px * var(--escala-letra)));
-  letter-spacing: .16em;
-  font-weight: 640;
-  color: var(--texto-3);
+  font-size: var(--tipo-apoio);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 560;
+  color: var(--texto-2);
+}
+.area-do-app .uppercase[class*="tracking-"] {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--tipo-nota);
+  font-weight: 560;
 }
 .app-header-title p { color: var(--texto-2); font-size: var(--tipo-apoio); }
 
-/* Contraste das bordas: 12% de branco sumia sobre o fundo claro do brilho.
-   16% é a menor que continua visível nos dois temas. */
-.area-do-app .border-pauta, .area-do-app [class*="border-pauta"] { border-color: oklch(1 0 0 / 16%); }
-.light .area-do-app .border-pauta, .light .area-do-app [class*="border-pauta"] { border-color: oklch(0 0 0 / 12%); }
 
-/* ---------- símbolo das listas (categoria, extrato, captura) ----------
-   Círculo, tamanho de toque, com o ícone da família do app dentro. */
+.area-do-app .border-pauta, .area-do-app [class*="border-pauta"] { border-color: var(--superficie-borda); }
+
+/* ---------- símbolo das listas (categoria, extrato, captura) ---------- */
 .simbolo-categoria {
   display: inline-grid;
   place-items: center;
@@ -195,41 +174,28 @@ body::before {
   height: 40px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: oklch(1 0 0 / 9%);
-  box-shadow: inset 0 0 0 1px oklch(1 0 0 / 12%);
-  color: var(--foreground);
+  background: oklch(var(--lch-acao) / 12%);
+  color: oklch(var(--lch-acao));
 }
-.light .simbolo-categoria { background: oklch(1 0 0 / 70%); box-shadow: inset 0 0 0 1px oklch(0 0 0 / 8%); }
+.light .simbolo-categoria { background: oklch(var(--lch-acao) / 10%); }
 .app-nav-item { border-radius: 999px; }
-.app-nav-item.is-active { background: oklch(var(--lch-acao) / 16%); color: var(--foreground); }
+.app-nav-item.is-active { background: oklch(var(--lch-acao) / 14%); color: var(--foreground); }
 
 /* ---------- listas, chips, botões secundários ---------- */
-.ios-lista { background: oklch(1 0 0 / 5%); border: 1px solid oklch(1 0 0 / 7%); }
-.light .ios-lista { background: oklch(1 0 0 / 50%); border-color: oklch(0 0 0 / 6%); }
+.ios-lista { background: var(--papel-1); border: 1px solid var(--superficie-borda); }
 .ios-icone { border-radius: 50%; }
-.app-subabas--interna { background: oklch(1 0 0 / 6%); border: 1px solid oklch(1 0 0 / 8%); }
+.app-subabas--interna { background: var(--papel-1); border: 1px solid var(--superficie-borda); }
 
-/* Painéis que abrem por cima: vidro grosso, quase opaco. */
+/* Painéis que abrem por cima: opacos. */
 .liquid-glass-elevated,
 .vidro-menu {
-  background: var(--vidro-brilho), var(--papel-3);
-  border-color: var(--vidro-borda);
-  box-shadow: var(--vidro-luz), var(--sombra-flutuante);
+  background: var(--papel-3);
+  border-color: var(--superficie-borda);
+  box-shadow: var(--sombra-flutuante);
 }
 
-/* ---------- acessibilidade ----------
-   Quem pede menos transparência no sistema recebe superfície sólida; o
-   desenho continua, só sem o desfoque. */
 @media (prefers-reduced-transparency: reduce) {
-  .ficha, .ios-card, .home-balance, .app-abertura, .area-do-app .tino-metrica,
-  .superficie-clara, .app-bottom-nav, .app-sidebar, .liquid-glass-elevated, .vidro-menu {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: oklch(0.2 0.012 145);
-  }
-  .light :is(.ficha, .ios-card, .home-balance, .app-abertura, .tino-metrica, .superficie-clara, .app-bottom-nav, .app-sidebar) {
-    background: oklch(0.99 0.004 145);
-  }
+  .app-bottom-nav { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--superficie); }
 }
 
 /* ============================================================
@@ -249,14 +215,14 @@ body::before {
 .area-do-app :is(input, textarea, select, [data-slot="input"], [data-slot="select-trigger"]) {
   min-height: 46px;
   border-radius: 14px;
-  background: oklch(1 0 0 / 6%);
-  border: 1px solid oklch(1 0 0 / 14%);
+  background: var(--papel-1);
+  border: 1px solid oklch(1 0 0 / 12%);
   color: var(--foreground);
   font-size: var(--tipo-corpo);
   transition: border-color .16s var(--curva), background .16s var(--curva), box-shadow .16s var(--curva);
 }
 .light .area-do-app :is(input, textarea, select, [data-slot="input"], [data-slot="select-trigger"]) {
-  background: oklch(1 0 0 / 70%);
+  background: oklch(1 0 0);
   border-color: oklch(0 0 0 / 12%);
 }
 .area-do-app textarea { min-height: 96px; padding-top: 12px; }
@@ -328,19 +294,15 @@ body::before {
   width: 100%;
   padding: 5px;
   border-radius: 999px;
-  background: oklch(1 0 0 / 7%);
-  border: 1px solid oklch(1 0 0 / 12%);
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 10%);
+  background: var(--papel-1);
+  border: 1px solid var(--superficie-borda);
   overflow-x: auto;
   scroll-snap-type: x proximate;
   scrollbar-width: none;
   /* A última aba desvanece na borda em vez de ser cortada em seco. */
   mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 22px), transparent 100%);
 }
-.light .area-do-app :is(.app-subabas, [data-slot="tabs-list"]) {
-  background: oklch(1 0 0 / 60%);
-  border-color: oklch(0 0 0 / 10%);
-}
+
 .area-do-app :is(.app-subabas, [data-slot="tabs-list"])::-webkit-scrollbar { width: 0; height: 0; }
 
 .area-do-app :is(.app-subabas > a, .app-subabas > button, [data-slot="tabs-trigger"]) {
@@ -364,22 +326,18 @@ body::before {
 .area-do-app :is(.app-subabas > a, .app-subabas > button, [data-slot="tabs-trigger"]):active { transform: scale(.97); }
 .area-do-app :is(.app-subabas > a, .app-subabas > button, [data-slot="tabs-trigger"]):hover { color: var(--foreground); }
 
-/* Aba atual: pílula de vidro claro com o verde da marca no ícone e no texto.
-   O preto sólido de antes parecia um botão desabilitado no meio do escuro. */
+/* Aba atual: pílula cheia na cor de destaque. É o destaque da ferramenta —
+   nas referências, a aba escolhida é a peça mais forte da barra, e não um
+   tom de cinza a mais que o olho precisa procurar. */
 .area-do-app :is(.app-subabas > a[data-ativo="true"], .app-subabas > button[data-ativo="true"], [data-slot="tabs-trigger"][data-state="active"]) {
-  background: oklch(1 0 0 / 13%);
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 20%), 0 6px 16px -10px oklch(0 0 0 / 80%);
-  color: oklch(var(--lch-acao));
+  background: oklch(var(--primary));
+  color: oklch(var(--primary-foreground));
+  box-shadow: 0 6px 16px -10px oklch(var(--primary) / 70%);
   font-weight: 640;
-}
-.light .area-do-app :is(.app-subabas > a[data-ativo="true"], .app-subabas > button[data-ativo="true"], [data-slot="tabs-trigger"][data-state="active"]) {
-  background: oklch(1 0 0 / 92%);
-  box-shadow: 0 6px 16px -10px oklch(0.3 0.05 145 / 45%);
 }
 
 /* Segundo nível, dentro da tela: mesma peça, um tom abaixo. */
-.area-do-app .app-subabas--interna { background: oklch(1 0 0 / 5%); margin-bottom: 16px; }
-.light .area-do-app .app-subabas--interna { background: oklch(0 0 0 / 4%); }
+.area-do-app .app-subabas--interna { background: var(--papel-1); margin-bottom: 16px; }
 
 /* No celular estreito o rótulo encolhe antes do ícone: ícone e alvo de toque
    são o que sustenta o dedo; a palavra é reconhecimento, não leitura. */

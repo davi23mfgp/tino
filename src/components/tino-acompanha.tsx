@@ -5,7 +5,7 @@ import Link from "next/link"
 
 import { buscar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
-import { estadoPorAlertas, TinoMascote } from "@/components/tino-mascote"
+import { TinoMarca } from "@/components/tino-mascote"
 import { usarAlertas } from "@/components/alertas-provider"
 
 /**
@@ -126,10 +126,12 @@ export function TinoAcompanha() {
       onFocusCapture={() => setPausado(true)}
       onBlurCapture={() => setPausado(false)}
     >
-      {/* Desenho vetorial, nao mais o PNG de 604 KB: alem de nao mandar meio
-          mega para o celular, o SVG mostra a EXPRESSAO do estado das contas,
-          que o arquivo estatico nunca conseguiu. */}
-      <TinoMascote estado={estadoPorAlertas(alertas ?? [])} className="h-24 w-24 shrink-0" />
+      {/* A marca (o leão), não o porquinho antigo. O estado das contas já
+          aparece no rótulo colorido ao lado; repetir na cara do mascote
+          era dizer a mesma coisa duas vezes. */}
+      <span className="grid size-16 shrink-0 place-items-center rounded-full bg-acao/12 text-acao">
+        <TinoMarca className="size-9" />
+      </span>
 
       <div className="min-w-0 flex-1">
         {principal ? (
