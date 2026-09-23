@@ -96,39 +96,23 @@
 }
 @media(max-width:640px){ .cartaoBanco { min-height:72px } }
 
-/* Topo do Início: faixa de cor (Davi, 23/09, opção A do canvas). Branco em
-   cima descendo para a cor de destaque escolhida em Aparência. O texto é
-   escuro nos dois temas porque o fundo da faixa é claro nos dois: medido
-   sobre o verde padrão (o fim da faixa, o ponto de menos contraste), o
-   texto dá 13:1, o apoio com 70% de opacidade 6:1, o aviso 5,8:1 e o arco
-   âmbar do anel 3,3:1 (gráfico, o mínimo é 3:1). */
+/* Topo do Início: bloco branco (Davi, 23/09). Branco nos dois temas — é o
+   único claro da tela, e o gradiente do fundo aparece em volta dele. Texto
+   escuro fixo pelo mesmo motivo: 17:1 sobre o branco; o apoio, a 70% de
+   opacidade, 6,8:1. */
 .faixa{--tinta-faixa:oklch(0.17 0.02 145);position:relative;overflow:hidden;padding:20px;border-radius:30px;color:var(--tinta-faixa);
-  /* --primary e não --acao: no tema claro o --acao escurece para servir de
-     texto, e a faixa terminava num verde-escuro sob texto escuro. */
-  background:linear-gradient(180deg,color-mix(in oklab,white 90%,oklch(var(--primary))) 0%,color-mix(in oklab,white 45%,oklch(var(--primary))) 45%,oklch(var(--primary)) 100%);
-  box-shadow:inset 0 1px 0 oklch(1 0 0 / 70%),0 24px 48px -26px color-mix(in oklab,oklch(var(--primary)),transparent 30%)}
-.faixaTopo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+  background:linear-gradient(160deg,oklch(1 0 0),oklch(0.96 0.006 145));border:1px solid oklch(1 0 0 / 70%);
+  box-shadow:inset 0 1px 0 oklch(1 0 0),0 24px 48px -28px oklch(0 0 0 / 55%)}
+.faixaTopo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
 .ola{font-size:calc(22px * var(--escala-letra));font-weight:750;letter-spacing:-.02em}
 .hoje{margin-top:2px;font-size:max(10px, calc(12px * var(--escala-letra)));opacity:.7}
 .hoje::first-letter{text-transform:uppercase}
-.saudeFaixa{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}
-.saudeFaixa small{font-size:max(10px, calc(11px * var(--escala-letra)));opacity:.7;white-space:nowrap}
-.anelFaixa{--nota:0deg;--cor:oklch(0.5 0.15 145);position:relative;display:grid;place-items:center;width:50px;height:50px;border-radius:50%;background:conic-gradient(var(--cor) var(--nota),oklch(0 0 0 / 12%) 0)}
-.anelFaixa::after{content:"";position:absolute;inset:5px;border-radius:50%;background:oklch(1 0 0 / 75%)}
-.anelFaixa b{position:relative;z-index:1;font-size:calc(17px * var(--escala-letra));font-weight:750;font-variant-numeric:tabular-nums}
-/* Sobre fundo claro o âmbar e o vermelho precisam ser escuros para ler. */
-.anelFaixa[data-situacao="ATENCAO"],.anelFaixa[data-situacao="APERTADO"]{--cor:oklch(0.62 0.15 65)}
-.anelFaixa[data-situacao="CRITICO"]{--cor:oklch(0.55 0.2 25)}
 .rotuloSaldo{display:flex;align-items:center;gap:8px}
-.rotuloSaldo p{font-size:max(10px, calc(13px * var(--escala-letra)));font-weight:600;opacity:.75}
-.rotuloSaldo button{color:inherit;border-color:oklch(0 0 0 / 15%)}
+.rotuloSaldo p{font-size:max(10px, calc(13px * var(--escala-letra)));font-weight:600;opacity:.7}
+.rotuloSaldo button{color:inherit;border-color:oklch(0 0 0 / 12%)}
 .saldoFaixa{font-size:calc(clamp(34px,5vw,48px) * var(--escala-letra));font-weight:780;line-height:1.05;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.linhaMes{margin-top:6px;font-size:max(10px, calc(12px * var(--escala-letra)));line-height:1.6;opacity:.8}
+.linhaMes{margin-top:6px;font-size:max(10px, calc(12px * var(--escala-letra)));line-height:1.6;opacity:.75}
 .linhaMes b{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-/* O aviso crítico dentro da faixa: vermelho escuro sobre véu claro, porque o
-   vermelho do tema some no verde. */
-.avisoFaixa:empty{display:none}
-.avisoFaixa > :is(a,span){background:oklch(1 0 0 / 55%) !important;color:oklch(0.48 0.2 25) !important}
 .atalhos{display:flex;justify-content:space-around;gap:8px;padding:2px 0}
 .atalhos a{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:64px;font-size:max(10px, calc(12px * var(--escala-letra)));font-weight:600;color:var(--texto-2)}
 .atalhos span{display:grid;place-items:center;width:54px;height:54px;border-radius:50%;border:1px solid var(--vidro-borda);background:var(--vidro-brilho),var(--vidro-tinta);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:var(--vidro-luz);color:var(--foreground);transition:transform var(--tempo) var(--curva)}

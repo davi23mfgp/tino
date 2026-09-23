@@ -20,7 +20,6 @@ import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { Barra } from "@/components/ui/painel"
-import { AvisoNoHeroi } from "@/components/aviso-no-heroi"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 
 export const dynamic = "force-dynamic"
@@ -29,8 +28,6 @@ export const metadata: Metadata = { title: "Início — Tino", robots: { index: 
 const CORES_FAIXA: Record<string, string> = { BOM: "text-positivo", ATENCAO: "text-atencao", CRITICO: "text-negativo", SEM_DADO: "text-muted-fg" }
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
-/** A situação ao lado da nota: 52 sozinho não diz se é bom. */
-const SITUACAO = { SAUDAVEL: "saudável", ATENCAO: "atenção", APERTADO: "apertado", CRITICO: "crítico" } as const
 
 function valorDoMes(transacoes: { competencia: string; tipo: string; valorCentavos: number }[], competencia: string) {
   return transacoes.filter((linha) => linha.competencia === competencia).reduce((total, linha) => total + (linha.tipo === "DESPESA" ? linha.valorCentavos : -linha.valorCentavos), 0)
@@ -76,11 +73,12 @@ export default async function Painel() {
   const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   return <div className={estilos.pagina}>
-    {/* O topo é uma faixa de cor, como a dos apps de banco (Davi, 23/09,
-        opção A do canvas): branco em cima descendo para a cor de destaque
-        embaixo. É o único bloco colorido da tela — é por onde o olho entra.
-        Dentro dela só o que se lê de relance: quem é, o saldo, o mês numa
-        linha, a saúde e o aviso crítico. Saíram o bloco claro de "próximo
+    {/* O topo é um bloco branco, como o dos apps de banco (Davi, 23/09): é
+        o único claro da tela, com o gradiente do fundo logo abaixo — é por
+        onde o olho entra. O degradê verde que veio antes ficou feio, e a
+        saúde e o aviso saíram daqui: a saúde tem bloco próprio mais abaixo e
+        o aviso continua no sino. Dentro só o que se lê de relance: quem é, o
+        saldo e o mês numa linha. Saíram o bloco claro de "próximo
         passo" (a mesma ação reaparecia em Prioridades e em Dívidas) e as
         três caixinhas de entrou/saiu/saúde. */}
     <section className={estilos.faixa} aria-labelledby="ola">
@@ -89,12 +87,6 @@ export default async function Painel() {
           <h2 id="ola" className={estilos.ola}>Olá, {primeiroNome}!</h2>
           <p className={estilos.hoje}>{hoje}</p>
         </div>
-        <Link href="/analise" className={estilos.saudeFaixa} aria-label={`Saúde financeira: ${diagnostico.nota} de 100, ${SITUACAO[diagnostico.situacao]}`}>
-          <span className={estilos.anelFaixa} data-situacao={diagnostico.situacao} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}>
-            <b>{diagnostico.nota}</b>
-          </span>
-          <small>saúde · {SITUACAO[diagnostico.situacao]}</small>
-        </Link>
       </div>
       <div className={estilos.rotuloSaldo}><p>Saldo disponível</p><BotaoOcultarValores /></div>
       <p className={cn(estilos.saldoFaixa, "valor-sensivel")}>{formatarMoeda(panorama.saldoTotalCentavos)}</p>
@@ -104,7 +96,6 @@ export default async function Painel() {
         {" · "}{panorama.mes.sobraCentavos >= 0 ? "sobrou" : "faltou"} <b className="valor-sensivel">{formatarMoeda(Math.abs(panorama.mes.sobraCentavos))}</b>
         {panorama.aplicadoCentavos > 0 && <>{" · "}aplicado <b className="valor-sensivel">{formatarMoeda(panorama.aplicadoCentavos)}</b></>}
       </p>
-      <div className={estilos.avisoFaixa}><AvisoNoHeroi /></div>
     </section>
 
     <nav className={estilos.atalhos} aria-label="Atalhos">
