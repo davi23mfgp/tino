@@ -1,0 +1,60 @@
+/* Empréstimo: veredito, controles e propostas (Davi, 23/09, mistura das
+   opções A e B do canvas). A cor do veredito vem de data-cor. */
+.veredito { padding:20px; border-radius:var(--raio-bloco); --cor:var(--texto-3); --ambar:oklch(0.8 0.15 80); }
+:global(.light) .veredito { --ambar:oklch(0.55 0.13 65); }
+.veredito[data-cor="positivo"] { --cor:var(--positivo); }
+/* Âmbar próprio, como em Dívidas: o --atencao global é cinza de propósito. */
+.veredito[data-cor="atencao"] { --cor:var(--ambar); }
+.veredito[data-cor="negativo"] { --cor:var(--negativo); }
+.veredito { border-color:color-mix(in oklab, var(--cor), transparent 55%) !important; }
+.selo { display:flex; align-items:center; gap:8px; font-size:calc(15px * var(--escala-letra)); font-weight:700; color:var(--cor); }
+.selo i { width:10px; height:10px; border-radius:999px; background:var(--cor); }
+.parcela { margin-top:6px; font-size:calc(clamp(34px,5vw,44px) * var(--escala-letra)); font-weight:750; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+.parcela span { font-size:calc(15px * var(--escala-letra)); font-weight:500; letter-spacing:0; color:var(--texto-2); }
+.custo { margin-top:4px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); line-height:1.5; }
+.custo b { color:var(--foreground); font-variant-numeric:tabular-nums; }
+.custo em { font-style:normal; font-weight:700; color:var(--cor); }
+.reguas { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:14px; }
+.reguas small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.reguas b { display:block; margin-top:2px; font-size:calc(17px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; }
+.marcas { display:flex; justify-content:space-between; margin-top:4px; font-size:max(10px, calc(10px * var(--escala-letra))); color:var(--texto-3); }
+.porque { margin-top:14px; padding-top:10px; border-top:1px solid var(--vidro-borda); font-size:calc(13px * var(--escala-letra)); }
+.porque summary { cursor:pointer; min-height:32px; display:flex; align-items:center; color:var(--acao); font-weight:600; }
+.porque ul { display:grid; gap:6px; margin-top:6px; padding-left:18px; list-style:disc; color:var(--texto-2); }
+.porque p { margin-top:10px; font-weight:650; }
+
+.controles label { display:block; }
+.linhaValor { display:flex !important; align-items:center; justify-content:space-between; gap:12px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.valorDigitado { display:flex; align-items:center; gap:4px; font-size:calc(17px * var(--escala-letra)); font-weight:700; color:var(--foreground); }
+.valorDigitado input { width:11ch; min-height:40px; padding:0 8px; border-radius:10px; border:1px solid var(--vidro-borda); background:transparent; text-align:right; font:inherit; font-variant-numeric:tabular-nums; color:inherit; }
+.regua { width:100%; min-height:40px; accent-color:var(--acao); }
+.rotulo { display:block; margin:12px 0 8px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.prazos { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+.prazos::-webkit-scrollbar { display:none; }
+.prazos button { flex:1 0 auto; min-width:52px; min-height:40px; border-radius:var(--raio-pilula); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 94%); font-size:calc(13px * var(--escala-letra)); color:inherit; }
+.prazos button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.duasColunas { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.guardar { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; margin-top:14px; }
+
+.cabecalhoPropostas { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:0 4px; }
+.cabecalhoPropostas h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.cabecalhoPropostas small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+/* Lado a lado e rolando de lado: comparar é olhar uma ao lado da outra. */
+.propostas { display:flex; gap:10px; margin-top:10px; overflow-x:auto; overflow-anchor:none; scroll-snap-type:x proximity; padding-bottom:4px; scrollbar-width:none; }
+.propostas::-webkit-scrollbar { display:none; }
+.proposta { flex:0 0 min(240px,78vw); scroll-snap-align:start; display:flex; flex-direction:column; gap:6px; padding:14px; border-radius:var(--raio-cartao); }
+.maisBarata { border-color:color-mix(in oklab, var(--acao), transparent 45%) !important; }
+.seloBarata { align-self:flex-start; padding:3px 10px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; }
+.seloVazio { height:21px; }
+.proposta h3 { font-size:calc(15px * var(--escala-letra)); font-weight:650; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.proposta > small { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.propostaParcela { margin-top:4px; font-size:calc(22px * var(--escala-letra)); font-weight:720; font-variant-numeric:tabular-nums; }
+.propostaParcela span { display:block; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:500; color:var(--texto-3); }
+.linhaProposta { display:flex; justify-content:space-between; gap:8px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); }
+.linhaProposta b { color:var(--foreground); font-variant-numeric:tabular-nums; }
+.seloProposta { --cor:var(--texto-3); display:flex; align-items:center; gap:6px; margin-top:2px; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:600; color:var(--cor); }
+.seloProposta[data-cor="positivo"] { --cor:var(--positivo); }
+.seloProposta[data-cor="atencao"] { --cor:oklch(0.8 0.15 80); }
+:global(.light) .seloProposta[data-cor="atencao"] { --cor:oklch(0.55 0.13 65); }
+.seloProposta[data-cor="negativo"] { --cor:var(--negativo); }
+.seloProposta i { width:8px; height:8px; border-radius:999px; background:var(--cor); }
