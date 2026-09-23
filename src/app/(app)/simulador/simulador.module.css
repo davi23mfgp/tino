@@ -1,0 +1,110 @@
+/* Simulador (Davi, 23/09): blocos do que testar, da opção B do canvas, com o
+   gráfico antes e depois da opção C. */
+.pagina { display:grid; gap:12px; }
+
+.topo { padding:18px 20px; border-radius:var(--raio-bloco); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.manchete { margin-top:6px; font-size:calc(20px * var(--escala-letra)); font-weight:700; letter-spacing:-.02em; line-height:1.3; }
+.manchete em { font-style:normal; color:var(--acao); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.manchete em[data-piora] { color:var(--negativo); }
+.apoio { margin-top:4px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+/* Quatro colunas iguais: em fila rolável, o "60 meses" ficava cortado no celular. */
+.janelas { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:12px; }
+.janelas button {
+  min-height:36px !important; padding:0 4px; white-space:nowrap; border-radius:var(--raio-pilula);
+  border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 94%);
+  font-size:calc(12px * var(--escala-letra)); color:inherit;
+}
+.janelas button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.aviso { margin-top:12px; font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.aviso a, .falta a { font-weight:650; text-decoration:underline; text-underline-offset:3px; }
+
+.titulo { margin-top:4px; padding:0 4px; font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+
+/* Três por linha até no celular: os nove cabem em três fileiras curtas, e a
+   pessoa vê tudo o que dá para testar sem rolar. */
+.blocos { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+@media (min-width:900px) { .blocos { grid-template-columns:repeat(9,minmax(0,1fr)); } }
+.bloco {
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:space-between; gap:10px;
+  min-height:84px; padding:12px; border-radius:var(--raio-cartao); text-align:left;
+  font-size:calc(12px * var(--escala-letra)); font-weight:600; line-height:1.25; color:inherit;
+}
+.bloco > span { color:var(--acao); }
+.bloco[aria-pressed="true"] { border-color:color-mix(in oklab, var(--acao), transparent 35%) !important; background:color-mix(in oklab, var(--acao), transparent 90%) !important; }
+
+.hipotese { display:grid; gap:10px; padding:16px 18px; border-radius:var(--raio-bloco); border-color:color-mix(in oklab, var(--acao), transparent 55%) !important; }
+.hipotese header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.hipotese h3 { font-size:calc(15px * var(--escala-letra)); font-weight:650; }
+.remover { min-height:36px !important; padding:0 4px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
+.remover:hover { color:var(--negativo); }
+.linhaValor { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.valorDigitado { display:flex; align-items:center; gap:4px; flex-shrink:0; font-size:calc(16px * var(--escala-letra)); font-weight:700; color:var(--foreground); }
+.valorDigitado input { width:10ch; min-height:40px !important; padding:0 8px; border-radius:10px; border:1px solid var(--vidro-borda); background:transparent; text-align:right; font:inherit; font-variant-numeric:tabular-nums; color:inherit; }
+.regua { width:100%; min-height:32px !important; accent-color:var(--acao); }
+.linhaCampo, .extras label { display:grid; gap:6px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.extras { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; }
+.falta { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.longoPrazo { padding-top:10px; border-top:1px solid var(--vidro-borda); font-size:calc(13px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.longoPrazo b { color:var(--acao); font-variant-numeric:tabular-nums; }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+
+.resultado { padding:18px; border-radius:var(--raio-bloco); }
+.resultado > header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.resultado h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.resultado > header small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+
+/* --- gráfico --- */
+.grafico { --cor:var(--acao); margin-top:10px; width:100%; touch-action:pan-y; cursor:pointer; }
+.grafico[data-piora] { --cor:var(--negativo); }
+.grafico svg { display:block; }
+.linha { fill:none; stroke:var(--cor); stroke-width:2.5; stroke-linejoin:round; }
+.linhaBase { fill:none; stroke:var(--texto-3); stroke-width:2; stroke-dasharray:4 4; stroke-linejoin:round; }
+.faixa { fill:color-mix(in oklab, var(--cor), transparent 82%); }
+.zero { stroke:color-mix(in oklab, var(--foreground), transparent 70%); stroke-dasharray:2 3; }
+.guia { stroke:color-mix(in oklab, var(--foreground), transparent 75%); stroke-dasharray:3 3; }
+.ponto { fill:var(--cor); stroke:var(--background); stroke-width:2; }
+.pontoBase { fill:var(--texto-3); }
+.mesEixo { fill:var(--texto-3); font-size:10px; }
+.leitura { display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; margin-top:6px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); font-variant-numeric:tabular-nums; }
+.leitura span { display:inline-flex; align-items:center; gap:6px; }
+.marcaLinha { width:14px; height:2px; border-radius:999px; background:var(--cor); }
+.marcaBase { width:14px; border-top:2px dashed var(--texto-3); }
+
+.comparar { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:14px; }
+.comparar > div { padding:12px; border-radius:var(--raio-cartao); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.comparar small { display:block; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.comparar b { display:block; margin-top:2px; font-size:calc(18px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.comMudanca { --cor:var(--acao); border-color:color-mix(in oklab, var(--cor), transparent 50%) !important; }
+.comMudanca[data-piora] { --cor:var(--negativo); }
+.comMudanca b { color:var(--cor); }
+.resumo { margin-top:10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.resumo b { color:var(--acao); font-variant-numeric:tabular-nums; }
+.resumo b[data-piora] { color:var(--negativo); }
+
+.numeros { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:14px; padding-top:12px; border-top:1px solid var(--vidro-borda); }
+.numeros dt { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.numeros dd { margin-top:2px; font-size:calc(14px * var(--escala-letra)); font-weight:650; font-variant-numeric:tabular-nums; }
+.numeros dd[data-tom="positivo"] { color:var(--acao); }
+.numeros dd[data-tom="negativo"] { color:var(--negativo); }
+
+.acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.acaoPrincipal, .acaoSecundaria { display:inline-flex; align-items:center; min-height:40px; padding:0 16px; border-radius:var(--raio-pilula); font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+.acaoPrincipal { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); }
+.acaoSecundaria { border:1px solid var(--vidro-borda); }
+
+.meses { display:grid; list-style:none; }
+.meses li { display:flex; justify-content:space-between; gap:12px; padding:8px 0; }
+.meses li + li { border-top:1px solid var(--vidro-borda); }
+.meses li > span:first-child { min-width:0; }
+.meses b { display:block; color:var(--foreground); font-weight:650; }
+.meses small { display:block; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.meses small.evento { color:var(--acao); }
+.saldoMes { flex-shrink:0; text-align:right; font-weight:650; color:var(--foreground); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.saldoMes[data-piora] { color:var(--negativo); }
+
+/* O resumo do <Detalhe> ganha 44px de alvo de toque na página, mas o texto
+   ficava grudado no alto, e a caixa fechada parecia um campo vazio. */
+.resultado :global(details) { padding-block:0; }
+.resultado :global(details) summary { display:flex; align-items:center; }
+.resultado :global(details[open]) { padding-bottom:10px; }
