@@ -71,3 +71,84 @@ export function mesesDeReservaSugeridos(perfil: PerfilDeReserva): AlvoDeReserva 
 export function alvoEmCentavos(custoEssencialCentavos: number, meses: number): number {
   return Math.max(0, Math.round(custoEssencialCentavos * meses))
 }
+
+/**
+ * Até que dia a reserva paga o essencial, se a renda parar em `hoje`.
+ *
+ * Meses inteiros andam no calendário e a fração vira dias do mês seguinte:
+ * 1,2 mês a partir de 23/09 é 23/10 mais um quinto de novembro, e não 36
+ * dias corridos. É assim que a pessoa conta ("dá até o fim de outubro").
+ *
+ * Sem custo essencial conhecido devolve `null`: dividir por um número
+ * inventado daria uma data com cara de fato.
+ */
+export function dataAteQuandoAguenta(hoje: string, reservadoCentavos: number, essencialMensalCentavos: number): string | null {
+  if (essencialMensalCentavos <= 0) return null
+  const meses = Math.max(0, reservadoCentavos) / essencialMensalCentavos
+  const inteiros = Math.floor(meses)
+  const [ano, mes, dia] = hoje.split("-").map(Number)
+  const depoisDosInteiros = somarMesesNoCalendario(ano, mes, dia, inteiros)
+  const proximo = somarMesesNoCalendario(ano, mes, dia, inteiros + 1)
+  const diasDaFracao = Math.floor(((proximo.getTime() - depoisDosInteiros.getTime()) / 86_400_000) * (meses - inteiros))
+  return new Date(depoisDosInteiros.getTime() + diasDaFracao * 86_400_000).toISOString().slice(0, 10)
+}
+
+/** Dia 31 + 1 mês cai no último dia do mês seguinte, não no dia 1 do outro. */
+function somarMesesNoCalendario(ano: number, mes: number, dia: number, meses: number): Date {
+  const alvo = new Date(Date.UTC(ano, mes - 1 + meses, 1))
+  const ultimoDia = new Date(Date.UTC(alvo.getUTCFullYear(), alvo.getUTCMonth() + 1, 0)).getUTCDate()
+  return new Date(Date.UTC(alvo.getUTCFullYear(), alvo.getUTCMonth(), Math.min(dia, ultimoDia)))
+}
+
+/**
+ * As formas de juntar o que falta (Davi, 23/09: "flexibilize a forma de
+ * juntar"). Todas respondem as mesmas duas perguntas — quanto por mês e em
+ * quantos meses — a partir do que a pessoa sabe dizer: um valor, uma data,
+ * uma fatia da renda, a sobra do mês ou um dinheiro que vai entrar de uma vez.
+ */
+export type FormaDeJuntar =
+  | { forma: "POR_MES"; porMesCentavos: number }
+  | { forma: "ATE_DATA"; meses: number }
+  | { forma: "PERCENTUAL"; bps: number; rendaMensalCentavos: number }
+  | { forma: "SOBRA"; sobraMensalCentavos: number }
+  | { forma: "DE_UMA_VEZ"; valorCentavos: number }
+
+export interface PlanoDeJuntar {
+  /** Quanto guardar por mês. Zero em "de uma vez". */
+  porMesCentavos: number
+  /** Meses até completar; `null` quando o ritmo não chega lá (nada por mês). */
+  meses: number | null
+  /** O que ainda falta depois de um valor guardado de uma vez. */
+  restanteCentavos: number
+}
+
+/**
+ * Sem rendimento, de propósito: reserva fica em aplicação de liquidez diária,
+ * que mal passa da inflação, e prometer juros aqui adiantaria uma data que o
+ * dinheiro real não cumpre.
+ *
+ * Arredonda para cima nos dois sentidos: um mês a mais ou um real a mais por
+ * mês é o preço de nunca dizer que completa antes do que completa.
+ */
+export function planoDeJuntar(faltaCentavos: number, forma: FormaDeJuntar): PlanoDeJuntar {
+  const falta = Math.max(0, faltaCentavos)
+  if (falta === 0) return { porMesCentavos: 0, meses: 0, restanteCentavos: 0 }
+
+  if (forma.forma === "DE_UMA_VEZ") {
+    const restante = Math.max(0, falta - Math.max(0, forma.valorCentavos))
+    return { porMesCentavos: 0, meses: restante === 0 ? 0 : null, restanteCentavos: restante }
+  }
+  if (forma.forma === "ATE_DATA") {
+    const meses = Math.max(1, Math.round(forma.meses))
+    return { porMesCentavos: Math.ceil(falta / meses), meses, restanteCentavos: falta }
+  }
+
+  const porMes =
+    forma.forma === "POR_MES"
+      ? forma.porMesCentavos
+      : forma.forma === "PERCENTUAL"
+        ? Math.round((Math.max(0, forma.rendaMensalCentavos) * Math.max(0, forma.bps)) / 10_000)
+        : forma.sobraMensalCentavos
+  const valido = Math.max(0, porMes)
+  return { porMesCentavos: valido, meses: valido > 0 ? Math.ceil(falta / valido) : null, restanteCentavos: falta }
+}
