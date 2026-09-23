@@ -227,6 +227,15 @@ body::before {
   border-color: oklch(0 0 0 / 12%);
 }
 .area-do-app textarea { min-height: 96px; padding-top: 12px; }
+/* Campo dentro de um rótulo que já é a moldura ("Limite R$ ___"): sem isto a
+   regra acima desenhava uma segunda caixa dentro da primeira. */
+.area-do-app input[data-embutido],
+.light .area-do-app input[data-embutido] {
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
 
 /* Placeholder precisa passar em contraste como qualquer texto: 3,4:1 era o
    valor antigo, abaixo do mínimo de 4,5. */
