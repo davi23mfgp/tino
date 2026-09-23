@@ -209,6 +209,19 @@ async function main() {
     },
   })
 
+  // ── Investimentos ────────────────────────────────────────
+  // Uma carteira pequena e desequilibrada de propósito: quase tudo em renda
+  // fixa, nada fora do país. É o que faz a tela de investimentos ter o que
+  // mostrar no ARCA — uma carteira certinha não exercita nenhum aviso.
+  await prisma.conta.createMany({
+    data: [
+      { larId: lar.id, nome: "Tesouro Selic 2029", instituicao: "Nubank", tipo: "INVESTIMENTO", classeDeAtivo: "RENDA_FIXA", saldoInicialCentavos: reais(8500), cor: "green" },
+      { larId: lar.id, nome: "CDB Liquidez Diária", instituicao: "Banco Inter", tipo: "INVESTIMENTO", classeDeAtivo: "CAIXA", saldoInicialCentavos: reais(3200), cor: "orange" },
+      { larId: lar.id, nome: "BOVA11", instituicao: "XP", tipo: "INVESTIMENTO", classeDeAtivo: "ACOES", ticker: "BOVA11", quantidadeMilesimos: 20_000, saldoInicialCentavos: reais(2640), cor: "blue" },
+      { larId: lar.id, nome: "HGLG11", instituicao: "XP", tipo: "INVESTIMENTO", classeDeAtivo: "FII", ticker: "HGLG11", quantidadeMilesimos: 8_000, saldoInicialCentavos: reais(1270), cor: "blue" },
+    ],
+  })
+
   // ── Seis meses de lançamentos ────────────────────────────
   // Modelos com valor típico e frequência mensal. A variação de ±25% dá ao
   // gráfico de evolução um formato realista, sem inventar meses absurdos.
