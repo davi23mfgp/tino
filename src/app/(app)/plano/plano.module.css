@@ -22,13 +22,6 @@
 .marcos { display:flex; justify-content:space-between; gap:12px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 .marcos b { display:block; margin-top:0px; font-size:calc(15px * var(--escala-letra)); font-weight:620; color:var(--foreground); font-variant-numeric:tabular-nums; }
 
-/* --- os dois números do mês --- */
-.numeros { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.numero { padding:20px; border:1px solid var(--pauta); border-radius:var(--raio-cartao); background:var(--papel-1); }
-.numero strong { display:block; margin-top:8px; font-size:calc(clamp(26px,3.4vw,36px) * var(--escala-letra)); font-weight:670; letter-spacing:-.03em; line-height:1.05; font-variant-numeric:tabular-nums; }
-.numero small { display:block; margin-top:8px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
-.negativo strong { color:var(--negativo); }
-
 /* --- a dívida da vez --- */
 .alvo {
   display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:20px;
@@ -41,53 +34,12 @@
 .alvoValor b { display:block; font-size:calc(clamp(24px,3vw,32px) * var(--escala-letra)); font-weight:670; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
 .alvoValor small { display:block; margin-top:4px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 
-/* --- a fila --- */
-.blocos { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; gap:12px; }
-.bloco { padding:20px; border:1px solid var(--pauta); border-radius:var(--raio-bloco); background:var(--papel-1); }
-.bloco > h2 { font-size:calc(17px * var(--escala-letra)); font-weight:650; letter-spacing:-.02em; }
-.bloco > p { margin-top:4px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
-
-.fila { display:grid; gap:12px; margin-top:16px; list-style:none; }
-.fila li { display:grid; grid-template-columns:26px minmax(0,1fr) auto; align-items:center; gap:12px; }
-.posicao { display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--papel-3); font-size:calc(12px * var(--escala-letra)); font-weight:620; }
-.fila li[data-primeira="true"] .posicao { background:var(--acao); color:var(--background); }
-.fila strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
-.fila small { display:block; margin-top:0px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
-.fila b { font-size:calc(17px * var(--escala-letra)); font-weight:640; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.barraFila { grid-column:2/-1; height:5px; border-radius:999px; background:var(--papel-3); overflow:hidden; }
-.barraFila i { display:block; height:100%; border-radius:999px; background:color-mix(in oklab,var(--acao),var(--papel-3) 45%); }
-.fila li[data-primeira="true"] .barraFila i { background:var(--acao); }
-
-/* --- roteiro --- */
-.mes { border-top:1px solid var(--pauta); padding:16px 0; }
-.mes:first-of-type { border-top:0; padding-top:8px; }
-.mesTopo { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:baseline; gap:12px; width:100%; text-align:left; }
-.mesTopo > span:first-child { font-size:calc(15px * var(--escala-letra)); font-weight:620; }
-.mesValor { font-size:calc(20px * var(--escala-letra)); font-weight:660; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.mesValor small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:500; color:var(--texto-3); text-align:right; }
-.pagamentos { display:grid; gap:8px; margin-top:12px; list-style:none; }
-.pagamentos li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:baseline; font-size:calc(13px * var(--escala-letra)); }
-.pagamentos b { font-weight:600; font-variant-numeric:tabular-nums; }
-.pagamentos span small { display:block; margin-top:0px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
-.restante { display:flex; justify-content:space-between; gap:12px; margin-top:12px; padding-top:12px; border-top:1px dashed var(--pauta); font-size:calc(13px * var(--escala-letra)); }
-.restante b { font-size:calc(16px * var(--escala-letra)); font-weight:640; font-variant-numeric:tabular-nums; }
-
 .aviso { padding:12px 16px; border:1px solid color-mix(in oklab,var(--atencao),transparent 60%); border-radius:var(--raio-cartao); background:color-mix(in oklab,var(--atencao),transparent 90%); font-size:calc(13px * var(--escala-letra)); }
 .comoFoi { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); line-height:1.6; }
 
 @media(max-width:900px) {
   .livre { grid-template-columns:minmax(0,1fr); gap:20px; padding:20px; }
-  .numeros, .blocos { grid-template-columns:minmax(0,1fr); }
   .alvo { grid-template-columns:minmax(0,1fr); padding:20px; }
   .alvoValor { text-align:left; }
 }
 
-/* Filtro de ano do roteiro: plano longo vira lista innavegável sem recorte. */
-.filtroAnos { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-.filtroAnos button {
-  min-height:44px; padding:4px 12px; border:1px solid var(--pauta); border-radius:var(--raio-pilula);
-  background:transparent; color:var(--texto-2); font-size:calc(13px * var(--escala-letra)); text-align:left;
-  transition:background var(--tempo) var(--curva),color var(--tempo) var(--curva);
-}
-.filtroAnos button small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); opacity:.75; }
-.filtroAnos button[aria-pressed="true"] { background:var(--acao); border-color:transparent; color:var(--background); font-weight:640; }

@@ -1,0 +1,13 @@
+/* A cor do peso do juro (caro, médio, leve, sem juro), usada em Dívidas e no
+   Plano. Fica num lugar só porque as duas telas mostram as mesmas dívidas: se
+   o cheque especial é vermelho numa e âmbar na outra, a pessoa para de
+   confiar na cor. Quem usa lê `var(--peso)`.
+
+   O âmbar é daqui: o `--atencao` global é cinza de propósito (pele
+   acromática), e cinza se confunde com "sem juro". Contraste medido contra o
+   vidro: 10,1:1 no escuro, 4,6:1 no claro. */
+.peso[data-peso="caro"] { --peso:var(--negativo); }
+.peso[data-peso="medio"] { --peso:oklch(0.8 0.15 80); }
+:global(.light) .peso[data-peso="medio"] { --peso:oklch(0.55 0.13 65); }
+.peso[data-peso="leve"] { --peso:var(--acao); }
+.peso[data-peso="sem-juro"] { --peso:var(--texto-3); }

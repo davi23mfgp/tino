@@ -3,6 +3,7 @@
 import Link from "next/link"
 import estilos from "../analise/avancadas.module.css"
 import topo from "./dividas.module.css"
+import pesos from "@/components/peso-do-juro.module.css"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -364,12 +365,12 @@ export default function Dividas() {
             <>
               <div className={topo.composicao} aria-hidden>
                 {composicao.map((parte) => (
-                  <i key={parte.peso} className={topo.peso} data-peso={parte.peso} style={{ width: `${parte.percentual}%` }} />
+                  <i key={parte.peso} className={pesos.peso} data-peso={parte.peso} style={{ width: `${parte.percentual}%` }} />
                 ))}
               </div>
               <p className={topo.legenda}>
                 {composicao.map((parte) => (
-                  <span key={parte.peso} className={topo.peso} data-peso={parte.peso}>
+                  <span key={parte.peso} className={pesos.peso} data-peso={parte.peso}>
                     <i />
                     {NOME_DO_PESO[parte.peso]} {parte.percentual}%
                   </span>
@@ -398,7 +399,7 @@ export default function Dividas() {
           O Davi trocou o cartão grande de "próximo passo" por esta faixa
           (23/09) — a explicação longa já mora no plano, a um toque. */}
       {primeira && (
-        <section className={cn("ficha", topo.ataque, topo.peso)} data-peso={pesoDoJuro(primeira.jurosMensalBps)}>
+        <section className={cn("ficha", topo.ataque, pesos.peso)} data-peso={pesoDoJuro(primeira.jurosMensalBps)}>
           <div className="min-w-0">
             <p className={topo.rotulo}>Ataque agora</p>
             <p className={topo.alvo}>
@@ -441,7 +442,7 @@ export default function Dividas() {
               `dia ${divida.diaVencimento}`,
             ].filter(Boolean)
             return (
-              <div key={divida.id} className={cn("ficha", topo.divida, topo.peso)} data-peso={pesoDoJuro(divida.jurosMensalBps)}>
+              <div key={divida.id} className={cn("ficha", topo.divida, pesos.peso)} data-peso={pesoDoJuro(divida.jurosMensalBps)}>
                 <i aria-hidden />
                 <div className="min-w-0">
                   <strong className="truncate">{divida.credor}</strong>

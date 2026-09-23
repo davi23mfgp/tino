@@ -2,13 +2,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import estilos from "./plano.module.css"
-import { RoteiroMeses } from "./roteiro"
+import { PlanoMesAMes } from "./mes-a-mes"
 
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { montarPlanoDoLar } from "@/lib/tino/plano-do-lar"
-import { cn } from "@/lib/utils"
 import { Cartao, Vazio } from "@/components/ui/painel"
 
 export const dynamic = "force-dynamic"
@@ -29,11 +28,8 @@ export default async function Plano() {
     )
   }
 
-  const primeiroMes = plano.passos[0]
   const alvoDaVez = plano.ordem[0]
   const totalDivida = alvos.reduce((soma, alvo) => soma + alvo.saldoCentavos, 0)
-  const maiorSaldo = Math.max(1, ...plano.ordem.map((alvo) => alvo.saldoCentavos))
-  const pagamentoDoMes = primeiroMes?.pagamentos.reduce((soma, item) => soma + item.valorCentavos, 0) ?? 0
   // "14 meses" obriga a contar no calendário. A data é a resposta.
   const mesLivre = plano.mesesAteLimpar ? competenciaMaisMeses(competencia, plano.mesesAteLimpar) : null
   // Quanto do caminho já foi andado: o que ainda falta pagar contra tudo que
@@ -65,19 +61,6 @@ export default async function Plano() {
         </div>
       </section>
 
-      <div className={estilos.numeros}>
-        <div className={estilos.numero}>
-          <p className={estilos.rotulo}>Pague isto em {rotuloCompetencia(competencia)}</p>
-          <strong>{formatarMoeda(pagamentoDoMes)}</strong>
-          <small>{primeiroMes ? `Já contam ${formatarMoeda(primeiroMes.parcelasFixasCentavos)} de parcelas contratadas e ${formatarMoeda(primeiroMes.jurosDoMesCentavos)} de juros do mês.` : "Sem pagamentos previstos neste mês."}</small>
-        </div>
-        <div className={cn(estilos.numero, capacidadeMensalCentavos <= 0 && estilos.negativo)}>
-          <p className={estilos.rotulo}>Depois deste mês, resta</p>
-          <strong>{formatarMoeda(primeiroMes?.dividaRestanteCentavos ?? totalDivida)}</strong>
-          <small>De {formatarMoeda(totalDivida)} hoje. Cada mês pago derruba este número.</small>
-        </div>
-      </div>
-
       {alvoDaVez && (
         <section className={estilos.alvo}>
           <div>
@@ -101,32 +84,10 @@ export default async function Plano() {
         <p key={aviso} className={estilos.aviso}>{aviso}</p>
       ))}
 
-      <div className={estilos.blocos}>
-        <section className={estilos.bloco}>
-          <h2>A fila inteira</h2>
-          <p>Da mais cara para a mais barata. A barra mostra o peso de cada uma no total.</p>
-          <ol className={estilos.fila}>
-            {plano.ordem.map((alvo, indice) => (
-              <li key={alvo.id} data-primeira={indice === 0}>
-                <span className={estilos.posicao}>{indice + 1}</span>
-                <span>
-                  <strong>{alvo.nome}</strong>
-                  <small>{alvo.jurosMensalBps > 0 ? `${formatarPercentual(alvo.jurosMensalBps)} ao mês` : "sem juros enquanto for paga integral"}</small>
-                </span>
-                <b>{formatarMoeda(alvo.saldoCentavos)}</b>
-                <span className={estilos.barraFila}><i style={{ width: `${(alvo.saldoCentavos / maiorSaldo) * 100}%` }} /></span>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className={estilos.bloco}>
-          <h2>Mês a mês até o fim</h2>
-          <p>O que sai em cada mês e quanto sobra de dívida depois dele.</p>
-          <div id="roteiro" className="scroll-mt-28" />
-          <RoteiroMeses passos={plano.passos} />
-        </section>
-      </div>
+      {/* A fila inteira saiu daqui (23/09): a lista de Dívidas já mostra as
+          mesmas dívidas na ordem de ataque, e o gráfico e o mês a mês dizem
+          quando cada uma acaba — que era o que a fila deixava de dizer. */}
+      <PlanoMesAMes passos={plano.passos} ordem={plano.ordem} mesLivre={mesLivre} />
 
       <Accordion type="single" collapsible>
         <AccordionItem value="criterios">

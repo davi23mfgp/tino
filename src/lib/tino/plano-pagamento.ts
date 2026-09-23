@@ -34,6 +34,10 @@ export interface PassoMensal {
   pagamentos: { id: string; nome: string; valorCentavos: number; motivo: string }[]
   jurosDoMesCentavos: number
   dividaRestanteCentavos: number
+  /// Ids das dívidas que chegaram a zero neste mês. A tela marca esses meses
+  /// no gráfico e no calendário; deduzir isso dos pagamentos erraria no mês
+  /// em que a dívida é paga parcialmente e some da lista por outro motivo.
+  quitadas: string[]
 }
 
 export interface PlanoPagamento {
@@ -77,6 +81,8 @@ export function montarPlanoPagamento(params: {
   for (let m = 0; m < limite; m += 1) {
     const competencia = competenciaMaisMeses(params.competenciaInicial, m)
     const parcelasFixas = params.parcelasPorCompetencia?.[competencia] ?? 0
+
+    const vivasNoInicio = alvos.filter((alvo) => alvo.saldoCentavos > 0).map((alvo) => alvo.id)
 
     // Juro incide antes de qualquer pagamento: é assim que o banco calcula, e
     // projetar o contrário faria o plano parecer mais rápido do que é.
@@ -140,6 +146,7 @@ export function montarPlanoPagamento(params: {
       pagamentos,
       jurosDoMesCentavos: jurosDoMes,
       dividaRestanteCentavos: restante,
+      quitadas: vivasNoInicio.filter((id) => (alvos.find((alvo) => alvo.id === id)?.saldoCentavos ?? 0) <= 0),
     })
 
     if (restante <= 0) {

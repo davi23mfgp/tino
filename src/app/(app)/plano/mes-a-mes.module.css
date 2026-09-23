@@ -1,0 +1,71 @@
+/* Detalhe do mês, gráfico e lista mês a mês. No computador, detalhe e
+   gráfico ficam lado a lado (os dois respondem "este mês") e a lista ocupa
+   a largura toda embaixo. */
+.grade { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; }
+@media (min-width:900px) {
+  .grade { grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; }
+  .lista { grid-column:1 / -1; }
+}
+
+.detalhe, .bloco { padding:18px; border-radius:var(--raio-bloco); }
+.detalhe header, .bloco header { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.detalhe h2, .bloco h2 { font-size:calc(17px * var(--escala-letra)); font-weight:650; letter-spacing:-.01em; }
+.detalhe header small, .bloco header small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); white-space:nowrap; }
+.bloco header small b { color:var(--acao); font-weight:650; }
+
+.totalMes { margin-top:8px; font-size:calc(28px * var(--escala-letra)); font-weight:720; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.totalMes span { font-size:calc(13px * var(--escala-letra)); font-weight:500; letter-spacing:0; color:var(--texto-2); }
+
+/* A barra divide o pagamento do mês entre as dívidas, na cor do juro de cada
+   uma: mostra para onde vai o dinheiro antes de a pessoa ler a lista. */
+.empilhada { display:flex; gap:2px; height:10px; margin-top:12px; border-radius:999px; overflow:hidden; }
+.empilhada i { display:block; height:100%; background:var(--peso); }
+
+.pagamentos { display:grid; gap:10px; margin-top:14px; list-style:none; }
+.pagamentos li { display:grid; grid-template-columns:8px minmax(0,1fr) auto; gap:10px; align-items:baseline; font-size:calc(13px * var(--escala-letra)); }
+.pagamentos li > i { width:8px; height:8px; border-radius:999px; background:var(--peso); transform:translateY(-1px); }
+.pagamentos span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pagamentos small { display:block; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.pagamentos b { font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+.quitou { display:flex; align-items:center; gap:6px; margin-top:12px; padding-top:12px; border-top:1px solid var(--vidro-borda); font-size:calc(13px * var(--escala-letra)); font-weight:600; color:var(--acao); }
+.falta { margin-top:12px; font-size:calc(13px * var(--escala-letra)); font-weight:600; color:var(--negativo); }
+
+/* --- gráfico --- */
+.grafico { margin-top:10px; width:100%; touch-action:pan-y; cursor:pointer; }
+.grafico svg { display:block; }
+.eixo { stroke:color-mix(in oklab, var(--foreground), transparent 86%); }
+.guia { stroke:color-mix(in oklab, var(--foreground), transparent 60%); stroke-dasharray:3 3; }
+.quitacao { fill:var(--peso); stroke:var(--background); stroke-width:2; }
+.marcador { fill:var(--foreground); stroke:var(--acao); stroke-width:2; }
+.mesEixo { fill:var(--texto-3); font-size:10px; }
+.legenda { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:6px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.legenda span { display:inline-flex; align-items:center; gap:6px; }
+.linhaLegenda { width:14px; height:2px; border-radius:999px; background:var(--acao); }
+.pontoLegenda { width:8px; height:8px; margin-right:-3px; border-radius:999px; background:var(--peso); }
+.linha { fill:none; stroke:var(--acao); stroke-width:2; stroke-linejoin:round; }
+
+.pilulas { display:flex; gap:6px; margin:12px -18px 0; padding:0 18px 2px; overflow-x:auto; scrollbar-width:none; }
+.pilulas::-webkit-scrollbar { display:none; }
+.pilulas button, .anos button {
+  flex-shrink:0; min-height:36px; padding:0 12px; border-radius:var(--raio-pilula);
+  border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 94%);
+  font-size:calc(13px * var(--escala-letra)); color:inherit;
+}
+.pilulas button[aria-pressed="true"], .anos button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+
+/* --- lista --- */
+.anos { display:flex; gap:6px; }
+.lista ul { margin-top:8px; list-style:none; }
+.lista li + li { border-top:1px solid var(--vidro-borda); }
+.lista li button {
+  display:grid; grid-template-columns:56px minmax(0,1fr) auto; gap:10px; align-items:center;
+  width:calc(100% + 16px); min-height:56px; padding:10px 8px; margin:0 -8px; border-radius:14px; text-align:left; color:inherit; background:transparent;
+}
+.lista li button[aria-pressed="true"] { background:color-mix(in oklab, var(--acao), transparent 90%); }
+.lista li button > b { font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.lista li button > span { min-width:0; font-size:calc(13px * var(--escala-letra)); }
+.lista li button > span small { display:flex; align-items:center; gap:4px; margin-top:2px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lista li button > span small.quitada { color:var(--acao); font-weight:600; }
+.resta { text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.resta b { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--foreground); font-variant-numeric:tabular-nums; white-space:nowrap; }
