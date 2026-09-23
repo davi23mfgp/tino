@@ -5,23 +5,32 @@ import estilos from "../analise/avancadas.module.css"
 import topo from "./dividas.module.css"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Metrica, Pilula, Vazio } from "@/components/ui/painel"
+import { Cartao, Vazio } from "@/components/ui/painel"
 import { SelectNative } from "@/components/ui/select-native"
 import { lerDivida } from "@/lib/tino/lingua-natural"
 import { cn } from "@/lib/utils"
-import { Destaque } from "@/components/ui/destaque"
+import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
+import {
+  REFERENCIA_JURO_MENSAL,
+  comprometimentoBps,
+  faixaComprometimento,
+  jurosEvitadosPorCemReais,
+  pesoDoJuro,
+  type PesoDoJuro,
+} from "@/lib/tino/leitura-dividas"
 
 /**
  * Dívidas.
  *
- * A tela existe para responder uma pergunta só: qual pagar primeiro. Por isso a
- * ordem de ataque e a comparação entre avalanche e bola de neve ficam acima da
- * lista — a lista é consequência, não o assunto.
+ * A tela existe para responder uma pergunta só: qual pagar primeiro. O topo
+ * diz quanto se deve e quando acaba, o bloco seguinte diz qual atacar e por
+ * quê, e a lista já vem na ordem de ataque — por isso não existe mais um
+ * cartão "qual pagar primeiro" separado repetindo a mesma lista.
  */
 
 interface Divida {
@@ -57,6 +66,8 @@ interface Resposta {
   } | null
   totalCentavos: number
   parcelaMensalCentavos: number
+  /// `null` nas simulações (a rota só lê a renda sem extra); 0 = renda desconhecida.
+  rendaMensalCentavos: number | null
 }
 
 const TIPOS = [
@@ -75,17 +86,48 @@ const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-
 
 const VAZIO = { credor: "", tipo: "EMPRESTIMO_PESSOAL", saldo: "", juros: "", parcela: "", parcelasTotal: "", pagas: "0", dia: "10" }
 
+
+/** A régua de cada faixa, dita junto com o juro — percentual sem faixa não informa. */
+function referenciaDoJuro(peso: PesoDoJuro) {
+  const caro = formatarPercentual(REFERENCIA_JURO_MENSAL.caro, 0)
+  const medio = formatarPercentual(REFERENCIA_JURO_MENSAL.medio, 0)
+  if (peso === "caro") return `acima de ${caro} ao mês já é caro`
+  if (peso === "medio") return `entre ${medio} e ${caro} ao mês é médio`
+  return `abaixo de ${medio} ao mês é leve`
+}
+
+const ORDEM_DA_ESTRATEGIA: Record<Resposta["estrategia"], string> = {
+  AVALANCHE: "maior juro primeiro",
+  BOLA_DE_NEVE: "menor saldo primeiro",
+  PROPORCIONAL: "maior saldo primeiro",
+}
+
+/** O plano fecha quando quita todas; senão bateu no limite de 50 anos. */
+function prazo(plano: Plano | null, abertas: number) {
+  if (!plano) return null
+  return plano.quitacoes.length === abertas ? plano.meses : null
+}
+
+const PASSO_EXTRA = 5_000
+
 export default function Dividas() {
+  // `base` é a leitura sem pagamento extra e alimenta tudo que é "hoje": o
+  // topo, o próximo passo e a lista. `dados` acompanha a régua de simulação.
+  // Separar os dois impede o topo de mudar enquanto a pessoa só está testando
+  // um valor.
   const [dados, setDados] = useState<Resposta | null>(null)
   const [base, setBase] = useState<Resposta | null>(null)
-  const [extraAplicado, setExtraAplicado] = useState("")
+  const [extraCentavos, setExtraCentavos] = useState(0)
+  // O extra a que `dados` se refere. Enquanto difere do valor da régua, o
+  // resultado na tela é de outro valor e não pode ser mostrado como resposta.
+  const [extraSimulado, setExtraSimulado] = useState(0)
   const [simulando, setSimulando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
-  const [extra, setExtra] = useState("")
   const [nova, setNova] = useState(VAZIO)
   const [abrirForm, setAbrirForm] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [frase, setFrase] = useState("")
+  const ultimaSimulacao = useRef(0)
 
   const carregar = useCallback(async () => {
     try {
@@ -93,8 +135,8 @@ export default function Dividas() {
       const resposta = await buscar<Resposta>("/api/dividas?extraMensalCentavos=0")
       setBase(resposta)
       setDados(resposta)
-      setExtra("")
-      setExtraAplicado("")
+      setExtraCentavos(0)
+      setExtraSimulado(0)
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não foi possível carregar as dívidas.")
     }
@@ -102,21 +144,38 @@ export default function Dividas() {
 
   useEffect(() => { carregar() }, [carregar])
 
-  async function simularExtra(evento: React.FormEvent) {
-    evento.preventDefault()
-    setSimulando(true)
-    setErro(null)
-    try {
-      const centavos = extra ? paraCentavos(extra) : 0
-      if (centavos < 0) throw new Error("Informe um pagamento extra positivo.")
-      setDados(await buscar<Resposta>("/api/dividas?extraMensalCentavos=" + centavos))
-      setExtraAplicado(extra)
-    } catch (excecao) {
-      setErro(excecao instanceof Error ? excecao.message : "Não foi possível simular.")
-    } finally {
-      setSimulando(false)
+  /**
+   * Simula enquanto a pessoa arrasta, sem botão.
+   *
+   * Espera a régua parar 300 ms antes de perguntar ao servidor, e descarta
+   * resposta velha: arrastando rápido, a resposta de R$ 200 pode chegar depois
+   * da de R$ 500 e mostraria o número errado para o valor na tela.
+   */
+  useEffect(() => {
+    if (!base) return
+    if (extraCentavos === 0) {
+      setDados(base)
+      setExtraSimulado(0)
+      return
     }
-  }
+    const pedido = ++ultimaSimulacao.current
+    const espera = setTimeout(async () => {
+      setSimulando(true)
+      try {
+        const resposta = await buscar<Resposta>("/api/dividas?extraMensalCentavos=" + extraCentavos)
+        if (pedido === ultimaSimulacao.current) {
+          setDados(resposta)
+          setExtraSimulado(extraCentavos)
+        }
+      } catch (excecao) {
+        if (pedido === ultimaSimulacao.current) setErro(excecao instanceof Error ? excecao.message : "Não foi possível simular.")
+      } finally {
+        if (pedido === ultimaSimulacao.current) setSimulando(false)
+      }
+    }, 300)
+    return () => clearTimeout(espera)
+  }, [extraCentavos, base])
+
   async function criar(evento: React.FormEvent) {
     evento.preventDefault()
     setOcupado(true)
@@ -170,161 +229,42 @@ export default function Dividas() {
     setFrase("")
   }
 
-  const abertas = dados?.dividas.filter((divida) => !divida.quitada) ?? []
-  const quitadas = dados?.dividas.filter((divida) => divida.quitada) ?? []
+  const abertas = base?.dividas.filter((divida) => !divida.quitada) ?? []
+  const quitadas = base?.dividas.filter((divida) => divida.quitada) ?? []
   const comparativo = dados?.comparativo
+  const porId = new Map(abertas.map((divida) => [divida.id, divida]))
+  const naOrdem = (base?.ordem ?? []).map((linha) => porId.get(linha.id)).filter((divida): divida is Divida => !!divida)
+  const primeira = naOrdem[0] ?? null
 
-  return (
-    <div className={cn(estilos.pagina, "space-y-4")}>
-      {erro && <Cartao><p role="alert" className="text-sm">{erro}</p><Button variant="outline" onClick={carregar} disabled={simulando || ocupado} className="mt-3">Recarregar dívidas</Button></Cartao>}
-      {dados && abertas.length > 0 && (
-        <section className={topo.topo}>
-          <div>
-            <p className={topo.rotulo}>O que você deve hoje</p>
-            <p className={topo.total}>{formatarMoeda(dados.totalCentavos)}</p>
-            {/* Eram três linhas de prosa dizendo o que cabe em três etiquetas.
-                A regra de mínimo de texto vale aqui: rótulo e número. */}
-            <div className={topo.etiquetas}>
-              <Pilula>{abertas.length} {abertas.length === 1 ? "dívida" : "dívidas"}</Pilula>
-              <Pilula>{formatarMoeda(dados.parcelaMensalCentavos)} por mês</Pilula>
-              {dados.plano && dados.plano.quitacoes.length === abertas.length ? (
-                <>
-                  <Pilula tom="positivo">livre em {dados.plano.meses} meses</Pilula>
-                  <Pilula tom="atencao">{formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho</Pilula>
-                </>
-              ) : (
-                <Pilula tom="negativo">o ritmo atual não fecha a conta</Pilula>
-              )}
-            </div>
-          </div>
-          {dados.ordem[0] && (
-            <Destaque
-              className={topo.alvo}
-              rotulo="Pague esta primeira"
-              titulo={dados.ordem[0].credor}
-              apoio={
-                dados.ordem[0].jurosMensalBps > 0
-                  ? `Juro mais caro da fila: ${formatarPercentual(dados.ordem[0].jurosMensalBps)} ao mês. Cada real extra rende mais aqui.`
-                  : "Sem juros enquanto paga integral. Mantenha em dia para não virar rotativo."
-              }
-              acao={{ href: "/plano", texto: "Ver o plano completo" }}
-              acaoSecundaria={{ href: "/orcamento", texto: "De onde tirar o dinheiro" }}
-            />
-          )}
-        </section>
-      )}
+  const mesesHoje = prazo(base?.plano ?? null, abertas.length)
+  const mesesSimulados = prazo(dados?.plano ?? null, abertas.length)
+  // Mês 1 do plano é o mês que vem — a mesma conta que a tela do plano faz
+  // para dizer "livre em". A posição de cada ponto é a fração do caminho até
+  // quitar tudo; a cor é o peso do juro, que é o que diz se a ordem faz
+  // sentido (vermelho no fim da linha é dívida cara durando demais).
+  const hoje = competenciaAtual()
+  const marcos = mesesHoje !== null && base?.plano
+    ? base.plano.quitacoes
+        .map((quitacao) => ({ ...quitacao, divida: porId.get(quitacao.id) }))
+        .filter((marco): marco is typeof marco & { divida: Divida } => !!marco.divida)
+        .sort((a, b) => a.mes - b.mes)
+        .map((marco) => ({
+          id: marco.id,
+          credor: marco.credor,
+          peso: pesoDoJuro(marco.divida.jurosMensalBps),
+          quando: rotuloCompetencia(competenciaMaisMeses(hoje, marco.mes), true),
+          posicao: (marco.mes / Math.max(1, mesesHoje)) * 100,
+        }))
+    : []
+  const renda = base?.rendaMensalCentavos ?? 0
+  const peso = base ? comprometimentoBps(base.parcelaMensalCentavos, renda) : null
 
-      <Cartao titulo={`Suas dívidas (${abertas.length})`}>
-        {dados && abertas.length === 0 && (
-          <Vazio titulo="Nenhuma dívida em aberto" texto="Se tiver alguma fora do app, cadastre para entrar no plano." />
-        )}
+  // O teto da régua acompanha o tamanho das parcelas: R$ 1.000 é pouco para
+  // quem paga R$ 5.000 por mês e demais para quem paga R$ 300.
+  const tetoExtra = Math.max(100_000, Math.ceil(((base?.parcelaMensalCentavos ?? 0) || 1) / 50_000) * 50_000)
+  const simulacaoEmDia = extraSimulado === extraCentavos
 
-        <div className="space-y-2">
-          {abertas.map((divida) => {
-            const progresso = divida.parcelasTotal ? (divida.parcelasPagas / divida.parcelasTotal) * 100 : 0
-            return (
-              <div key={divida.id} className="rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-                <div className="linha-financeira">
-                  <div className="min-w-0">
-                    <p className="truncate text-[calc(14px*var(--escala-letra))] font-medium">{divida.credor}</p>
-                    <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
-                      {TIPOS.find((tipo) => tipo.valor === divida.tipo)?.rotulo ?? divida.tipo}
-                      {divida.parcelaCentavos > 0 && ` · ${formatarMoeda(divida.parcelaCentavos)}/mês`}
-                      {divida.parcelasTotal && ` · ${divida.parcelasPagas}/${divida.parcelasTotal}`}
-                      {` · vence dia ${divida.diaVencimento}`}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="whitespace-nowrap text-[calc(16px*var(--escala-letra))] font-semibold tabular-nums">
-                      <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
-                    </p>
-                    {divida.jurosMensalBps > 0 && (
-                      <p className={cn("text-[max(10px,calc(12px*var(--escala-letra)))]", divida.jurosMensalBps >= 500 ? "text-negativo" : "text-muted-fg")}>
-                        {formatarPercentual(divida.jurosMensalBps)} ao mês
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {divida.parcelasTotal ? (
-                  <div className="mt-2.5">
-                    <Barra percentual={progresso} tom="verde" />
-                  </div>
-                ) : null}
-
-                {divida.observacao && <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{divida.observacao}</p>}
-              </div>
-            )
-          })}
-        </div>
-
-        {quitadas.length > 0 && (
-          <p className="mt-4 text-[calc(12px*var(--escala-letra))] text-positivo">{quitadas.length} dívida(s) já quitada(s).</p>
-        )}
-      </Cartao>
-
-      <Cartao
-        titulo="Dívidas"
-        acao={
-          <Button onClick={() => setAbrirForm((atual) => !atual)} variant="outline" disabled={simulando} className="flex items-center gap-1.5">
-            <Plus className="size-3.5" /> Nova dívida
-          </Button>
-        }
-      >
-        <div className="grade-valores">
-          <Metrica rotulo="Total devido" valor={dados ? formatarMoeda(dados.totalCentavos) : "—"} tom="negativo" />
-          <Metrica rotulo="Parcelas por mês" valor={dados ? formatarMoeda(dados.parcelaMensalCentavos) : "—"} />
-          <Metrica
-            rotulo="Livre em"
-            valor={dados?.plano ? dados.plano.quitacoes.length === abertas.length ? dados.plano.meses + " meses" : "Além de 50 anos" : "—"}
-            detalhe={dados?.plano ? `${formatarMoeda(dados.plano.totalJurosCentavos)} de juros no caminho` : undefined}
-            tom={dados?.plano ? "atencao" : "neutro"}
-          />
-        </div>
-
-        <form onSubmit={simularExtra} className="mt-4 rounded-[20px] border border-foreground/20 bg-papel-2 p-4 sm:p-5">
-          {/* Titulo, subtitulo, rotulo do campo, campo, botao e ressalva eram
-              seis linhas empilhadas para pedir um numero. Agora o titulo diz o
-              que a tela faz e o campo e o botao dividem a mesma linha. */}
-          <h1 className="text-base font-semibold tracking-tight">Pagar mais por mês</h1>
-          <div className="mt-3 flex items-center gap-2 rounded-full border border-pauta bg-papel-2 p-1.5">
-            <input
-              id="pagamento-extra"
-              aria-label="Pagamento extra mensal"
-              value={extra}
-              onChange={(evento) => setExtra(evento.target.value)}
-              disabled={simulando || ocupado}
-              placeholder="R$ 0,00"
-              className="min-w-0 flex-1 bg-transparent px-3 text-[calc(14px*var(--escala-letra))] tabular-nums outline-none"
-              inputMode="decimal"
-            />
-            <Button type="submit" disabled={simulando || ocupado || !base || abertas.length === 0}>{simulando ? "Calculando…" : "Simular"}</Button>
-          </div>
-          {extra !== extraAplicado && <p role="status" className="mt-3 text-sm">Valor alterado. Simule para atualizar o resultado.</p>}
-          {base?.plano && dados?.plano && extra === extraAplicado && (
-            <div aria-live="polite" className="mt-4 space-y-4">
-              <div className="grade-valores">
-                <div className="rounded-xl border border-pauta bg-background p-4">
-                  <p className="text-xs text-muted-fg">Sem pagamento extra</p>
-                  <p className="mt-2 text-lg font-semibold">{base.plano.quitacoes.length === abertas.length ? base.plano.meses + " meses" : "Não quita em 50 anos"}</p>
-                  <p className="mt-1 text-sm"><span className="valor-inteiro">{formatarMoeda(base.plano.totalJurosCentavos)}</span> em juros</p>
-                </div>
-                <div className="rounded-xl border border-foreground/30 bg-background p-4">
-                  <p className="text-xs text-muted-fg">Com pagamento extra</p>
-                  <p className="mt-2 text-lg font-semibold">{dados.plano.quitacoes.length === abertas.length ? dados.plano.meses + " meses" : "Não quita em 50 anos"}</p>
-                  <p className="mt-1 text-sm"><span className="valor-inteiro">{formatarMoeda(dados.plano.totalJurosCentavos)}</span> em juros</p>
-                </div>
-              </div>
-              {extraAplicado && base.plano.quitacoes.length === abertas.length && dados.plano.quitacoes.length === abertas.length && (
-                <p className="text-sm font-semibold">
-                  {base.plano.meses - dados.plano.meses} meses a menos · <span className="valor-inteiro">{formatarMoeda(base.plano.totalJurosCentavos - dados.plano.totalJurosCentavos)}</span> de economia
-                </p>
-              )}
-              {(base.plano.quitacoes.length !== abertas.length || dados.plano.quitacoes.length !== abertas.length) && <p className="text-xs text-muted-fg">Juros acumulados até quitar ou completar 50 anos.</p>}
-            </div>
-          )}
-        </form>
-        {abrirForm && (
+  const formulario = abrirForm && (
           <form onSubmit={criar} className="mt-4 grid gap-2 sm:grid-cols-3">
             <div className="flex flex-wrap gap-2 sm:col-span-3">
               <input
@@ -412,8 +352,177 @@ export default function Dividas() {
               Adicionar dívida
             </Button>
           </form>
+  )
+
+  return (
+    <div className={cn(estilos.pagina, "space-y-4")}>
+      {erro && <Cartao><p role="alert" className="text-sm">{erro}</p><Button variant="outline" onClick={carregar} disabled={simulando || ocupado} className="mt-3">Recarregar dívidas</Button></Cartao>}
+
+      {base && abertas.length > 0 && (
+        <section className={cn("ficha", topo.resumo)}>
+          <p className={topo.rotulo}>Você deve</p>
+          <p className={topo.total}>{formatarMoeda(base.totalCentavos)}</p>
+          {mesesHoje !== null ? (
+            <p className={topo.prazo}>
+              Livre em <b>{rotuloCompetencia(competenciaMaisMeses(hoje, mesesHoje), true)}</b> · {mesesHoje} {mesesHoje === 1 ? "mês" : "meses"} pagando {formatarMoeda(base.parcelaMensalCentavos)}/mês
+            </p>
+          ) : (
+            <p className={topo.prazo} data-fecha="nao">
+              <b>As parcelas de hoje não quitam em 50 anos</b> — o juro cresce mais que o pagamento
+            </p>
+          )}
+
+          {marcos.length > 0 && (
+            <div className={topo.linhaDoTempo}>
+              <div className={topo.trilho} aria-hidden>
+                {marcos.map((marco) => (
+                  <i key={marco.id} className={topo.peso} data-peso={marco.peso} style={{ left: `${marco.posicao}%` }} />
+                ))}
+              </div>
+              <p className={topo.pontas} aria-hidden><span>Hoje</span><span>{marcos[marcos.length - 1].quando}</span></p>
+              <ul className={topo.marcos}>
+                {marcos.map((marco) => (
+                  <li key={marco.id} className={topo.peso} data-peso={marco.peso}>
+                    <span><i /><em>{marco.credor}</em></span>
+                    <span>quita em {marco.quando}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {peso !== null ? (
+            <p className={topo.renda} data-faixa={faixaComprometimento(peso)}>
+              <span>Parcelas / renda</span>
+              <span>
+                <b>{formatarPercentual(peso, 0)}</b> <small>· até 20% confortável, 30% é o teto</small>
+              </span>
+            </p>
+          ) : (
+            <p className={topo.renda}>
+              <span>Parcelas / renda</span>
+              <Link href="/transacoes">Lance sua renda para ver</Link>
+            </p>
+          )}
+        </section>
+      )}
+
+      {primeira && (
+        <section className={cn("ficha", topo.proximo, topo.peso)} data-peso={pesoDoJuro(primeira.jurosMensalBps)}>
+          <p className={topo.marca}><i /><span className={topo.rotulo}>Próximo passo</span></p>
+          <h2>Quite {primeira.credor} primeiro</h2>
+          <p>
+            {primeira.jurosMensalBps > 0
+              ? <>{formatarPercentual(primeira.jurosMensalBps)} ao mês — {referenciaDoJuro(pesoDoJuro(primeira.jurosMensalBps))}. Cada R$ 100 a mais aqui deixa de gerar {formatarMoeda(jurosEvitadosPorCemReais(primeira.jurosMensalBps))} de juros no mês seguinte.</>
+              : <>Sem juros informados. Se cobra juros, cadastre a taxa: sem ela a ordem de ataque fica errada.</>}
+          </p>
+          <div className={topo.acoes}>
+            <Link href="/plano">Ver o plano</Link>
+            <Link href="/orcamento">De onde tirar</Link>
+          </div>
+        </section>
+      )}
+
+      <section>
+        <header className={topo.cabecalhoLista}>
+          <div>
+            <h2>Suas dívidas</h2>
+            {base && abertas.length > 1 && <small>{ORDEM_DA_ESTRATEGIA[base.estrategia]}</small>}
+          </div>
+          <Button onClick={() => setAbrirForm((atual) => !atual)} variant="outline" disabled={ocupado} className="flex items-center gap-1.5">
+            <Plus className="size-3.5" /> Nova dívida
+          </Button>
+        </header>
+
+        {formulario && <Cartao className="mt-3">{formulario}</Cartao>}
+
+        {base && abertas.length === 0 && (
+          <Cartao className="mt-3">
+            <Vazio titulo="Nenhuma dívida em aberto" texto="Se tiver alguma fora do app, cadastre para entrar no plano." />
+          </Cartao>
         )}
-      </Cartao>
+
+        <div className={topo.lista}>
+          {naOrdem.map((divida) => {
+            const tipo = TIPOS.find((opcao) => opcao.valor === divida.tipo)?.rotulo ?? divida.tipo
+            const detalhes = [
+              divida.parcelasTotal ? `${divida.parcelasPagas} de ${divida.parcelasTotal}` : tipo,
+              divida.parcelaCentavos > 0 ? `${formatarMoeda(divida.parcelaCentavos)}/mês` : null,
+              `dia ${divida.diaVencimento}`,
+            ].filter(Boolean)
+            return (
+              <div key={divida.id} className={cn("ficha", topo.divida, topo.peso)} data-peso={pesoDoJuro(divida.jurosMensalBps)}>
+                <i aria-hidden />
+                <div className="min-w-0">
+                  <strong className="truncate">{divida.credor}</strong>
+                  <p className={topo.meta}>{detalhes.join(" · ")}</p>
+                </div>
+                <div className={topo.saldo}>
+                  <b className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</b>
+                  <small>{divida.jurosMensalBps > 0 ? `${formatarPercentual(divida.jurosMensalBps)} a.m.` : "sem juro"}</small>
+                </div>
+                {divida.parcelasTotal ? (
+                  <div className={topo.progresso} role="img" aria-label={`${divida.parcelasPagas} de ${divida.parcelasTotal} parcelas pagas`}>
+                    <i style={{ width: `${Math.min(100, (divida.parcelasPagas / divida.parcelasTotal) * 100)}%` }} />
+                  </div>
+                ) : null}
+                {divida.observacao && <p className={topo.observacao}>{divida.observacao}</p>}
+              </div>
+            )
+          })}
+        </div>
+
+        {quitadas.length > 0 && (
+          <p className="mt-3 px-1 text-[calc(12px*var(--escala-letra))] text-positivo">
+            {quitadas.length} {quitadas.length === 1 ? "dívida já quitada" : "dívidas já quitadas"}.
+          </p>
+        )}
+      </section>
+
+      {base?.plano && abertas.length > 0 && (
+        <Cartao estatico className={topo.simulacao}>
+          <header>
+            <h2 id="titulo-extra">E se pagar mais?</h2>
+            <output htmlFor="pagamento-extra">+{formatarMoeda(extraCentavos)}/mês</output>
+          </header>
+          <input
+            id="pagamento-extra"
+            type="range"
+            aria-labelledby="titulo-extra"
+            aria-valuetext={`${formatarMoeda(extraCentavos)} a mais por mês`}
+            min={0}
+            max={tetoExtra}
+            step={PASSO_EXTRA}
+            value={extraCentavos}
+            onChange={(evento) => setExtraCentavos(Number(evento.target.value))}
+          />
+          {extraCentavos === 0 ? (
+            <p className={topo.dica}>
+              Arraste para ver quanto antes você fica livre. Sem extra, são{" "}
+              {formatarMoeda(base.plano.totalJurosCentavos)} de juros até o fim.
+            </p>
+          ) : (
+            <div className={topo.resultado} aria-live="polite" aria-busy={!simulacaoEmDia}>
+              <div>
+                <span>Livre em</span>
+                <b>
+                  {simulacaoEmDia ? (mesesSimulados !== null ? `${mesesSimulados} ${mesesSimulados === 1 ? "mês" : "meses"}` : "além de 50 anos") : "…"}
+                  {simulacaoEmDia && mesesSimulados !== null && mesesHoje !== null && mesesHoje > mesesSimulados && <em>{mesesHoje - mesesSimulados} {mesesHoje - mesesSimulados === 1 ? "mês" : "meses"} a menos</em>}
+                </b>
+              </div>
+              <div>
+                <span>Juros no caminho</span>
+                <b>
+                  {simulacaoEmDia && dados?.plano ? formatarMoeda(dados.plano.totalJurosCentavos) : "…"}
+                  {simulacaoEmDia && dados?.plano && base.plano.totalJurosCentavos > dados.plano.totalJurosCentavos && (
+                    <em>{formatarMoeda(base.plano.totalJurosCentavos - dados.plano.totalJurosCentavos)} a menos</em>
+                  )}
+                </b>
+              </div>
+            </div>
+          )}
+        </Cartao>
+      )}
 
       {comparativo && abertas.length > 1 && (
         <Cartao titulo="Compare formas de pagar">
@@ -438,34 +547,6 @@ export default function Dividas() {
           <p className="mt-3 text-sm">Maior juro prioriza economia. Menor saldo prioriza quitar uma dívida.</p></AccordionContent></AccordionItem></Accordion>
         </Cartao>
       )}
-
-      {dados && dados.ordem.length > 0 && (
-        <Cartao titulo="Qual pagar primeiro">
-          <ol className="space-y-2">
-            {dados.ordem.map((divida, indice) => {
-              const quitacao = dados.plano?.quitacoes.find((linha) => linha.id === divida.id)
-              return (
-                <li key={divida.id} className="flex items-center gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[calc(12px*var(--escala-letra))] font-semibold">
-                    {indice + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[calc(14px*var(--escala-letra))]">{divida.credor}</p>
-                    <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
-                      {divida.jurosMensalBps > 0 ? `${formatarPercentual(divida.jurosMensalBps)} ao mês` : "sem juros informados"}
-                      {quitacao && ` · quita no mês ${quitacao.mes}`}
-                    </p>
-                  </div>
-                  <span className="whitespace-nowrap text-[calc(14px*var(--escala-letra))] tabular-nums">
-                    <span className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</span>
-                  </span>
-                </li>
-              )
-            })}
-          </ol>
-        </Cartao>
-      )}
-
     </div>
   )
 }

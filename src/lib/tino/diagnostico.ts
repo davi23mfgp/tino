@@ -19,6 +19,7 @@
 import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import type { Panorama } from "@/lib/tino/panorama"
+import { REFERENCIA_COMPROMETIMENTO, REFERENCIA_JURO_MENSAL } from "@/lib/tino/leitura-dividas"
 
 export type Faixa = "BOM" | "ATENCAO" | "CRITICO" | "SEM_DADO"
 
@@ -133,8 +134,9 @@ export interface Diagnostico {
  * de espalhadas como números mágicos pelo código.
  */
 const REFERENCIA = {
-  /// Parcelas de dívida sobre renda. 30% é o teto que bancos usam em consignado.
-  comprometimento: { bom: 2000, atencao: 3000 },
+  /// Parcelas de dívida sobre renda. Mora em leitura-dividas: a tela de
+  /// dívidas mostra o mesmo indicador e não pode usar outra régua.
+  comprometimento: REFERENCIA_COMPROMETIMENTO,
   /// Quanto da renda sobra por mês. Abaixo de 10% não se constrói reserva.
   taxaPoupanca: { bom: 2000, atencao: 1000 },
   /// Meses de custo essencial cobertos pelo dinheiro disponível.
@@ -429,7 +431,7 @@ export function montarDiagnostico(
     })
   }
 
-  const jurosAlto = panorama.dividas.lista.find((divida) => divida.jurosMensalBps >= 500)
+  const jurosAlto = panorama.dividas.lista.find((divida) => divida.jurosMensalBps >= REFERENCIA_JURO_MENSAL.caro)
   if (jurosAlto) {
     prioridades.push({
       ordem: prioridades.length + 1,

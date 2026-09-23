@@ -1,14 +1,20 @@
 import { prisma } from "@/lib/prisma"
 import { ErroDeUso, comSessao, corpo, exigir, ok } from "@/lib/api"
 import { compararEstrategias, ordenarDividas, planejarQuitacao } from "@/lib/financeiro"
+import { competenciaAtual } from "@/lib/datas"
+import { montarPanorama } from "@/lib/tino/panorama"
 
 export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
   const extra = Math.max(0, Number(url.searchParams.get("extraMensalCentavos") ?? 0))
 
-  const [lar, dividas] = await Promise.all([
+  // A renda só entra na primeira leitura (sem extra). A simulação de pagar
+  // mais chama esta rota a cada arrasto da régua, e a renda não muda com ela:
+  // montar o panorama inteiro a cada passo seria custo sem resposta nova.
+  const [lar, dividas, panorama] = await Promise.all([
     prisma.lar.findUniqueOrThrow({ where: { id: sessao.larId }, select: { estrategiaDivida: true } }),
     prisma.divida.findMany({ where: { larId: sessao.larId }, orderBy: { criadoEm: "asc" } }),
+    extra === 0 ? montarPanorama(sessao.larId, competenciaAtual()) : null,
   ])
 
   const abertas = dividas
@@ -29,6 +35,9 @@ export const GET = comSessao(async (sessao, requisicao) => {
     comparativo: abertas.length > 0 ? compararEstrategias(abertas, extra) : null,
     totalCentavos: abertas.reduce((soma, divida) => soma + divida.saldoDevedorCentavos, 0),
     parcelaMensalCentavos: abertas.reduce((soma, divida) => soma + divida.parcelaCentavos, 0),
+    // Média observada, ou a declarada no cadastro enquanto não há histórico.
+    // Zero quer dizer "não sabemos" — a tela pede a renda em vez de calcular.
+    rendaMensalCentavos: panorama ? panorama.medias.receitaCentavos : null,
   })
 })
 
