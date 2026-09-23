@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { aporteQueReequilibra, corteViraPatrimonio, LETRAS_DO_ARCA, posicaoDoArca, type ClasseDeAtivo } from "@/lib/tino/investir"
+import { aporteQueReequilibra, corteViraPatrimonio, posicaoDoArca, type ClasseDeAtivo } from "@/lib/tino/investir"
 import { cn } from "@/lib/utils"
 import estilos from "./painel-da-carteira.module.css"
 
@@ -26,32 +26,6 @@ import estilos from "./painel-da-carteira.module.css"
  * vez de desenhar um passado que ninguém viveu. Fica recolhida junto com o
  * desempenho, que só tem número a partir do segundo mês.
  */
-
-/**
- * As cores das classes.
- *
- * Uma rampa análoga, do verde da marca ao azul, com **chroma baixo**. A versão
- * anterior usava hues saturados de referência (0.24 de chroma) e o resultado na
- * tela foi neon brigando com neon: sete cores gritando no mesmo anel de 200px,
- * nenhuma delas deixando a outra ser lida.
- *
- * A ordem da rampa é a ordem do risco: verde na ponta de renda variável, azul
- * escuro no que é caixa. Isso faz a cor dizer alguma coisa em vez de só
- * separar.
- *
- * Contraste sobre o fundo escuro, calculado (OKLab → sRGB linear → WCAG):
- * 13,4 · 10,1 · 7,4 · 5,3 · 3,8 · 2,7 · 1,9:1. As três últimas são faixa de
- * barra e ponto de legenda, nunca texto — texto usa a cor do tema.
- */
-const TINTA: Record<ClasseDeAtivo, string> = {
-  ACOES: "oklch(0.84 0.16 150)",
-  FII: "oklch(0.76 0.11 175)",
-  INTERNACIONAL: "oklch(0.68 0.09 200)",
-  CRIPTO: "oklch(0.6 0.07 225)",
-  RENDA_FIXA: "oklch(0.52 0.05 250)",
-  CAIXA: "oklch(0.44 0.03 260)",
-  OUTROS: "oklch(0.36 0.02 265)",
-}
 
 export interface PosicaoDaCarteira {
   id: string
@@ -117,11 +91,6 @@ export function PainelDaCarteira({ posicoes, topo, depoisDoResumo }: { posicoes:
   const carteira = posicoes.map((posicao) => ({ classe: posicao.classe ?? ("OUTROS" as ClasseDeAtivo), valorCentavos: posicao.valorCentavos }))
   const { letras, totalCentavos: noMetodo, foraDoMetodoCentavos } = posicaoDoArca(carteira)
   const semClasse = posicoes.filter((linha) => !linha.classe).length
-  const segmentos = [
-    ...letras.map((letra) => ({ chave: `${letra.letra}-${letra.rotulo}`, cor: TINTA[letra.classes[0]], valor: letra.atualCentavos })),
-    { chave: "fora", cor: "color-mix(in oklab, var(--foreground), transparent 80%)", valor: foraDoMetodoCentavos },
-  ].filter((segmento) => segmento.valor > 0)
-
   // A letra mais atrás do alvo resume o equilíbrio numa linha — é ela que
   // recebe a maior parte do próximo aporte.
   const maisAtras = [...letras].sort((a, b) => a.atualBps - a.alvoBps - (b.atualBps - b.alvoBps))[0]
@@ -135,48 +104,26 @@ export function PainelDaCarteira({ posicoes, topo, depoisDoResumo }: { posicoes:
           parte que muda todo dia. */}
       {depoisDoResumo}
 
-      {/* Equilíbrio e próximo aporte recolhidos numa linha (opção A do
-          canvas): a pergunta do dia é "como estão meus ativos"; a do método,
-          "onde ponho o próximo dinheiro", é de uma vez por mês. */}
+      {/* Recolhido numa linha: a pergunta do dia é "como estão meus ativos";
+          a do método, "onde ponho o próximo dinheiro", é de uma vez por mês. */}
       <details className={cn("ficha", estilos.recolhido)}>
         <summary>
           <span>
-            <b>Equilíbrio e próximo aporte</b>
+            <b>Onde pôr o próximo dinheiro</b>
             <small>
               {noMetodo > 0 && maisAtras && atrasoPontos > 0
-                ? `${maisAtras.rotulo} −${atrasoPontos} p.p. · o próximo dinheiro vai mais para lá`
+                ? `${maisAtras.rotulo} está ${atrasoPontos} pontos abaixo do alvo`
                 : "Escolha a classe de cada investimento para o método ARCA enxergar"}
             </small>
           </span>
         </summary>
         <div className={estilos.recolhidoCorpo}>
-          <div className={estilos.barra} role="img" aria-label={`Carteira: ${letras.map((letra) => `${letra.rotulo} ${Math.round(letra.atualBps / 100)}%`).join(", ")}`}>
-            {segmentos.map((segmento) => (
-              <i key={segmento.chave} style={{ flexGrow: segmento.valor, background: segmento.cor }} />
-            ))}
-          </div>
-          <ul className={estilos.letras}>
-            {letras.map((letra) => {
-              const pontos = Math.round((letra.atualBps - letra.alvoBps) / 100)
-              return (
-                <li key={`${letra.letra}-${letra.rotulo}`}>
-                  <i style={{ background: TINTA[letra.classes[0]] }} aria-hidden />
-                  <span>{letra.rotulo}</span>
-                  <small>{formatarMoeda(letra.atualCentavos)}</small>
-                  <b>{Math.round(letra.atualBps / 100)}%</b>
-                  {/* Longe do alvo (5 p.p. ou mais) ganha cor; perto fica neutro,
-                      para a cor apontar só o que pede ação. */}
-                  <em data-longe={Math.abs(pontos) >= 5 || undefined}>{pontos > 0 ? "+" : pontos < 0 ? "−" : ""}{Math.abs(pontos)} p.p.</em>
-                </li>
-              )
-            })}
-          </ul>
+          {noMetodo > 0 && <OndePorODinheiro carteira={carteira} letras={letras} />}
           <p className={estilos.nota}>
-            p.p. é a distância do alvo de 25% por letra, do método ARCA (Grupo Primo). Parâmetro escolhido, não recomendação.
+            O traço na régua é o alvo de 25% de cada parte, do método ARCA (Grupo Primo). Parâmetro escolhido; cálculo, não recomendação — o app não diz qual ativo comprar.
             {foraDoMetodoCentavos > 0 && <> {formatarMoeda(foraDoMetodoCentavos)} fica fora do método (cripto e outros).</>}
             {semClasse > 0 && <> {semClasse} {semClasse === 1 ? "investimento está" : "investimentos estão"} sem classe.</>}
           </p>
-          {noMetodo > 0 && <ProximoAporte carteira={carteira} />}
         </div>
       </details>
 
@@ -202,17 +149,29 @@ const ATALHOS_DE_APORTE = [50_000, 100_000, 200_000]
 const RENDIMENTO_REAL_ANUAL_BPS = 400
 
 /**
- * Para onde vai o próximo dinheiro (Davi, 23/09: opção A do canvas).
- *
- * É a pergunta que a composição deixa no ar: sabendo que falta internacional,
- * quanto de cada coisa entra no próximo aporte. A conta é a do método —
- * primeiro o que está mais atrás do alvo — e a lista mostra também quem não
- * recebe, com o motivo, para a pessoa não achar que a letra foi esquecida.
+ * Cores das quatro letras, afastadas o bastante para não se confundirem no
+ * ponto de 9px da lista: verde (ações) e verde-água (FII) iguais aos cartões,
+ * cinza-azulado para caixa e azul forte para o exterior.
+ */
+const COR_DA_LETRA = ["oklch(0.84 0.16 150)", "oklch(0.76 0.11 175)", "oklch(0.62 0.04 250)", "oklch(0.66 0.15 255)"]
+
+/**
+ * Onde pôr o próximo dinheiro (Davi, 23/09: opção A do canvas, "uma lista
+ * só"). Antes eram duas listas seguidas com as mesmas quatro partes — a
+ * composição com "p.p." e, embaixo, a divisão do aporte. Agora cada parte tem
+ * uma linha: quanto pesa, uma régua com o traço do alvo, quanto falta e quanto
+ * do aporte vai para ela.
  *
  * O valor mensal combinado fica gravado (`/api/investir/objetivo`): quem volta
  * na semana seguinte vê o que decidiu, não um campo vazio.
  */
-function ProximoAporte({ carteira }: { carteira: { classe: ClasseDeAtivo; valorCentavos: number }[] }) {
+function OndePorODinheiro({
+  carteira,
+  letras,
+}: {
+  carteira: { classe: ClasseDeAtivo; valorCentavos: number }[]
+  letras: ReturnType<typeof posicaoDoArca>["letras"]
+}) {
   const [objetivo, setObjetivo] = useState<{ valorMensalCentavos: number; prazoAnos: number } | null>(null)
   const [valor, setValor] = useState<number>(100_000)
   const [outro, setOutro] = useState("")
@@ -230,12 +189,16 @@ function ProximoAporte({ carteira }: { carteira: { classe: ClasseDeAtivo; valorC
   }, [])
 
   const aporte = digitando ? paraCentavos(outro || "0") : valor
-  const partes = [...aporteQueReequilibra(aporte, carteira)].sort((a, b) => b.valorCentavos - a.valorCentavos)
+  const partes = aporteQueReequilibra(aporte, carteira)
   const opcoes = [...new Set([...(objetivo?.valorMensalCentavos ? [objetivo.valorMensalCentavos] : []), ...ATALHOS_DE_APORTE])]
   const prazo = objetivo?.prazoAnos ?? 10
   const futuro = objetivo?.valorMensalCentavos
     ? corteViraPatrimonio({ cortePorMesCentavos: objetivo.valorMensalCentavos, anos: prazo, rendimentoRealAnualBps: RENDIMENTO_REAL_ANUAL_BPS })
     : null
+  // A régua cabe a maior parte e deixa o alvo sempre no mesmo lugar dentro
+  // do cartão: com 65% em caixa, uma escala de 0 a 100 espremeria as outras.
+  const topoDaRegua = Math.max(40, ...letras.map((letra) => letra.atualBps / 100)) * 1.05
+  const curto = (centavos: number) => formatarMoeda(centavos).replace(",00", "")
 
   async function combinar() {
     setSalvando(true)
@@ -250,15 +213,12 @@ function ProximoAporte({ carteira }: { carteira: { classe: ClasseDeAtivo; valorC
   }
 
   return (
-    <section className={estilos.aporte}>
-      <header>
-        <h3>Próximo aporte</h3>
-        <small>reequilibra a carteira</small>
-      </header>
+    <div className={estilos.onde}>
+      <p className={estilos.pergunta}>Quanto vai investir?</p>
       <div className={estilos.chips} role="group" aria-label="Quanto vai investir">
         {opcoes.map((opcao) => (
           <button key={opcao} type="button" aria-pressed={!digitando && valor === opcao} onClick={() => { setDigitando(false); setValor(opcao) }}>
-            {formatarMoeda(opcao).replace(",00", "")}
+            {curto(opcao)}
             {objetivo?.valorMensalCentavos === opcao && <small> · por mês</small>}
           </button>
         ))}
@@ -273,40 +233,47 @@ function ProximoAporte({ carteira }: { carteira: { classe: ClasseDeAtivo; valorC
         </label>
       )}
 
-      {aporte > 0 ? (
-        <ul className={estilos.partes}>
-          {partes.map((parte) => (
-            <li key={`${parte.letra}-${parte.rotulo}`} data-zero={parte.valorCentavos === 0 || undefined}>
-              <i style={{ background: TINTA[LETRAS_DO_ARCA.find((letra) => letra.rotulo === parte.rotulo)?.classes[0] ?? "OUTROS"] }} aria-hidden />
-              <span>
-                {parte.rotulo}
-                {parte.valorCentavos === 0 && <small>{parte.porque}</small>}
+      <ul className={estilos.partes}>
+        {letras.map((letra, indice) => {
+          const atual = Math.round(letra.atualBps / 100)
+          const alvo = Math.round(letra.alvoBps / 100)
+          const distancia = alvo - atual
+          const parte = partes.find((item) => item.rotulo === letra.rotulo)?.valorCentavos ?? 0
+          const cor = COR_DA_LETRA[indice] ?? COR_DA_LETRA[0]
+          return (
+            <li key={`${letra.letra}-${letra.rotulo}`} style={{ "--cor": cor } as React.CSSProperties}>
+              <span className={estilos.parteTopo}>
+                <i aria-hidden />
+                <b>{letra.rotulo}</b>
+                <small>{atual}% de {alvo}%</small>
               </span>
-              <b>{formatarMoeda(parte.valorCentavos)}</b>
+              <span className={estilos.regua} role="img" aria-label={`${letra.rotulo}: ${atual}% da carteira, alvo ${alvo}%`}>
+                <span style={{ width: `${Math.min(100, (atual / topoDaRegua) * 100)}%` }} />
+                <em style={{ left: `${(alvo / topoDaRegua) * 100}%` }} />
+              </span>
+              <span className={estilos.parteBase}>
+                <small>{distancia > 0 ? `falta ${distancia} ${distancia === 1 ? "ponto" : "pontos"}` : distancia < 0 ? `passou ${-distancia} ${distancia === -1 ? "ponto" : "pontos"}` : "no alvo"}</small>
+                {aporte > 0 && <b data-zero={parte === 0 || undefined}>{parte > 0 ? `+${formatarMoeda(parte)}` : "não recebe"}</b>}
+              </span>
             </li>
-          ))}
-        </ul>
-      ) : (
-        <p className={estilos.nota}>Informe o valor para ver a divisão.</p>
-      )}
+          )
+        })}
+      </ul>
 
       <footer className={estilos.rodapeAporte}>
-        {futuro ? (
-          <span>
-            Combinado: {formatarMoeda(objetivo!.valorMensalCentavos)} por mês. Em {prazo} anos, {formatarMoeda(futuro.patrimonioCentavos)} — a {RENDIMENTO_REAL_ANUAL_BPS / 100}% ao ano acima da inflação.
-          </span>
-        ) : (
-          <span>Nenhum valor mensal combinado ainda.</span>
-        )}
+        <span>
+          {futuro
+            ? <>Combinado: {curto(objetivo!.valorMensalCentavos)} por mês. Em {prazo} anos, {formatarMoeda(futuro.patrimonioCentavos)} — a {RENDIMENTO_REAL_ANUAL_BPS / 100}% ao ano acima da inflação.</>
+            : "Nenhum valor mensal combinado ainda."}
+        </span>
         {aporte > 0 && aporte !== objetivo?.valorMensalCentavos && (
           <button type="button" onClick={() => void combinar()} disabled={salvando} className={estilos.combinar}>
-            {salvando ? "Salvando…" : `Investir ${formatarMoeda(aporte).replace(",00", "")} todo mês`}
+            {salvando ? "Salvando…" : `Investir ${curto(aporte)} todo mês`}
           </button>
         )}
       </footer>
       {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
-      <p className={estilos.nota}>Cálculo, não recomendação: o app não diz qual ativo comprar dentro de cada letra.</p>
-    </section>
+    </div>
   )
 }
 
