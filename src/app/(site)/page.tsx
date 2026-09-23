@@ -46,7 +46,7 @@ export default async function Vitrine() {
     </header>
     <main id="conteudo">
       <section className="lp-hero">
-        <div className="lp-hero-texto"><h1>Seu dinheiro organizado.<br />Sua vida com espaço<br />para acontecer.</h1><p>Contas, cartões e planos em um só lugar.<br />Entenda como você está e o que fazer a seguir.</p><Comecar /><small>{dias} dias para conhecer. Sem cartão para começar.</small></div>
+        <div className="lp-hero-texto"><span className="lp-hero-selo">Tino para sua vida</span><h1>O dinheiro é seu.<br />A clareza também.</h1><p>Saldo, gastos e compromissos em uma visão só.<br />Entenda o que fazer agora e o que vem depois.</p><Comecar /><small>{dias} dias para conhecer. Sem cartão para começar.</small></div>
         <DemonstracaoReal />
         <div className="lp-confianca"><span><Wallet size={18} /> Contas e cartões juntos</span><span><ScanLine size={18} /> Importação de extratos</span><span><Smartphone size={18} /> No celular e no computador</span></div>
       </section>

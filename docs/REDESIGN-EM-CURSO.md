@@ -1368,3 +1368,27 @@ separadamente no fechamento desta rodada.
 real, e não se repetir abaixo. Confirmado: uma única `DemonstracaoReal` no
 hero; seções seguintes usam capturas desktop e painéis, sem aparelhos móveis.
 Build de produção aprovado (63 páginas); prévia local reaberta e conferida.
+
+### 22/09/2026 — comparação visual antes da nova rodada
+
+O usuário enviou 30 referências no ZIP de 22/09 e pediu ver o estado atual
+antes de implementar. Capturas locais da landing e do login, e captura do
+painel publicado, foram apresentadas nesta conversa antes das edições.
+
+A primeira dobra estava centralizada, com a demonstração quase toda abaixo do
+viewport. Ela agora reúne mensagem e captura real do app lado a lado em tela
+grande; no celular preserva a demonstração animada da implementação anterior.
+O login, antes um formulário isolado, passa a mostrar a captura real do painel
+ao lado do acesso, com campos rotulados e controle de exibição da senha.
+
+As imagens do ZIP são referência de hierarquia, densidade e interação, não
+assets a copiar: a identidade e as telas demonstradas continuam sendo do Tino.
+Ainda falta conferir e refinar os fluxos internos de Ajustes, ações e cartões,
+inclusive contraste das superfícies translúcidas, antes de afirmar paridade
+com as referências.
+
+Em Ajustes, as linhas internas agora formam listas mais leves com divisórias.
+Os verbos genéricos repetidos à direita deixam de ocupar espaço visual;
+título, descrição e seta mantêm o destino identificável. Login validado em
+390px e acesso à conta de demonstração local confirmado. Tipos e 410 testes
+aprovados nesta rodada; as capturas visuais continuam sendo a prova do layout.

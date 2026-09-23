@@ -26,6 +26,16 @@
 .vitrine .lp-hero h1 { font-size:clamp(42px,4.7vw,66px); max-width:810px; margin:auto }
 .vitrine .lp-hero-texto p { margin:24px auto 30px; max-width:570px; color:#b6b6b9; font-size:18px }
 .vitrine .lp-hero-texto>small { display:block; color:#777b80; font-size:12px; margin-top:16px}
+.vitrine .lp-hero-selo { display:block; margin-bottom:20px; color:#bcdbc9; font-size:12px; font-weight:600; letter-spacing:.12em; text-transform:uppercase }
+/* A primeira dobra une proposta e produto: o visor real deve aparecer sem rolar. */
+@media(min-width:961px) {
+  .vitrine .lp-hero { display:grid; grid-template-columns:minmax(370px,.9fr) minmax(0,1.1fr); gap:24px; align-items:center; min-height:730px; padding:146px max(32px,calc((100vw - 1260px)/2)) 52px; text-align:left }
+  .vitrine .lp-hero-texto { padding:0; position:relative; z-index:3 }
+  .vitrine .lp-hero h1 { margin:0; font-size:clamp(52px,4.8vw,82px); max-width:670px }
+  .vitrine .lp-hero-texto p { margin:28px 0 30px; max-width:440px }
+  .vitrine .lp-demonstracao { min-width:0; width:100%; margin:0; transform:perspective(1300px) rotateY(-8deg) rotateZ(1deg) }
+  .vitrine .lp-confianca { grid-column:1/-1; margin-top:10px }
+}
 .vitrine .lp-demonstracao { position:relative; max-width:1040px; margin:62px auto 0; padding-bottom:24px; isolation:isolate }
 .vitrine .lp-demonstracao:before { content:""; position:absolute; width:650px; height:650px; max-width:100%; left:50%; top:20px; transform:translateX(-50%); background:radial-gradient(ellipse,#12211c80,transparent 64%); z-index:-1 }
 .vitrine .lp-janela { width:min(100%,900px); margin:auto; border:1px solid #4a4f50; border-radius:var(--raio-cartao); background:#111415; box-shadow:0 34px 90px #000a; overflow:hidden; position:relative; animation:lp-aparelho-chegar 1.3s cubic-bezier(.2,.7,.2,1) both }
