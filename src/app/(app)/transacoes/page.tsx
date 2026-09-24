@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { buscar, enviar, TRANSACOES_ATUALIZADAS } from "@/lib/cliente"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia, ultimasCompetencias } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
-import { Cartao, Vazio } from "@/components/ui/painel"
+import { Vazio } from "@/components/ui/painel"
 import { EditavelTexto, EditavelMoeda } from "@/components/ui/editavel"
 import { showToast } from "@/components/ui/toast"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { porDia, rotuloDia } from "@/lib/extrato-dias"
 import { FaixaDeDias, type DiaComMovimento } from "@/components/faixa-de-dias"
-import { FiltrosDoExtrato, type ContaDoFiltro, type TipoDoFiltro } from "@/components/filtros-do-extrato"
+import { FiltrosDoExtrato, nomeCurtoDaConta, type ContaDoFiltro, type TipoDoFiltro } from "@/components/filtros-do-extrato"
 import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 import estilos from "./extrato.module.css"
 
@@ -229,6 +229,10 @@ export default function Transacoes() {
   const filtrando = Boolean(busca || contaFiltro || categoriaFiltro || semCategoria || tipo !== "todos")
   // Conta filtrada não corta um lado: o mês daquela conta tem entradas e
   // saídas inteiras, e a sobra dela é uma resposta de verdade.
+  const usoPorCategoria = new Map<string, number>()
+  for (const transacao of transacoes) {
+    if (transacao.categoriaId) usoPorCategoria.set(transacao.categoriaId, (usoPorCategoria.get(transacao.categoriaId) ?? 0) + 1)
+  }
   const ladosInteiros = !busca && !categoriaFiltro && !semCategoria && tipo === "todos"
   function limparFiltros() {
     setBusca("")
@@ -240,11 +244,12 @@ export default function Transacoes() {
 
   return (
     <div className={estilos.pagina}>
-      {/* Extrato (Davi, 24/09: opções A e B do canvas juntas). O saldo do
-          período aparecia duas vezes — na frase do topo e na grade logo
-          abaixo — e havia três botões de adicionar na mesma tela. Ficou um
-          resumo só, o botão de adicionar do app, e os filtros numa linha. */}
-      <Cartao estatico className={estilos.controles}>
+      {/* Extrato (Davi, 24/09: a tela da opção A do canvas; o botão de filtro
+          abre a folha da opção B). O saldo do período aparecia duas vezes —
+          na frase do topo e na grade logo abaixo — e havia três botões de
+          adicionar na mesma tela. Ficou um resumo só, o botão de adicionar do
+          app, e os filtros numa linha. */}
+      <div className={estilos.controles}>
         <div className={estilos.mes}>
           <button type="button" aria-label="Mês anterior" disabled={competencia <= primeiraCompetencia} onClick={() => setCompetencia(competenciaMaisMeses(competencia, -1))}>
             <ChevronLeft aria-hidden className="size-5" />
@@ -309,12 +314,6 @@ export default function Transacoes() {
           )}
         </dl>
 
-        <label className={estilos.busca}>
-          <Search aria-hidden className="size-4 shrink-0" />
-          <span className="sr-only">Buscar lançamento</span>
-          <input type="search" value={busca} onChange={(evento) => setBusca(evento.target.value)} placeholder="Buscar lançamento" />
-        </label>
-
         <FiltrosDoExtrato
           tipo={tipo}
           aoMudarTipo={setTipo}
@@ -328,6 +327,7 @@ export default function Transacoes() {
           aoSoltarDia={() => setModo("mes")}
           contas={contas}
           categorias={categorias}
+          usoPorCategoria={usoPorCategoria}
           encontrados={
             carregando || !contagem || !totais
               ? null
@@ -337,16 +337,19 @@ export default function Transacoes() {
                 }
           }
           aoLimpar={limparFiltros}
-        />
-      </Cartao>
+        >
+          <label className={estilos.busca}>
+            <Search aria-hidden className="size-4 shrink-0" />
+            <span className="sr-only">Buscar lançamento</span>
+            <input type="search" value={busca} onChange={(evento) => setBusca(evento.target.value)} placeholder="Buscar lançamento" />
+          </label>
+        </FiltrosDoExtrato>
+      </div>
 
-      <Cartao estatico className={estilos.movimentos}>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-medium" role="status">
-            {carregando ? "Atualizando…" : `${transacoes.length} movimentações`}
-          </p>
-          <p className="text-xs text-muted-fg">Toque na descrição ou no valor para editar.</p>
-        </div>
+      <section className={cn("ficha", estilos.movimentos)} aria-label="Lançamentos">
+        <p className="sr-only" role="status">
+          {carregando ? "Atualizando…" : `${transacoes.length} movimentações`}
+        </p>
 
         {erroCategorias && (
           <div role="alert" className="mb-4 rounded-xl bg-papel-2 p-3 text-sm">
@@ -375,53 +378,59 @@ export default function Transacoes() {
             <section key={grupo.dia} className={estilos.grupoDia}>
               <h3>
                 <span>{rotuloDia(grupo.dia)}</span>
-                <b className={cn("numero valor-sensivel", grupo.totalCentavos < 0 ? "text-negativo" : "text-positivo")}>
-                  {grupo.totalCentavos < 0 ? "−" : "+"}{formatarMoeda(Math.abs(grupo.totalCentavos))}
+                <b className={cn("numero valor-sensivel", grupo.totalCentavos > 0 && "text-positivo")}>
+                  {grupo.totalCentavos < 0 ? "-" : "+"}{formatarMoeda(Math.abs(grupo.totalCentavos))}
                 </b>
               </h3>
               <ul aria-label={`Lançamentos de ${rotuloDia(grupo.dia)}`} aria-busy={ocupado}>
-            {grupo.itens.map((transacao) => {
-              const transferencia = transacao.tipo === "TRANSFERENCIA"
-              return (
-                <li key={transacao.id} className={estilos.linha}>
-                  <span className={estilos.simbolo}><MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} /></span>
-                  <div className="min-w-0">
-                    <EditavelTexto
-                      valor={transacao.descricao}
-                      aoSalvar={(descricao) => salvarEdicao(transacao.id, { descricao })}
-                      desabilitado={ocupado}
-                      className="block w-full whitespace-normal break-words"
-                    />
-                    <p className="mt-1 break-words text-xs text-muted-fg">
-                      {transacao.conta.nome}
-                    </p>
-                  </div>
-                  <div className={estilos.categoria}>
-                    {transferencia ? <span className="flex min-h-9 items-center text-sm text-muted-fg">Transferência</span> : <SeletorCategoria
-                      opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`}
-                      desabilitado={ocupado || carregandoCategorias || erroCategorias} className="w-full justify-start"
-                      aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
-                    />}
-                  </div>
-                  <div className={cn(estilos.valor, transacao.tipo === "RECEITA" && "text-positivo")}>
-                    {transferencia ? (
-                      <span className="numero break-words text-sm text-muted-fg">{formatarMoeda(transacao.valorCentavos)}</span>
-                    ) : (
-                      <>
-                        <span aria-label={transacao.tipo === "RECEITA" ? "Entrada" : "Saída"}>{transacao.tipo === "RECEITA" ? "+" : "−"}</span>
-                        <EditavelMoeda
-                          valorCentavos={transacao.valorCentavos}
-                          aoSalvar={(valorCentavos) => salvarEdicao(transacao.id, { valorCentavos })}
+                {grupo.itens.map((transacao) => {
+                  const transferencia = transacao.tipo === "TRANSFERENCIA"
+                  return (
+                    <li key={transacao.id} className={estilos.linha}>
+                      <span className={estilos.simbolo}><MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} /></span>
+                      <div className={estilos.texto}>
+                        {/* Nome, valor e categoria continuam editáveis no toque,
+                            como antes; só a categoria deixou de ser uma coluna
+                            de botão e virou o fim da linha de baixo. */}
+                        <EditavelTexto
+                          valor={transacao.descricao}
+                          aoSalvar={(descricao) => salvarEdicao(transacao.id, { descricao })}
                           desabilitado={ocupado}
-                          className="min-h-11"
+                          className={estilos.descricao}
                         />
-                      </>
-                    )}
-                    {salvando === transacao.id && <span role="status" className="text-xs text-muted-fg">Salvando…</span>}
-                  </div>
-                </li>
-              )
-            })}
+                        <p className={estilos.sub}>
+                          <span>{nomeCurtoDaConta(transacao.conta.nome)}</span>
+                          <span aria-hidden>·</span>
+                          {transferencia ? (
+                            <span>Transferência</span>
+                          ) : (
+                            <SeletorCategoria
+                              opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`} vazio="sem categoria"
+                              desabilitado={ocupado || carregandoCategorias || erroCategorias} className={estilos.categoria}
+                              aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
+                            />
+                          )}
+                        </p>
+                      </div>
+                      <div className={cn(estilos.valor, transacao.tipo === "RECEITA" && "text-positivo", transferencia && "text-muted-fg")}>
+                        {transferencia ? (
+                          <span className="numero">{formatarMoeda(transacao.valorCentavos)}</span>
+                        ) : (
+                          <>
+                            <span aria-label={transacao.tipo === "RECEITA" ? "Entrada" : "Saída"}>{transacao.tipo === "RECEITA" ? "+" : "-"}</span>
+                            <EditavelMoeda
+                              valorCentavos={transacao.valorCentavos}
+                              aoSalvar={(valorCentavos) => salvarEdicao(transacao.id, { valorCentavos })}
+                              desabilitado={ocupado}
+                              className={estilos.moeda}
+                            />
+                          </>
+                        )}
+                        {salvando === transacao.id && <span role="status" className="sr-only">Salvando…</span>}
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             </section>
           ))}
@@ -443,7 +452,7 @@ export default function Transacoes() {
             </button>
           </div>
         )}
-      </Cartao>
+      </section>
     </div>
   )
 }

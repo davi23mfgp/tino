@@ -1,5 +1,8 @@
-/* Filtros do extrato (Davi, 24/09): a linha de chips da opção A e a folha da
-   opção B do canvas, juntas. */
+/* Filtros do extrato (Davi, 24/09): a tela da opção A do canvas e, no botão
+   de filtro, a folha da opção B. */
+
+.buscaEFiltro { display:flex; gap:8px; min-width:0; }
+.buscaEFiltro > :first-child { flex:1; min-width:0; }
 
 /* A linha desliza de lado em vez de quebrar: quebrada, ela voltava a ocupar
    as duas ou três linhas de controles que a mudança veio tirar. A margem
@@ -9,53 +12,84 @@
 @media (min-width:701px) { .linha { margin:0; padding:2px 0; flex-wrap:wrap; overflow:visible; } }
 
 .chip, .botaoFiltros {
-  flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:40px; max-width:220px; padding:0 14px;
+  flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:40px; max-width:220px; padding:0 15px;
   border-radius:var(--raio-pilula); border:1px solid color-mix(in oklab, var(--foreground), transparent 86%);
   background:color-mix(in oklab, var(--foreground), transparent 95%);
-  font-size:calc(13px * var(--escala-letra)); font-weight:550; white-space:nowrap; color:var(--foreground);
+  font-size:calc(13.5px * var(--escala-letra)); white-space:nowrap; color:var(--foreground);
   transition:background var(--tempo) var(--curva), color var(--tempo) var(--curva);
 }
-.chip[data-ligado], .botaoFiltros[data-ativo] {
+.chip[data-ligado], .botaoFiltros {
   border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650;
 }
-.botaoFiltros { font-weight:650; }
+/* O botão de filtro é sempre verde, como na opção B: é a porta para a folha,
+   e precisa ser achado sem procurar. */
+.botaoFiltros { min-height:44px; padding:0 16px; }
 .nome { min-width:0; overflow:hidden; text-overflow:ellipsis; }
 
 /* --- a folha --- */
-.folha { background:color-mix(in oklab, var(--background), transparent 12%) !important; backdrop-filter:blur(28px) saturate(150%); -webkit-backdrop-filter:blur(28px) saturate(150%); }
-.corpo { display:grid; gap:18px; padding:18px 16px 16px; }
-@media (min-width:640px) { .corpo { padding:22px 24px 20px; } }
+/* Opaca: com o vidro do app, os chips da tela de trás atravessavam a folha
+   e liam como se fossem opções dela. */
+.folha { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; }
+/* No celular a folha sobe colada no pé da tela, de ponta a ponta, com a
+   alça em cima — é a forma que a pessoa já sabe arrastar e fechar. */
+@media (max-width:639px) {
+  .folha {
+    width:calc(100% + 24px) !important; max-width:none !important;
+    margin:0 -12px calc(-1 * max(1rem, env(safe-area-inset-bottom)));
+    border-radius:28px 28px 0 0 !important; border-bottom:0 !important;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+}
+.corpo { display:grid; gap:16px; padding:10px 16px 20px; }
+@media (min-width:640px) { .corpo { padding:18px 24px 22px; } }
 .corpo > * { min-width:0; }
-.topo { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding-right:40px; }
-.titulo { font-size:calc(19px * var(--escala-letra)); font-weight:680; }
-.limpar { min-height:44px; font-size:calc(14px * var(--escala-letra)); font-weight:600; color:var(--acao); }
+.alca { justify-self:center; width:40px; height:5px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 75%); }
+@media (min-width:640px) { .alca { display:none; } }
+.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-right:40px; }
+.titulo { font-size:calc(21px * var(--escala-letra)); font-weight:700; }
+.limpar { min-height:44px; font-size:calc(15px * var(--escala-letra)); font-weight:500; color:var(--acao); }
 .limpar:disabled { opacity:.4; }
-.rotulo { margin-bottom:8px; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { margin-bottom:10px; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
 
 .segmento { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:4px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 93%); }
-.segmento button { min-height:40px; border-radius:var(--raio-pilula); font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-2); }
+.segmento button { min-height:40px; border-radius:var(--raio-pilula); font-size:calc(14.5px * var(--escala-letra)); color:var(--foreground); }
 .segmento button[aria-checked="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 
 .contas { display:flex; flex-wrap:wrap; gap:8px; }
+.contas .chip { min-height:42px; font-size:calc(14.5px * var(--escala-letra)); }
+.bolinha { width:9px; height:9px; flex-shrink:0; border-radius:999px; }
 
-/* Grade de ícones: quatro por linha no celular. A lista de 30 categorias em
-   texto corrido era rolagem demais para escolher uma. A grade rola dentro de
-   si, para o botão do pé não sumir. */
-.grade { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; max-height:236px; overflow-y:auto; overscroll-behavior:contain; }
+/* Duas linhas de quatro, como na opção B. Com "Outras" aberto, a grade rola
+   dentro de si para o botão do pé não sumir. */
+.grade { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.grade[data-todas] { max-height:260px; overflow-y:auto; overscroll-behavior:contain; }
 .grade button {
-  display:grid; justify-items:center; align-content:center; gap:5px; min-height:72px; padding:8px 4px; border-radius:14px;
-  border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 96%);
-  font-size:max(10px, calc(11px * var(--escala-letra))); line-height:1.2; color:var(--texto-2);
+  display:grid; justify-items:center; align-content:center; gap:6px; min-height:74px; padding:8px 2px; border-radius:16px;
+  border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); background:color-mix(in oklab, var(--foreground), transparent 95%);
+  font-size:max(11px, calc(11.5px * var(--escala-letra))); letter-spacing:-.01em; line-height:1.2; color:var(--foreground);
 }
-/* Duas linhas para o nome: numa só, "Aluguel e condomínio" e "Plano de
-   saúde" viravam "Aluguel e c…" e "Plano de s…". */
+/* Sem o círculo em volta do ícone: dentro da caixa ele era uma moldura
+   dentro de outra. */
+.grade button :global(.simbolo-categoria) { background:none !important; width:auto !important; height:auto !important; border:0 !important; box-shadow:none !important; }
+/* Duas linhas para o nome: numa só, "Aluguel e condomínio" virava
+   "Aluguel e c…". */
 .grade button span:last-child { max-width:100%; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; text-align:center; hyphens:auto; overflow-wrap:break-word; }
-.grade button[data-ligado] { border:1.5px solid var(--acao); background:color-mix(in oklab, var(--acao), transparent 86%); color:var(--foreground); font-weight:600; }
+/* A escolhida não engrossa a letra: em negrito, "Restaurante" já não cabia
+   na caixa e quebrava no meio da palavra. A borda verde basta. */
+.grade button[data-ligado] { border:1.5px solid var(--acao); background:color-mix(in oklab, var(--acao), transparent 86%); }
 .vazio { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
-.personalizar { display:inline-block; margin-top:8px; font-size:calc(12.5px * var(--escala-letra)); font-weight:600; color:var(--acao); }
+.vazio a { font-weight:600; color:var(--acao); }
 
-.interruptor { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; font-size:calc(14px * var(--escala-letra)); }
-/* O botão fica preso ao pé da folha: com oito contas e trinta categorias ela
-   passa da altura do celular, e o botão que fecha e mostra o resultado
-   sumia debaixo da rolagem. */
-.mostrar { position:sticky; bottom:0; box-shadow:0 -12px 24px 4px color-mix(in oklab, var(--background), transparent 20%); min-height:50px; border-radius:var(--raio-pilula); background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(15px * var(--escala-letra)); font-weight:680; }
+/* Botão branco sobre trilho cinza, como na opção B. O padrão do app pinta o
+   botão com a cor do texto do verde — quase preto —, e no tema escuro o
+   interruptor desligado sumia no fundo. */
+.interruptor [role="switch"][data-state="unchecked"] { background:color-mix(in oklab, var(--foreground), transparent 80%) !important; }
+.interruptor [role="switch"] > span { background:white !important; }
+.interruptor { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; font-size:calc(15px * var(--escala-letra)); }
+/* Preso ao pé da folha: com "Outras" aberto ela passa da altura do celular,
+   e o botão que fecha e mostra o resultado sumia debaixo da rolagem. */
+.mostrar {
+  position:sticky; bottom:0; min-height:52px; border-radius:var(--raio-pilula);
+  box-shadow:0 -12px 24px 4px color-mix(in oklab, var(--papel-solido), transparent 20%);
+  background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(16px * var(--escala-letra)); font-weight:700;
+}

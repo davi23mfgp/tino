@@ -1,46 +1,70 @@
-.pagina { max-width: 1180px; margin: auto; border: 1px solid var(--pauta); border-radius: 20px; background: var(--papel-solido); overflow: hidden; }
-.pagina .controles,.pagina .movimentos { border: 0; border-radius: 0; box-shadow: none; background: transparent; padding:20px 24px; }
-.pagina .controles { display: flex; flex-direction: column; gap:12px; border-bottom: 1px solid var(--pauta); }
-.pagina .controles > * { min-width: 0; }
+/* Extrato (Davi, 24/09): a tela da opção A do canvas. Os controles ficam
+   soltos sobre o fundo e só a lista vai num bloco de vidro — antes a página
+   inteira era uma caixa só, e os filtros pareciam parte da lista. */
+.pagina { display: grid; gap: 14px; max-width: 1180px; margin: auto; min-width: 0; }
+.controles { display: grid; gap: 14px; min-width: 0; }
+.controles > * { min-width: 0; }
+@media (min-width: 1024px) {
+  /* No computador, controles numa coluna à esquerda e a lista ao lado: em
+     1.280px de largura, a lista embaixo dos filtros deixava metade da tela
+     vazia dos dois lados. */
+  .pagina { grid-template-columns: 380px minmax(0,1fr); align-items: start; gap: 20px; }
+  .controles { position: sticky; top: 88px; }
+}
 
 /* Mês com setas. O título por cima de um <select> transparente: as setas
    andam um mês, o toque no nome abre a lista para pular vários. O seletor
    antigo cortava o nome em "setembr…" no celular. */
 .mes { display: grid; grid-template-columns: 44px minmax(0,1fr) 44px; align-items: center; gap: 8px; }
-.mes > button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--pauta); background: color-mix(in oklab, var(--foreground), transparent 95%); }
+.mes > button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--vidro-borda, var(--pauta)); background: color-mix(in oklab, var(--foreground), transparent 94%); }
 .mes > button:disabled { opacity: .35; }
 .mes label { position: relative; display: grid; place-items: center; min-height: 44px; }
-.mes label b { display: inline-block; font-size: calc(17px * var(--escala-letra)); font-weight: 680; white-space: nowrap; }
+.mes label b { display: inline-block; font-size: calc(17px * var(--escala-letra)); font-weight: 700; white-space: nowrap; }
 .mes label b::first-letter { text-transform: uppercase; }
 .mes select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
 
-/* Três números numa linha: o resumo soma só o que o filtro mostra. */
-.tres { display: grid; grid-auto-columns: minmax(0,1fr); grid-auto-flow: column; gap: 8px; padding: 2px 4px; }
-.tres > div { min-width: 0; }
-.tres dt { font-size: max(10px, calc(11px * var(--escala-letra))); color: var(--texto-3); }
-.tres dd { margin-top: 2px; font-size: clamp(14px, 4.4vw, calc(21px * var(--escala-letra))); font-weight: 720; letter-spacing: -.02em; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.tres dd small { font-size: .62em; font-weight: 650; opacity: .75; }
+/* Três números em caixas, como na opção A. O resumo soma só o que o filtro
+   mostra. Os centavos descem de tamanho em vez de sumir: arredondados, entrou
+   menos saiu deixaria de fechar com o sobrou em algum mês. */
+.tres { display: grid; grid-auto-columns: minmax(0,1fr); grid-auto-flow: column; gap: 8px; }
+.tres > div { min-width: 0; padding: 10px 12px; border-radius: 16px; border: 1px solid color-mix(in oklab, var(--foreground), transparent 90%); background: color-mix(in oklab, var(--foreground), transparent 95%); }
+.tres dt { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.tres dd { margin-top: 2px; font-size: clamp(14px, 4.3vw, calc(19px * var(--escala-letra))); font-weight: 720; letter-spacing: -.02em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tres dd small { font-size: .6em; font-weight: 650; opacity: .7; }
 
-.busca { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--pauta); background: color-mix(in oklab, var(--foreground), transparent 96%); color: var(--texto-3); }
+.busca { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--foreground), transparent 88%); background: color-mix(in oklab, var(--foreground), transparent 95%); color: var(--texto-3); }
 .busca:focus-within { border-color: color-mix(in oklab, var(--acao), transparent 50%); }
 /* O `input` global traz borda e fundo próprios; aqui a pílula é o campo. */
 .busca input[type="search"] { border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; }
-.busca input { flex: 1; min-width: 0; height: 42px; border: 0; outline: none; background: transparent; font-size: calc(14px * var(--escala-letra)); color: var(--foreground); }
+.busca input { flex: 1; min-width: 0; height: 42px; outline: none; font-size: calc(14.5px * var(--escala-letra)); color: var(--foreground); }
+
+/* --- a lista --- */
+.movimentos { padding: 6px 18px 12px; border-radius: var(--raio-bloco); min-width: 0; }
 .lista { display: flex; flex-direction: column; }
-/* O dia é o cabeçalho da sua própria lista: a data sai das linhas e o total do
-   dia fica ao lado dele, discreto, sem virar mais uma coluna do lançamento. */
-.grupoDia > ul { margin: 0; padding:0; list-style: none; }
-.grupoDia > h3 { position: sticky; top: 0; z-index: 1; display: flex; align-items: baseline; justify-content: space-between; gap:12px; padding:12px 0 4px; font-size: calc(12px * var(--escala-letra)); font-weight: 600; letter-spacing: .01em; color: var(--texto-2); background: var(--papel-solido); }
-.grupoDia > h3 b { font-size: calc(12px * var(--escala-letra)); font-weight: 600; font-variant-numeric: tabular-nums; opacity: .85; }
-.grupoDia:first-child > h3 { padding-top: 0; }
-.linha { display: grid; grid-template-columns: 36px minmax(0,1fr) minmax(120px,190px) 145px; align-items: center; gap:12px; min-height: 60px; border-bottom: 1px solid var(--pauta); }
-.linha:last-child { border: 0; }
-.linha:hover { background: var(--papel-1); }
-.simbolo { display: grid; place-items: center; }
+/* O dia é o cabeçalho da sua própria lista: a data sai das linhas e o total
+   do dia fica ao lado, discreto, sem virar mais uma coluna do lançamento. */
+.grupoDia > ul { margin: 0; padding: 0; list-style: none; }
+.grupoDia > h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 2px 8px; border-bottom: 1px solid color-mix(in oklab, var(--foreground), transparent 92%); font-size: calc(13px * var(--escala-letra)); font-weight: 600; color: var(--texto-2); }
+.grupoDia > h3 b { font-size: calc(13px * var(--escala-letra)); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Uma linha por lançamento, como na opção A: ícone, nome em cima, conta e
+   categoria embaixo, valor à direita. A categoria era uma terceira coluna de
+   botão e, no celular, uma terceira linha — cada lançamento ocupava 110px. */
+.linha { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; align-items: center; gap: 12px; min-height: 60px; padding: 6px 0; border-bottom: 1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.grupoDia li:last-child { border-bottom: 0; }
+.simbolo { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 999px; background: color-mix(in oklab, var(--foreground), transparent 92%); }
 .simbolo>:first-child:not(:last-child)+* { display: none; }
-.categoria { min-width: 0; }
-.categoria button { border: 0; box-shadow: none; background: transparent; font-size: 12px; color: var(--texto-2); padding:0 8px; font-weight: 400; min-height: 44px; }
-.valor { display: flex; align-items: center; justify-content: flex-end; gap:0; font-size: 13px; font-variant-numeric: tabular-nums; }
-.valor button { width: auto; min-height: 44px; }
-@media(max-width:700px) { .pagina .controles,.pagina .movimentos { padding:16px; }.linha { grid-template-columns: 32px minmax(0,1fr) auto; gap:4px 8px; padding:8px 0; }.categoria { grid-column: 2; grid-row: 2; }.categoria button { padding:0; min-height: 32px; }.valor { grid-column: 3; grid-row: 1/3; }.linha p { font-size: 11px; }.movimentos>div:first-child>p:last-child { display: none; } }
-@media(max-width:360px) {.valor,.valor button { font-size: 12px; }.pagina .controles,.pagina .movimentos { padding:12px; } }
+.simbolo :global(.simbolo-categoria) { background: none !important; box-shadow: none !important; }
+.texto { min-width: 0; }
+.descricao { display: block; max-width: 100%; margin: 0 !important; padding: 0 !important; font-size: calc(15px * var(--escala-letra)) !important; font-weight: 650; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub { display: flex; align-items: center; gap: 5px; min-width: 0; margin-top: 1px; font-size: calc(13px * var(--escala-letra)); color: var(--texto-3); white-space: nowrap; }
+.sub > span:first-child { flex-shrink: 0; }
+/* A categoria continua sendo o seletor de antes, mas com cara de texto. */
+.categoria { min-width: 0; height: auto !important; min-height: 22px !important; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; font-size: calc(13px * var(--escala-letra)) !important; font-weight: 400 !important; color: var(--texto-3) !important; justify-content: flex-start !important; }
+.categoria:hover { color: var(--foreground) !important; }
+.valor { display: flex; align-items: center; justify-content: flex-end; font-size: calc(15px * var(--escala-letra)); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.moeda { width: auto !important; min-height: 44px; padding: 0 0 0 1px !important; font-size: calc(15px * var(--escala-letra)) !important; font-weight: 700 !important; }
+@media (max-width: 360px) {
+  .movimentos { padding: 4px 12px 10px; }
+  .valor, .moeda { font-size: 13px !important; }
+}
