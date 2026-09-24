@@ -27,8 +27,13 @@ export function FaixaDeDias({
   diaSelecionado,
   aoEscolher,
   dias,
+  destacar = true,
 }: {
   diaSelecionado: string
+  /// Pinta o dia escolhido. No extrato em modo "mês" a faixa só mostra a
+  /// semana; pintar um dia ali dizia que a lista estava presa a ele, e não
+  /// estava.
+  destacar?: boolean
   aoEscolher: (dia: string) => void
   dias: DiaComMovimento[]
 }) {
@@ -56,7 +61,7 @@ export function FaixaDeDias({
               <button
                 type="button"
                 onClick={() => aoEscolher(dia)}
-                aria-pressed={dia === diaSelecionado}
+                aria-pressed={destacar && dia === diaSelecionado}
                 aria-label={`Dia ${numero}${movimento ? `, ${movimento.lancamentos} lançamentos` : ", sem lançamentos"}`}
                 data-hoje={dia === hoje}
               >

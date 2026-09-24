@@ -4,23 +4,18 @@ import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import { buscar, enviar, TRANSACOES_ATUALIZADAS } from "@/lib/cliente"
-import { competenciaAtual, rotuloCompetencia, ultimasCompetencias } from "@/lib/datas"
+import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia, ultimasCompetencias } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Cartao, Vazio } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
 import { EditavelTexto, EditavelMoeda } from "@/components/ui/editavel"
-import { FabAdicionar } from "@/components/fab-adicionar"
 import { showToast } from "@/components/ui/toast"
-import { SelectNative } from "@/components/ui/select-native"
-import { Checkbox } from "@/components/ui/checkbox"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
 import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
-import { Button } from "@/components/ui/button"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { porDia, rotuloDia } from "@/lib/extrato-dias"
 import { FaixaDeDias, type DiaComMovimento } from "@/components/faixa-de-dias"
+import { FiltrosDoExtrato, type ContaDoFiltro, type TipoDoFiltro } from "@/components/filtros-do-extrato"
+import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 import estilos from "./extrato.module.css"
 
 interface Transacao {
@@ -49,15 +44,15 @@ const CLASSE_BOTAO = "min-h-11 rounded-full border border-pauta px-4 py-2 text-s
 export default function Transacoes() {
   const [competencia, setCompetencia] = useState(competenciaAtual())
   const [contaFiltro,setContaFiltro]=useState("")
-  const [contas,setContas]=useState<{id:string;nome:string}[]>([])
-  useEffect(()=>{buscar<{id:string;nome:string}[]>("/api/contas").then(setContas).catch(()=>showToast("Não foi possível carregar contas.",{variant:"error"}))},[])
+  const [contas,setContas]=useState<ContaDoFiltro[]>([])
+  useEffect(()=>{buscar<ContaDoFiltro[]>("/api/contas").then(setContas).catch(()=>showToast("Não foi possível carregar contas.",{variant:"error"}))},[])
   // "mes" mostra o período inteiro; "dia" prende a lista ao dia da faixa.
   const [modo, setModo] = useState<"mes" | "dia">("mes")
   const [dia, setDia] = useState(() => new Date().toISOString().slice(0, 10))
   const [dias, setDias] = useState<DiaComMovimento[]>([])
   const [busca, setBusca] = useState("")
   const [semCategoria, setSemCategoria] = useState(false)
-  const [tipo, setTipo] = useState("todos")
+  const [tipo, setTipo] = useState<TipoDoFiltro>("todos")
   const [categoriaFiltro, setCategoriaFiltro] = useState<string | null>(null)
   useEffect(() => {
     const parametros = new URLSearchParams(window.location.search)
@@ -228,114 +223,121 @@ export default function Transacoes() {
 
   const ocupado = carregando || carregandoMais || salvando !== null
   const saldo = totais ? totais.receitasCentavos - totais.despesasCentavos : null
+  const competencias = ultimasCompetencias(18).reverse()
+  const ultimaCompetencia = competencias[0]
+  const primeiraCompetencia = competencias[competencias.length - 1]
+  const filtrando = Boolean(busca || contaFiltro || categoriaFiltro || semCategoria || tipo !== "todos")
+  // Conta filtrada não corta um lado: o mês daquela conta tem entradas e
+  // saídas inteiras, e a sobra dela é uma resposta de verdade.
+  const ladosInteiros = !busca && !categoriaFiltro && !semCategoria && tipo === "todos"
+  function limparFiltros() {
+    setBusca("")
+    setContaFiltro("")
+    setCategoriaFiltro(null)
+    setSemCategoria(false)
+    setTipo("todos")
+  }
 
   return (
     <div className={estilos.pagina}>
-      {/* O extrato abria direto nos filtros. O saldo do período já existia,
-          escondido numa grade de três no fim do bloco de controles. */}
-      <Abertura
-        rotulo={`Extrato de ${rotuloCompetencia(competencia)}`}
-        titulo={
-          saldo === null ? (
-            <>Carregando seu extrato…</>
-          ) : saldo >= 0 ? (
-            <>Sobraram <em>{formatarMoeda(saldo)}</em> no período.</>
-          ) : (
-            <>Faltaram <em>{formatarMoeda(Math.abs(saldo))}</em> no período.</>
-          )
-        }
-        apoio={totais ? <>Entraram <b>{formatarMoeda(totais.receitasCentavos)}</b> e saíram <b>{formatarMoeda(totais.despesasCentavos)}</b>.</> : undefined}
-      />
-
+      {/* Extrato (Davi, 24/09: opções A e B do canvas juntas). O saldo do
+          período aparecia duas vezes — na frase do topo e na grade logo
+          abaixo — e havia três botões de adicionar na mesma tela. Ficou um
+          resumo só, o botão de adicionar do app, e os filtros numa linha. */}
       <Cartao estatico className={estilos.controles}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-base font-semibold">Movimentações</h2>
-          <FabAdicionar inline />
-        </div>
-        <div className={estilos.busca}>
-          <label className="min-w-0 space-y-1 text-sm">
-            <span className="block font-medium">Mês</span>
-            <SelectNative
-              tamanho="pilula"
-              value={competencia}
-              onChange={(evento) => setCompetencia(evento.target.value)}
-              className="min-h-11"
-            >
-              {ultimasCompetencias(18).reverse().map((mes) => (
+        <div className={estilos.mes}>
+          <button type="button" aria-label="Mês anterior" disabled={competencia <= primeiraCompetencia} onClick={() => setCompetencia(competenciaMaisMeses(competencia, -1))}>
+            <ChevronLeft aria-hidden className="size-5" />
+          </button>
+          {/* O seletor nativo continua por baixo do título: pular de setembro
+              para março nas setas seriam seis toques. */}
+          <label>
+            <span className="sr-only">Escolher o mês</span>
+            <b>{rotuloCompetencia(competencia)}</b>
+            <select value={competencia} onChange={(evento) => setCompetencia(evento.target.value)}>
+              {competencias.map((mes) => (
                 <option key={mes} value={mes}>{rotuloCompetencia(mes)}</option>
               ))}
-            </SelectNative>
+            </select>
           </label>
-          <label className="min-w-0 space-y-1 text-sm">
-            <span className="block font-medium">Buscar</span>
-            <input
-              type="search"
-              value={busca}
-              onChange={(evento) => setBusca(evento.target.value)}
-              placeholder="Descrição do lançamento"
-              className="min-h-11 w-full min-w-0 rounded-full border border-pauta bg-background px-4 py-2 text-sm outline-none focus:border-acao/50"
-            />
-          </label>
+          <button type="button" aria-label="Próximo mês" disabled={competencia >= ultimaCompetencia} onClick={() => setCompetencia(competenciaMaisMeses(competencia, 1))}>
+            <ChevronRight aria-hidden className="size-5" />
+          </button>
         </div>
-        <div className={estilos.calendario}>
-          <FaixaDeDias
-            diaSelecionado={dia}
-            dias={dias}
-            aoEscolher={(escolhido) => {
-              setDia(escolhido)
-              // Escolher um dia é pedir aquele dia: alternar à mão depois de
-              // tocar no número seria um passo a mais para o óbvio.
-              setModo("dia")
-              if (escolhido.slice(0, 7) !== competencia) setCompetencia(escolhido.slice(0, 7))
-            }}
-          />
-        </div>
-        <div className={estilos.filtros}>
-          {/* Os dois alternadores dividem a mesma linha: sozinhos, cada um
-              ocupava uma faixa inteira da tela do celular para oferecer duas
-              e três opções. */}
-          <ToggleGroup type="single" value={modo} onValueChange={(valor) => { if (valor) setModo(valor as "mes" | "dia") }} aria-label="Ver por dia ou pelo mês">
-            <ToggleGroupItem value="dia">Dia</ToggleGroupItem>
-            <ToggleGroupItem value="mes">Mês</ToggleGroupItem>
-          </ToggleGroup>
-          <ToggleGroup type="single" value={tipo} onValueChange={valor => {if(valor) setTipo(valor)}} aria-label="Tipo de movimento">
-            <ToggleGroupItem value="todos">Todos</ToggleGroupItem>
-            <ToggleGroupItem value="RECEITA">Entradas</ToggleGroupItem>
-            <ToggleGroupItem value="DESPESA">Saídas</ToggleGroupItem>
-          </ToggleGroup>
-          <SelectNative aria-label="Filtrar conta ou cartão" value={contaFiltro} onChange={e=>setContaFiltro(e.target.value)}><option value="">Todas as contas e cartões</option>{contas.map(c=><option key={c.id} value={c.id}>{c.nome}</option>)}</SelectNative>
-          <SeletorCategoria opcoes={categorias} valor={categoriaFiltro} aoMudar={id => {setCategoriaFiltro(id);setSemCategoria(false)}} vazio="Todas as categorias" rotulo="Filtrar categoria" desabilitado={carregandoCategorias || erroCategorias} />
-        </div>
-        <details className={estilos.maisFiltros}>
-          <summary className="min-h-11 cursor-pointer py-3 font-medium">
-            Mais filtros{semCategoria ? " · 1 ativo" : ""}
-          </summary>
-          <label className="flex min-h-11 items-center gap-2">
-            <Checkbox checked={semCategoria} onChange={(evento) => setSemCategoria(evento.target.checked)} />
-            Só sem categoria
-          </label>
-          <Button asChild variant="link"><Link href="/categorias">Personalizar categorias</Link></Button>
-        </details>
-        {(busca || contaFiltro || categoriaFiltro || semCategoria || tipo !== "todos") && <div className={estilos.ativos}><span>{[busca && `Busca: ${busca}`, contas.find(c => c.id === contaFiltro)?.nome, categorias.find(c => c.id === categoriaFiltro)?.nome, semCategoria && "Sem categoria", tipo === "RECEITA" && "Entradas", tipo === "DESPESA" && "Saídas"].filter(Boolean).join(" · ")}</span><button onClick={() => { setBusca(""); setContaFiltro(""); setCategoriaFiltro(null); setSemCategoria(false); setTipo("todos") }}>Limpar filtros</button></div>}
-        <div className={estilos.resumo}>
-          <dl aria-label="Resumo do período filtrado" aria-busy={carregando}>
-            {[
-              { rotulo: "Entradas", valor: totais?.receitasCentavos, tom: "text-positivo" },
-              { rotulo: "Saídas", valor: totais?.despesasCentavos, tom: "text-negativo" },
-              { rotulo: "Saldo do período", valor: saldo, tom: saldo !== null && saldo < 0 ? "text-negativo" : "" },
-            ].map((metrica) => (
-              <div key={metrica.rotulo}>
-                <dt>{metrica.rotulo}</dt>
-                <dd className={cn("numero valor-sensivel whitespace-nowrap", metrica.tom)}>
-                  {metrica.valor == null ? "—" : formatarMoeda(metrica.valor)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <div className={estilos.contagem} aria-live="polite">
-            <p>{contagem ? `${contagem.entradas} entradas · ${contagem.saidas} saídas neste filtro` : `${transacoes.filter(item => item.tipo === "RECEITA").length} entradas · ${transacoes.filter(item => item.tipo === "DESPESA").length} saídas carregadas`}</p>
-          </div>
-        </div>
+
+        <FaixaDeDias
+          diaSelecionado={dia}
+          destacar={modo === "dia"}
+          dias={dias}
+          aoEscolher={(escolhido) => {
+            setDia(escolhido)
+            // Escolher um dia é pedir aquele dia: alternar à mão depois de
+            // tocar no número seria um passo a mais para o óbvio.
+            setModo("dia")
+            if (escolhido.slice(0, 7) !== competencia) setCompetencia(escolhido.slice(0, 7))
+          }}
+        />
+
+        {/* "Sobrou" só quando o filtro deixa os dois lados inteiros. Com
+            "Saídas" ligado, entrou zero por definição, e a tela dizia "faltou
+            R$ 350" de um mês que fechou no azul. No lugar, a contagem. */}
+        <dl className={estilos.tres} aria-label="Resumo do que o filtro mostra" aria-busy={carregando}>
+          {tipo !== "DESPESA" && (
+            <div>
+              <dt>Entrou</dt>
+              <dd className="numero valor-sensivel text-positivo">{totais ? <ValorComCentavos centavos={totais.receitasCentavos} /> : "—"}</dd>
+            </div>
+          )}
+          {tipo !== "RECEITA" && (
+            <div>
+              <dt>Saiu</dt>
+              <dd className="numero valor-sensivel">{totais ? <ValorComCentavos centavos={totais.despesasCentavos} /> : "—"}</dd>
+            </div>
+          )}
+          {ladosInteiros ? (
+            <div>
+              <dt>{saldo !== null && saldo < 0 ? "Faltou" : "Sobrou"}</dt>
+              <dd className={cn("numero valor-sensivel", saldo !== null && saldo < 0 ? "text-negativo" : "text-positivo")}>
+                {saldo === null ? "—" : <ValorComCentavos centavos={Math.abs(saldo)} />}
+              </dd>
+            </div>
+          ) : (
+            <div>
+              <dt>Lançamentos</dt>
+              <dd className="numero">{contagem && totais ? (tipo === "RECEITA" ? contagem.entradas : tipo === "DESPESA" ? contagem.saidas : contagem.entradas + contagem.saidas) : "—"}</dd>
+            </div>
+          )}
+        </dl>
+
+        <label className={estilos.busca}>
+          <Search aria-hidden className="size-4 shrink-0" />
+          <span className="sr-only">Buscar lançamento</span>
+          <input type="search" value={busca} onChange={(evento) => setBusca(evento.target.value)} placeholder="Buscar lançamento" />
+        </label>
+
+        <FiltrosDoExtrato
+          tipo={tipo}
+          aoMudarTipo={setTipo}
+          contaId={contaFiltro}
+          aoMudarConta={setContaFiltro}
+          categoriaId={semCategoria ? null : categoriaFiltro}
+          aoMudarCategoria={(id) => { setCategoriaFiltro(id); if (id) setSemCategoria(false) }}
+          semCategoria={semCategoria}
+          aoMudarSemCategoria={(sem) => { setSemCategoria(sem); if (sem) setCategoriaFiltro(null) }}
+          diaEscolhido={modo === "dia" ? dia : null}
+          aoSoltarDia={() => setModo("mes")}
+          contas={contas}
+          categorias={categorias}
+          encontrados={
+            carregando || !contagem || !totais
+              ? null
+              : {
+                  lancamentos: tipo === "RECEITA" ? contagem.entradas : tipo === "DESPESA" ? contagem.saidas : contagem.entradas + contagem.saidas,
+                  totalCentavos: tipo === "RECEITA" ? totais.receitasCentavos : tipo === "DESPESA" ? totais.despesasCentavos : null,
+                }
+          }
+          aoLimpar={limparFiltros}
+        />
       </Cartao>
 
       <Cartao estatico className={estilos.movimentos}>
@@ -359,9 +361,9 @@ export default function Transacoes() {
         {!carregando && !erro && transacoes.length === 0 && (
           <Vazio
             titulo="Nenhum lançamento encontrado"
-            texto={busca || semCategoria || categoriaFiltro || tipo !== "todos" ? "Tente outra busca ou limpe os filtros." : "Adicione um lançamento ou escolha outro mês."}
-            acao={busca || semCategoria || categoriaFiltro || tipo !== "todos" ? (
-              <button type="button" className={CLASSE_BOTAO} onClick={() => { setBusca(""); setSemCategoria(false); setCategoriaFiltro(null); setTipo("todos") }}>
+            texto={filtrando ? "Tente outra busca ou limpe os filtros." : "Adicione um lançamento ou escolha outro mês."}
+            acao={filtrando ? (
+              <button type="button" className={CLASSE_BOTAO} onClick={limparFiltros}>
                 Limpar filtros
               </button>
             ) : undefined}
@@ -443,5 +445,20 @@ export default function Transacoes() {
         )}
       </Cartao>
     </div>
+  )
+}
+
+/// "R$ 8.600" e ",00" menor: três valores com centavos não cabem lado a lado
+/// num celular de 360px, e cortar os centavos faria entrou menos saiu não
+/// fechar com o sobrou.
+function ValorComCentavos({ centavos }: { centavos: number }) {
+  const texto = formatarMoeda(centavos)
+  const corte = texto.lastIndexOf(",")
+  if (corte < 0) return <>{texto}</>
+  return (
+    <>
+      {texto.slice(0, corte)}
+      <small>{texto.slice(corte)}</small>
+    </>
   )
 }

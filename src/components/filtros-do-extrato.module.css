@@ -1,0 +1,61 @@
+/* Filtros do extrato (Davi, 24/09): a linha de chips da opção A e a folha da
+   opção B do canvas, juntas. */
+
+/* A linha desliza de lado em vez de quebrar: quebrada, ela voltava a ocupar
+   as duas ou três linhas de controles que a mudança veio tirar. A margem
+   negativa deixa o último chip sumir na borda, que é o sinal de que há mais. */
+.linha { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px; scroll-padding-inline:16px; }
+.linha::-webkit-scrollbar { display:none; }
+@media (min-width:701px) { .linha { margin:0; padding:2px 0; flex-wrap:wrap; overflow:visible; } }
+
+.chip, .botaoFiltros {
+  flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:40px; max-width:220px; padding:0 14px;
+  border-radius:var(--raio-pilula); border:1px solid color-mix(in oklab, var(--foreground), transparent 86%);
+  background:color-mix(in oklab, var(--foreground), transparent 95%);
+  font-size:calc(13px * var(--escala-letra)); font-weight:550; white-space:nowrap; color:var(--foreground);
+  transition:background var(--tempo) var(--curva), color var(--tempo) var(--curva);
+}
+.chip[data-ligado], .botaoFiltros[data-ativo] {
+  border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650;
+}
+.botaoFiltros { font-weight:650; }
+.nome { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+
+/* --- a folha --- */
+.folha { background:color-mix(in oklab, var(--background), transparent 12%) !important; backdrop-filter:blur(28px) saturate(150%); -webkit-backdrop-filter:blur(28px) saturate(150%); }
+.corpo { display:grid; gap:18px; padding:18px 16px 16px; }
+@media (min-width:640px) { .corpo { padding:22px 24px 20px; } }
+.corpo > * { min-width:0; }
+.topo { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding-right:40px; }
+.titulo { font-size:calc(19px * var(--escala-letra)); font-weight:680; }
+.limpar { min-height:44px; font-size:calc(14px * var(--escala-letra)); font-weight:600; color:var(--acao); }
+.limpar:disabled { opacity:.4; }
+.rotulo { margin-bottom:8px; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+
+.segmento { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:4px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.segmento button { min-height:40px; border-radius:var(--raio-pilula); font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-2); }
+.segmento button[aria-checked="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+
+.contas { display:flex; flex-wrap:wrap; gap:8px; }
+
+/* Grade de ícones: quatro por linha no celular. A lista de 30 categorias em
+   texto corrido era rolagem demais para escolher uma. A grade rola dentro de
+   si, para o botão do pé não sumir. */
+.grade { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; max-height:236px; overflow-y:auto; overscroll-behavior:contain; }
+.grade button {
+  display:grid; justify-items:center; align-content:center; gap:5px; min-height:72px; padding:8px 4px; border-radius:14px;
+  border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 96%);
+  font-size:max(10px, calc(11px * var(--escala-letra))); line-height:1.2; color:var(--texto-2);
+}
+/* Duas linhas para o nome: numa só, "Aluguel e condomínio" e "Plano de
+   saúde" viravam "Aluguel e c…" e "Plano de s…". */
+.grade button span:last-child { max-width:100%; overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; text-align:center; hyphens:auto; overflow-wrap:break-word; }
+.grade button[data-ligado] { border:1.5px solid var(--acao); background:color-mix(in oklab, var(--acao), transparent 86%); color:var(--foreground); font-weight:600; }
+.vazio { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.personalizar { display:inline-block; margin-top:8px; font-size:calc(12.5px * var(--escala-letra)); font-weight:600; color:var(--acao); }
+
+.interruptor { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; font-size:calc(14px * var(--escala-letra)); }
+/* O botão fica preso ao pé da folha: com oito contas e trinta categorias ela
+   passa da altura do celular, e o botão que fecha e mostra o resultado
+   sumia debaixo da rolagem. */
+.mostrar { position:sticky; bottom:0; box-shadow:0 -12px 24px 4px color-mix(in oklab, var(--background), transparent 20%); min-height:50px; border-radius:var(--raio-pilula); background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(15px * var(--escala-letra)); font-weight:680; }
