@@ -1,27 +1,30 @@
 "use client"
 
-import { useEffect, useId, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Plus, Receipt, Upload, Zap } from "lucide-react"
+import { ChevronRight, MinusCircle, Plus, PlusCircle, Upload, Zap } from "lucide-react"
 
 import { buscar, enviar, TRANSACOES_ATUALIZADAS } from "@/lib/cliente"
+import { lerTextoLivre } from "@/lib/captura/notificacao"
+import { sinaisDaFrase } from "@/lib/captura/fala"
+import { formatarMoeda } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
-import {
-  Dialog, DialogTrigger, DialogContent, DialogHeader, DialogBody,
-  DialogTitle, DialogDescription,
-} from "@/components/ui/dialog"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { SelectNative } from "@/components/ui/select-native"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DitarGasto } from "@/components/ditar-gasto"
 import { showToast } from "@/components/ui/toast"
+import estilos from "./fab-adicionar.module.css"
 
 interface Conta {
   id: string
   nome: string
+  tipo?: string
+}
+
+interface Categoria {
+  id: string
+  nome: string
+  tipo: "DESPESA" | "RECEITA" | string
 }
 
 interface FabAdicionarProps {
@@ -32,126 +35,127 @@ interface FabAdicionarProps {
   onSaved?: () => void
 }
 
-type EstadoContas = "carregando" | "pronto" | "erro"
+type Tipo = "DESPESA" | "RECEITA"
 
 function dataLocal(dia = new Date()): string {
   return `${dia.getFullYear()}-${String(dia.getMonth() + 1).padStart(2, "0")}-${String(dia.getDate()).padStart(2, "0")}`
 }
 
-function centavosDoValor(valor: string): number | null {
-  const texto = valor.trim()
-  if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(texto)) return null
-  const [inteiro, decimal = ""] = texto.split(",")
-  const centavos = Number(`${inteiro.replace(/\./g, "")}${decimal.padEnd(2, "0")}`)
-  return Number.isSafeInteger(centavos) && centavos > 0 ? centavos : null
+/** "2026-09-24" → "24 de setembro de 2026", sem depender do idioma do navegador. */
+function dataPorExtenso(iso: string): string {
+  const [ano, mes, dia] = iso.split("-").map(Number)
+  if (!ano || !mes || !dia) return iso
+  return new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(ano, mes - 1, dia)))
 }
 
-const focoVisivel = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acao focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-const acaoMenu = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[calc(14px*var(--escala-letra))] transition-colors hover:bg-foreground/[0.05] motion-reduce:transition-none ${focoVisivel}`
-
+/**
+ * O botão "+" e a tela de nova transação (Davi, 24/09, com um print de
+ * referência): abre direto no lançamento, sem o menu que vinha antes. Saída
+ * ou entrada, o valor grande, e as linhas de descrição, data, categoria e
+ * conta — mais o microfone, que preenche tudo a partir da fala.
+ *
+ * O valor é digitado como nos apps de banco: os dígitos entram pela direita
+ * (5, 52, 5,23, 52,30). Não há vírgula a acertar nem formato para errar.
+ *
+ * O que foi falado não é salvo sozinho: a fala só preenche os campos, e a
+ * pessoa confere antes de tocar em "Adicionar". É a mesma regra da fila de
+ * capturas — entre a voz e o número existe uma transcrição, e transcrição
+ * erra.
+ */
 export function FabAdicionar({ ancorado = false, inline: compacto = false, onSaved }: FabAdicionarProps) {
   const router = useRouter()
-  const id = useId()
-  const tituloFormulario = useRef<HTMLHeadingElement>(null)
-  const campoValor = useRef<HTMLInputElement>(null)
   const salvando = useRef(false)
   const [aberto, setAberto] = useState(false)
-  const [tela, setTela] = useState<"menu" | "formulario">("menu")
-  const [contas, setContas] = useState<Conta[]>([])
-  const [estadoContas, setEstadoContas] = useState<EstadoContas>("carregando")
-  const [tentativa, setTentativa] = useState(0)
+  const [contas, setContas] = useState<Conta[] | null>(null)
+  const [categorias, setCategorias] = useState<Categoria[]>([])
+  const [erroContas, setErroContas] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
-  const [erroValor, setErroValor] = useState(false)
-  const [contaId, setContaId] = useState("")
-  const [tipo, setTipo] = useState<"DESPESA" | "RECEITA">("DESPESA")
+  const [tipo, setTipo] = useState<Tipo>("DESPESA")
+  const [centavos, setCentavos] = useState(0)
   const [descricao, setDescricao] = useState("")
-  const [valor, setValor] = useState("")
   const [data, setData] = useState(dataLocal)
-  const formAberto = aberto && tela === "formulario"
-  const contaPronta = estadoContas === "pronto" && contas.some((conta) => conta.id === contaId)
+  const [categoriaId, setCategoriaId] = useState("")
+  const [contaId, setContaId] = useState("")
+  const [ouvido, setOuvido] = useState<string | null>(null)
 
   useEffect(() => {
-    if (formAberto) tituloFormulario.current?.focus()
-  }, [formAberto])
-
-  useEffect(() => {
-    if (!formAberto) return
+    if (!aberto) return
     const controlador = new AbortController()
-    setEstadoContas("carregando")
-    buscar<unknown>("/api/contas", { signal: controlador.signal })
-      .then((lista) => {
+    setErroContas(false)
+    Promise.all([
+      buscar<Conta[]>("/api/contas", { signal: controlador.signal }),
+      buscar<Categoria[]>("/api/categorias", { signal: controlador.signal }).catch(() => []),
+    ])
+      .then(([listaContas, listaCategorias]) => {
         if (controlador.signal.aborted) return
-        if (!Array.isArray(lista) || !lista.every((conta): conta is Conta =>
-          typeof conta === "object" && conta !== null &&
-          "id" in conta && typeof conta.id === "string" && conta.id.length > 0 &&
-          "nome" in conta && typeof conta.nome === "string",
-        )) {
-          throw new Error("Resposta de contas inválida.")
-        }
-        setContas(lista)
-        setContaId((atual) => lista.some((conta) => conta.id === atual) ? atual : lista[0]?.id ?? "")
-        setEstadoContas("pronto")
+        // Investimento não recebe gasto do dia a dia; ele se movimenta pela
+        // tela de investimentos, por transferência.
+        const usaveis = listaContas.filter((conta) => conta.tipo !== "INVESTIMENTO")
+        setContas(usaveis)
+        setContaId((atual) => (usaveis.some((conta) => conta.id === atual) ? atual : usaveis[0]?.id ?? ""))
+        setCategorias(Array.isArray(listaCategorias) ? listaCategorias : [])
       })
       .catch(() => {
         if (controlador.signal.aborted) return
         setContas([])
-        setContaId("")
-        setEstadoContas("erro")
+        setErroContas(true)
       })
     return () => controlador.abort()
-  }, [formAberto, tentativa])
+  }, [aberto])
 
-  function abrirFormulario() {
-    setEstadoContas("carregando")
+  function limpar() {
+    setTipo("DESPESA")
+    setCentavos(0)
+    setDescricao("")
+    setData(dataLocal())
+    setCategoriaId("")
     setErro(null)
-    setErroValor(false)
-    if (!descricao && !valor) setData(dataLocal())
-    setTela("formulario")
+    setOuvido(null)
   }
+
+  /** A fala vira campos preenchidos, e nada além disso. */
+  function preencherPelaFala(texto: string) {
+    const frase = texto.trim()
+    if (!frase) return
+    setOuvido(frase)
+    const lido = lerTextoLivre(frase)
+    const sinais = sinaisDaFrase(frase, new Date())
+    if (lido.valorCentavos && lido.valorCentavos > 0) setCentavos(lido.valorCentavos)
+    if (lido.estabelecimento) setDescricao(lido.estabelecimento)
+    setTipo(sinais.tipo)
+    setData(dataLocal(sinais.data))
+    setErro(lido.valorCentavos ? null : "Não entendi o valor. Digite-o acima ou fale de novo.")
+  }
+
+  const categoriasDoTipo = categorias.filter((categoria) => categoria.tipo === tipo)
+  const pronto = centavos > 0 && descricao.trim().length > 0 && !!contaId
 
   async function salvar(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (salvando.current) return
-    setErro(null)
-    if (!contaPronta) {
-      setErro("Aguarde as contas carregarem e escolha uma conta para salvar.")
+    if (!pronto) {
+      setErro(!centavos ? "Informe o valor." : !descricao.trim() ? "Informe uma descrição." : "Escolha a conta.")
       return
     }
-    if (!descricao.trim()) {
-      setErro("Informe uma descrição para o lançamento.")
-      return
-    }
-    const valorCentavos = centavosDoValor(valor)
-    if (valorCentavos === null) {
-      setErroValor(true)
-      setErro("Informe um valor maior que zero, como 52,30 ou 1.234,56, com até duas casas decimais.")
-      campoValor.current?.focus()
-      return
-    }
-    const dia = new Date(`${data}T12:00:00`)
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || Number.isNaN(dia.getTime()) || dataLocal(dia) !== data) {
-      setErro("Informe uma data válida.")
-      return
-    }
-
     salvando.current = true
     setEnviando(true)
+    setErro(null)
     try {
       await enviar(
         "/api/transacoes",
-        { contaId, tipo, descricao: descricao.trim(), valorCentavos, data },
+        // Sem categoria escolhida, o servidor categoriza pelas regras da casa.
+        { contaId, tipo, descricao: descricao.trim(), valorCentavos: centavos, data, ...(categoriaId ? { categoriaId } : {}) },
         "POST",
       )
-      showToast("Lançamento adicionado.", { variant: "success" })
+      showToast(tipo === "DESPESA" ? "Saída adicionada." : "Entrada adicionada.", { variant: "success" })
       setAberto(false)
-      setDescricao("")
-      setValor("")
+      limpar()
       window.dispatchEvent(new Event(TRANSACOES_ATUALIZADAS))
       router.refresh()
       onSaved?.()
-    } catch (e) {
-      setErro(e instanceof Error ? e.message : "Não consegui salvar. Tente novamente.")
+    } catch (falha) {
+      setErro(falha instanceof Error ? falha.message : "Não consegui salvar. Tente novamente.")
     } finally {
       salvando.current = false
       setEnviando(false)
@@ -162,25 +166,19 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
     <Dialog
       open={aberto}
       onOpenChange={(proximo) => {
-        if (proximo) {
-          if (salvando.current) return
-          setTela("menu")
-        }
+        if (!proximo && salvando.current) return
+        if (proximo) setData((atual) => (centavos || descricao ? atual : dataLocal()))
         setAberto(proximo)
       }}
     >
-      <div className={cn(
-        compacto ? "inline-flex" : ancorado
-          ? "relative flex items-center justify-center"
-          : "fixed bottom-24 right-4 z-40 lg:hidden",
-      )}>
+      <div className={cn(compacto ? "inline-flex" : ancorado ? "relative flex items-center justify-center" : "fixed bottom-24 right-4 z-40 lg:hidden")}>
         <DialogTrigger asChild>
           <button
             type="button"
             aria-label="Adicionar"
             className={cn(
               "ios-tap flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground shadow-alta motion-reduce:!transform-none motion-reduce:!transition-none",
-              focoVisivel,
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acao focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               compacto ? "min-h-11 px-4 py-2 text-sm font-medium" : ancorado ? "size-11 sm:size-10" : "size-14",
             )}
           >
@@ -190,126 +188,94 @@ export function FabAdicionar({ ancorado = false, inline: compacto = false, onSav
         </DialogTrigger>
       </div>
 
-      <DialogContent className="max-w-[420px]">
-        {tela === "menu" ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>Adicionar</DialogTitle>
-              <DialogDescription>Escolha como registrar seu dinheiro.</DialogDescription>
-            </DialogHeader>
-            <DialogBody className="flex flex-col gap-1">
-              <button type="button" onClick={abrirFormulario} className={acaoMenu}>
-                <Receipt aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
-                <span className="flex flex-col gap-0.5">
-                  <span className="font-medium">Registrar gasto</span>
-                  <span className="text-[calc(13px*var(--escala-letra))] text-muted-fg">Preencha os dados manualmente.</span>
-                </span>
-              </button>
-              <Link href="/capturas" onClick={() => setAberto(false)} className={acaoMenu}>
-                <Zap aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
-                Anotar com texto
-              </Link>
-              <Link href="/importar" onClick={() => setAberto(false)} className={acaoMenu}>
-                <Upload aria-hidden="true" className="size-5 shrink-0 text-muted-fg" />
-                Importar extrato
-              </Link>
-            </DialogBody>
-          </>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle ref={tituloFormulario} tabIndex={-1} className="outline-none">Registrar gasto</DialogTitle>
-              <DialogDescription>Informe a conta, o tipo e os dados do lançamento.</DialogDescription>
-            </DialogHeader>
-            <DialogBody>
-              <form onSubmit={salvar} className="flex flex-col gap-4" aria-busy={enviando}>
-                {erro && <p id={`${id}-erro`} role="alert" className="text-sm text-negativo">{erro}</p>}
-                <fieldset disabled={enviando}><FieldGroup>
-                  <fieldset className="min-w-0">
-                    <legend className="mb-2 text-sm font-medium">Tipo de lançamento</legend>
-                    <ToggleGroup type="single" value={tipo} disabled={enviando} onValueChange={(valor) => { if (valor === "DESPESA" || valor === "RECEITA") setTipo(valor) }} aria-label="Tipo de lançamento">
-                      <ToggleGroupItem value="DESPESA" className="flex-1">Despesa</ToggleGroupItem>
-                      <ToggleGroupItem value="RECEITA" className="flex-1">Receita</ToggleGroupItem>
-                    </ToggleGroup>
-                  </fieldset>
+      <DialogContent largura="curta" className={estilos.folha}>
+        <form onSubmit={salvar} className={estilos.formulario} aria-busy={enviando} data-tipo={tipo}>
+          <DialogTitle className={estilos.titulo}>Nova transação</DialogTitle>
+          <DialogDescription className="sr-only">Saída ou entrada, valor, descrição, data, categoria e conta. O microfone preenche pela fala.</DialogDescription>
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor={`${id}-conta`}>Conta</Label>
-                    <SelectNative
-                      id={`${id}-conta`}
-                      value={contaId}
-                      onChange={(e) => setContaId(e.target.value)}
-                      disabled={estadoContas !== "pronto" || contas.length === 0}
-                      aria-describedby={`${id}-estado-contas`}
-                      className="min-h-11"
-                      required
-                    >
-                      {estadoContas !== "pronto" || contas.length === 0 ? (
-                        <option value="">{estadoContas === "carregando" ? "Carregando contas…" : "Nenhuma conta disponível"}</option>
-                      ) : contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}
-                    </SelectNative>
-                    <p id={`${id}-estado-contas`} role="status" className="text-[calc(13px*var(--escala-letra))] text-muted-fg">
-                      {estadoContas === "carregando" ? "Carregando suas contas…"
-                        : estadoContas === "erro" ? "Não foi possível carregar suas contas. Tente novamente ou gerencie suas contas nas configurações."
-                          : contas.length === 0 ? "Cadastre uma conta nas configurações para registrar seu primeiro gasto."
-                            : "Escolha a conta deste lançamento."}
-                    </p>
-                    {(estadoContas === "erro" || (estadoContas === "pronto" && contas.length === 0)) && (
-                      <div className="flex flex-wrap items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEstadoContas("carregando")
-                            setTentativa((atual) => atual + 1)
-                          }}
-                          className={cn("min-h-11 rounded-lg px-2 text-sm underline underline-offset-4", focoVisivel)}
-                        >Tentar novamente</button>
-                        <Link href="/configuracoes" onClick={() => setAberto(false)} className={cn("inline-flex min-h-11 items-center rounded-lg px-2 text-sm underline underline-offset-4", focoVisivel)}>
-                          {estadoContas === "erro" ? "Gerenciar contas" : "Cadastrar conta"}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
+          <div className={estilos.tipos} role="radiogroup" aria-label="Tipo">
+            <button type="button" role="radio" aria-checked={tipo === "DESPESA"} onClick={() => { setTipo("DESPESA"); setCategoriaId("") }}>
+              <MinusCircle aria-hidden /> Saída
+            </button>
+            <button type="button" role="radio" aria-checked={tipo === "RECEITA"} onClick={() => { setTipo("RECEITA"); setCategoriaId("") }}>
+              <PlusCircle aria-hidden /> Entrada
+            </button>
+          </div>
 
-                  <Field>
-                    <FieldLabel htmlFor={`${id}-descricao`}>Descrição</FieldLabel>
-                    <Input id={`${id}-descricao`} value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: mercado" required />
-                  </Field>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="flex min-w-0 flex-col gap-2">
-                      <Label htmlFor={`${id}-valor`}>Valor (R$)</Label>
-                      <Input
-                        ref={campoValor}
-                        id={`${id}-valor`}
-                        value={valor}
-                        onChange={(e) => {
-                          setValor(e.target.value)
-                          if (erroValor) {
-                            setErroValor(false)
-                            setErro(null)
-                          }
-                        }}
-                        placeholder="52,30"
-                        inputMode="decimal"
-                        aria-invalid={erroValor}
-                        aria-describedby={cn(`${id}-valor-ajuda`, erroValor && `${id}-erro`)}
-                        className="motion-reduce:transition-none"
-                        required
-                      />
-                      <p id={`${id}-valor-ajuda`} className="text-[calc(13px*var(--escala-letra))] text-muted-fg">Ex.: 52,30 ou 1.234,56.</p>
-                    </div>
-                    <div className="flex min-w-0 flex-col gap-2">
-                      <Label htmlFor={`${id}-data`}>Data</Label>
-                      <Input id={`${id}-data`} type="date" value={data} onChange={(e) => setData(e.target.value)} className="min-w-0 motion-reduce:transition-none" required />
-                    </div>
-                  </div>
-                  <Button type="submit" disabled={!contaPronta || enviando} className="w-full">{enviando ? "Salvando…" : "Salvar"}</Button>
-                </FieldGroup></fieldset>
-                <p role="status" className="sr-only">{enviando ? "Salvando lançamento. Aguarde." : ""}</p>
-              </form>
-            </DialogBody>
-          </>
-        )}
+          <div className={estilos.valor}>
+            <input
+              aria-label="Valor"
+              inputMode="numeric"
+              value={formatarMoeda(centavos)}
+              onChange={(evento) => {
+                const digitos = evento.target.value.replace(/\D/g, "").slice(0, 11)
+                setCentavos(Number(digitos || "0"))
+              }}
+              onFocus={(evento) => evento.target.select()}
+            />
+            <DitarGasto compacto rotulo="a transação" aoTranscrever={preencherPelaFala} className={estilos.microfone} />
+          </div>
+          <p className={estilos.dica}>
+            {ouvido ? <>Ouvi: “{ouvido}”. Confira os campos antes de adicionar.</> : <>Toque no microfone e fale: “mercado cinquenta e dois e trinta, ontem”.</>}
+          </p>
+
+          <div className={estilos.linhas}>
+            <label>
+              <span>Descrição</span>
+              <input value={descricao} onChange={(evento) => setDescricao(evento.target.value)} placeholder="Nome da transação…" />
+            </label>
+            <label>
+              <span>Data</span>
+              <span className={estilos.escolha}>
+                {dataPorExtenso(data)}
+                <ChevronRight aria-hidden />
+                {/* O seletor nativo fica por cima, invisível: a data aparece
+                    por extenso em português, e o toque abre o calendário do
+                    celular. O campo de data mostrava 09/24/2026, no formato
+                    do navegador. */}
+                <input type="date" value={data} max={dataLocal()} onChange={(evento) => evento.target.value && setData(evento.target.value)} aria-label="Data" />
+              </span>
+            </label>
+            <label>
+              <span>Categoria</span>
+              <span className={estilos.escolha}>
+                {categoriasDoTipo.find((categoria) => categoria.id === categoriaId)?.nome ?? "Automática"}
+                <ChevronRight aria-hidden />
+                <select value={categoriaId} onChange={(evento) => setCategoriaId(evento.target.value)} aria-label="Categoria">
+                  <option value="">Automática (pelas suas regras)</option>
+                  {categoriasDoTipo.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
+                </select>
+              </span>
+            </label>
+            <label>
+              <span>Conta</span>
+              <span className={estilos.escolha}>
+                {contas === null ? "Carregando…" : contas.find((conta) => conta.id === contaId)?.nome ?? "Nenhuma conta"}
+                <ChevronRight aria-hidden />
+                <select value={contaId} onChange={(evento) => setContaId(evento.target.value)} aria-label="Conta" disabled={!contas?.length}>
+                  {contas?.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}
+                </select>
+              </span>
+            </label>
+          </div>
+
+          {(erroContas || contas?.length === 0) && (
+            <p className={estilos.aviso}>
+              {erroContas ? "Não consegui carregar suas contas." : "Cadastre uma conta para lançar."}{" "}
+              <Link href="/configuracoes" onClick={() => setAberto(false)}>Gerenciar contas</Link>
+            </p>
+          )}
+          {erro && <p role="alert" className={estilos.aviso}>{erro}</p>}
+
+          <button type="submit" className={estilos.adicionar} disabled={!pronto || enviando}>
+            {enviando ? "Adicionando…" : tipo === "DESPESA" ? "Adicionar saída" : "Adicionar entrada"}
+          </button>
+
+          <div className={estilos.outros}>
+            <Link href="/capturas" onClick={() => setAberto(false)}><Zap aria-hidden />Anotar vários de uma vez</Link>
+            <Link href="/importar" onClick={() => setAberto(false)}><Upload aria-hidden />Importar extrato</Link>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

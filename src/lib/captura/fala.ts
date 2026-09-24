@@ -185,3 +185,20 @@ function limparSobra(trecho: string): string | null {
     .trim()
   return limpo || null
 }
+
+/**
+ * O que a frase diz além do valor: se foi entrada, e de que dia. O leitor de
+ * texto livre tira valor e lugar; estes dois sinais aparecem em quase toda
+ * frase falada ("recebi o pix", "ontem no mercado") e, ignorados, trocam o
+ * sinal do lançamento ou o jogam no dia errado.
+ *
+ * Sem sinal nenhum, é saída de hoje — o caso de longe mais comum.
+ */
+export function sinaisDaFrase(texto: string, hoje: Date): { tipo: "DESPESA" | "RECEITA"; data: Date } {
+  const achatado = achatar(texto)
+  const entrada = /\b(recebi|ganhei|entrou|caiu|salario|reembolso)\b/.test(achatado)
+  const dias = /\banteontem\b/.test(achatado) ? 2 : /\bontem\b/.test(achatado) ? 1 : 0
+  const data = new Date(hoje)
+  data.setDate(data.getDate() - dias)
+  return { tipo: entrada ? "RECEITA" : "DESPESA", data }
+}

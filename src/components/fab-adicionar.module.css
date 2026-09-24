@@ -1,0 +1,46 @@
+/* Nova transação (Davi, 24/09, print de referência): tudo numa folha só,
+   valor grande, linhas de rótulo e valor, e o microfone ao lado do valor. */
+/* Vidro mais denso que o dos outros diálogos: com o papel quase transparente
+   do tema, os cartões da tela de trás atravessavam os campos e o valor. */
+.folha {
+  --cor-tipo:var(--negativo);
+  background:color-mix(in oklab, var(--background), transparent 12%) !important;
+  backdrop-filter:blur(28px) saturate(150%); -webkit-backdrop-filter:blur(28px) saturate(150%);
+}
+/* Coluna com mínimo zero: o campo do valor, em 40px, tem largura natural de
+   quase 600px, e sem isso esticava o formulário para fora da folha. */
+.formulario { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; }
+.formulario > * { min-width:0; }
+.formulario[data-tipo="RECEITA"] { --cor-tipo:var(--positivo); }
+.titulo { text-align:center; font-size:calc(18px * var(--escala-letra)); font-weight:650; padding:6px 44px 0; }
+
+.tipos { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.tipos button { display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px; border-radius:var(--raio-pilula); font-size:calc(14px * var(--escala-letra)); color:var(--texto-2); transition:background var(--tempo) var(--curva), color var(--tempo) var(--curva); }
+.tipos button svg { width:16px; height:16px; }
+.tipos button[aria-checked="true"] { background:var(--background); color:var(--foreground); font-weight:650; box-shadow:0 1px 0 color-mix(in oklab, var(--foreground), transparent 90%) inset, 0 6px 16px -10px rgb(0 0 0/.6); }
+.tipos button[aria-checked="true"] svg { color:var(--cor-tipo); }
+
+.valor { display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--pauta); }
+.valor input { flex:1; min-width:0; background:transparent; border:0; outline:none; font-size:calc(40px * var(--escala-letra)); font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; color:var(--foreground); caret-color:var(--cor-tipo); }
+.microfone { flex-shrink:0; color:var(--acao) !important; border-color:color-mix(in oklab, var(--acao), transparent 55%) !important; background:color-mix(in oklab, var(--acao), transparent 90%) !important; }
+.dica { margin-top:-6px; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.45; color:var(--texto-3); }
+
+.linhas { display:grid; }
+.linhas label { position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:52px; border-bottom:1px solid var(--pauta); font-size:calc(14px * var(--escala-letra)); }
+.linhas label > span:first-child { flex-shrink:0; color:var(--texto-2); }
+.linhas label > input { flex:1; min-width:0; min-height:44px; background:transparent; border:0; outline:none; text-align:right; font-size:inherit; color:var(--foreground); }
+.linhas label > input::placeholder { color:var(--texto-3); }
+/* Data, categoria e conta: o texto aparece à direita, e o seletor nativo fica
+   por cima, invisível — o toque abre o calendário ou a lista do celular. */
+.escolha { position:relative; display:flex; align-items:center; gap:6px; min-width:0; min-height:44px; text-align:right; color:var(--foreground); }
+.escolha svg { width:16px; height:16px; flex-shrink:0; color:var(--texto-3); }
+.escolha > input, .escolha > select { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; font-size:16px; }
+
+.aviso { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.aviso a { color:var(--acao); font-weight:600; text-decoration:underline; }
+
+.adicionar { min-height:52px; margin-top:6px; border-radius:var(--raio-pilula); background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(15px * var(--escala-letra)); font-weight:700; transition:opacity var(--tempo) var(--curva); }
+.adicionar:disabled { opacity:.4; }
+.outros { display:flex; flex-wrap:wrap; justify-content:center; gap:4px 16px; }
+.outros a { display:inline-flex; align-items:center; gap:6px; min-height:40px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); }
+.outros svg { width:14px; height:14px; }

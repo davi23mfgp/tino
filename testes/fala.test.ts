@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { lerGastoFalado, numeroFalado } from "@/lib/captura/fala"
+import { lerGastoFalado, numeroFalado, sinaisDaFrase } from "@/lib/captura/fala"
 import { lerTextoLivre } from "@/lib/captura/notificacao"
 
 describe("número dito por extenso", () => {
@@ -74,5 +74,30 @@ describe("o leitor de texto livre atende os dois jeitos", () => {
     assert.equal(lido.valorCentavos, 3000)
     assert.equal(lido.estabelecimento, "uber")
     assert.ok(lido.confianca < 95, "falado não pode ter a mesma confiança do digitado")
+  })
+})
+
+describe("sinais da frase", () => {
+  const hoje = new Date(2026, 8, 24, 10)
+
+  it("sem sinal é saída de hoje", () => {
+    const sinais = sinaisDaFrase("mercado 52,30", hoje)
+    assert.equal(sinais.tipo, "DESPESA")
+    assert.equal(sinais.data.getDate(), 24)
+  })
+
+  it("ontem e anteontem voltam a data", () => {
+    assert.equal(sinaisDaFrase("gastei trinta no posto ontem", hoje).data.getDate(), 23)
+    assert.equal(sinaisDaFrase("anteontem no mercado 40", hoje).data.getDate(), 22)
+  })
+
+  it("recebi, salário e reembolso viram entrada, com ou sem acento", () => {
+    assert.equal(sinaisDaFrase("recebi 200 do João", hoje).tipo, "RECEITA")
+    assert.equal(sinaisDaFrase("Salário 4.500", hoje).tipo, "RECEITA")
+    assert.equal(sinaisDaFrase("caiu o reembolso de 80", hoje).tipo, "RECEITA")
+  })
+
+  it("não confunde palavra que só contém o sinal", () => {
+    assert.equal(sinaisDaFrase("recebimento pendente 50", hoje).tipo, "DESPESA")
   })
 })
