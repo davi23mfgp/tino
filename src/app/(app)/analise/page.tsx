@@ -8,7 +8,7 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { balancoMensal } from "@/lib/tino/balanco"
 import { montarDiagnostico, type Faixa } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { Barra, Cartao, Detalhe, Metrica, Pilula, Vazio } from "@/components/ui/painel"
+import { Cartao, Detalhe, Pilula, Vazio } from "@/components/ui/painel"
 import { Abertura } from "@/components/abertura"
 import { ONDE_RESOLVER, ONDE_RESOLVER_INDICADOR } from "@/lib/tino/onde-resolver"
 import Link from "next/link"
@@ -18,6 +18,7 @@ import { CategoriasComparadas } from "@/components/categorias-comparadas"
 import { cn } from "@/lib/utils"
 import { AbasInternas } from "@/components/abas-internas"
 import { ReguaDoIndicador } from "@/components/regua-do-indicador"
+import { EntradasESaidas } from "@/components/entradas-saidas"
 
 export const dynamic = "force-dynamic"
 
@@ -207,101 +208,63 @@ export default async function Analise() {
       </Cartao>
 
       </>) }, { chave: "entradas", titulo: "Entradas e saídas", conteudo: (<>
-      {/* ── DRE ───────────────────────────────────────── */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Cartao titulo="Demonstrativo do mês">
-          <div className="space-y-1">
-            <Linha rotulo="Receitas" valor={dre.receitasCentavos} tom="positivo" forte />
-            <Linha rotulo="(–) Despesas" valor={-dre.despesasCentavos} tom="negativo" />
-
-            <div className="my-2 border-t border-pauta" />
-
-            <Linha
-              rotulo="= Resultado do mês"
-              valor={dre.resultadoCentavos}
-              tom={dre.resultadoCentavos >= 0 ? "positivo" : "negativo"}
-              forte
-            />
-          </div>
-
-          <div className="mt-4 grade-valores">
-            <Metrica rotulo="Custo fixo" valor={formatarMoeda(dre.custoFixoCentavos)} detalhe="não muda com o uso" />
-            <Metrica rotulo="Custo variável" valor={formatarMoeda(dre.custoVariavelCentavos)} detalhe="onde dá para mexer" />
-            <Metrica rotulo="Essencial" valor={formatarMoeda(dre.essenciaisCentavos)} />
-            <Metrica
-              rotulo="Não essencial"
-              valor={formatarMoeda(dre.supefluasCentavos)}
-              tom={dre.supefluasCentavos > dre.essenciaisCentavos ? "atencao" : "neutro"}
-            />
-          </div>
-
-          <div className="mt-4 space-y-2.5">
-            {dre.grupos.map((grupo) => (
-              <div key={grupo.grupo}>
-                <div className="flex items-center justify-between text-[calc(13px*var(--escala-letra))]">
-                  <span>{NOME_GRUPO[grupo.grupo] ?? grupo.grupo}</span>
-                  <span className="text-muted-fg">
-                    <span className="valor-inteiro">{formatarMoeda(grupo.totalCentavos)}</span>
-                    {grupo.percentualDaReceita > 0 && ` · ${(grupo.percentualDaReceita / 100).toFixed(0)}% da renda`}
-                  </span>
-                </div>
-                <div className="mt-1">
-                  <Barra
-                    percentual={(grupo.totalCentavos / Math.max(1, dre.despesasCentavos)) * 100}
-                    tom="verde"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </Cartao>
-
+      {/* ── A renda numa barra ─────────────────────────── */}
+      <EntradasESaidas
+        mes={rotuloCompetencia(competencia)}
+        receitasCentavos={dre.receitasCentavos}
+        despesasCentavos={dre.despesasCentavos}
+        grupos={dre.grupos.map((grupo) => ({
+          grupo: grupo.grupo,
+          nome: NOME_GRUPO[grupo.grupo] ?? grupo.grupo,
+          totalCentavos: grupo.totalCentavos,
+          percentualDaReceita: grupo.percentualDaReceita,
+        }))}
+        custoFixoCentavos={dre.custoFixoCentavos}
+        custoVariavelCentavos={dre.custoVariavelCentavos}
+        patrimonio={{
+          liquidoCentavos: balanco.patrimonioLiquidoCentavos,
+          temCentavos: balanco.ativoTotalCentavos,
+          deveCentavos: balanco.passivoTotalCentavos,
+        }}
+      >
         {/* ── Balanço ─────────────────────────────────── */}
-        <Cartao titulo="Balanço">
-          <div className="space-y-1">
-            <p className={estiloGrupo}>Ativo <span>o que você tem</span></p>
-            {/* Aberto conta a conta e dívida a dívida, como um contador
-                entregaria: dois totais escondem justamente o que serve para
-                agir — qual conta está no vermelho e qual dívida é a cara. */}
-            {balanco.ativoCirculante.map((linha) => (
-              <Linha key={`ac-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
-            ))}
-            {balanco.ativoAplicado.map((linha) => (
-              <Linha key={`aa-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
-            ))}
-            <Linha rotulo="Total do ativo" valor={balanco.ativoTotalCentavos} forte soma />
+        <div className="space-y-1">
+          <p className={estiloGrupo}>Ativo <span>o que você tem</span></p>
+          {/* Aberto conta a conta e dívida a dívida, como um contador
+              entregaria: dois totais escondem justamente o que serve para
+              agir — qual conta está no vermelho e qual dívida é a cara. */}
+          {balanco.ativoCirculante.map((linha) => (
+            <Linha key={`ac-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
+          ))}
+          {balanco.ativoAplicado.map((linha) => (
+            <Linha key={`aa-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={linha.valorCentavos} />
+          ))}
+          <Linha rotulo="Total do ativo" valor={balanco.ativoTotalCentavos} forte soma />
 
-            <p className={cn(estiloGrupo, "mt-4")}>Passivo <span>o que você deve</span></p>
-            {balanco.passivoCurto.map((linha) => (
-              <Linha key={`pc-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
-            ))}
-            {balanco.passivoLongo.map((linha) => (
-              <Linha key={`pl-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
-            ))}
-            {balanco.passivoTotalCentavos === 0 && <Linha rotulo="Sem dívidas" valor={0} />}
-            <Linha rotulo="Total do passivo" valor={-balanco.passivoTotalCentavos} tom="negativo" forte soma />
+          <p className={cn(estiloGrupo, "mt-4")}>Passivo <span>o que você deve</span></p>
+          {balanco.passivoCurto.map((linha) => (
+            <Linha key={`pc-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
+          ))}
+          {balanco.passivoLongo.map((linha) => (
+            <Linha key={`pl-${linha.rotulo}`} rotulo={linha.rotulo} apoio={linha.apoio} valor={-linha.valorCentavos} tom="negativo" />
+          ))}
+          {balanco.passivoTotalCentavos === 0 && <Linha rotulo="Sem dívidas" valor={0} />}
+          <Linha rotulo="Total do passivo" valor={-balanco.passivoTotalCentavos} tom="negativo" forte soma />
 
-            <Linha
-              fechamento
-              rotulo="Patrimônio líquido"
-              valor={balanco.patrimonioLiquidoCentavos}
-              tom={balanco.patrimonioLiquidoCentavos >= 0 ? "positivo" : "negativo"}
-              forte
-            />
-          </div>
+          <Linha
+            fechamento
+            rotulo="Patrimônio líquido"
+            valor={balanco.patrimonioLiquidoCentavos}
+            tom={balanco.patrimonioLiquidoCentavos >= 0 ? "positivo" : "negativo"}
+            forte
+          />
+        </div>
 
-        </Cartao>
-      </div>
-
-      {/* O balanço ficava com os números, o gráfico de doze meses E os riscos
-          dentro do mesmo cartão: ele nascia três vezes mais alto que o
-          "Demonstrativo" ao lado, e a coluna da esquerda virava um buraco.
-          Agora o gráfico tem a página inteira — série de doze meses espremida
-          em meia largura achata a variação e faz o mês ruim parecer igual ao
-          bom — e os riscos viram um cartão à parte. */}
-      <Cartao titulo="Como o patrimônio andou">
+        {/* A série de doze meses fica ao lado do balanço, e não num cartão
+            próprio: é o mesmo patrimônio visto no tempo, e quem abriu o
+            detalhe é quem quer vê-la. */}
         {mensal.serie.length > 1 && (
-          <div>
+          <div className="min-w-0">
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <p className="text-[calc(13px*var(--escala-letra))] font-medium">Como andou nos últimos meses</p>
               <p
@@ -327,8 +290,7 @@ export default async function Analise() {
             </p>
           </div>
         )}
-
-      </Cartao>
+      </EntradasESaidas>
 
       <Cartao titulo="O que pesa e o que ajuda">
         {(diagnostico.riscos.length > 0 || diagnostico.pontosFortes.length > 0) && (

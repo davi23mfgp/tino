@@ -128,6 +128,12 @@ export interface Diagnostico {
 // REFERÊNCIAS
 // ============================================================
 
+/// Exportadas porque a aba Entradas e saídas mostra a sobra e o custo fixo com
+/// a mesma régua do indicador — duas réguas para o mesmo número fariam a
+/// análise dizer "bom" num lugar e "atenção" no outro.
+export const REFERENCIA_TAXA_POUPANCA = { bom: 2000, atencao: 1000 }
+export const REFERENCIA_CUSTO_FIXO = { bom: 5000, atencao: 6000 }
+
 /**
  * Faixas usadas no parecer. São referências de mercado e de educação
  * financeira, não regra legal — por isso ficam num lugar só, nomeadas, em vez
@@ -138,11 +144,11 @@ const REFERENCIA = {
   /// dívidas mostra o mesmo indicador e não pode usar outra régua.
   comprometimento: REFERENCIA_COMPROMETIMENTO,
   /// Quanto da renda sobra por mês. Abaixo de 10% não se constrói reserva.
-  taxaPoupanca: { bom: 2000, atencao: 1000 },
+  taxaPoupanca: REFERENCIA_TAXA_POUPANCA,
   /// Meses de custo essencial cobertos pelo dinheiro disponível.
   liquidez: { bom: 6, atencao: 3 },
   /// Custo fixo sobre renda. Acima de 60% o orçamento perde flexibilidade.
-  custoFixo: { bom: 5000, atencao: 6000 },
+  custoFixo: REFERENCIA_CUSTO_FIXO,
   /// Dívida total sobre renda anual.
   endividamento: { bom: 3000, atencao: 10000 },
 }

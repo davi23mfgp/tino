@@ -105,6 +105,20 @@ export const ORDEM_DA_PALETA: NomeDaCor[] = [
 
 const eixo = { fontSize: 11, fill: "currentColor", opacity: 0.55 }
 
+/// Rótulo do eixo de valores. O recharts quebra o rótulo nos espaços quando
+/// ele passa da largura do eixo, e "-R$ 30,0 mil" virava três linhas empilhadas
+/// ("R$" / "30,0" / "mil") no celular. Espaço inseparável impede a quebra, e a
+/// casa decimal só fica abaixo de R$ 10 mil — "R$ 30,0 mil" não informa nada
+/// que "R$ 30 mil" não diga, e o valor exato está no toque.
+function rotuloDoEixo(centavos: number): string {
+  const reais = Math.abs(centavos) / 100
+  const texto =
+    reais >= 10_000 && reais < 1_000_000
+      ? `${centavos < 0 ? "-" : ""}R$ ${Math.round(reais / 1_000)} mil`
+      : formatarMoedaCurta(centavos)
+  return texto.replace(/ /g, "\u00a0")
+}
+
 function Dica({
   active,
   payload,
@@ -183,7 +197,7 @@ export function GraficoEvolucao({
           </linearGradient>
         </defs>
         <XAxis dataKey="mes" tick={eixo} axisLine={false} tickLine={false} />
-        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => formatarMoedaCurta(Number(v))} />
+        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => rotuloDoEixo(Number(v))} />
         <Tooltip content={<Dica />} />
         <Area type="monotone" dataKey="Entrou" stroke={cores.positivo} strokeWidth={2} fill="url(#entrou)" />
         <Area type="monotone" dataKey="Saiu" stroke={cores.negativo} strokeWidth={2} fill="url(#saiu)" />
@@ -231,7 +245,7 @@ export function GraficoDozeMeses({
     <ResponsiveContainer width="100%" height={altura}>
       <BarChart data={serie} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
         <XAxis dataKey="mes" tick={eixo} axisLine={false} tickLine={false} />
-        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => formatarMoedaCurta(Number(v))} />
+        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => rotuloDoEixo(Number(v))} />
         <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.25} />
         <Tooltip content={<Dica />} cursor={{ fill: "currentColor", fillOpacity: 0.04 }} />
         <Bar dataKey="Sobra" radius={[4, 4, 0, 0]}>
@@ -438,7 +452,7 @@ export function GraficoFluxo({
           </linearGradient>
         </defs>
         <XAxis dataKey="mes" tick={eixo} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => formatarMoedaCurta(Number(v))} />
+        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => rotuloDoEixo(Number(v))} />
         <Tooltip content={<Dica />} />
         {/* A linha do zero é a informação mais importante do gráfico: é ela que
             mostra em que mês o dinheiro acaba. */}
@@ -478,7 +492,7 @@ export function GraficoParcelas({
     <ResponsiveContainer width="100%" height={altura}>
       <BarChart data={serie} margin={{ top: 4, right: 4, bottom: 0, left: -12 }}>
         <XAxis dataKey="mes" tick={eixo} axisLine={false} tickLine={false} />
-        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => formatarMoedaCurta(Number(v))} />
+        <YAxis tick={eixo} axisLine={false} tickLine={false} tickFormatter={(v) => rotuloDoEixo(Number(v))} />
         <Tooltip content={<Dica />} cursor={{ fill: "currentColor", opacity: 0.04 }} />
         <Bar dataKey="Parcelas" fill={cores.atencao} radius={[6, 6, 0, 0]} />
       </BarChart>
@@ -568,7 +582,7 @@ export function GraficoDoCorte({
           tickFormatter={(mes: number) => `${mes}m`}
           interval="preserveStartEnd"
         />
-        <YAxis tick={eixo} tickLine={false} axisLine={false} width={62} tickFormatter={formatarMoedaCurta} />
+        <YAxis tick={eixo} tickLine={false} axisLine={false} width={66} tickFormatter={(v) => rotuloDoEixo(Number(v))} />
         <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.35} />
         <Tooltip
           content={<Dica />}
@@ -684,7 +698,7 @@ export function GraficoBalanco({
     <ResponsiveContainer width="100%" height={altura}>
       <ComposedChart data={series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <XAxis dataKey="rotulo" tick={eixo} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-        <YAxis tick={eixo} tickLine={false} axisLine={false} width={62} tickFormatter={formatarMoedaCurta} />
+        <YAxis tick={eixo} tickLine={false} axisLine={false} width={66} tickFormatter={(v) => rotuloDoEixo(Number(v))} />
         <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.35} />
         <Tooltip content={<Dica />} />
 
@@ -812,7 +826,7 @@ export function FluxoDeCaixaNoTempo({
               </linearGradient>
             </defs>
             <XAxis dataKey="rotulo" tick={eixo} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={12} />
-            <YAxis tick={eixo} tickLine={false} axisLine={false} width={58} tickFormatter={(valor) => formatarMoedaCurta(valor * 100)} />
+            <YAxis tick={eixo} tickLine={false} axisLine={false} width={58} tickFormatter={(valor) => rotuloDoEixo(valor * 100)} />
             <Tooltip content={<Dica />} cursor={{ fill: "currentColor", opacity: 0.06 }} />
             {/* Zero marcado sempre: sem ele, "caixa negativo" vira só uma
                 linha mais baixa que as outras. */}
