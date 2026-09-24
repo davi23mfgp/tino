@@ -57,7 +57,8 @@
 .cartao:active { transform:scale(.99); }
 .cartao:focus-visible { outline:2px solid var(--acao); outline-offset:3px; }
 .cartao[data-classe="ACOES"] { --fundo:linear-gradient(135deg, oklch(0.88 0.2 145), oklch(0.78 0.22 145)); --tinta:oklch(0.18 0.03 145); --suave:oklch(0.28 0.05 145); --icone-fundo:oklch(0.2 0.03 145); --icone:#fff; }
-.cartao[data-classe="FII"] { --fundo:linear-gradient(135deg, oklch(0.84 0.1 180), oklch(0.72 0.12 185)); --tinta:oklch(0.2 0.03 190); --suave:oklch(0.3 0.04 190); --icone-fundo:oklch(0.22 0.04 190); --icone:#fff; }
+/* Fundo imobiliário em laranja, a mesma cor de "Real estate" no aporte. */
+.cartao[data-classe="FII"] { --fundo:linear-gradient(135deg, oklch(0.82 0.16 65), oklch(0.7 0.19 45)); --tinta:oklch(0.2 0.04 50); --suave:oklch(0.3 0.06 50); --icone-fundo:oklch(0.24 0.05 50); --icone:#fff; }
 .cartao[data-classe="RENDA_FIXA"], .cartao[data-classe="CAIXA"] { --fundo:linear-gradient(135deg, #fbfcfb, #dfe3e0); --tinta:oklch(0.2 0.01 150); --suave:oklch(0.4 0.01 150); --icone-fundo:oklch(0.9 0.01 150); --icone:oklch(0.3 0.02 150); border-color:rgb(255 255 255/.7); }
 .cartao[data-classe="INTERNACIONAL"] { --fundo:linear-gradient(135deg, oklch(0.62 0.17 255), oklch(0.5 0.19 262)); --icone-fundo:oklch(0.3 0.12 262); }
 .cartao[data-classe="CRIPTO"] { --fundo:linear-gradient(135deg, oklch(0.8 0.15 70), oklch(0.7 0.17 55)); --tinta:oklch(0.2 0.04 60); --suave:oklch(0.3 0.05 60); --icone-fundo:oklch(0.22 0.04 60); --icone:#fff; }

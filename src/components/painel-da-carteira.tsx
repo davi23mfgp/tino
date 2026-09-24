@@ -149,11 +149,18 @@ const ATALHOS_DE_APORTE = [50_000, 100_000, 200_000]
 const RENDIMENTO_REAL_ANUAL_BPS = 400
 
 /**
- * Cores das quatro letras, afastadas o bastante para não se confundirem no
- * ponto de 9px da lista: verde (ações) e verde-água (FII) iguais aos cartões,
- * cinza-azulado para caixa e azul forte para o exterior.
+ * Cores das quatro letras (Davi, 24/09: "mais forte e real"). Saturadas, como
+ * nos apps de corretora, e afastadas no círculo de cor para não se
+ * confundirem: verde (ações daqui), laranja (imóveis), roxo (caixa e renda
+ * fixa) e azul (exterior). Cada uma tem um tom claro e um escuro, para a
+ * régua ganhar volume em degradê. Os cartões dos ativos usam as mesmas.
  */
-const COR_DA_LETRA = ["oklch(0.84 0.16 150)", "oklch(0.76 0.11 175)", "oklch(0.62 0.04 250)", "oklch(0.66 0.15 255)"]
+const COR_DA_LETRA = [
+  { cor: "oklch(0.8 0.23 145)", escura: "oklch(0.62 0.2 150)" },
+  { cor: "oklch(0.77 0.17 60)", escura: "oklch(0.64 0.19 45)" },
+  { cor: "oklch(0.66 0.2 295)", escura: "oklch(0.5 0.22 290)" },
+  { cor: "oklch(0.68 0.19 250)", escura: "oklch(0.52 0.21 260)" },
+]
 
 /**
  * Onde pôr o próximo dinheiro (Davi, 23/09: opção A do canvas, "uma lista
@@ -239,9 +246,9 @@ function OndePorODinheiro({
           const alvo = Math.round(letra.alvoBps / 100)
           const distancia = alvo - atual
           const parte = partes.find((item) => item.rotulo === letra.rotulo)?.valorCentavos ?? 0
-          const cor = COR_DA_LETRA[indice] ?? COR_DA_LETRA[0]
+          const { cor, escura } = COR_DA_LETRA[indice] ?? COR_DA_LETRA[0]
           return (
-            <li key={`${letra.letra}-${letra.rotulo}`} style={{ "--cor": cor } as React.CSSProperties}>
+            <li key={`${letra.letra}-${letra.rotulo}`} style={{ "--cor": cor, "--cor-escura": escura } as React.CSSProperties}>
               <span className={estilos.parteTopo}>
                 <i aria-hidden />
                 <b>{letra.rotulo}</b>

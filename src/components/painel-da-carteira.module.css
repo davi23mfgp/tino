@@ -34,15 +34,15 @@
 .onde { display:grid; gap:12px; }
 .pergunta { font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 .partes { display:grid; list-style:none; }
-.partes li { --cor:var(--acao); display:grid; gap:7px; padding:12px 0; }
+.partes li { --cor:var(--acao); --cor-escura:var(--acao); display:grid; gap:7px; padding:12px 0; }
 .partes li + li { border-top:1px solid var(--vidro-borda); }
 .parteTopo { display:flex; align-items:baseline; gap:8px; }
-.parteTopo i { width:10px; height:10px; border-radius:3px; background:var(--cor); flex-shrink:0; transform:translateY(1px); }
+.parteTopo i { width:12px; height:12px; border-radius:4px; background:linear-gradient(135deg, var(--cor), var(--cor-escura)); box-shadow:0 0 10px -2px var(--cor); flex-shrink:0; transform:translateY(1px); }
 .parteTopo b { flex:1; min-width:0; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
 .parteTopo small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.regua { position:relative; display:block; height:8px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 91%); }
-.regua > span { display:block; height:100%; border-radius:999px; background:var(--cor); }
-.regua em { position:absolute; top:-4px; width:2px; height:16px; margin-left:-1px; border-radius:2px; background:var(--foreground); }
+.regua { position:relative; display:block; height:10px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 91%); }
+.regua > span { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, var(--cor-escura), var(--cor)); box-shadow:inset 0 1px 0 rgb(255 255 255/.35), 0 0 12px -4px var(--cor); }
+.regua em { position:absolute; top:-4px; width:3px; height:18px; margin-left:-1px; border-radius:2px; background:var(--foreground); }
 .parteBase { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
 .parteBase small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .parteBase b { font-size:calc(14px * var(--escala-letra)); font-weight:750; color:var(--positivo); font-variant-numeric:tabular-nums; }
