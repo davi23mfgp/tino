@@ -22,7 +22,20 @@
 
 .valor { display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--pauta); }
 .valor input { flex:1; min-width:0; background:transparent; border:0; outline:none; font-size:calc(40px * var(--escala-letra)); font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; color:var(--foreground); caret-color:var(--cor-tipo); }
-.microfone { flex-shrink:0; color:var(--acao) !important; border-color:color-mix(in oklab, var(--acao), transparent 55%) !important; background:color-mix(in oklab, var(--acao), transparent 90%) !important; }
+/* Microfone em quadrado de cantos arredondados, cinza e ícone branco (Davi,
+   24/09): o círculo verde competia com o botão de adicionar. */
+/* Microfone em quadrado de cantos arredondados, cinza e ícone branco (Davi,
+   24/09): o círculo verde competia com o botão de adicionar. */
+.microfone { flex-shrink:0; }
+.microfone > button {
+  width:48px; height:48px; border-radius:14px;
+  border-color:color-mix(in oklab, var(--foreground), transparent 90%);
+  background:color-mix(in oklab, var(--foreground), transparent 90%);
+  color:var(--foreground);
+}
+.microfone > button svg { width:20px; height:20px; }
+/* Gravando: vermelho, para ninguém falar achando que não está ouvindo. */
+.microfone > button[aria-label="Parar de gravar"] { color:var(--negativo); border-color:color-mix(in oklab, var(--negativo), transparent 40%); background:color-mix(in oklab, var(--negativo), transparent 88%); }
 .dica { margin-top:-6px; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.45; color:var(--texto-3); }
 
 .linhas { display:grid; }
