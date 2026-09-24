@@ -1,0 +1,39 @@
+/* Limites dos cartões (Davi, 24/09, print de referência). A cor segue a faixa
+   do uso: verde saudável, âmbar atenção, vermelho alto. */
+.painel { --cor:var(--acao); --ambar:oklch(0.82 0.16 80); display:grid; gap:14px; }
+:global(.light) .painel { --ambar:oklch(0.6 0.14 65); }
+.painel[data-faixa="atencao"] { --cor:var(--ambar); }
+.painel[data-faixa="alto"] { --cor:var(--negativo); }
+.painel h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.nota, .referencia { font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.5; color:var(--texto-3); }
+.nota a, .composicao a { color:var(--acao); font-weight:600; text-decoration:underline; }
+
+.totais { display:grid; gap:4px; }
+.rotulo { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.usado { display:flex; align-items:center; gap:8px; font-size:calc(26px * var(--escala-letra)); font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.usado i, .disponivel i { width:8px; height:8px; border-radius:999px; background:var(--cor); flex-shrink:0; }
+.disponivel { display:flex; align-items:center; gap:8px; font-size:calc(14px * var(--escala-letra)); color:var(--texto-2); font-variant-numeric:tabular-nums; }
+.disponivel i { background:var(--texto-3); }
+
+.arco { position:relative; width:min(240px, 70vw); margin:4px auto 0; aspect-ratio:1; }
+.arco svg { display:block; width:100%; height:100%; }
+.arco circle { fill:none; stroke-width:18; stroke-linecap:round; }
+.trilho { stroke:color-mix(in oklab, var(--foreground), transparent 88%); }
+.valor { stroke:var(--cor); transition:stroke-dasharray .6s var(--curva); }
+.arco > span { position:absolute; inset:0; display:grid; place-content:center; text-align:center; }
+.arco b { font-size:calc(36px * var(--escala-letra)); font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.arco small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.referencia { margin-top:-18px; text-align:center; }
+
+.subtitulo { margin-top:4px; font-size:calc(14px * var(--escala-letra)); font-weight:600; color:var(--texto-2); }
+.bancos { display:grid; gap:10px; list-style:none; }
+.bancos li { display:grid; grid-template-columns:40px minmax(0,1fr); align-items:center; gap:12px; padding:14px; border-radius:var(--raio-cartao); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.banco { --cor:var(--acao); display:grid; gap:6px; min-width:0; }
+.banco[data-faixa="atencao"] { --cor:var(--ambar); }
+.banco[data-faixa="alto"] { --cor:var(--negativo); }
+.linhaBanco { display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); font-variant-numeric:tabular-nums; }
+.linhaBanco b { font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--foreground); }
+.linhaBanco small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); white-space:nowrap; }
+.barra { display:block; height:8px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 88%); overflow:hidden; }
+.barra > span { display:block; height:100%; border-radius:999px; background:var(--foreground); }
+.composicao { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }

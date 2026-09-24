@@ -50,6 +50,7 @@ const POR_ROTULO: Array<[RegExp, LucideIcon]> = [
   [/orcamento/, Target],
   [/^ajuda$|duvida/, CircleHelp],
   [/importar|extrato do banco/, Upload],
+  [/^limites?$/, Gauge],
   [/indicadores/, Gauge],
   [/^dre$|resultado/, FileText],
   [/balanco/, Scale],

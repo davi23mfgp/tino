@@ -179,12 +179,24 @@
 }
 
 /* Limite: barra fina, sem trilho pesado. */
-.limite { display: block; position: relative; margin-top: 10px; height: 4px; border-radius: 999px; background: oklch(1 0 0 / 22%); }
-.limite i { display: block; height: 100%; border-radius: 999px; background: oklch(1 0 0 / 92%); }
-.limite em {
-  position: absolute; top: 8px; left: 0; font-style: normal; white-space: nowrap;
-  font-size: max(10px, calc(11px * var(--escala-letra))); color: oklch(1 0 0 / 82%);
+/* O limite livre numa pílula de vidro (Davi, 24/09: "o limite fica muito
+   disfarçado"): texto branco sobre vidro escuro lê em qualquer cor de banco,
+   e o traço embaixo mostra quanto está preso, na cor da faixa de uso. Fica à
+   direita, na altura da fatura, e não no fluxo: embaixo dela empurrava o nome
+   do cartão para fora da borda, e aqui ela aparece também na tira dos
+   cartões de trás. */
+.cartaoFisico > .limite {
+  --cor: oklch(0.85 0.2 145);
+  position: absolute; top: 60px; right: 16px;
+  display: grid; gap: 5px; min-width: 112px; padding: 6px 12px 8px; border-radius: 14px; text-align: right;
+  background: rgb(10 12 14 / .42); border: 1px solid rgb(255 255 255 / .26);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgb(255 255 255 / .2);
 }
+.cartaoFisico > .limite[data-faixa="atencao"] { --cor: oklch(0.84 0.16 80); }
+.cartaoFisico > .limite[data-faixa="alto"] { --cor: oklch(0.72 0.19 25); }
+.limite em { display: grid; font-style: normal; white-space: nowrap; font-size: max(10px, calc(10.5px * var(--escala-letra))); color: rgb(255 255 255 / .8); }
+.limite em b { font-size: calc(15px * var(--escala-letra)); font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
+.limite i { display: block; width: 100%; height: 4px; border-radius: 999px; background: linear-gradient(90deg, var(--cor) var(--uso), rgb(255 255 255 / .22) var(--uso)); }
 
 /* Chip e aproximação: retângulo com gradiente metálico e o símbolo de NFC.
    Ficam na metade de baixo, que só aparece no cartão da frente. */

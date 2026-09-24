@@ -22,7 +22,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { enviar } from "@/lib/cliente"
-import { mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
+import { faixaDoUsoDoLimite, limiteDoCartao, mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
+import { LimitesDosCartoes } from "@/components/limites-cartoes"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
@@ -45,7 +46,8 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
   const cartao = cartoes.find((linha) => linha.id === id) ?? cartoes[0]
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("aba") === "parcelas") setAba("parcelas")
+    const pedida = new URLSearchParams(window.location.search).get("aba")
+    if (pedida === "parcelas" || pedida === "limites") setAba(pedida)
   }, [])
 
   if (!cartao) return <div className={estilos.vazio}><p>Adicione seu primeiro cartão.</p><Button asChild><Link href="/configuracoes">Cadastrar cartão</Link></Button></div>
@@ -108,7 +110,10 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
           // que a pessoa procura ao abrir a carteira, e a tira visível da pilha
           // é onde ele cabe.
           const faturaDoCartao = resumoDoMes(linha, mesAtual).saldo
-          const usado = linha.limiteCentavos ? Math.min(100, Math.round((faturaDoCartao / linha.limiteCentavos) * 100)) : null
+          // O limite livre de verdade: fatura, compras da próxima e parcelas
+          // futuras saem dele (ver `limiteDoCartao`). Antes a tira dizia "24%
+          // do limite" contando só a fatura, e o cartão estava em 70%.
+          const limite = limiteDoCartao(linha, mesAtual)
           return <button
           key={linha.id}
           type="button"
@@ -122,9 +127,9 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
             <small>Fatura de {rotuloCompetencia(mesAtual, true)}</small>
             <b>{formatarMoeda(faturaDoCartao)}</b>
           </span>
-          {usado !== null && <span className={estilos.limite}>
-            <i style={{ width: `${usado}%` }} />
-            <em>{usado}% do limite de {formatarMoeda(linha.limiteCentavos ?? 0)}</em>
+          {limite && <span className={estilos.limite} data-faixa={faixaDoUsoDoLimite(limite.usoBps)}>
+            <em>Disponível<b>{formatarMoeda(limite.disponivelCentavos)}</b></em>
+            <i style={{ "--uso": `${Math.min(100, limite.usoBps / 100)}%` } as CSSProperties} aria-hidden />
           </span>}
           {/* Peças de cartão de verdade: chip e o símbolo de aproximação. São
               o que faz a peça parecer cartão e não retângulo colorido. */}
@@ -202,7 +207,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
       <TabsList className={estilos.abas}>
         {/* Rótulo e valor da aba vêm da mesma lista: seis gatilhos escritos à
             mão eram seis lugares para o ícone faltar. */}
-        {[["compras","Compras"],["parcelas","Parcelas"],["categorias","Categorias"],["orcamento","Orçamento"],["ajuda","Ajuda"],["importar","Importar"]].map(([valor,rotulo]) => (
+        {[["compras","Compras"],["parcelas","Parcelas"],["limites","Limites"],["categorias","Categorias"],["orcamento","Orçamento"],["ajuda","Ajuda"],["importar","Importar"]].map(([valor,rotulo]) => (
           <TabsTrigger key={valor} value={valor}><IconeFerramenta rotulo={rotulo} /><span className="truncate">{rotulo}</span></TabsTrigger>
         ))}
       </TabsList>
@@ -232,6 +237,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual }: { cartoes: Dad
         />
       ) : <ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} mes={mes} aoEditar={(parcelamento) => setForm({ parcelamento })} aoExcluir={setExcluir} />}</section></TabsContent>
 
+      <TabsContent value="limites"><section className={estilos.painel}><LimitesDosCartoes cartoes={cartoes} mesAtual={mesAtual} /></section></TabsContent>
       <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
 
       <TabsContent value="orcamento"><OrcamentoDoCartao cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
