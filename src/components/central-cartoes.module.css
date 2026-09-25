@@ -285,7 +285,11 @@
 .carrossel {
   display: flex; gap: 12px; min-width: 0;
   overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
-  margin: 0 -16px; padding: 4px 16px 6px; scroll-padding-inline: 16px;
+  /* Folga embaixo para a sombra dos cartões: rolagem lateral também corta
+     na vertical, e a sombra terminava num degrau reto que parecia uma faixa
+     de fundo atrás do carrossel (visível no tema claro). A margem negativa
+     devolve o espaço. */
+  margin: 0 -16px -22px; padding: 4px 16px 28px; scroll-padding-inline: 16px;
 }
 .carrossel::-webkit-scrollbar { display: none; }
 /* A regra global de <section> da área do app pintava uma faixa de vidro atrás
@@ -298,8 +302,17 @@
   scroll-snap-align: center; outline: 0; transition: opacity .25s var(--curva), transform .25s var(--curva);
 }
 .carrossel > .cartaoFisico[aria-pressed="false"] { opacity: .55; }
+/* Sombra curta, que cabe na folga de 28px do trilho. A do cartão
+   selecionado da pilha antiga descia quase 70px e voltava a ser cortada. */
+.carrossel > .cartaoFisico, .carrossel > .cartaoFisico[aria-pressed="true"] {
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 28%), 0 12px 20px -14px oklch(0 0 0 / 70%);
+}
 .carrossel > .cartaoFisico:hover { transform: none; }
-.carrossel > .cartaoFisico > .limite { top: 58px; }
+.carrossel > .cartaoFisico > .limite {
+  top: 58px; min-width: 0; gap: 6px; padding: 7px 11px 8px; border-radius: 12px;
+  background: rgb(10 12 14 / .3); border-color: rgb(255 255 255 / .18);
+}
+.carrossel > .cartaoFisico > .limite i { height: 3px; }
 .limite small { font-size: max(10px, calc(10px * var(--escala-letra))); color: rgb(255 255 255 / .8); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cartaoFisico > .limite[data-faixa="sem"] em b { font-size: calc(13px * var(--escala-letra)); }
 .carrossel .peças { margin-top: auto; }
@@ -378,7 +391,7 @@
 .coluna .painel { margin-top: 12px; border-radius: var(--raio-bloco); }
 
 @media (min-width: 1024px) {
-  .carrossel { margin: 0; padding: 4px 0 6px; overflow-x: auto; scroll-snap-type: none; }
+  .carrossel { margin: 0 0 -22px; padding: 4px 4px 28px; overflow-x: auto; scroll-snap-type: none; }
   .carrossel > .cartaoFisico { flex: 0 0 340px; }
   .carrossel > .cartaoFisico[aria-pressed="true"] { outline: 2px solid oklch(var(--lch-acao)); outline-offset: 3px; }
   .novoCartao { flex-basis: 180px; }

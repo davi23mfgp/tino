@@ -131,9 +131,10 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
           <span className={estilos.marca}><small>{linha.instituicao ?? "Cartão"}</small><IdentidadeBanco instituicao={linha.instituicao ?? ""} nome={linha.nome} /></span>
           {limite ? (
             <span className={estilos.limite} data-faixa={faixaDoUsoDoLimite(limite.usoBps)}>
-              <em>Limite disponível<b>{formatarMoeda(limite.disponivelCentavos)}</b></em>
-              <small>de {formatarMoeda(limite.limiteCentavos)} · {formatarPercentual(limite.usoBps, 0)} usado</small>
-              <i style={{ "--uso": `${Math.min(100, limite.usoBps / 100)}%` } as CSSProperties} aria-hidden />
+              {/* Só o disponível e o traço de uso (Davi, 25/09: "deixe
+                  minimalista"). Total e percentual moram na aba Limites. */}
+              <em>Disponível<b>{formatarMoeda(limite.disponivelCentavos)}</b></em>
+              <i title={`${formatarPercentual(limite.usoBps, 0)} do limite de ${formatarMoeda(limite.limiteCentavos)} em uso`} style={{ "--uso": `${Math.min(100, limite.usoBps / 100)}%` } as CSSProperties} aria-hidden />
             </span>
           ) : (
             <span className={estilos.limite} data-faixa="sem">
