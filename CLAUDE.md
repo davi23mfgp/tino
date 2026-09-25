@@ -88,6 +88,17 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
 - Registrar aqui qualquer instrução nova de escopo permanente, para não
   precisar repetir a cada sessão.
 
+## Redesenho de telas (pedido em 2026-09-24/25)
+
+- Cada tela passa pelo canvas do Claude Design antes do código: "hoje" e
+  três opções; o Davi escolhe, a escolha é implementada, testada no
+  navegador e enviada com capturas.
+- **Toda opção vem em dois modos: celular (390px) e computador (1280px).**
+  O Davi notou que várias telas desenhadas só para o celular ficaram
+  estranhas no computador. Testar e mandar captura dos dois, e do tema
+  claro no celular.
+- Vidro líquido e gradiente continuam em todos os temas.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
