@@ -335,24 +335,22 @@
 
 /* --- fatura compacta, depois do gráfico (Davi, 25/09: "ficou muito grande") --- */
 .fatura {
-  display: grid; gap: 10px; padding: 14px 18px; border-radius: var(--raio-bloco);
+  display: grid; gap: 8px; padding: 10px 16px 12px; border-radius: 18px;
   border: 1px solid var(--vidro-borda, var(--pauta));
   background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1);
   backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
-.linhaFatura { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.linhaFatura small { display: block; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
-.linhaFatura b { display: block; font-size: calc(20px * var(--escala-letra)); font-weight: 720; letter-spacing: -.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.vence { flex-shrink: 0; font-size: max(11px, calc(12.5px * var(--escala-letra))); font-weight: 650; color: oklch(0.8 0.15 80); white-space: nowrap; }
+.linhaFatura { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.linhaFatura small { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.linhaFatura b { font-size: calc(15px * var(--escala-letra)); font-weight: 720; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vence { flex-shrink: 0; font-size: max(10px, calc(12px * var(--escala-letra))); font-weight: 650; color: oklch(0.8 0.15 80); white-space: nowrap; }
 :global(.light) .vence { color: oklch(0.55 0.13 65); }
-.ciclo { display: grid; gap: 5px; }
-.trilho { position: relative; display: block; height: 4px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
+.trilho { position: relative; display: block; height: 3px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
 .trilho i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: var(--acao); }
 /* Fechamento: um corte fino no traço. Hoje: um ponto. */
-.trilho em { position: absolute; top: -3px; width: 2px; height: 10px; margin-left: -1px; border-radius: 2px; background: var(--foreground); opacity: .55; }
-.trilho u { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 99px; background: var(--foreground); box-shadow: 0 0 0 2px var(--papel-1); }
-.datas { display: flex; justify-content: space-between; font-size: max(10px, calc(11px * var(--escala-letra))); color: var(--texto-3); font-variant-numeric: tabular-nums; }
-.pedido, .parcelas { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.trilho em { position: absolute; top: -3px; width: 2px; height: 9px; margin-left: -1px; border-radius: 2px; background: var(--foreground); opacity: .55; }
+.trilho u { position: absolute; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 99px; background: var(--foreground); box-shadow: 0 0 0 2px var(--papel-1); }
+.pedido { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
 .pedido a { font-weight: 650; color: var(--acao); text-decoration: underline; text-underline-offset: 3px; }
 
 .apoioGrafico { margin-top: 2px; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
@@ -397,3 +395,15 @@
 /* O ponto da legenda era laranja e a barra de parcelas, cinza-esverdeada:
    a legenda apontava para uma cor que não existia no gráfico. */
 .legenda span:nth-of-type(2) { background: color-mix(in oklab, var(--atencao), var(--acao) 25%); opacity: .75; }
+
+/* Navegação do gráfico: seta, a data da fatura e seta. */
+.navegaFatura { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.navegaFatura span { min-width: 92px; text-align: center; font-size: calc(13px * var(--escala-letra)); font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.faturas header { gap: 10px; }
+
+/* Abas numa linha só (Davi, 25/09). No computador elas dividem a largura em
+   partes iguais, como um seletor; no celular continuam deslizando de lado. */
+@media (min-width: 1024px) {
+  .coluna .abas { flex-wrap: nowrap; overflow: visible; gap: 4px; }
+  .coluna .abas > button { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: calc(12.5px * var(--escala-letra)); }
+}
