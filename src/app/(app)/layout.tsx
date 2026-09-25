@@ -8,7 +8,6 @@ import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
 import { Navegacao, SubAbas } from "@/components/navegacao"
 
 import { BarraTopo } from "@/components/barra-topo"
-import { AvisoCritico } from "@/components/aviso-critico"
 import { Toaster } from "@/components/ui/toast"
 import { BuscaPaginasProvider } from "@/components/buscar-paginas"
 
@@ -89,7 +88,6 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             competencia={rotuloCompetencia(competenciaAtual())}
             apenasLoja={apenasLoja}
           />
-          {!apenasLoja && <AvisoCritico />}
           <SubAbas mei={false} apenasLoja={apenasLoja} />
 
           {/* A parede da assinatura embrulha só o conteúdo: o menu, a busca e

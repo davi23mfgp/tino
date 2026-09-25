@@ -308,11 +308,13 @@
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 28%), 0 12px 20px -14px oklch(0 0 0 / 70%);
 }
 .carrossel > .cartaoFisico:hover { transform: none; }
+/* Limite em texto puro (Davi, 25/09: opção L1): sem vidro, sem barra. */
 .carrossel > .cartaoFisico > .limite {
-  top: 58px; min-width: 0; gap: 6px; padding: 7px 11px 8px; border-radius: 12px;
-  background: rgb(10 12 14 / .3); border-color: rgb(255 255 255 / .18);
+  top: 54px; right: 20px; min-width: 0; gap: 0; padding: 0;
+  background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.carrossel > .cartaoFisico > .limite i { height: 3px; }
+.carrossel > .cartaoFisico > .limite small { font-size: max(10px, calc(10.5px * var(--escala-letra))); color: rgb(255 255 255 / .75); }
+.carrossel > .cartaoFisico > .limite b { font-size: calc(17px * var(--escala-letra)); font-weight: 720; color: #fff; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px rgb(0 0 0 / .45); white-space: nowrap; }
 .limite small { font-size: max(10px, calc(10px * var(--escala-letra))); color: rgb(255 255 255 / .8); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cartaoFisico > .limite[data-faixa="sem"] em b { font-size: calc(13px * var(--escala-letra)); }
 .carrossel .peças { margin-top: auto; }
@@ -331,42 +333,35 @@
 .coluna { display: grid; gap: 14px; align-content: start; min-width: 0; }
 .coluna > * { min-width: 0; }
 
-/* --- fatura com linha do tempo --- */
+/* --- fatura compacta, depois do gráfico (Davi, 25/09: "ficou muito grande") --- */
 .fatura {
-  display: grid; gap: 4px; padding: 20px; border-radius: var(--raio-bloco);
+  display: grid; gap: 10px; padding: 14px 18px; border-radius: var(--raio-bloco);
   border: 1px solid var(--vidro-borda, var(--pauta));
-  background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1);
+  background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1);
   backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
-.rotuloFatura { font-size: max(10px, calc(12.5px * var(--escala-letra))); color: var(--texto-3); }
-.rotuloFatura::first-letter { text-transform: uppercase; }
-.valorFatura { font-size: calc(34px * var(--escala-letra)); font-weight: 760; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.valorFatura small { font-size: .5em; font-weight: 650; opacity: .7; }
-.apoioFatura { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
-.linhaTempo { position: relative; height: 64px; margin: 14px 10px 0; }
-.trilho { position: absolute; left: 0; right: 0; top: 6px; height: 3px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
-.trilho i { display: block; height: 100%; border-radius: 99px; background: var(--acao); }
-.marco { position: absolute; top: 0; display: grid; justify-items: center; gap: 4px; transform: translateX(-50%); white-space: nowrap; }
-.marco[data-lado="inicio"] { justify-items: start; transform: translateX(-7px); }
-.marco[data-lado="fim"] { justify-items: end; transform: translateX(calc(-100% + 7px)); }
-/* O rótulo do fechamento desce uma linha: ele costuma cair perto do "hoje" ou
-   do vencimento, e na mesma linha os dois textos se encavalavam. */
-.marco[data-embaixo] b { margin-top: 16px; }
-.marco i { width: 14px; height: 14px; border-radius: 99px; border: 2px solid var(--papel-1); }
-.marco i[data-cor="feito"] { background: var(--acao); }
-.marco i[data-cor="hoje"] { background: var(--foreground); }
-.marco i[data-cor="depois"] { background: color-mix(in oklab, var(--foreground), transparent 60%); }
-.marco i[data-cor="vence"] { background: oklch(0.8 0.15 80); }
-.marco b { font-size: max(10px, calc(11.5px * var(--escala-letra))); font-weight: 650; color: var(--texto-2); }
-.marco b[data-cor="vence"] { color: oklch(0.8 0.15 80); }
-:global(.light) .marco i[data-cor="vence"] { background: oklch(0.6 0.14 65); }
-:global(.light) .marco b[data-cor="vence"] { color: oklch(0.55 0.13 65); }
-.notaFatura { margin-top: 4px; font-size: max(11px, calc(12.5px * var(--escala-letra))); line-height: 1.5; color: var(--texto-2); }
-.notaFatura a { font-weight: 650; color: var(--acao); text-decoration: underline; text-underline-offset: 3px; }
+.linhaFatura { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.linhaFatura small { display: block; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.linhaFatura b { display: block; font-size: calc(20px * var(--escala-letra)); font-weight: 720; letter-spacing: -.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vence { flex-shrink: 0; font-size: max(11px, calc(12.5px * var(--escala-letra))); font-weight: 650; color: oklch(0.8 0.15 80); white-space: nowrap; }
+:global(.light) .vence { color: oklch(0.55 0.13 65); }
+.ciclo { display: grid; gap: 5px; }
+.trilho { position: relative; display: block; height: 4px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
+.trilho i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: var(--acao); }
+/* Fechamento: um corte fino no traço. Hoje: um ponto. */
+.trilho em { position: absolute; top: -3px; width: 2px; height: 10px; margin-left: -1px; border-radius: 2px; background: var(--foreground); opacity: .55; }
+.trilho u { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 99px; background: var(--foreground); box-shadow: 0 0 0 2px var(--papel-1); }
+.datas { display: flex; justify-content: space-between; font-size: max(10px, calc(11px * var(--escala-letra))); color: var(--texto-3); font-variant-numeric: tabular-nums; }
+.pedido, .parcelas { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.pedido a { font-weight: 650; color: var(--acao); text-decoration: underline; text-underline-offset: 3px; }
 
 .apoioGrafico { margin-top: 2px; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
 .faturas { border-radius: var(--raio-bloco); }
-.barras { height: 140px; }
+/* O valor embaixo da barra do mês saiu: cortava em "R$ 3.367,…" e repetia
+   o bloco da fatura logo abaixo. */
+.barras { height: 124px; }
+.barras button { grid-template-rows: 1fr 16px; }
+.tendencia, .marcaTendencia { inset: 0 0 18px 0; height: calc(100% - 18px); }
 
 /* Abas em chips que deslizam: sete abas numa faixa fixa não cabiam no
    celular, e as últimas ficavam cortadas no meio da palavra. */
@@ -399,3 +394,6 @@
   .corpo { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
   .coluna .abas { margin: 0; padding: 2px 0; flex-wrap: wrap; }
 }
+/* O ponto da legenda era laranja e a barra de parcelas, cinza-esverdeada:
+   a legenda apontava para uma cor que não existia no gráfico. */
+.legenda span:nth-of-type(2) { background: color-mix(in oklab, var(--atencao), var(--acao) 25%); opacity: .75; }

@@ -21,12 +21,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { enviar } from "@/lib/cliente"
-import { cicloDaFatura, faixaDoUsoDoLimite, faturaAberta, faturaEmCobranca, limiteDoCartao, mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
+import { cicloDaFatura, faturaAberta, faturaEmCobranca, limiteDoCartao, mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
 import { nomeCurtoDaConta } from "@/components/filtros-do-extrato"
 import { LimitesDosCartoes } from "@/components/limites-cartoes"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { cn } from "@/lib/utils"
-import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
 import { ROTULO_BANDEIRA } from "@/lib/bandeiras"
@@ -81,7 +81,6 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
   }
 
   const ciclo = cicloDaFatura(cartao, mes)
-  const limiteDoSelecionado = limiteDoCartao(cartao, faturaEmCobranca(cartao, hoje))
 
   function escolher(linha: DadosCartao) {
     setId(linha.id); setMes(faturaAberta(linha, hoje)); setCategoria(""); setBusca("")
@@ -129,18 +128,12 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
           onClick={(evento) => { escolher(linha); evento.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }) }}
         >
           <span className={estilos.marca}><small>{linha.instituicao ?? "Cartão"}</small><IdentidadeBanco instituicao={linha.instituicao ?? ""} nome={linha.nome} /></span>
-          {limite ? (
-            <span className={estilos.limite} data-faixa={faixaDoUsoDoLimite(limite.usoBps)}>
-              {/* Só o disponível e o traço de uso (Davi, 25/09: "deixe
-                  minimalista"). Total e percentual moram na aba Limites. */}
-              <em>Disponível<b>{formatarMoeda(limite.disponivelCentavos)}</b></em>
-              <i title={`${formatarPercentual(limite.usoBps, 0)} do limite de ${formatarMoeda(limite.limiteCentavos)} em uso`} style={{ "--uso": `${Math.min(100, limite.usoBps / 100)}%` } as CSSProperties} aria-hidden />
-            </span>
-          ) : (
-            <span className={estilos.limite} data-faixa="sem">
-              <em>Limite<b>não informado</b></em>
-            </span>
-          )}
+          {/* Só o disponível, em texto, sem caixa nem barra (Davi, 25/09:
+              opção L1). Total, percentual e a régua moram na aba Limites. */}
+          <span className={estilos.limite}>
+            <small>disponível</small>
+            <b>{limite ? semCentavosZerados(formatarMoeda(limite.disponivelCentavos)) : "limite não informado"}</b>
+          </span>
           {/* Peças de cartão de verdade: chip e o símbolo de aproximação. São
               o que faz a peça parecer cartão e não retângulo colorido. */}
           <span className={estilos.peças} aria-hidden>
@@ -169,15 +162,6 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
 
     <div className={estilos.corpo}>
       <div className={estilos.coluna}>
-        <FaturaDoMes
-          mes={mes}
-          hoje={hoje}
-          ciclo={ciclo}
-          valorCentavos={resumo.saldo}
-          parcelasCentavos={resumo.previsto}
-          limiteSemCadastro={!limiteDoSelecionado}
-        />
-
         <div className={estilos.faturas}>
           <header><div><h2>Faturas por mês</h2><p className={estilos.apoioGrafico}>Toque num mês para abrir a fatura dele</p></div><div><button aria-label="Meses anteriores" disabled={inicio === 0} onClick={() => setMes(meses[Math.max(0, inicio - 1)])}><ChevronLeft /></button><button aria-label="Próximos meses" disabled={inicio + porJanela >= meses.length} onClick={() => setMes(meses[Math.min(meses.length - 1, inicio + porJanela)])}><ChevronRight /></button></div></header>
           {/* A linha liga os topos do que já foi confirmado, com um ponto no
@@ -212,13 +196,21 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
                 />
               ) : null)}
             </div>
-            <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
+            <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} aria-label={`Fatura de ${rotuloCompetencia(barra.competencia)}: ${formatarMoeda(barra.saldo)}`} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
               <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
-              <small>{rotuloCompetencia(barra.competencia, true)}</small><b>{mes === barra.competencia ? formatarMoeda(barra.saldo) : ""}</b>
+              <small>{rotuloCompetencia(barra.competencia, true)}</small>
             </button>)}</div>
           </div>
           <p className={estilos.legenda}><span />Fatura <span />Parcelas já compradas</p>
         </div>
+
+        <FaturaDoMes
+          mes={mes}
+          hoje={hoje}
+          ciclo={ciclo}
+          valorCentavos={resumo.saldo}
+          parcelasCentavos={resumo.previsto}
+        />
 
         <div className={estilos.acoes}><Button onClick={() => setForm({})}><Plus />Nova compra</Button><Button variant="outline" onClick={() => setAba("importar")}><Upload />Importar fatura</Button></div>
       </div>
@@ -391,59 +383,51 @@ function IconeCategoria({ compra }: { compra: CompraCartao }) {
 /// "06/10" a partir de "2026-10-06".
 const diaMes = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
 const diasEntreIso = (de: string, ate: string) => Math.round((Date.parse(`${ate}T00:00:00Z`) - Date.parse(`${de}T00:00:00Z`)) / 86_400_000)
+/// "R$ 4.633" quando os centavos são zero; o valor com centavos fica como está.
+const semCentavosZerados = (texto: string) => texto.replace(/,00$/, "")
 
 /**
- * A fatura escolhida, com a linha do tempo dela (Davi, 25/09: opção B3).
+ * A fatura escolhida, compacta (Davi, 25/09: "ficou muito grande", depois
+ * do gráfico e menor).
  *
- * "Vence dia 6" era insumo. A pergunta de quem abre o cartão é outra: se
- * comprar hoje, cai nesta fatura ou na próxima, e quanto tempo falta para
- * pagar. A linha responde as duas de uma vez — abriu, hoje, fecha, vence.
- *
- * As datas só aparecem com fechamento e vencimento cadastrados; sem eles a
- * tela pede o cadastro em vez de chutar um ciclo.
+ * Uma linha com o valor e o estado, e embaixo o ciclo num traço fino: abriu,
+ * hoje, fecha, vence. O traço responde o que a pessoa quer saber — se a
+ * compra de hoje ainda cai nesta fatura e quanto falta para pagar — sem o
+ * parágrafo que explicava isso. Sem fechamento e vencimento cadastrados, o
+ * traço dá lugar ao pedido de cadastro, em vez de datas inventadas.
  */
-function FaturaDoMes({ mes, hoje, ciclo, valorCentavos, parcelasCentavos, limiteSemCadastro }: {
+function FaturaDoMes({ mes, hoje, ciclo, valorCentavos, parcelasCentavos }: {
   mes: string
   hoje: string
   ciclo: { abreEm: string; fechaEm: string; venceEm: string } | null
   valorCentavos: number
   parcelasCentavos: number
-  limiteSemCadastro: boolean
 }) {
   const estado = !ciclo ? null : hoje < ciclo.abreEm ? "futura" : hoje <= ciclo.fechaEm ? "aberta" : hoje <= ciclo.venceEm ? "fechada" : "vencida"
   const ROTULO = { futura: "ainda não abriu", aberta: "aberta", fechada: "fechada", vencida: "vencida" } as const
   const total = ciclo ? Math.max(1, diasEntreIso(ciclo.abreEm, ciclo.venceEm)) : 1
   const posicao = (iso: string) => `${Math.min(100, Math.max(0, (diasEntreIso(ciclo!.abreEm, iso) / total) * 100))}%`
-  const faltam = ciclo ? diasEntreIso(hoje, ciclo.venceEm) : 0
-  const texto = formatarMoeda(valorCentavos)
-  const corte = texto.lastIndexOf(",")
 
   return <section className={estilos.fatura}>
-    <p className={estilos.rotuloFatura}>Fatura de {rotuloCompetencia(mes)}{estado ? ` · ${ROTULO[estado]}` : ""}</p>
-    <strong className={cn(estilos.valorFatura, "valor-sensivel")}>{texto.slice(0, corte)}<small>{texto.slice(corte)}</small></strong>
-    {parcelasCentavos > 0 && <p className={estilos.apoioFatura}>e {formatarMoeda(parcelasCentavos)} em parcelas já compradas para esta fatura</p>}
-
+    <div className={estilos.linhaFatura}>
+      <span>
+        <small>Fatura de {rotuloCompetencia(mes).split(" ")[0]}{estado ? ` · ${ROTULO[estado]}` : ""}</small>
+        <b className="valor-sensivel">{formatarMoeda(valorCentavos)}</b>
+      </span>
+      {ciclo && <span className={estilos.vence}>vence {diaMes(ciclo.venceEm)}</span>}
+    </div>
     {ciclo && estado ? (
-      <>
-        <div className={estilos.linhaTempo} aria-label={`Abriu ${diaMes(ciclo.abreEm)}, fecha ${diaMes(ciclo.fechaEm)}, vence ${diaMes(ciclo.venceEm)}`}>
-          <span className={estilos.trilho} aria-hidden><i style={{ width: estado === "futura" ? "0%" : posicao(hoje < ciclo.venceEm ? hoje : ciclo.venceEm) }} /></span>
-          <span className={estilos.marco} data-lado="inicio" style={{ left: "0%" }}><i data-cor="feito" /><b>abriu {diaMes(ciclo.abreEm)}</b></span>
-          {estado !== "futura" && estado !== "vencida" && <span className={estilos.marco} style={{ left: posicao(hoje) }}><i data-cor="hoje" /><b>hoje</b></span>}
-          <span className={estilos.marco} data-embaixo style={{ left: posicao(ciclo.fechaEm) }}><i data-cor={hoje > ciclo.fechaEm ? "feito" : "depois"} /><b>fecha {diaMes(ciclo.fechaEm)}</b></span>
-          <span className={estilos.marco} data-lado="fim" style={{ left: "100%" }}><i data-cor="vence" /><b data-cor="vence">vence {diaMes(ciclo.venceEm)}</b></span>
-        </div>
-        <p className={estilos.notaFatura}>
-          {estado === "aberta" && <>Ainda entra o que você comprar até {diaMes(ciclo.fechaEm)}. Depois disso, vai para a fatura de {rotuloCompetencia(competenciaMaisMeses(mes, 1)).split(" ")[0]}. Vence em {faltam} {faltam === 1 ? "dia" : "dias"}.</>}
-          {estado === "fechada" && <>Fechou em {diaMes(ciclo.fechaEm)}: compra nova já vai para a próxima fatura. {faltam === 0 ? "Vence hoje." : `Vence em ${faltam} ${faltam === 1 ? "dia" : "dias"}.`}</>}
-          {estado === "vencida" && <>Venceu em {diaMes(ciclo.venceEm)}.</>}
-          {estado === "futura" && <>Abre em {diaMes(ciclo.abreEm)}. Por enquanto só tem o que já foi comprado parcelado.</>}
-        </p>
-      </>
+      <div className={estilos.ciclo} aria-label={`Abriu ${diaMes(ciclo.abreEm)}, fecha ${diaMes(ciclo.fechaEm)}, vence ${diaMes(ciclo.venceEm)}`}>
+        <span className={estilos.trilho} aria-hidden>
+          <i style={{ width: estado === "futura" ? "0%" : posicao(hoje < ciclo.venceEm ? hoje : ciclo.venceEm) }} />
+          <em style={{ left: posicao(ciclo.fechaEm) }} />
+          {estado !== "futura" && estado !== "vencida" && <u style={{ left: posicao(hoje) }} />}
+        </span>
+        <span className={estilos.datas}><span>{diaMes(ciclo.abreEm)}</span><span>fecha {diaMes(ciclo.fechaEm)}</span></span>
+      </div>
     ) : (
-      <p className={estilos.notaFatura}>
-        Cadastre o dia de fechamento e o de vencimento deste cartão para ver até quando uma compra entra nesta fatura. <Link href="/configuracoes">Cadastrar</Link>
-      </p>
+      <p className={estilos.pedido}>Sem dia de fechamento e vencimento. <Link href="/configuracoes">Cadastrar</Link></p>
     )}
-    {limiteSemCadastro && <p className={estilos.notaFatura}>O limite deste cartão não foi informado. <Link href="/configuracoes">Informar limite</Link></p>}
+    {parcelasCentavos > 0 && <p className={estilos.parcelas}>+ {formatarMoeda(parcelasCentavos)} em parcelas já compradas</p>}
   </section>
 }

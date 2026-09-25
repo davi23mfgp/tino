@@ -62,7 +62,10 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
   const borda=sobreClaro ? "border-[oklch(0_0_0/0.12)] text-[oklch(0.17_0.02_145)]" : "border-pauta"
   return <>
       {!apenasLoja && <Sheet open={aberto} onOpenChange={setAberto}>
-        <SheetTrigger asChild><button aria-label="Notificações" className={"relative grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{novas.length>0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-acao" />}</button></SheetTrigger>
+        <SheetTrigger asChild><button aria-label="Notificações" className={"relative grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{/* Ponto vermelho quando há alerta crítico sem ler: a faixa que o
+            repetia no topo de toda tela saiu (Davi, 25/09), e o sino passou a
+            ser o único aviso fora do Início. */}
+        {novas.length>0 && <span className={"absolute right-1 top-1 size-2 rounded-full " + (novas.some((a) => a.severidade === "CRITICO") ? "bg-negativo" : "bg-acao")} />}</button></SheetTrigger>
         {/* Painel na forma da referência aprovada (13/09): título forte,
             segmentado Todas/Não lidas com a contagem, cartões compactos com
             ícone circular, e o rodapé fixo com as duas ações em texto.
