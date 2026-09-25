@@ -14,7 +14,7 @@ export type DadosFormularioMeta = {
 }
 const campo = "min-h-11 w-full rounded-xl border border-pauta bg-background px-3 py-2 text-sm"
 
-export function NovaMeta({ contas = [], meta, reserva = false }: { contas?: ContaMeta[]; meta?: DadosFormularioMeta; reserva?: boolean }) {
+export function NovaMeta({ contas = [], meta, reserva = false, classeBotao, rotuloBotao }: { contas?: ContaMeta[]; meta?: DadosFormularioMeta; reserva?: boolean; classeBotao?: string; rotuloBotao?: React.ReactNode }) {
   const router = useRouter()
   const [aberto, setAberto] = useState(false)
   const [ocupado, setOcupado] = useState(false)
@@ -63,7 +63,7 @@ export function NovaMeta({ contas = [], meta, reserva = false }: { contas?: Cont
   }
   const reais = (valor?: number) => valor ? String(valor / 100).replace(".", ",") : ""
   return <>
-    <button className="min-h-11 rounded-full border border-pauta px-4 text-sm" onClick={() => setAberto(true)}>{meta ? "Editar meta" : reserva ? "Criar reserva" : "Nova meta"}</button>
+    <button className={classeBotao ?? "min-h-11 rounded-full border border-pauta px-4 text-sm"} onClick={() => setAberto(true)}>{rotuloBotao ?? (meta ? "Editar meta" : reserva ? "Criar reserva" : "Nova meta")}</button>
     <Dialog open={aberto} onOpenChange={setAberto}><DialogContent>
       <DialogHeader><DialogTitle>{meta ? "Editar meta" : reserva ? "Sua reserva" : "Nova meta"}</DialogTitle></DialogHeader>
       <form onSubmit={salvar}><DialogBody className="grid gap-3 sm:grid-cols-2">

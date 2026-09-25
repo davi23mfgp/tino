@@ -3,7 +3,7 @@ import { sessaoDaPagina } from "@/lib/pagina"
 import { acompanharMetas } from "@/lib/metas"
 import { CartaoMeta } from "@/components/cartao-meta"
 import { NovaMeta } from "@/components/nova-meta"
-import { Cartao,Vazio } from "@/components/ui/painel"
+import { Vazio } from "@/components/ui/painel"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Destaque } from "@/components/ui/destaque"
 // A reserva de emergência tem tela própria (/reserva) desde 23/09; aqui ficam
@@ -27,5 +27,7 @@ export async function PainelMetas() {
   apoio={maisPerto
    ? `${ativas.length} ${ativas.length===1?"meta ativa":"metas ativas"}${maisPerto.aporteMensalCentavos>0?` · ${formatarMoeda(maisPerto.aporteMensalCentavos)} por mês nesta`:""}.`
    : "Defina o prazo, planeje o aporte e acompanhe cada mês."}
- />}<Cartao titulo="Suas metas"><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted-fg">Defina o prazo, planeje o aporte e acompanhe cada mês.</p><NovaMeta contas={contas}/></div></Cartao><div className="grid gap-4 xl:grid-cols-2">{metas.map(m=><CartaoMeta key={m.id} meta={{...m,dataAlvo:m.dataAlvo?.toISOString()??null}} contas={contas} lancamentos={lancamentos}/> )}</div>{!metas.length&&<Vazio titulo="Qual é seu próximo objetivo?" texto="Cadastre o valor que já tem e quanto quer guardar."/>}</div>
+ />}{/* Destaque de hoje, o botão verde de nova meta e os cartões da opção C
+  (Davi, 25/09). O bloco "Suas metas" saiu: repetia a frase do destaque e
+  empurrava as metas para baixo da dobra. */}<div className="flex justify-end"><NovaMeta contas={contas} classeBotao="min-h-11 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground" rotuloBotao="+ Nova meta"/></div><div className="grid gap-4 md:grid-cols-2">{metas.map(m=><CartaoMeta key={m.id} meta={{...m,dataAlvo:m.dataAlvo?.toISOString()??null}} contas={contas} lancamentos={lancamentos}/> )}</div>{!metas.length&&<Vazio titulo="Qual é seu próximo objetivo?" texto="Cadastre o valor que já tem e quanto quer guardar."/>}</div>
 }
