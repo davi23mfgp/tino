@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
@@ -216,8 +216,8 @@ export default function OrcamentoPagina() {
           )}
         </section>
         <div className={estilos.atalhos}>
-          <button type="button" onClick={() => void repetirMesPassado()} disabled={ocupado}><RotateCcw aria-hidden />Repetir limites de {rotuloCompetencia(mesPassado).split(" ")[0]}</button>
-          <button type="button" onClick={() => void sugerir()} disabled={ocupado}><Sparkles aria-hidden />Usar meu histórico</button>
+          <button type="button" onClick={() => void repetirMesPassado()} disabled={ocupado}><RotateCcw aria-hidden />Repetir {rotuloCompetencia(mesPassado).split(" ")[0]}</button>
+          <button type="button" onClick={() => void sugerir()} disabled={ocupado}><Sparkles aria-hidden />Usar histórico</button>
         </div>
       </div>
 
@@ -298,13 +298,14 @@ export default function OrcamentoPagina() {
           mudar, lá embaixo na lista. */}
       {alterado && (
         <div className={estilos.salvar}>
-          <label>
-            Repetir por
+          <label className={estilos.valerPara}>
+            <span className="sr-only">Valer para</span>
             <select value={String(repetir)} onChange={(evento) => setRepetir(Number(evento.target.value))}>
-              {[0, 2, 5, 11].map((n) => <option key={n} value={n}>{n === 0 ? "só este mês" : `${n + 1} meses`}</option>)}
+              {[0, 2, 5, 11].map((n) => <option key={n} value={n}>{n === 0 ? "Só este mês" : `Por ${n + 1} meses`}</option>)}
             </select>
+            <ChevronDown aria-hidden />
           </label>
-          <button type="button" onClick={() => void salvar()} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar"}</button>
+          <button type="button" onClick={() => void salvar()} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar limites"}</button>
         </div>
       )}
     </div>
