@@ -1,18 +1,16 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Sparkles, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Barra, Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { SelectNative } from "@/components/ui/select-native"
+import { Vazio } from "@/components/ui/painel"
 import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
-import { cn } from "@/lib/utils"
-import { Destaque } from "@/components/ui/destaque"
 import { DivisaoDaRenda } from "@/components/divisao-da-renda"
+import estilos from "./orcamento.module.css"
 
 /**
  * Orçamento por categoria.
@@ -47,7 +45,6 @@ interface Orcamento {
   gastoTotalCentavos: number
 }
 
-const campo = "min-h-11 w-32 rounded-xl border border-pauta bg-background px-3 py-1.5 text-right text-sm tabular-nums outline-none focus:border-acao/50"
 
 export default function OrcamentoPagina() {
   const [competencia, setCompetencia] = useState(competenciaAtual())
@@ -56,13 +53,17 @@ export default function OrcamentoPagina() {
   const [repetir, setRepetir] = useState(0)
   const [ocupado, setOcupado] = useState(false)
   const [mensagem, setMensagem] = useState<string | null>(null)
+  // Categorias sem limite em que a pessoa tocou "+ limite": sobem para a lista
+  // com o campo aberto, mesmo antes de ter valor digitado.
+  const [abertas, setAbertas] = useState<Set<string>>(new Set())
 
   const carregar = useCallback(async () => {
     const resposta = await buscar<Orcamento>(`/api/orcamento?competencia=${competencia}`)
     setDados(resposta)
+    setAbertas(new Set())
     setRascunho(
       Object.fromEntries(
-        resposta.linhas.map((linha) => [linha.categoriaId, (linha.limiteCentavos / 100).toFixed(2).replace(".", ",")]),
+        resposta.linhas.map((linha) => [linha.categoriaId, paraTexto(linha.limiteCentavos)]),
       ),
     )
   }, [competencia])
@@ -129,223 +130,196 @@ export default function OrcamentoPagina() {
     }
   }
 
-  const limitePlanejado = Object.values(rascunho).reduce((soma, valor) => soma + (valor ? paraCentavos(valor) : 0), 0)
-  const gasto = dados?.gastoTotalCentavos ?? 0
-  const estourados = dados?.linhas.filter((linha) => linha.estourou) ?? []
-  const usado = limitePlanejado > 0 ? Math.round((gasto / limitePlanejado) * 100) : 0
-  // A categoria que mais passou do limite, em reais — é ela que responde
-  // "onde está o problema", não a contagem de quantas estouraram.
-  const pior = [...estourados].sort((a, b) => (b.gastoCentavos - b.limiteCentavos) - (a.gastoCentavos - a.limiteCentavos))[0]
-  const diasQueFaltam = (() => {
-    const [ano, mes] = competencia.split("-").map(Number)
-    const hoje = new Date()
-    const mesmoMes = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes
-    if (!mesmoMes) return null
-    return new Date(ano, mes, 0).getDate() - hoje.getDate()
-  })()
+  /**
+   * Continuar o mês passado: traz os limites dele para o rascunho deste mês.
+   * Nada é gravado até a pessoa salvar — ela pode mexer em um ou outro antes.
+   */
+  async function repetirMesPassado() {
+    setOcupado(true)
+    setMensagem(null)
+    try {
+      const anterior = await buscar<Orcamento>(`/api/orcamento?competencia=${mesPassado}`)
+      if (anterior.linhas.length === 0) {
+        setMensagem(`${rotuloCompetencia(mesPassado)} não tinha limites definidos.`)
+        return
+      }
+      setRascunho((atual) => {
+        const novo = { ...atual }
+        for (const linha of anterior.linhas) novo[linha.categoriaId] = paraTexto(linha.limiteCentavos)
+        return novo
+      })
+      setMensagem(`${anterior.linhas.length} limite(s) de ${rotuloCompetencia(mesPassado).split(" ")[0]} trazidos. Confira e salve.`)
+    } catch {
+      setMensagem("Não consegui trazer os limites do mês passado.")
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  const mesPassado = competenciaMaisMeses(competencia, -1)
+  const competencias = ultimasCompetencias(6).concat([1, 2, 3].map((n) => competenciaMaisMeses(competenciaAtual(), n)))
+  const indice = competencias.indexOf(competencia)
+  const limiteDe = (categoriaId: string) => {
+    const texto = rascunho[categoriaId]
+    return texto && texto.trim() ? paraCentavos(texto) : 0
+  }
+  // A barra e o "faltam/passou" seguem o rascunho: quem digita um limite vê na
+  // hora se a categoria fica verde ou vermelha, antes de salvar.
+  const linhas = (dados?.linhas ?? []).map((linha) => ({ ...linha, limiteCentavos: limiteDe(linha.categoriaId) }))
+  const novas = (dados?.semOrcamento ?? []).filter((linha) => abertas.has(linha.categoria.id) || limiteDe(linha.categoria.id) > 0)
+  const semLimite = (dados?.semOrcamento ?? []).filter((linha) => !novas.includes(linha))
+  const limitePlanejado = [...linhas.map((l) => l.limiteCentavos), ...novas.map((l) => limiteDe(l.categoria.id))].reduce((a, b) => a + b, 0)
+  const gasto = linhas.reduce((soma, linha) => soma + linha.gastoCentavos, 0) + novas.reduce((soma, linha) => soma + linha.gastoCentavos, 0)
+  // Compara em centavos, categoria a categoria: "1200" e "1.200,00" são o
+  // mesmo limite e não devem acender o botão de salvar.
+  const salvos = new Map((dados?.linhas ?? []).map((l) => [l.categoriaId, l.limiteCentavos]))
+  const alterado = dados !== null && [...new Set([...salvos.keys(), ...Object.keys(rascunho)])].some((id) => (salvos.get(id) ?? 0) !== limiteDe(id))
+  // A mais apertada primeiro: quem abre o orçamento quer ver o que estourou.
+  const ordenadas = [...linhas].sort((a, b) => b.gastoCentavos / Math.max(1, b.limiteCentavos) - a.gastoCentavos / Math.max(1, a.limiteCentavos))
 
   return (
-    <div className="space-y-4">
-      {/* A tela abria pelo seletor de competência: filtro antes de resposta.
-          Agora ela diz quanto do plano já foi embora e onde está o estouro —
-          o seletor continua, no lugar de controle do cartão abaixo. */}
-      {/* O bloco claro da tela: quanto do plano já foi, e onde está o estouro. */}
-      <Destaque
-        rotulo={`Orçamento de ${rotuloCompetencia(competencia)}`}
-        titulo={
-          limitePlanejado === 0
-            ? "Você ainda não definiu um orçamento para este mês"
-            : diasQueFaltam !== null
-              ? `Você usou ${usado}% do orçamento com ${diasQueFaltam} ${diasQueFaltam === 1 ? "dia" : "dias"} pela frente`
-              : `Você usou ${usado}% do orçamento deste mês`
-        }
-        apoio={
-          pior
-            ? `${pior.categoria.nome} passou ${formatarMoeda(pior.gastoCentavos - pior.limiteCentavos)} do limite.`
-            : limitePlanejado > 0
-              ? `Nenhuma categoria estourou. Sobram ${formatarMoeda(limitePlanejado - gasto)} do plano.`
-              : undefined
-        }
-        acao={{ href: "/transacoes", texto: "Ver onde foi" }}
-      />
+    <div className={estilos.pagina}>
+      {/* Orçamento (Davi, 25/09: "categorias, limites, verde dentro e
+          vermelho quando passa, mostrando quanto passou ou quanto falta; ajuste
+          de limite e continuar o mês passado"). Saíram o bloco branco e os
+          quatro quadros, que repetiam o mesmo resumo; a divisão do casal e a
+          referência da renda ficaram recolhidas no fim. */}
+      <div className={estilos.mes}>
+        <button type="button" aria-label="Mês anterior" disabled={indice <= 0} onClick={() => setCompetencia(competencias[indice - 1])}><ChevronLeft aria-hidden /></button>
+        <b>{rotuloCompetencia(competencia)}</b>
+        <button type="button" aria-label="Próximo mês" disabled={indice >= competencias.length - 1} onClick={() => setCompetencia(competencias[indice + 1])}><ChevronRight aria-hidden /></button>
+      </div>
 
-      <Cartao
-        titulo="Orçamento"
-        acao={
-          <select
-            value={competencia}
-            onChange={(evento) => setCompetencia(evento.target.value)}
-            className="rounded-full border border-pauta bg-background px-3 py-1.5 text-[calc(12px*var(--escala-letra))]"
-          >
-            {ultimasCompetencias(6)
-              .concat([1, 2, 3].map((n) => competenciaMaisMeses(competenciaAtual(), n)))
-              .map((mes) => (
-                <option key={mes} value={mes}>
-                  {rotuloCompetencia(mes)}
-                </option>
-              ))}
-          </select>
-        }
-      >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Metrica rotulo="Planejado" valor={formatarMoeda(limitePlanejado)} />
-          <Metrica rotulo="Gasto" valor={formatarMoeda(gasto)} tom={gasto > limitePlanejado ? "negativo" : "neutro"} />
-          <Metrica
-            rotulo="Sobra do plano"
-            valor={formatarMoeda(limitePlanejado - gasto)}
-            tom={limitePlanejado - gasto >= 0 ? "positivo" : "negativo"}
-          />
-          <Metrica
-            rotulo="Categorias estouradas"
-            valor={String(estourados.length)}
-            tom={estourados.length > 0 ? "atencao" : "neutro"}
-          />
+      <div className={estilos.topo}>
+        <section className={estilos.resumo}>
+          {limitePlanejado > 0 ? (
+            <>
+              <div className={estilos.linhaResumo}>
+                <div>
+                  <small>Gasto no mês</small>
+                  <b className="valor-sensivel">{formatarMoeda(gasto)}</b>
+                  <small>de {formatarMoeda(limitePlanejado)} de limite</small>
+                </div>
+                <strong data-estourou={gasto > limitePlanejado || undefined}>
+                  {gasto > limitePlanejado ? `passou ${formatarMoeda(gasto - limitePlanejado)}` : `faltam ${formatarMoeda(limitePlanejado - gasto)}`}
+                </strong>
+              </div>
+              <Trilho gasto={gasto} limite={limitePlanejado} grosso />
+            </>
+          ) : (
+            <div className={estilos.linhaResumo}>
+              <div>
+                <small>Nenhum limite definido para {rotuloCompetencia(competencia).split(" ")[0]}</small>
+                <b>Defina quanto quer gastar em cada categoria</b>
+              </div>
+            </div>
+          )}
+        </section>
+        <div className={estilos.atalhos}>
+          <button type="button" onClick={() => void repetirMesPassado()} disabled={ocupado}><RotateCcw aria-hidden />Repetir limites de {rotuloCompetencia(mesPassado).split(" ")[0]}</button>
+          <button type="button" onClick={() => void sugerir()} disabled={ocupado}><Sparkles aria-hidden />Usar meu histórico</button>
         </div>
+      </div>
 
-        {limitePlanejado > 0 && (
-          <div className="mt-4">
-            <Barra percentual={(gasto / limitePlanejado) * 100} />
-          </div>
-        )}
+      {mensagem && <p className={estilos.mensagem} role="status">{mensagem}</p>}
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <button
-            onClick={sugerir}
-            disabled={ocupado}
-            className="flex min-h-11 items-center gap-2 rounded-full border border-pauta px-5 text-[calc(14px*var(--escala-letra))] font-medium transition hover:border-acao/40 hover:text-acao disabled:opacity-40"
-          >
-            <Sparkles className="size-3.5" />
-            Usar meu histórico
-          </button>
+      {(ordenadas.length > 0 || novas.length > 0) && (
+        <section className={estilos.bloco}>
+          <header><h2>Categorias</h2><small>{ordenadas.length + novas.length} com limite</small></header>
+          <ul className={estilos.lista}>
+            {[...ordenadas.map((l) => ({ categoria: l.categoria, gasto: l.gastoCentavos })), ...novas.map((l) => ({ categoria: l.categoria, gasto: l.gastoCentavos }))].map(({ categoria, gasto: gastoDaCategoria }) => {
+              const limite = limiteDe(categoria.id)
+              const passou = limite > 0 && gastoDaCategoria > limite
+              return (
+                <li key={categoria.id}>
+                  <span className={estilos.icone}><SimboloCategoria categoria={categoria} /></span>
+                  <div className={estilos.corpoLinha}>
+                    <div className={estilos.nomeValor}>
+                      <b>{categoria.nome}</b>
+                      <b className="valor-sensivel" data-estourou={passou || undefined}>{formatarMoeda(gastoDaCategoria)}</b>
+                    </div>
+                    <Trilho gasto={gastoDaCategoria} limite={limite} />
+                    <div className={estilos.rodapeLinha}>
+                      <span data-estourou={passou || undefined}>
+                        {limite === 0 ? "sem limite" : passou ? `passou ${formatarMoeda(gastoDaCategoria - limite)}` : `faltam ${formatarMoeda(limite - gastoDaCategoria)}`}
+                      </span>
+                      <label className={estilos.limite}>
+                        <span>limite</span>
+                        <input
+                          aria-label={`Limite de ${categoria.nome}`}
+                          value={rascunho[categoria.id] ?? ""}
+                          onChange={(evento) => setRascunho((atual) => ({ ...atual, [categoria.id]: evento.target.value }))}
+                          inputMode="decimal"
+                          placeholder="0,00"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
-          <label className="flex min-h-11 items-center gap-2 text-[calc(14px*var(--escala-letra))] text-muted-fg">
-            Repetir por
-            <SelectNative
-              tamanho="pilula"
-              value={String(repetir)}
-              onChange={(evento) => setRepetir(Number(evento.target.value))}
-              className="w-auto min-w-[150px] text-[calc(14px*var(--escala-letra))]"
-            >
-              {[0, 2, 5, 11].map((n) => (
-                <option key={n} value={n}>
-                  {n === 0 ? "só este mês" : `${n} meses`}
-                </option>
-              ))}
-            </SelectNative>
-          </label>
+      {dados && ordenadas.length === 0 && novas.length === 0 && semLimite.length === 0 && (
+        <Vazio titulo="Nenhum gasto nem limite neste mês" texto="Use seu histórico ou repita os limites do mês passado." />
+      )}
 
-          <button
-            onClick={salvar}
-            disabled={ocupado}
-            className="ml-auto rounded-full bg-primary px-5 py-2 text-[calc(13px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-40"
-          >
-            {ocupado ? "Salvando…" : "Salvar orçamento"}
-          </button>
-        </div>
+      {semLimite.length > 0 && (
+        <section className={estilos.bloco}>
+          <header><h2>Sem limite</h2><small>gastou sem limite definido</small></header>
+          <ul className={estilos.lista}>
+            {semLimite.map((linha) => (
+              <li key={linha.categoria.id} data-sem>
+                <span className={estilos.icone}><SimboloCategoria categoria={linha.categoria} /></span>
+                <div className={estilos.nomeValor}><span>{linha.categoria.nome}</span><b className="valor-sensivel">{formatarMoeda(linha.gastoCentavos)}</b></div>
+                <button type="button" className={estilos.definir} onClick={() => setAbertas((atual) => new Set(atual).add(linha.categoria.id))}>+ limite</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
-        {mensagem && <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-acao">{mensagem}</p>}
-      </Cartao>
-
-      <OrcamentoCasal gastoComumCentavos={dados?.linhas.reduce((soma, linha) => soma + linha.gastoCentavos, 0) ?? 0} />
-
+      <details className={estilos.recolhido}>
+        <summary>Dividir com quem mora com você</summary>
+        <OrcamentoCasal gastoComumCentavos={dados?.linhas.reduce((soma, linha) => soma + linha.gastoCentavos, 0) ?? 0} />
+      </details>
       {/* A divisão da renda veio de /investir: é decisão de orçamento —
           quanto vai para necessidades, lazer, educação, longo prazo e
           reserva —, e o lugar de decidir isso é aqui. */}
-      <DivisaoDaRenda />
+      <details className={estilos.recolhido}>
+        <summary>Divisão da renda · 60 · 10 · 10 · 15 · 5</summary>
+        <DivisaoDaRenda />
+      </details>
 
-      <Cartao titulo="Plano por categoria">
-        {dados && dados.linhas.length === 0 && Object.keys(rascunho).length === 0 && (
-          <Vazio
-            titulo="Nenhum limite definido"
-            texto="Use seu histórico ou defina um valor por categoria."
-          />
-        )}
-
-        <div className="space-y-2">
-          {dados?.linhas.map((linha) => (
-            <div key={linha.categoriaId} className="vidro-menu rounded-2xl p-3">
-              {/* Era um flex de cinco itens que embaralhava no celular: nome e
-                  valor se sobrepunham e a lixeira caia sozinha numa linha.
-                  Agora e grade: identidade em cima, numeros embaixo. */}
-              <div className="flex items-center gap-2.5">
-                <SimboloCategoria categoria={linha.categoria} />
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold">{linha.categoria.nome}</span>
-                <button
-                  onClick={() => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: "0" }))}
-                  className="grid size-8 shrink-0 place-items-center rounded-full text-muted-fg transition hover:text-negativo"
-                  aria-label={`Zerar orçamento de ${linha.categoria.nome}`}
-                  title="zerar limite"
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              </div>
-
-              <div className="mt-2 flex items-center gap-3">
-                <span className="min-w-0 flex-1">
-                  <b className={cn("numero block text-[calc(15px*var(--escala-letra))] font-semibold", linha.estourou && "text-negativo")}>
-                    {formatarMoeda(linha.gastoCentavos)}
-                  </b>
-                  <small className="text-[calc(12px*var(--escala-letra))] text-muted-fg">gastos</small>
-                </span>
-                <label className="flex shrink-0 items-center gap-1 rounded-full border border-pauta bg-background px-3 focus-within:border-acao">
-                  <span className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">limite</span>
-                  <input
-                    aria-label={`Orçamento de ${linha.categoria.nome}`}
-                    value={rascunho[linha.categoriaId] ?? ""}
-                    onChange={(evento) => setRascunho((atual) => ({ ...atual, [linha.categoriaId]: evento.target.value }))}
-                    className="h-10 w-20 border-0 bg-transparent text-right text-[calc(14px*var(--escala-letra))] font-semibold tabular-nums outline-none"
-                    inputMode="decimal"
-                    placeholder="0,00"
-                  />
-                </label>
-              </div>
-
-              <div className="mt-2">
-                <Barra percentual={linha.percentual} />
-              </div>
-              {/* Etiqueta, nao frase: "restam X" e "passou X" dizem tudo. */}
-              <p className={cn("mt-1 text-[max(10px,calc(12px*var(--escala-letra)))]", linha.estourou ? "text-negativo" : "text-muted-fg")}>
-                {linha.estourou
-                  ? `passou ${formatarMoeda(-linha.restanteCentavos)}`
-                  : `restam ${formatarMoeda(linha.restanteCentavos)} · ${linha.percentual}%`}
-              </p>
-            </div>
-          ))}
+      {/* Salvar só aparece quando há o que salvar, preso ao pé da tela: o
+          botão no meio do resumo ficava longe do limite que a pessoa acabou de
+          mudar, lá embaixo na lista. */}
+      {alterado && (
+        <div className={estilos.salvar}>
+          <label>
+            Repetir por
+            <select value={String(repetir)} onChange={(evento) => setRepetir(Number(evento.target.value))}>
+              {[0, 2, 5, 11].map((n) => <option key={n} value={n}>{n === 0 ? "só este mês" : `${n + 1} meses`}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={() => void salvar()} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar"}</button>
         </div>
-
-        {dados && dados.semOrcamento.length > 0 && (
-          <div className="mt-5">
-            <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
-              Gastou e não estava no plano
-            </p>
-            <div className="mt-2 space-y-2">
-              {dados.semOrcamento.map((linha) => (
-                <div
-                  key={linha.categoria.id}
-                  className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-pauta p-3"
-                >
-                  <SimboloCategoria categoria={linha.categoria}/><span className="min-w-0 flex-1 text-sm font-semibold">{linha.categoria.nome}</span>
-                  <span className="text-sm tabular-nums text-atencao">
-                    {formatarMoeda(linha.gastoCentavos)}
-                  </span>
-                  <input
-                    value={rascunho[linha.categoria.id] ?? ""}
-                    onChange={(evento) =>
-                      setRascunho((atual) => ({ ...atual, [linha.categoria.id]: evento.target.value }))
-                    }
-                    placeholder="definir limite"
-                    className={cn(campo, "w-32")}
-                    inputMode="decimal"
-                  />
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
-              São as categorias em que o estouro nasce: dinheiro saiu sem limite definido.
-            </p>
-          </div>
-        )}
-      </Cartao>
+      )}
     </div>
   )
 }
+
+/// Traço de uso: verde enquanto cabe no limite, vermelho quando passa.
+function Trilho({ gasto, limite, grosso = false }: { gasto: number; limite: number; grosso?: boolean }) {
+  const passou = limite > 0 && gasto > limite
+  const largura = limite > 0 ? Math.min(100, (gasto / limite) * 100) : 0
+  return (
+    <span className={estilos.trilho} data-grosso={grosso || undefined} aria-hidden>
+      <i data-estourou={passou || undefined} style={{ width: `${largura}%` }} />
+    </span>
+  )
+}
+
+const paraTexto = (centavos: number) => (centavos / 100).toFixed(2).replace(".", ",")

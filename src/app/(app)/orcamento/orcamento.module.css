@@ -1,0 +1,93 @@
+/* Orçamento (Davi, 25/09): categorias com limite, verde dentro e vermelho
+   quando passa. Fino: traço de 4px, números à direita, nada de caixa dentro
+   de caixa. */
+.pagina { display: grid; gap: 14px; min-width: 0; padding-bottom: 90px; }
+.pagina > * { min-width: 0; }
+
+.mes { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; }
+.mes button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--vidro-borda, var(--pauta)); background: color-mix(in oklab, var(--foreground), transparent 94%); }
+.mes button:disabled { opacity: .35; }
+.mes button svg { width: 18px; height: 18px; }
+.mes b { text-align: center; font-size: calc(16px * var(--escala-letra)); font-weight: 700; }
+.mes b::first-letter { text-transform: uppercase; }
+
+.topo { display: grid; gap: 10px; }
+.resumo, .bloco, .recolhido {
+  border-radius: var(--raio-bloco); border: 1px solid var(--vidro-borda, var(--pauta));
+  background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1);
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+.resumo { display: grid; gap: 12px; padding: 18px 20px; }
+.linhaResumo { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.linhaResumo small { display: block; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.linhaResumo b { display: block; font-size: calc(28px * var(--escala-letra)); font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.linhaResumo strong { flex-shrink: 0; font-size: calc(13.5px * var(--escala-letra)); font-weight: 700; color: var(--acao); white-space: nowrap; }
+.linhaResumo strong[data-estourou] { color: var(--negativo); }
+
+.atalhos { display: flex; flex-wrap: wrap; gap: 8px; }
+.atalhos button {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 16px; border-radius: 999px;
+  border: 1px solid var(--vidro-borda, var(--pauta)); background: color-mix(in oklab, var(--foreground), transparent 94%);
+  font-size: calc(13.5px * var(--escala-letra)); font-weight: 550;
+}
+.atalhos button:hover { border-color: color-mix(in oklab, var(--acao), transparent 50%); }
+.atalhos button:disabled { opacity: .45; }
+.atalhos svg { width: 15px; height: 15px; }
+.mensagem { font-size: calc(12.5px * var(--escala-letra)); color: var(--acao); padding: 0 4px; }
+
+.trilho { display: block; height: 4px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 90%); overflow: hidden; }
+.trilho[data-grosso] { height: 8px; }
+.trilho i { display: block; height: 100%; border-radius: 99px; background: var(--acao); transition: width .3s var(--curva); }
+.trilho i[data-estourou] { background: var(--negativo); }
+
+.bloco { padding: 8px 18px 6px; }
+.bloco header { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 6px; }
+.bloco h2 { font-size: calc(15px * var(--escala-letra)); font-weight: 680; }
+.bloco header small { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.lista { list-style: none; margin: 0; padding: 0; }
+.lista li { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.lista li[data-sem] { align-items: center; border-top-style: dashed; }
+.icone { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px; background: color-mix(in oklab, var(--acao), transparent 88%); color: var(--acao); }
+.icone :global(.simbolo-categoria) { background: none !important; box-shadow: none !important; width: auto !important; height: auto !important; }
+.corpoLinha { flex: 1; min-width: 0; display: grid; gap: 7px; }
+.nomeValor { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: calc(14px * var(--escala-letra)); }
+.nomeValor > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 620; }
+.nomeValor > b:last-child { flex-shrink: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.nomeValor [data-estourou] { color: var(--negativo); }
+.rodapeLinha { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: max(11px, calc(12.5px * var(--escala-letra))); }
+.rodapeLinha > span { font-weight: 650; color: var(--acao); white-space: nowrap; }
+.rodapeLinha > span[data-estourou] { color: var(--negativo); }
+/* O limite é um campo, mas com cara de etiqueta: a pessoa toca e digita, sem
+   abrir outra tela. */
+.limite { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 4px 0 11px; border-radius: 999px; background: color-mix(in oklab, var(--foreground), transparent 93%); border: 1px solid transparent; color: var(--texto-2); }
+.limite:focus-within { border-color: var(--acao); }
+.limite span { font-size: max(10px, calc(11.5px * var(--escala-letra))); }
+.limite input { width: 76px; height: 30px; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 6px 0 0 !important; text-align: right; font-size: calc(13px * var(--escala-letra)); font-weight: 650; color: var(--foreground); font-variant-numeric: tabular-nums; outline: none; }
+.definir { flex-shrink: 0; min-height: 34px; padding: 0 12px; border-radius: 999px; background: color-mix(in oklab, var(--acao), transparent 85%); color: var(--acao); font-size: calc(12.5px * var(--escala-letra)); font-weight: 650; }
+
+.recolhido { padding: 0 18px; }
+.recolhido > summary { display: flex; align-items: center; justify-content: space-between; min-height: 52px; cursor: pointer; list-style: none; font-size: calc(14px * var(--escala-letra)); }
+.recolhido > summary::-webkit-details-marker { display: none; }
+.recolhido > summary::after { content: "›"; color: var(--texto-3); font-size: 18px; transition: transform .2s var(--curva); }
+.recolhido[open] > summary::after { transform: rotate(90deg); }
+.recolhido[open] { padding-bottom: 16px; }
+
+.salvar {
+  position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 30; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; width: min(560px, calc(100% - 32px)); padding: 8px 8px 8px 16px; border-radius: 999px;
+  background: color-mix(in oklab, var(--background), var(--foreground) 8%); border: 1px solid var(--vidro-borda, var(--pauta));
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / .6);
+}
+.salvar label { flex: 1; display: flex; align-items: center; gap: 6px; font-size: calc(12.5px * var(--escala-letra)); color: var(--texto-2); min-width: 0; }
+.salvar select { min-width: 0; border: 0; background: transparent; font-weight: 650; color: var(--foreground); font-size: calc(12.5px * var(--escala-letra)); }
+.salvar button { min-height: 42px; padding: 0 22px; border-radius: 999px; background: oklch(var(--primary)); color: oklch(var(--primary-foreground)); font-weight: 700; }
+.salvar button:disabled { opacity: .5; }
+
+@media (min-width: 1024px) {
+  .salvar { bottom: 24px; left: calc(50% + 120px); }
+  .topo { grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; }
+  .atalhos { flex-direction: column; justify-content: center; }
+  /* No computador as categorias ficam em duas colunas: uma lista de 10 em
+     1.000px de largura deixava a barra com 900px e o número longe do nome. */
+  .bloco .lista { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+}
