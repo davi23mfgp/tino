@@ -28,6 +28,22 @@ const reais = (valor) => Math.round(valor * 100)
 const dia = (ano, mes, d) => new Date(Date.UTC(ano, mes - 1, d))
 const competenciaDe = (data) => `${data.getUTCFullYear()}-${String(data.getUTCMonth() + 1).padStart(2, "0")}`
 
+/**
+ * Fatura (pelo mês do vencimento) em que cai uma compra de cartão. É a mesma
+ * regra de `src/lib/competencia-cartao.ts`, repetida aqui porque este script
+ * roda em Node puro, sem o TypeScript do app. Sem ela a demo gravava as
+ * compras de cartão na competência do calendário, e a tela de cartões chamava
+ * de "fatura de setembro" as compras de setembro — que, num cartão que vence
+ * dia 6, são pagas em outubro.
+ */
+function competenciaDaFatura(data, diaFechamento, diaVencimento) {
+  const ano = data.getUTCFullYear()
+  const mes = data.getUTCMonth() + 1
+  const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate()
+  const fecha = data.getUTCDate() <= Math.min(diaFechamento, ultimo) ? competenciaDe(data) : competenciaMais(competenciaDe(data), 1)
+  return diaVencimento >= diaFechamento ? fecha : competenciaMais(fecha, 1)
+}
+
 /** Competência YYYY-MM somada de N meses. */
 function competenciaMais(competencia, meses) {
   const [ano, mes] = competencia.split("-").map(Number)
@@ -203,6 +219,7 @@ async function main() {
       instituicao: "Nubank",
       tipo: "CARTAO_CREDITO",
       limiteCentavos: reais(4500),
+      diaFechamento: 3,
       diaVencimento: 10,
       cor: "purple",
       bandeira: "MASTERCARD",
@@ -303,6 +320,7 @@ async function main() {
         const diaDoMes = modelo.dia ?? Math.min(ultimoDia, 2 + Math.floor(proximo() * 26))
         if (diaDoMes > limiteDoDia) continue
 
+        const doCartao = [cartao, cartaoRafael].find((linha) => linha.id === modelo.conta)
         lancamentos.push({
           contaId: modelo.conta,
           membroId: modelo.conta === cartaoRafael.id ? rafael.id : marina.id,
@@ -313,6 +331,9 @@ async function main() {
           valorCentavos: reais(variar(modelo.valor)),
           tipo: "DESPESA",
           competencia,
+          ...(doCartao && {
+            competenciaFatura: competenciaDaFatura(dia(ano, mes, diaDoMes), doCartao.diaFechamento, doCartao.diaVencimento),
+          }),
         })
       }
     }
@@ -325,14 +346,15 @@ async function main() {
   // mês a mês e a fatura ficava aberta para sempre. Pagamento de fatura é
   // transferência, não despesa — a compra já foi lançada quando aconteceu, e
   // lançar de novo contaria o mesmo gasto duas vezes no demonstrativo.
+  // Cada fatura é paga no vencimento e soma as compras que caíram nela —
+  // pela competência da fatura, não pela do calendário.
   for (const cartaoAtual of [cartao, cartaoRafael]) {
-    for (let atras = 5; atras >= 1; atras -= 1) {
-      const competenciaGasto = competenciaMais(competenciaAtual, -atras)
-      const competenciaPagamento = competenciaMais(competenciaAtual, -atras + 1)
+    for (let atras = 5; atras >= 0; atras -= 1) {
+      const competenciaPagamento = competenciaMais(competenciaAtual, -atras)
       const [ano, mes] = competenciaPagamento.split("-").map(Number)
 
       const doMes = lancamentos.filter(
-        (linha) => linha.contaId === cartaoAtual.id && linha.competencia === competenciaGasto,
+        (linha) => linha.contaId === cartaoAtual.id && linha.competenciaFatura === competenciaPagamento,
       )
       const total = doMes.reduce((soma, linha) => soma + linha.valorCentavos, 0)
       if (total === 0) continue

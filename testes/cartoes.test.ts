@@ -51,3 +51,62 @@ test("faixas do uso do limite", () => {
   assert.equal(faixaDoUsoDoLimite(4100), "atencao")
   assert.equal(faixaDoUsoDoLimite(7000), "alto")
 })
+
+import { cicloDaFatura, faturaAberta } from "../src/lib/cartoes"
+
+test("ciclo da fatura que vence no mês seguinte ao fechamento", () => {
+  // Platinum: fecha 28, vence 6. A fatura de outubro fechou em 28/09.
+  assert.deepEqual(cicloDaFatura({ diaFechamento: 28, diaVencimento: 6 }, "2026-10"), {
+    abreEm: "2026-08-29",
+    fechaEm: "2026-09-28",
+    venceEm: "2026-10-06",
+  })
+})
+
+test("ciclo da fatura que fecha e vence no mesmo mês", () => {
+  // Gold: fecha 3, vence 10.
+  assert.deepEqual(cicloDaFatura({ diaFechamento: 3, diaVencimento: 10 }, "2026-10"), {
+    abreEm: "2026-09-04",
+    fechaEm: "2026-10-03",
+    venceEm: "2026-10-10",
+  })
+})
+
+test("fechamento no dia 30 cai no último dia de fevereiro", () => {
+  assert.deepEqual(cicloDaFatura({ diaFechamento: 30, diaVencimento: 8 }, "2026-03"), {
+    abreEm: "2026-01-31",
+    fechaEm: "2026-02-28",
+    venceEm: "2026-03-08",
+  })
+})
+
+test("sem fechamento ou vencimento não inventa datas", () => {
+  assert.equal(cicloDaFatura({ diaFechamento: null, diaVencimento: 6 }, "2026-10"), null)
+  assert.equal(cicloDaFatura({ diaFechamento: 28, diaVencimento: null }, "2026-10"), null)
+})
+
+test("fatura aberta é a que recebe a compra de hoje, não a do mês do calendário", () => {
+  const platinum = { diaFechamento: 28, diaVencimento: 6 }
+  assert.equal(faturaAberta(platinum, "2026-09-24"), "2026-10")
+  // Dia do fechamento ainda entra na fatura que fecha.
+  assert.equal(faturaAberta(platinum, "2026-09-28"), "2026-10")
+  assert.equal(faturaAberta(platinum, "2026-09-29"), "2026-11")
+  assert.equal(faturaAberta({ diaFechamento: null, diaVencimento: null }, "2026-09-24"), "2026-09")
+})
+
+import { faturaEmCobranca } from "../src/lib/cartoes"
+
+test("fatura já vencida sai do limite no dia do vencimento, não na virada do mês", () => {
+  const platinum = { diaFechamento: 28, diaVencimento: 6 }
+  // 24/09: a de setembro venceu em 6/09; a primeira a vencer é a de outubro.
+  assert.equal(faturaEmCobranca(platinum, "2026-09-24"), "2026-10")
+  // No próprio dia 6 ela ainda está em cobrança.
+  assert.equal(faturaEmCobranca(platinum, "2026-09-06"), "2026-09")
+  assert.equal(faturaEmCobranca({ diaFechamento: null, diaVencimento: null }, "2026-09-24"), "2026-09")
+
+  // Com a fatura de setembro já paga fora da conta, o limite usado é só o
+  // que vence de outubro em diante.
+  const limite = limiteDoCartao(cartaoComLimite(1_000_000), faturaEmCobranca(platinum, "2026-09-24"))!
+  assert.equal(limite.faturaCentavos, 30_000)
+  assert.equal(limite.parcelasFuturasCentavos, 100_000)
+})

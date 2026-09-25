@@ -275,3 +275,114 @@
    dobra. */
 .filtros { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 @media (max-width: 520px) { .filtros { grid-template-columns: minmax(0, 1fr); } }
+
+/* ============================================================
+   Cartões (Davi, 25/09): opção B do canvas — os cartões deslizam de lado,
+   cada um inteiro, com o limite numa pílula de vidro dentro dele — e a fatura
+   da B3, com a linha do tempo. No computador, os cartões ficam lado a lado e
+   o resto em duas colunas: fatura e gráfico à esquerda, compras à direita.
+   ============================================================ */
+.carrossel {
+  display: flex; gap: 12px; min-width: 0;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  margin: 0 -16px; padding: 4px 16px 6px; scroll-padding-inline: 16px;
+}
+.carrossel::-webkit-scrollbar { display: none; }
+/* A regra global de <section> da área do app pintava uma faixa de vidro atrás
+   dos cartões no tema claro; o carrossel não é bloco, é trilho. */
+.carrossel { background: none !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important; }
+/* A pilha da carteira sai: margem negativa, corte e o anel de selecionado
+   eram dela. No carrossel cada cartão aparece inteiro. */
+.carrossel > .cartaoFisico {
+  flex: 0 0 min(86%, 340px); width: auto; max-width: none; margin: 0;
+  scroll-snap-align: center; outline: 0; transition: opacity .25s var(--curva), transform .25s var(--curva);
+}
+.carrossel > .cartaoFisico[aria-pressed="false"] { opacity: .55; }
+.carrossel > .cartaoFisico:hover { transform: none; }
+.carrossel > .cartaoFisico > .limite { top: 58px; }
+.limite small { font-size: max(10px, calc(10px * var(--escala-letra))); color: rgb(255 255 255 / .8); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cartaoFisico > .limite[data-faixa="sem"] em b { font-size: calc(13px * var(--escala-letra)); }
+.carrossel .peças { margin-top: auto; }
+.novoCartao {
+  flex: 0 0 150px; display: grid; place-content: center; justify-items: center; gap: 6px; scroll-snap-align: center;
+  border: 1.5px dashed color-mix(in oklab, var(--foreground), transparent 78%); border-radius: 20px;
+  font-size: calc(14px * var(--escala-letra)); color: var(--texto-2);
+}
+.novoCartao svg { width: 20px; height: 20px; }
+.novoCartao:hover { color: var(--foreground); border-color: color-mix(in oklab, var(--foreground), transparent 55%); }
+.pontos { display: flex; justify-content: center; gap: 6px; margin-top: -6px; }
+.pontos i { width: 6px; height: 6px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 70%); transition: width .2s var(--curva); }
+.pontos i[data-ligado] { width: 18px; background: var(--foreground); }
+
+.corpo { display: grid; gap: 16px; min-width: 0; }
+.coluna { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.coluna > * { min-width: 0; }
+
+/* --- fatura com linha do tempo --- */
+.fatura {
+  display: grid; gap: 4px; padding: 20px; border-radius: var(--raio-bloco);
+  border: 1px solid var(--vidro-borda, var(--pauta));
+  background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1);
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+.rotuloFatura { font-size: max(10px, calc(12.5px * var(--escala-letra))); color: var(--texto-3); }
+.rotuloFatura::first-letter { text-transform: uppercase; }
+.valorFatura { font-size: calc(34px * var(--escala-letra)); font-weight: 760; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.valorFatura small { font-size: .5em; font-weight: 650; opacity: .7; }
+.apoioFatura { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.linhaTempo { position: relative; height: 64px; margin: 14px 10px 0; }
+.trilho { position: absolute; left: 0; right: 0; top: 6px; height: 3px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
+.trilho i { display: block; height: 100%; border-radius: 99px; background: var(--acao); }
+.marco { position: absolute; top: 0; display: grid; justify-items: center; gap: 4px; transform: translateX(-50%); white-space: nowrap; }
+.marco[data-lado="inicio"] { justify-items: start; transform: translateX(-7px); }
+.marco[data-lado="fim"] { justify-items: end; transform: translateX(calc(-100% + 7px)); }
+/* O rótulo do fechamento desce uma linha: ele costuma cair perto do "hoje" ou
+   do vencimento, e na mesma linha os dois textos se encavalavam. */
+.marco[data-embaixo] b { margin-top: 16px; }
+.marco i { width: 14px; height: 14px; border-radius: 99px; border: 2px solid var(--papel-1); }
+.marco i[data-cor="feito"] { background: var(--acao); }
+.marco i[data-cor="hoje"] { background: var(--foreground); }
+.marco i[data-cor="depois"] { background: color-mix(in oklab, var(--foreground), transparent 60%); }
+.marco i[data-cor="vence"] { background: oklch(0.8 0.15 80); }
+.marco b { font-size: max(10px, calc(11.5px * var(--escala-letra))); font-weight: 650; color: var(--texto-2); }
+.marco b[data-cor="vence"] { color: oklch(0.8 0.15 80); }
+:global(.light) .marco i[data-cor="vence"] { background: oklch(0.6 0.14 65); }
+:global(.light) .marco b[data-cor="vence"] { color: oklch(0.55 0.13 65); }
+.notaFatura { margin-top: 4px; font-size: max(11px, calc(12.5px * var(--escala-letra))); line-height: 1.5; color: var(--texto-2); }
+.notaFatura a { font-weight: 650; color: var(--acao); text-decoration: underline; text-underline-offset: 3px; }
+
+.apoioGrafico { margin-top: 2px; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.faturas { border-radius: var(--raio-bloco); }
+.barras { height: 140px; }
+
+/* Abas em chips que deslizam: sete abas numa faixa fixa não cabiam no
+   celular, e as últimas ficavam cortadas no meio da palavra. */
+.coluna .abas {
+  /* O TabsList vem centralizado; com rolagem, o que passava da borda esquerda
+     ficava cortado e inalcançável — a primeira aba aparecia pela metade. */
+  justify-content: flex-start !important;
+  /* A regra global arredonda toda lista de abas como pílula; com os chips em
+     duas linhas, o arredondamento recortava o canto do primeiro de cada uma. */
+  border-radius: 0 !important;
+  display: flex; gap: 6px; width: auto; height: auto; padding: 2px 16px; margin: 0 -16px;
+  overflow-x: auto; scrollbar-width: none; background: transparent; border: 0; box-shadow: none;
+}
+.coluna .abas::-webkit-scrollbar { display: none; }
+.coluna .abas > button {
+  flex: 0 0 auto; height: auto; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--foreground), transparent 86%);
+  background: color-mix(in oklab, var(--foreground), transparent 95%); font-size: calc(13.5px * var(--escala-letra));
+}
+.coluna .abas > button[data-state="active"] { border-color: transparent; background: oklch(var(--primary)); color: oklch(var(--primary-foreground)); font-weight: 650; box-shadow: none; }
+.coluna .abas > button svg { display: none; }
+.coluna .painel { margin-top: 12px; border-radius: var(--raio-bloco); }
+
+@media (min-width: 1024px) {
+  .carrossel { margin: 0; padding: 4px 0 6px; overflow-x: auto; scroll-snap-type: none; }
+  .carrossel > .cartaoFisico { flex: 0 0 340px; }
+  .carrossel > .cartaoFisico[aria-pressed="true"] { outline: 2px solid oklch(var(--lch-acao)); outline-offset: 3px; }
+  .novoCartao { flex-basis: 180px; }
+  .pontos { display: none; }
+  .corpo { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+  .coluna .abas { margin: 0; padding: 2px 0; flex-wrap: wrap; }
+}

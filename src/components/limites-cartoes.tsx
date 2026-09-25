@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react"
 
 import { IdentidadeBanco } from "@/components/banco-perfil"
-import { faixaDoUsoDoLimite, limiteDoCartao, REFERENCIA_USO_LIMITE, type DadosCartao } from "@/lib/cartoes"
+import { faixaDoUsoDoLimite, faturaEmCobranca, limiteDoCartao, REFERENCIA_USO_LIMITE, type DadosCartao } from "@/lib/cartoes"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import Link from "next/link"
 import estilos from "./limites-cartoes.module.css"
@@ -17,8 +17,10 @@ import estilos from "./limites-cartoes.module.css"
  * compras da próxima fatura e parcelas futuras (ver `limiteDoCartao`). O arco
  * vem com a régua do que é saudável: 35% sozinho não diz se é bom.
  */
-export function LimitesDosCartoes({ cartoes, mesAtual }: { cartoes: DadosCartao[]; mesAtual: string }) {
-  const linhas = cartoes.map((cartao) => ({ cartao, limite: limiteDoCartao(cartao, mesAtual) }))
+export function LimitesDosCartoes({ cartoes, hoje }: { cartoes: DadosCartao[]; hoje: string }) {
+  // Cada cartão conta a partir da própria fatura em cobrança: vencimentos
+  // diferentes, e a fatura de um já pode ter vencido quando a do outro não.
+  const linhas = cartoes.map((cartao) => ({ cartao, limite: limiteDoCartao(cartao, faturaEmCobranca(cartao, hoje)) }))
   const comLimite = linhas.filter((linha) => linha.limite !== null)
   const total = comLimite.reduce((soma, linha) => soma + linha.limite!.limiteCentavos, 0)
   const usado = comLimite.reduce((soma, linha) => soma + linha.limite!.usadoCentavos, 0)

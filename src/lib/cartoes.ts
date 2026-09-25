@@ -1,4 +1,5 @@
-import { competenciaMaisMeses } from "@/lib/datas"
+import { competenciaMaisMeses, diasNoMes, partesCompetencia } from "@/lib/datas"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
 
 export interface CompraCartao { id: string; descricao: string; data: string; competencia: string; valorCentavos: number; tipo: string; categoriaId: string | null; categoria: { nome: string; cor: string; icone: string } | null }
 export interface ParcelaCartao { id: string; numero: number; competencia: string; valorCentavos: number; paga: boolean }
@@ -37,6 +38,25 @@ export function faixaDoUsoDoLimite(usoBps: number): "saudavel" | "atencao" | "al
 }
 
 /**
+ * A primeira fatura que ainda não venceu — dela em diante, tudo prende limite.
+ *
+ * O limite era contado a partir da fatura com o nome do mês do calendário. Com
+ * a compra gravada na fatura certa (pelo vencimento), em 24 de setembro a
+ * "fatura de setembro" de um cartão que vence dia 6 já venceu e foi paga, e
+ * mesmo assim seguia prendendo limite: o cartão da demo aparecia com o dobro
+ * do uso real. O app não sabe se uma fatura vencida foi paga; a leitura aqui é
+ * a mesma de antes, só que no dia certo: venceu, saiu do limite.
+ *
+ * Sem fechamento e vencimento cadastrados, fica o mês do calendário.
+ */
+export function faturaEmCobranca(cartao: Pick<DadosCartao, "diaFechamento" | "diaVencimento">, hoje: string): string {
+  const doMes = hoje.slice(0, 7)
+  const ciclo = cicloDaFatura(cartao, doMes)
+  if (!ciclo) return doMes
+  return ciclo.venceEm < hoje ? competenciaMaisMeses(doMes, 1) : doMes
+}
+
+/**
  * Quanto do limite está preso, e quanto sobra.
  *
  * O cartão mostrava só a fatura do mês contra o limite ("24% do limite"). Mas
@@ -71,4 +91,53 @@ export function limiteDoCartao(cartao: DadosCartao, mesAtual: string) {
     disponivelCentavos: Math.max(0, cartao.limiteCentavos - usadoCentavos),
     usoBps: Math.round((usadoCentavos / cartao.limiteCentavos) * 10_000),
   }
+}
+
+/// "AAAA-MM-DD" do dia `dia` da competência, sem passar do fim do mês: fechar
+/// dia 30 em fevereiro é fechar no último dia dele, como o banco faz.
+function diaDaCompetencia(competencia: string, dia: number): string {
+  const { ano, mes } = partesCompetencia(competencia)
+  const certo = Math.min(dia, diasNoMes(ano, mes))
+  return `${competencia}-${String(certo).padStart(2, "0")}`
+}
+
+/**
+ * As três datas da fatura que vence em `competencia`: quando ela abriu,
+ * quando fecha e quando vence.
+ *
+ * A fatura é nomeada pelo vencimento (ver `competencia-cartao.ts`), então a de
+ * outubro de um cartão que fecha dia 28 e vence dia 6 fechou em 28 de setembro
+ * e abriu no dia seguinte ao fechamento de agosto. Sem fechamento ou
+ * vencimento cadastrados devolve `null`: datas inventadas diriam à pessoa até
+ * quando uma compra entra na fatura, e errar isso custa dinheiro.
+ */
+export function cicloDaFatura(
+  cartao: Pick<DadosCartao, "diaFechamento" | "diaVencimento">,
+  competencia: string,
+): { abreEm: string; fechaEm: string; venceEm: string } | null {
+  const { diaFechamento, diaVencimento } = cartao
+  if (!diaFechamento || !diaVencimento) return null
+  const mesDoFechamento = diaVencimento >= diaFechamento ? competencia : competenciaMaisMeses(competencia, -1)
+  const fechamentoAnterior = diaDaCompetencia(competenciaMaisMeses(mesDoFechamento, -1), diaFechamento)
+  const abre = new Date(`${fechamentoAnterior}T00:00:00Z`)
+  abre.setUTCDate(abre.getUTCDate() + 1)
+  return {
+    abreEm: abre.toISOString().slice(0, 10),
+    fechaEm: diaDaCompetencia(mesDoFechamento, diaFechamento),
+    venceEm: diaDaCompetencia(competencia, diaVencimento),
+  }
+}
+
+/**
+ * A fatura que está recebendo compras hoje.
+ *
+ * A tela de cartões abria na fatura com o nome do mês do calendário. Num
+ * cartão que vence dia 6, em 24 de setembro essa é a fatura que já venceu, e
+ * a que está aberta — onde cai a compra de hoje — é a de outubro. Sem
+ * fechamento e vencimento cadastrados não há como saber, e o mês do
+ * calendário continua sendo a resposta.
+ */
+export function faturaAberta(cartao: Pick<DadosCartao, "diaFechamento" | "diaVencimento">, hoje: string): string {
+  const data = new Date(`${hoje}T12:00:00Z`)
+  return competenciaDoCartao(data, { tipo: "CARTAO_CREDITO", ...cartao }) ?? hoje.slice(0, 7)
 }
