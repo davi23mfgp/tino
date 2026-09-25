@@ -1,0 +1,25 @@
+/* Carrossel do bloco claro de /metas (Davi, 25/09). */
+.bloco { display: grid; gap: 10px; padding: 18px 20px 12px; min-width: 0; }
+@media (min-width: 640px) { .bloco { padding: 22px 24px 14px; } }
+.topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rotulo { font-size: max(10px, calc(11px * var(--escala-letra))); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+
+/* Um aviso por vez, inteiro, parando no lugar: com rolagem livre o dedo
+   largava o aviso pela metade e os dois textos ficavam cortados. */
+.trilho { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.trilho::-webkit-scrollbar { display: none; }
+.aviso { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; display: grid; gap: 6px; align-content: start; }
+.aviso h2 { font-size: calc(clamp(20px, 2.6vw, 26px) * var(--escala-letra)); font-weight: 600; line-height: 1.15; letter-spacing: -.03em; }
+.aviso p { font-size: calc(13px * var(--escala-letra)); line-height: 1.5; }
+.barra { display: block; height: 4px; margin-top: 6px; border-radius: 99px; background: oklch(0.18 0 0 / .1); overflow: hidden; }
+.barra i { display: block; height: 100%; border-radius: inherit; background: oklch(0.18 0.01 145); }
+
+/* O alvo de toque é o botão de 32px; o ponto visível fica pequeno. */
+.pontos { display: flex; justify-content: center; }
+.pontos button { display: grid; place-items: center; width: 24px; height: 32px; }
+.pontos i { width: 6px; height: 6px; border-radius: 99px; background: oklch(0.18 0 0 / .22); transition: width .2s var(--curva); }
+.pontos button[data-ligado] i { width: 18px; background: oklch(0.18 0 0); }
+
+.novaMeta { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: var(--raio-pilula); background: oklch(0.18 0.01 145); color: oklch(0.97 0 0); font-size: calc(13px * var(--escala-letra)); font-weight: 620; }
+.novaMeta svg { width: 15px; height: 15px; }
+.novaMeta:active { transform: scale(.97); }

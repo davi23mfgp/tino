@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type CSSProperties } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Car, GraduationCap, Home, Palmtree, Pencil, Plane, Receipt, SlidersHorizontal, Target } from "lucide-react"
 
@@ -15,17 +15,13 @@ type MetaPainel = DadosFormularioMeta & { previstoCentavos: number; realizadoCen
 export type LancamentoMeta = { id: string; contaId: string; descricao: string; valorCentavos: number; tipo: string }
 const campo = "min-h-11 w-full rounded-xl border border-pauta bg-background px-3 py-2 text-sm"
 
-/// Ícone e cor por tipo de meta: a pessoa acha a meta pela cor antes de ler o
-/// nome, e a cor não muda de uma visita para outra.
-const TIPO: Record<string, { Icone: typeof Target; cor: string }> = {
-  VIAGEM: { Icone: Plane, cor: "linear-gradient(145deg, oklch(0.62 0.15 230), oklch(0.36 0.09 250))" },
-  APOSENTADORIA: { Icone: Palmtree, cor: "linear-gradient(145deg, oklch(0.6 0.14 160), oklch(0.34 0.08 170))" },
-  IMOVEL: { Icone: Home, cor: "linear-gradient(145deg, oklch(0.66 0.14 60), oklch(0.38 0.08 50))" },
-  VEICULO: { Icone: Car, cor: "linear-gradient(145deg, oklch(0.6 0.16 290), oklch(0.34 0.09 290))" },
-  EDUCACAO: { Icone: GraduationCap, cor: "linear-gradient(145deg, oklch(0.66 0.15 90), oklch(0.4 0.08 80))" },
-  QUITAR_DIVIDA: { Icone: Receipt, cor: "linear-gradient(145deg, oklch(0.62 0.17 25), oklch(0.36 0.1 25))" },
+/// Ícone por tipo de meta, em traço fino e sem cor (Davi, 25/09): os
+/// quadrados coloridos com gradiente pareciam emoji e brigavam com o anel,
+/// que é onde a cor da tela deve estar.
+const TIPO: Record<string, typeof Target> = {
+  VIAGEM: Plane, APOSENTADORIA: Palmtree, IMOVEL: Home, VEICULO: Car, EDUCACAO: GraduationCap, QUITAR_DIVIDA: Receipt,
 }
-const PADRAO = { Icone: Target, cor: "linear-gradient(145deg, oklch(0.62 0.12 200), oklch(0.36 0.07 210))" }
+const semCentavosZerados = (centavos: number) => formatarMoeda(centavos).replace(/,00$/, "")
 const MES_CURTO = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
 /**
@@ -50,11 +46,12 @@ export function CartaoMeta({ meta, contas, lancamentos }: { meta: MetaPainel; co
   const falta = Math.max(0, meta.alvoCentavos - meta.saldoCentavos)
   const vencida = falta > 0 && !!meta.dataAlvo && meta.dataAlvo.slice(0, 10) < new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })
   const valorSimulado = Math.max(0, paraCentavos(aporte || "0"))
-  const { Icone, cor } = TIPO[meta.tipo] ?? PADRAO
+  const Icone = TIPO[meta.tipo] ?? Target
   const percentual = Math.min(100, Math.round(projecao.percentual))
   const prazo = meta.dataAlvo ? `${MES_CURTO[Number(meta.dataAlvo.slice(5, 7)) - 1]} ${meta.dataAlvo.slice(0, 4)}` : null
-  // "Por mês" é o que o prazo pede, quando há prazo e a meta não chegou; em
-  // âmbar quando o planejado não alcança. Sem prazo, é o aporte planejado.
+  // O que o prazo pede por mês, quando há prazo e a meta não chegou; o
+  // medidor fica âmbar quando o planejado não alcança. Sem prazo, o cartão
+  // mostra só o aporte planejado.
   const pedePorMes = meta.dataAlvo && falta > 0 && !vencida ? projecao.aporteNecessarioCentavos : null
   const abaixo = pedePorMes !== null && pedePorMes > meta.aporteMensalCentavos
   const ativa = meta.status !== "PAUSADA" && meta.status !== "CANCELADA"
@@ -78,8 +75,8 @@ export function CartaoMeta({ meta, contas, lancamentos }: { meta: MetaPainel; co
 
   return <article className={estilos.cartao}>
     <header className={estilos.topo}>
-      <span className={estilos.icone} style={{ "--cor": cor } as CSSProperties}>
-        {meta.fotoUrl ? <img src={meta.fotoUrl} alt="" /> : <Icone aria-hidden />}
+      <span className={estilos.icone}>
+        {meta.fotoUrl ? <img src={meta.fotoUrl} alt="" /> : <Icone aria-hidden strokeWidth={1.6} />}
       </span>
       <div className={estilos.nome}>
         <h2>{meta.nome}</h2>
@@ -89,15 +86,22 @@ export function CartaoMeta({ meta, contas, lancamentos }: { meta: MetaPainel; co
     </header>
 
     <dl className={estilos.numeros}>
-      <div><dt>Guardado</dt><dd className="valor-sensivel">{formatarMoeda(meta.saldoCentavos).replace(/,00$/, "")}</dd></div>
-      <div><dt>Falta</dt><dd className="valor-sensivel">{formatarMoeda(falta).replace(/,00$/, "")}</dd></div>
-      <div><dt>Por mês</dt><dd className="valor-sensivel" data-abaixo={abaixo || undefined}>{formatarMoeda(pedePorMes ?? meta.aporteMensalCentavos).replace(/,00$/, "")}</dd></div>
+      <div><dt>Guardado</dt><dd className="valor-sensivel">{semCentavosZerados(meta.saldoCentavos)}</dd></div>
+      <div><dt>Falta</dt><dd className="valor-sensivel">{semCentavosZerados(falta)}</dd></div>
+      {/* Com prazo, o "por mês" mora no medidor logo abaixo; repetido aqui,
+          o mesmo número aparecia duas vezes no cartão. */}
+      {pedePorMes === null && <div><dt>Por mês</dt><dd className="valor-sensivel">{semCentavosZerados(meta.aporteMensalCentavos)}</dd></div>}
     </dl>
 
-    {pedePorMes !== null && prazo && (
-      <p className={estilos.ritmo} data-abaixo={abaixo || undefined}>
-        Guardando {formatarMoeda(meta.aporteMensalCentavos)}/mês. Para chegar em {prazo}: <b>{formatarMoeda(pedePorMes)}/mês</b>
-      </p>
+    {/* O ritmo como medidor, não como frase (Davi, 25/09): o que a pessoa
+        guarda por mês contra o que o prazo pede, e a barra mostra quanto do
+        pedido o planejado cobre. */}
+    {pedePorMes !== null && (
+      <div className={estilos.ritmo} data-abaixo={abaixo || undefined}>
+        <div><small>Guardando</small><b className="valor-sensivel">{semCentavosZerados(meta.aporteMensalCentavos)}<span>/mês</span></b></div>
+        <div><small>O prazo pede</small><b className="valor-sensivel">{semCentavosZerados(pedePorMes)}<span>/mês</span></b></div>
+        <span className={estilos.medidor} aria-hidden><i style={{ width: `${pedePorMes > 0 ? Math.min(100, (meta.aporteMensalCentavos * 100) / pedePorMes) : 100}%` }} /></span>
+      </div>
     )}
 
     {ativa && falta >= 0 && (

@@ -6,8 +6,8 @@
   backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 .topo { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.icone { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; overflow: hidden; background: var(--cor); color: white; box-shadow: inset 0 1px 0 rgb(255 255 255 / .25); }
-.icone svg { width: 21px; height: 21px; }
+.icone { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; overflow: hidden; border: 1px solid color-mix(in oklab, var(--foreground), transparent 86%); background: color-mix(in oklab, var(--foreground), transparent 95%); color: var(--foreground); }
+.icone svg { width: 20px; height: 20px; }
 .icone img { width: 100%; height: 100%; object-fit: cover; }
 .nome { flex: 1; min-width: 0; }
 .nome h2 { font-size: calc(16px * var(--escala-letra)); font-weight: 680; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -17,16 +17,23 @@
 .anelCheio { stroke: var(--acao); }
 .anel text { font-size: 8.5px; font-weight: 700; fill: var(--foreground); }
 
-.numeros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.numeros { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
 .numeros dt { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
 .numeros dd { margin-top: 2px; font-size: calc(15px * var(--escala-letra)); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.numeros dd[data-abaixo] { color: oklch(0.8 0.15 80); }
-:global(.light) .numeros dd[data-abaixo] { color: oklch(0.55 0.13 65); }
 
-.ritmo { padding: 9px 12px; border-radius: 14px; background: color-mix(in oklab, var(--foreground), transparent 94%); font-size: max(11px, calc(12.5px * var(--escala-letra))); line-height: 1.45; color: var(--texto-2); }
-.ritmo b { color: var(--foreground); white-space: nowrap; }
-.ritmo[data-abaixo] b { color: oklch(0.8 0.15 80); }
-:global(.light) .ritmo[data-abaixo] b { color: oklch(0.55 0.13 65); }
+/* Dois números nas pontas e o medidor embaixo; âmbar quando o planejado não
+   cobre o que o prazo pede. */
+.ritmo { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; --cor-ritmo: var(--acao); }
+.ritmo[data-abaixo] { --cor-ritmo: oklch(0.8 0.15 80); }
+:global(.light) .ritmo[data-abaixo] { --cor-ritmo: oklch(0.55 0.13 65); }
+.ritmo > div { display: grid; gap: 1px; min-width: 0; }
+.ritmo > div:nth-child(2) { text-align: right; }
+.ritmo small { font-size: max(10px, calc(11.5px * var(--escala-letra))); color: var(--texto-3); }
+.ritmo b { font-size: calc(14px * var(--escala-letra)); font-weight: 680; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ritmo b span { font-size: .78em; font-weight: 500; color: var(--texto-3); }
+.ritmo > div:nth-child(2) b { color: var(--cor-ritmo); }
+.medidor { grid-column: 1 / -1; height: 4px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 90%); overflow: hidden; }
+.medidor i { display: block; height: 100%; border-radius: inherit; background: var(--cor-ritmo); }
 
 .botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .botoes button { min-height: 44px; border-radius: 999px; font-size: calc(14px * var(--escala-letra)); font-weight: 650; }
