@@ -98,6 +98,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   estranhas no computador. Testar e mandar captura dos dois, e do tema
   claro no celular.
 - Vidro líquido e gradiente continuam em todos os temas.
+- **Aprovou, sobe** (pedido em 2026-09-26): tela aprovada vai na hora para a
+  branch da sessão e o trabalho segue para a próxima tela sem perguntar. O
+  Davi quer também no Vercel, que publica o `main`; a sessão remota não tem
+  permissão de enviar ao `main`, então isso fica com ele (juntar a branch
+  no `main`) até ele liberar a permissão.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
