@@ -8,6 +8,7 @@ import { CalendarClock, ChevronLeft, ChevronRight, Nfc, Plus, Trash2, Upload, ty
 import estilos from "./central-cartoes.module.css"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
 import { ComprasDoCartao } from "./compras-do-cartao"
+import { CategoriasDoCartao } from "./categorias-do-cartao"
 import { IconeFerramenta } from "@/lib/icone-ferramenta"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { AjudaCartao } from "@/components/ajuda-cartao"
@@ -25,8 +26,6 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
 import { ROTULO_BANDEIRA } from "@/lib/bandeiras"
-
-const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
 export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string; hoje: string }) {
   const router = useRouter()
@@ -248,7 +247,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
       ) : <ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} categorias={categorias} mes={mes} aoAbrir={(parcelamento) => setForm({ parcelamento })} />}</TabsContent>
 
       <TabsContent value="limites"><LimitesDosCartoes cartoes={cartoes} hoje={hoje} /></TabsContent>
-      <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
+      <TabsContent value="categorias"><CategoriasDoCartao cartao={cartao} mes={mes} categorias={resumo.categorias} aoVerCompras={(id) => { setCategoria(id); setBusca(""); setAba("compras") }} aoSalvar={() => router.refresh()} /></TabsContent>
 
       <TabsContent value="importar"><Importador contaInicial={cartao.id} aoConcluir={() => router.refresh()} /></TabsContent>
     </Tabs>
@@ -262,10 +261,6 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
     <Dialog open={conferir} onOpenChange={setConferir}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>Conferir fatura</DialogTitle><DialogDescription>Compras sem categoria e os pontos que esta fatura rende.</DialogDescription></DialogHeader><AjudaCartao cartao={cartao} mes={mes} objetivos={["fatura", "pontos"]} semCabecalho aoAbrir={(destino) => { setConferir(false); if (destino === "compras") setCategoria("sem"); setAba(destino) }} /></DialogContent></Dialog>
     <Dialog open={Boolean(excluir)} onOpenChange={(aberto) => !aberto && setExcluir(null)}><DialogContent><DialogHeader><DialogTitle>Excluir {excluir?.nome}?</DialogTitle><DialogDescription>Esta ação não pode ser desfeita.</DialogDescription></DialogHeader>{erro && <p role="alert">{erro}</p>}<div className={estilos.rodapeModal}><Button variant="outline" onClick={() => setExcluir(null)}>Cancelar</Button><Button variant="destructive" disabled={ocupado} onClick={() => void remover()}>Excluir</Button></div></DialogContent></Dialog>
   </div>
-}
-
-function Cabecalho({ titulo, apoio }: { titulo: string; apoio: string }) {
-  return <header className={estilos.cabecalho}><div><h2>{titulo}</h2><p>{apoio}</p></div></header>
 }
 
 /**

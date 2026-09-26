@@ -86,3 +86,42 @@
 .tracos i[data-paga] { background:var(--acao); }
 .trilho { display:block; height:5px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 88%); overflow:hidden; }
 .trilho i { display:block; height:100%; border-radius:inherit; background:var(--acao); }
+
+/* --- categorias (Davi, 26/09: opção M3) --- */
+.legendaCapsula { display:flex; gap:14px; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.legendaCapsula span { display:inline-flex; align-items:center; gap:6px; }
+.legendaCapsula i[data-marca] { width:2px; height:12px; border-radius:2px; background:var(--foreground); }
+.legendaCapsula i[data-passou] { width:14px; height:8px; border-radius:999px; background:repeating-linear-gradient(135deg, var(--negativo) 0 3px, color-mix(in oklab, var(--negativo), black 25%) 3px 6px); }
+.capsulas { display:grid; }
+.capsulas button { display:grid; gap:8px; width:100%; padding:11px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:left; }
+.capsulas li:first-child button { border-top:0; padding-top:2px; }
+.capsulas button:hover strong { text-decoration:underline; text-underline-offset:3px; }
+.linhaCapsula { display:grid; grid-template-columns:18px minmax(0,1fr) auto auto; align-items:center; gap:10px; }
+.linhaCapsula svg { width:17px; height:17px; color:var(--cor); }
+.linhaCapsula strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.linhaCapsula b { font-size:calc(14px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.linhaCapsula small { min-width:64px; text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.linhaCapsula small[data-passou] { color:var(--negativo); font-weight:650; }
+/* A escala é a mesma para todas as categorias: a maior (gasto ou limite)
+   ocupa a largura toda, e as outras se comparam com ela. */
+.capsula { position:relative; display:block; height:8px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.capsula i { position:absolute; left:0; top:0; bottom:0; border-radius:999px; background:var(--cor); }
+.capsula i[data-passou] { border-radius:0 999px 999px 0; background:repeating-linear-gradient(135deg, var(--negativo) 0 4px, color-mix(in oklab, var(--negativo), black 25%) 4px 8px); }
+.capsula em { position:absolute; top:-4px; bottom:-4px; width:2px; margin-left:-1px; border-radius:2px; background:var(--foreground); }
+.dica { padding:0 4px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.erro { padding:0 4px; font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.repetir { justify-self:start; min-height:44px; padding:0 18px; border-radius:999px; border:1px solid color-mix(in oklab, var(--acao), transparent 55%); color:var(--acao); font-size:calc(13.5px * var(--escala-letra)); font-weight:600; }
+
+.ajuste { display:grid; gap:14px; padding:0 16px 18px; }
+@media (min-width:640px) { .ajuste { padding:0 24px 22px; } }
+.campoLimite { display:grid; gap:6px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.campoLimite .campoBusca small { font-size:calc(14px * var(--escala-letra)); color:var(--texto-3); }
+.cortes { display:flex; gap:6px; }
+.cortes button { min-height:40px; padding:0 16px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); font-size:calc(13.5px * var(--escala-letra)); font-variant-numeric:tabular-nums; }
+.cortes button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.sobra { font-size:calc(13.5px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.sobra b { color:var(--acao); white-space:nowrap; }
+.botoesAjuste { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.botoesAjuste button { justify-content:center; }
+.botoesAjuste button:disabled { opacity:.45; }
+.botaoSecundario { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0 16px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); font-size:calc(13.5px * var(--escala-letra)); white-space:nowrap; }

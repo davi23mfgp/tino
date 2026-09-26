@@ -6,6 +6,7 @@ import {
   CreditCard,
   Dog,
   Dumbbell,
+  Fuel,
   Home,
   Landmark,
   Package,
@@ -13,6 +14,7 @@ import {
   Pill,
   Plane,
   Receipt,
+  Shirt,
   ShoppingBag,
   ShoppingCart,
   Sparkles,
@@ -63,6 +65,13 @@ const POR_NOME: [RegExp, Icone][] = [
   [/pet|veterinari/, Dog],
   [/cartao|fatura/, CreditCard],
   [/emprestimo|financiamento|banco/, Landmark],
+  // Onde só o nome chega (os totais por categoria das abas do cartão não
+  // carregam o grupo), os nomes mais comuns não podem cair no comprovante. Antes da energia:
+  // "gas" pegaria "gasolina".
+  [/supermercado|mercado|feira/, ShoppingCart],
+  [/combustivel|gasolina|posto/, Fuel],
+  [/vestuario|roupa/, Shirt],
+  [/farmacia|remedio/, Pill],
   [/energia|luz|agua|gas/, Zap],
 ]
 
