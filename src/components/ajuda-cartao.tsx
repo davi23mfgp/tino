@@ -19,9 +19,15 @@ const OBJETIVOS = [
   { id: "fatura", nome: "Conferir fatura", Icone: ListChecks },
 ]
 
-export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes: string; aoAbrir: (aba: string) => void }) {
+/**
+ * As ferramentas do cartão. A aba Ajuda saiu em 26/09 e cada uma foi para onde
+ * a pessoa já está: `objetivos` escolhe quais aparecem (conferir e pontos no
+ * botão "Conferir" das compras) e `semCabecalho` tira o título, que o diálogo
+ * em volta já dá.
+ */
+export function AjudaCartao({ cartao, mes, aoAbrir, objetivos = ["economia", "pontos", "fatura"], semCabecalho = false }: { cartao: DadosCartao; mes: string; aoAbrir: (aba: string) => void; objetivos?: string[]; semCabecalho?: boolean }) {
   const router = useRouter()
-  const [objetivo, setObjetivo] = useState("economia")
+  const [objetivo, setObjetivo] = useState(objetivos[0])
   const [programa, setPrograma] = useState("Manual")
   const [moeda, setMoeda] = useState("real")
   const [taxa, setTaxa] = useState("")
@@ -89,18 +95,18 @@ export function AjudaCartao({ cartao, mes, aoAbrir }: { cartao: DadosCartao; mes
 
   return (
     <section className={estilos.painel}>
-      <header>
+      {!semCabecalho && <header>
         <h2>Seu próximo passo</h2>
         <p>Escolha o que você quer deste cartão agora.</p>
-      </header>
+      </header>}
 
-      <div className={estilos.objetivos} role="group" aria-label="Objetivo">
-        {OBJETIVOS.map(({ id, nome, Icone }) => (
+      {objetivos.length > 1 && <div className={estilos.objetivos} role="group" aria-label="Objetivo">
+        {OBJETIVOS.filter(({ id }) => objetivos.includes(id)).map(({ id, nome, Icone }) => (
           <button key={id} type="button" aria-pressed={objetivo === id} onClick={() => setObjetivo(id)}>
             <Icone size={16} aria-hidden />{nome}
           </button>
         ))}
-      </div>
+      </div>}
 
       {objetivo === "economia" && (
         <div className={estilos.resultado}>

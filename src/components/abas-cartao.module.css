@@ -1,0 +1,88 @@
+/* Abas Compras e Parcelas do cartão (Davi, 26/09: opções A do canvas). */
+.aba { display:grid; gap:12px; min-width:0; }
+.bloco { min-width:0; padding:4px 14px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.bloco[data-respiro] { display:grid; gap:14px; padding:16px; }
+.bloco ul { margin:0; padding:0; list-style:none; }
+
+/* --- busca, filtro e conferir --- */
+.busca { display:flex; gap:8px; min-width:0; }
+.campoBusca { flex:1; min-width:0; display:flex; align-items:center; gap:8px; min-height:44px; padding:0 16px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); background:color-mix(in oklab, var(--foreground), transparent 95%); color:var(--texto-3); }
+.campoBusca:focus-within { border-color:color-mix(in oklab, var(--acao), transparent 50%); }
+.campoBusca svg { width:16px; height:16px; flex-shrink:0; }
+/* O `input` global traz borda e fundo próprios; aqui a pílula é o campo. */
+.campoBusca input::placeholder { font-weight:400; color:var(--texto-3); opacity:1; }
+.campoBusca input { flex:1; font-weight:400 !important; min-width:0; height:42px; border:0 !important; background:transparent !important; box-shadow:none !important; padding:0 !important; outline:none; font-size:calc(14.5px * var(--escala-letra)); color:var(--foreground); }
+.botaoFiltros, .botaoConferir { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 16px; border-radius:999px; font-size:calc(13.5px * var(--escala-letra)); white-space:nowrap; }
+.botaoFiltros { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.botaoConferir { border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.botaoFiltros svg, .botaoConferir svg { width:16px; height:16px; }
+/* No celular o "Conferir" vira só o ícone: com o texto, a busca encolhia a
+   ponto de quebrar "Buscar compra" em duas linhas. */
+@media (max-width:520px) {
+  .botaoConferir { width:44px; padding:0; justify-content:center; }
+  .botaoConferir span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+}
+.chipAtivo { justify-self:start; display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 8px 0 14px; border-radius:999px; background:color-mix(in oklab, var(--acao), transparent 84%); border:1px solid color-mix(in oklab, var(--acao), transparent 60%); font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+.chipAtivo svg { width:22px; height:22px; padding:4px; }
+.resumo { display:flex; justify-content:space-between; align-items:baseline; padding:0 2px; }
+.resumo span { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.resumo b { font-size:calc(20px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+
+/* --- lista por dia --- */
+.dia { display:flex; justify-content:space-between; gap:12px; padding:12px 2px 6px; font-size:calc(12.5px * var(--escala-letra)); font-weight:500; color:var(--texto-2); font-variant-numeric:tabular-nums; }
+.linha { display:grid; grid-template-columns:38px minmax(0,1fr) auto; align-items:center; gap:12px; width:100%; min-height:56px; padding:8px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:left; }
+.linha:hover .texto strong { text-decoration:underline; text-underline-offset:3px; }
+.icone { position:relative; display:grid; place-items:center; width:38px; height:38px; flex-shrink:0; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 89%); background:color-mix(in oklab, var(--foreground), transparent 95%); overflow:hidden; }
+.icone > svg { width:17px; height:17px; }
+/* Com a marca do estabelecimento, o ícone da categoria sai de trás dela. */
+.icone > :first-child:not(:last-child) + svg { display:none; }
+.icone :global(.simbolo-categoria) { background:none !important; box-shadow:none !important; }
+.texto { min-width:0; }
+.texto strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14.5px * var(--escala-letra)); font-weight:600; }
+.texto small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.linha > b { font-size:calc(14.5px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.linha > b[data-credito] { color:var(--acao); }
+
+/* Opaca pelo mesmo motivo dos diálogos do cartão: o vidro deixava as compras
+   de trás aparecerem entre as opções. */
+.folha { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+.opcoes { display:grid; gap:2px; padding:0 16px 16px; }
+@media (min-width:640px) { .opcoes { padding:0 24px 20px; } }
+.opcoes button { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:48px; padding:0 14px; border-radius:14px; font-size:calc(14.5px * var(--escala-letra)); text-align:left; }
+.opcoes button:hover { background:color-mix(in oklab, var(--foreground), transparent 94%); }
+.opcoes button[aria-pressed="true"] { background:color-mix(in oklab, var(--acao), transparent 86%); font-weight:650; }
+.opcoes b { font-weight:650; font-variant-numeric:tabular-nums; }
+
+.vazio { display:grid; justify-items:center; gap:8px; padding:28px 16px; text-align:center; border-radius:var(--raio-bloco); border:1px dashed color-mix(in oklab, var(--foreground), transparent 82%); }
+.vazio svg { width:26px; height:26px; color:var(--texto-3); }
+.vazio strong { font-size:calc(15px * var(--escala-letra)); }
+.vazio p { max-width:34ch; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.vazio button { min-height:44px; padding:0 18px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+
+/* --- parcelas --- */
+.topoNumero { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; }
+.topoNumero small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.topoNumero b { display:block; font-size:calc(26px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.topoNumero p { text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
+.meses { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:6px; }
+.meses > div { display:grid; justify-items:center; gap:5px; }
+.meses span { display:flex; align-items:flex-end; justify-content:center; width:100%; height:70px; }
+.meses i { width:70%; max-width:30px; border-radius:6px; background:color-mix(in oklab, var(--foreground), transparent 82%); }
+.meses [data-atual] i { background:var(--acao); }
+.meses small { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.meses [data-atual] small { font-weight:700; color:var(--foreground); }
+.legendaMeses { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; }
+
+.parcela { display:grid; gap:9px; width:100%; padding:12px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:left; }
+.bloco li:first-child .parcela, .bloco li:first-child .linha { border-top:0; }
+.linhaParcela { display:grid; grid-template-columns:38px minmax(0,1fr) auto; align-items:center; gap:12px; }
+.parcela:hover .texto strong { text-decoration:underline; text-underline-offset:3px; }
+.contagem { text-align:right; }
+.contagem b { display:block; font-size:calc(14.5px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; }
+.contagem b span { font-weight:500; color:var(--texto-3); }
+.contagem small { display:block; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); white-space:nowrap; }
+.tracos { display:flex; gap:3px; }
+.tracos i { flex:1; height:5px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 88%); }
+.tracos i[data-paga] { background:var(--acao); }
+.trilho { display:block; height:5px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 88%); overflow:hidden; }
+.trilho i { display:block; height:100%; border-radius:inherit; background:var(--acao); }

@@ -2,20 +2,24 @@
 
 import type { CSSProperties } from "react"
 
-import { IdentidadeBanco } from "@/components/banco-perfil"
+import { nomeCurtoDaConta } from "@/components/filtros-do-extrato"
+import { corDoBanco } from "@/lib/bancos-perfil"
 import { faixaDoUsoDoLimite, faturaEmCobranca, limiteDoCartao, REFERENCIA_USO_LIMITE, type DadosCartao } from "@/lib/cartoes"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import Link from "next/link"
 import estilos from "./limites-cartoes.module.css"
 
 /**
- * Limites de todos os cartões (Davi, 24/09, com um print de referência): o
- * total utilizado e o disponível, um arco com o percentual e, embaixo, o
- * limite de cada banco.
+ * Limites de todos os cartões (Davi, 26/09: opção A do canvas).
  *
- * "Utilizado" é o que o banco já descontou do limite — fatura em aberto,
- * compras da próxima fatura e parcelas futuras (ver `limiteDoCartao`). O arco
- * vem com a régua do que é saudável: 35% sozinho não diz se é bom.
+ * O número de cima é o que está livre, porque é o que a pessoa vem saber
+ * ("posso passar esta compra?"); o percentual usado vem ao lado com a faixa
+ * que o qualifica — 56% sozinho não diz se é bom. Cada barra se divide no que
+ * prende o limite: a fatura, as parcelas futuras e o que sobra. O arco grande
+ * de antes dizia só o percentual e ocupava meia tela.
+ *
+ * "Usado" é o que o banco já descontou do limite — fatura em aberto, compras
+ * da próxima fatura e parcelas futuras (ver `limiteDoCartao`).
  */
 export function LimitesDosCartoes({ cartoes, hoje }: { cartoes: DadosCartao[]; hoje: string }) {
   // Cada cartão conta a partir da própria fatura em cobrança: vencimentos
@@ -23,15 +27,15 @@ export function LimitesDosCartoes({ cartoes, hoje }: { cartoes: DadosCartao[]; h
   const linhas = cartoes.map((cartao) => ({ cartao, limite: limiteDoCartao(cartao, faturaEmCobranca(cartao, hoje)) }))
   const comLimite = linhas.filter((linha) => linha.limite !== null)
   const total = comLimite.reduce((soma, linha) => soma + linha.limite!.limiteCentavos, 0)
-  const usado = comLimite.reduce((soma, linha) => soma + linha.limite!.usadoCentavos, 0)
+  const fatura = comLimite.reduce((soma, linha) => soma + linha.limite!.faturaCentavos, 0)
+  const futuras = comLimite.reduce((soma, linha) => soma + linha.limite!.parcelasFuturasCentavos, 0)
   const disponivel = comLimite.reduce((soma, linha) => soma + linha.limite!.disponivelCentavos, 0)
-  const usoBps = total > 0 ? Math.round((usado / total) * 10_000) : 0
+  const usoBps = total > 0 ? Math.round(((fatura + futuras) / total) * 10_000) : 0
   const faixa = faixaDoUsoDoLimite(usoBps)
 
   if (comLimite.length === 0) {
     return (
-      <section className={estilos.painel}>
-        <h2>Limites</h2>
+      <section className={estilos.bloco}>
         <p className={estilos.nota}>
           Nenhum cartão tem o limite cadastrado. <Link href="/configuracoes">Informe o limite em Configurações</Link> para ver quanto está livre.
         </p>
@@ -40,70 +44,60 @@ export function LimitesDosCartoes({ cartoes, hoje }: { cartoes: DadosCartao[]; h
   }
 
   return (
-    <section className={estilos.painel} data-faixa={faixa}>
-      <div className={estilos.totais}>
-        <p className={estilos.rotulo}>Limite total utilizado</p>
-        <p className={estilos.usado}><i aria-hidden />{formatarMoeda(usado)}</p>
-        <p className={estilos.disponivel}><i aria-hidden />Limite disponível: {formatarMoeda(disponivel)}</p>
-      </div>
+    <div className={estilos.aba}>
+      <section className={estilos.bloco} data-faixa={faixa}>
+        <div className={estilos.topo}>
+          <div><small>Livre nos cartões</small><b className="valor-sensivel">{semCentavosZerados(disponivel)}</b></div>
+          <div className={estilos.uso}>
+            <b>{formatarPercentual(usoBps, 0)} usado</b>
+            <small>{faixa === "alto" ? `alto: de ${formatarPercentual(REFERENCIA_USO_LIMITE.alto, 0)} para cima` : `bom até ${formatarPercentual(REFERENCIA_USO_LIMITE.saudavel, 0)}`}</small>
+          </div>
+        </div>
+        <Barra limite={total} fatura={fatura} futuras={futuras} grossa rotulo={`${formatarPercentual(usoBps, 0)} do limite total usado`} />
+        <p className={estilos.legenda}><span><i data-parte="fatura" />fatura</span><span><i data-parte="futuras" />parcelas futuras</span><span><i />livre</span></p>
+      </section>
 
-      <Arco usoBps={usoBps} />
-
-      <p className={estilos.referencia}>
-        {faixa === "saudavel" ? "Uso saudável" : faixa === "atencao" ? "Atenção" : "Uso alto"} · até {formatarPercentual(REFERENCIA_USO_LIMITE.saudavel, 0)} é o que os bancos veem como saudável; de {formatarPercentual(REFERENCIA_USO_LIMITE.alto, 0)} para cima pesa na análise de crédito.
-      </p>
-
-      <h3 className={estilos.subtitulo}>Seu limite por banco</h3>
-      <ul className={estilos.bancos}>
-        {linhas.map(({ cartao, limite }) => (
-          <li key={cartao.id}>
-            <IdentidadeBanco instituicao={cartao.instituicao ?? ""} nome={cartao.nome} />
-            {limite ? (
-              <span className={estilos.banco} data-faixa={faixaDoUsoDoLimite(limite.usoBps)}>
-                <span className={estilos.linhaBanco}><b>Utilizado: {formatarMoeda(limite.usadoCentavos)}</b><small>{formatarPercentual(limite.usoBps, 0)}</small></span>
-                <span className={estilos.barra} role="img" aria-label={`${cartao.nome}: ${formatarPercentual(limite.usoBps, 0)} do limite de ${formatarMoeda(limite.limiteCentavos)} utilizado`}>
-                  <span style={{ width: `${Math.min(100, limite.usoBps / 100)}%` } as CSSProperties} />
-                </span>
-                <span className={estilos.linhaBanco}><span>Disponível: {formatarMoeda(limite.disponivelCentavos)}</span><small>de {formatarMoeda(limite.limiteCentavos)}</small></span>
-                {limite.parcelasFuturasCentavos > 0 && (
-                  <small className={estilos.composicao}>
-                    {formatarMoeda(limite.faturaCentavos)} em faturas + {formatarMoeda(limite.parcelasFuturasCentavos)} em parcelas futuras
-                  </small>
-                )}
-              </span>
-            ) : (
-              <span className={estilos.banco}>
-                <b>{cartao.nome}</b>
-                <small className={estilos.composicao}>Limite não informado. <Link href="/configuracoes">Cadastrar</Link></small>
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
+      <section className={estilos.bloco}>
+        <ul className={estilos.cartoes}>
+          {linhas.map(({ cartao, limite }) => (
+            <li key={cartao.id}>
+              <div className={estilos.linha}>
+                <span className={estilos.amostra} style={{ "--cor-banco": corDoBanco(cartao.instituicao) } as CSSProperties} aria-hidden />
+                <strong>{nomeCurtoDaConta(cartao.nome)}</strong>
+                {limite ? <span className={estilos.livre}><small>livre</small><b className="valor-sensivel">{semCentavosZerados(limite.disponivelCentavos)}</b></span> : null}
+              </div>
+              {limite ? (
+                <>
+                  <Barra limite={limite.limiteCentavos} fatura={limite.faturaCentavos} futuras={limite.parcelasFuturasCentavos} rotulo={`${cartao.nome}: ${formatarPercentual(limite.usoBps, 0)} do limite usado`} />
+                  <p className={estilos.pe}>
+                    <span className="valor-sensivel">fatura {semCentavosZerados(limite.faturaCentavos)}{limite.parcelasFuturasCentavos > 0 ? ` · futuras ${semCentavosZerados(limite.parcelasFuturasCentavos)}` : ""}</span>
+                    <span className="valor-sensivel">limite {semCentavosZerados(limite.limiteCentavos)}</span>
+                  </p>
+                </>
+              ) : (
+                <p className={estilos.nota}>Limite não informado. <Link href="/configuracoes">Cadastrar</Link></p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
   )
 }
 
 /**
- * O arco de três quartos de volta, aberto embaixo, como no print de
- * referência. `stroke-dasharray` num círculo só: o trilho e o preenchido são
- * o mesmo círculo, e o preenchido para no percentual.
+ * A barra dividida: fatura cheia, parcelas futuras em verde claro, o resto é
+ * o livre. Compra aprovada acima do limite pode passar de 100%; a barra para
+ * no fim e o percentual escrito conta o resto.
  */
-function Arco({ usoBps }: { usoBps: number }) {
-  const raio = 80
-  const circunferencia = 2 * Math.PI * raio
-  const arco = circunferencia * 0.75
-  const preenchido = arco * Math.min(1, usoBps / 10_000)
+function Barra({ limite, fatura, futuras, grossa = false, rotulo }: { limite: number; fatura: number; futuras: number; grossa?: boolean; rotulo: string }) {
+  const parte = (centavos: number) => `${Math.min(100, (centavos / limite) * 100)}%`
   return (
-    <div className={estilos.arco} role="img" aria-label={`${formatarPercentual(usoBps, 0)} do limite utilizado`}>
-      <svg viewBox="0 0 200 200">
-        <circle cx="100" cy="100" r={raio} className={estilos.trilho} strokeDasharray={`${arco} ${circunferencia}`} transform="rotate(135 100 100)" />
-        <circle cx="100" cy="100" r={raio} className={estilos.valor} strokeDasharray={`${preenchido} ${circunferencia}`} transform="rotate(135 100 100)" />
-      </svg>
-      <span>
-        <b>{formatarPercentual(usoBps, 0)}</b>
-        <small>utilizado</small>
-      </span>
-    </div>
+    <span className={estilos.barra} data-grossa={grossa || undefined} role="img" aria-label={rotulo}>
+      <i data-parte="fatura" style={{ width: parte(fatura) }} />
+      {futuras > 0 && <i data-parte="futuras" style={{ width: parte(futuras) }} />}
+    </span>
   )
 }
+
+const semCentavosZerados = (centavos: number) => formatarMoeda(centavos).replace(/,00$/, "")

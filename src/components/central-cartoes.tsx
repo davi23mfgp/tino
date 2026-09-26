@@ -1,32 +1,27 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
-import { CalendarClock, ChevronLeft, ChevronRight, Nfc, Pencil, Plus, ShoppingBag, Tags, Trash2, Upload, type LucideIcon } from "lucide-react"
+import { CalendarClock, ChevronLeft, ChevronRight, Nfc, Plus, Trash2, Upload, type LucideIcon } from "lucide-react"
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import estilos from "./central-cartoes.module.css"
 import { ParcelamentosDoCartao } from "./parcelamentos-cartao"
-import { iconeDaCategoria } from "@/lib/icone-categoria"
+import { ComprasDoCartao } from "./compras-do-cartao"
 import { IconeFerramenta } from "@/lib/icone-ferramenta"
-import { orcamentoInicialCentavos } from "@/lib/orcamento-cartao"
-import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { IdentidadeBanco } from "@/components/banco-perfil"
 import { AjudaCartao } from "@/components/ajuda-cartao"
 import { CompraCartaoForm } from "@/components/compra-cartao-form"
 import { Importador } from "@/components/importador"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { enviar } from "@/lib/cliente"
 import { cicloDaFatura, faturaAberta, faturaEmCobranca, limiteDoCartao, mesesDoCartao, resumoDoMes, type CompraCartao, type CompraParcelada, type DadosCartao } from "@/lib/cartoes"
 import { nomeCurtoDaConta } from "@/components/filtros-do-extrato"
 import { LimitesDosCartoes } from "@/components/limites-cartoes"
-import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
-import { cn } from "@/lib/utils"
-import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
+import { rotuloCompetencia } from "@/lib/datas"
+import { formatarMoeda } from "@/lib/dinheiro"
 import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
 import { ROTULO_BANDEIRA } from "@/lib/bandeiras"
@@ -44,6 +39,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
   const [categoria, setCategoria] = useState("")
   const [busca, setBusca] = useState("")
   const [aba, setAba] = useState("compras")
+  const [conferir, setConferir] = useState(false)
   const [form, setForm] = useState<{ compra?: CompraCartao; parcelamento?: CompraParcelada } | null>(null)
   const [excluir, setExcluir] = useState<{ id: string; nome: string; tipo: "transacoes" | "parcelamentos" } | null>(null)
   const [erro, setErro] = useState("")
@@ -52,7 +48,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
 
   useEffect(() => {
     const pedida = new URLSearchParams(window.location.search).get("aba")
-    if (pedida === "parcelas" || pedida === "limites") setAba(pedida)
+    if (pedida === "parcelas" || pedida === "limites" || pedida === "categorias") setAba(pedida)
   }, [])
 
   if (!cartao) return <div className={estilos.vazio}><p>Adicione seu primeiro cartão.</p><Button asChild><Link href="/configuracoes">Cadastrar cartão</Link></Button></div>
@@ -220,51 +216,50 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
       <div className={estilos.coluna}>
     <Tabs value={aba} onValueChange={setAba}>
       <TabsList className={estilos.abas}>
-        {/* Rótulo e valor da aba vêm da mesma lista: seis gatilhos escritos à
-            mão eram seis lugares para o ícone faltar. "Importar" não tem chip:
-            o botão "Importar fatura" já abre esse conteúdo, e o chip repetido
-            empurrava a fila para uma segunda linha no computador. */}
-        {[["compras","Compras"],["parcelas","Parcelas"],["limites","Limites"],["categorias","Categorias"],["orcamento","Orçamento"],["ajuda","Ajuda"]].map(([valor,rotulo]) => (
+        {/* Quatro abas (Davi, 26/09). Orçamento saiu porque repetia a tela
+            Orçamento com outro número; Ajuda saiu e cada ferramenta foi para
+            onde a pessoa já está: conferir a fatura e os pontos no botão
+            "Conferir" das compras. "Importar" não tem chip: o botão "Importar
+            fatura" já abre esse conteúdo. */}
+        {[["compras","Compras"],["parcelas","Parcelas"],["limites","Limites"],["categorias","Categorias"]].map(([valor,rotulo]) => (
           <TabsTrigger key={valor} value={valor}><IconeFerramenta rotulo={rotulo} /><span className="truncate">{rotulo}</span></TabsTrigger>
         ))}
       </TabsList>
 
-      <TabsContent value="compras"><section className={estilos.painel}><Cabecalho titulo="Compras do mês" apoio={`${compras.length} compras · ${formatarMoeda(compras.reduce((s, c) => s + (c.tipo === "DESPESA" ? c.valorCentavos : 0), 0))}`} /><div className={estilos.filtros}><Input aria-label="Buscar compra" placeholder="Buscar compra" value={busca} onChange={(e) => setBusca(e.target.value)} /><Select value={categoria || "todas"} onValueChange={(valor) => setCategoria(valor === "todas" ? "" : valor)}><SelectTrigger aria-label="Filtrar categoria" className="w-full sm:w-[220px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todas">Todas as categorias</SelectItem>{resumo.categorias.map((linha) => <SelectItem key={linha.id} value={linha.id}>{linha.nome}</SelectItem>)}</SelectContent></Select></div>
-        {compras.length === 0 ? (
-          <PainelVazio
-            Icone={ShoppingBag}
-            titulo={busca || categoria ? "Nenhuma compra com esse filtro" : "Nenhuma compra neste mês"}
-            apoio={busca || categoria
-              ? "Limpe a busca ou escolha outra categoria."
-              : "As compras entram pelo aviso do banco, pela fatura importada ou lançadas à mão."}
-            acao={busca || categoria
-              ? { rotulo: "Limpar filtros", aoTocar: () => { setBusca(""); setCategoria("") } }
-              : { rotulo: "Nova compra", aoTocar: () => setForm({}) }}
-          />
-        ) : <div className={estilos.listaCompras}>{compras.map((compra) => <div key={compra.id}><span className={estilos.marca36}><MarcaPersonalizada nome={compra.descricao} /><IconeCategoria compra={compra} /></span><span><strong>{compra.descricao}</strong><small>{compra.data.split("-").reverse().join("/")} · {compra.categoria?.nome ?? "Sem categoria"}</small></span><b>{formatarMoeda(compra.valorCentavos)}</b><button aria-label={`Editar ${compra.descricao}`} onClick={() => setForm({ compra })}><Pencil /></button><button aria-label={`Excluir ${compra.descricao}`} onClick={() => setExcluir({ id: compra.id, nome: compra.descricao, tipo: "transacoes" })}><Trash2 /></button></div>)}</div>
-      }
-      </section></TabsContent>
+      <TabsContent value="compras"><ComprasDoCartao
+        compras={compras}
+        categorias={resumo.categorias}
+        busca={busca}
+        aoBuscar={setBusca}
+        categoria={categoria}
+        aoFiltrar={setCategoria}
+        aoAbrir={(compra) => setForm({ compra })}
+        aoConferir={() => setConferir(true)}
+        aoNova={() => setForm({})}
+      /></TabsContent>
 
-      <TabsContent value="parcelas"><section className={estilos.painel}><Cabecalho titulo="Compras parceladas" apoio={`${formatarMoeda(resumo.previsto)} previstos em ${rotuloCompetencia(mes, true)}`} />{cartao.parcelamentos.length === 0 ? (
-        <PainelVazio
+      <TabsContent value="parcelas">{cartao.parcelamentos.length === 0 ? (
+        <section className={estilos.painel}><PainelVazio
           Icone={CalendarClock}
           titulo="Nenhuma compra parcelada"
           apoio="Compra dividida em vezes aparece aqui com a parcela de cada mês e quanto falta."
           acao={{ rotulo: "Lançar compra parcelada", aoTocar: () => setForm({}) }}
-        />
-      ) : <ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} mes={mes} aoEditar={(parcelamento) => setForm({ parcelamento })} aoExcluir={setExcluir} />}</section></TabsContent>
+        /></section>
+      ) : <ParcelamentosDoCartao parcelamentos={cartao.parcelamentos} categorias={categorias} mes={mes} aoAbrir={(parcelamento) => setForm({ parcelamento })} />}</TabsContent>
 
-      <TabsContent value="limites"><section className={estilos.painel}><LimitesDosCartoes cartoes={cartoes} hoje={hoje} /></section></TabsContent>
+      <TabsContent value="limites"><LimitesDosCartoes cartoes={cartoes} hoje={hoje} /></TabsContent>
       <TabsContent value="categorias"><section className={estilos.painel}><Cabecalho titulo="Gastos por categoria" apoio={rotuloCompetencia(mes)} /><div className={estilos.gradeCategorias}><div className={estilos.rosca} style={{ background: resumo.gastos ? `conic-gradient(${resumo.categorias.map((linha, i, todas) => { const antes = todas.slice(0, i).reduce((s, item) => s + item.totalCentavos, 0) / resumo.gastos * 100; return `${CORES[i % CORES.length]} ${antes}% ${antes + linha.totalCentavos / resumo.gastos * 100}%` }).join(",")})` : "var(--papel-3)" }}><span><b>{formatarMoeda(resumo.gastos)}</b><small>em compras</small></span></div><div>{resumo.categorias.map((linha, i) => <button key={linha.id} onClick={() => { setCategoria(linha.id); setAba("compras") }}><i style={{ background: CORES[i % CORES.length] }} /><span>{linha.nome}</span><b>{formatarMoeda(linha.totalCentavos)}</b></button>)}</div></div></section></TabsContent>
 
-      <TabsContent value="orcamento"><OrcamentoDoCartao cartao={cartao} mes={mes} categorias={categorias} gastos={resumo.categorias} aoSalvar={() => router.refresh()} /></TabsContent>
-      <TabsContent value="ajuda"><AjudaCartao cartao={cartao} mes={mes} aoAbrir={setAba} /></TabsContent>
       <TabsContent value="importar"><Importador contaInicial={cartao.id} aoConcluir={() => router.refresh()} /></TabsContent>
     </Tabs>
       </div>
     </div>
 
-    <Dialog open={form !== null} onOpenChange={(aberto) => !aberto && setForm(null)}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>{form?.compra || form?.parcelamento ? "Editar compra" : "Nova compra"}</DialogTitle><DialogDescription>Registre no cartão selecionado.</DialogDescription></DialogHeader>{form && <CompraCartaoForm contaId={cartao.id} categorias={categorias} compra={form.compra} parcelamento={form.parcelamento} fechar={() => setForm(null)} salvou={() => router.refresh()} embutido />}</DialogContent></Dialog>
+    <Dialog open={form !== null} onOpenChange={(aberto) => !aberto && setForm(null)}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>{form?.compra || form?.parcelamento ? "Editar compra" : "Nova compra"}</DialogTitle><DialogDescription>Registre no cartão selecionado.</DialogDescription></DialogHeader>{form && <CompraCartaoForm contaId={cartao.id} categorias={categorias} compra={form.compra} parcelamento={form.parcelamento} fechar={() => setForm(null)} salvou={() => router.refresh()} embutido />}
+      {/* Apagar mora aqui desde que a lixeira saiu de cada linha da lista. */}
+      {(form?.compra || form?.parcelamento) && <button type="button" className={estilos.excluirCompra} onClick={() => { const alvo = form.compra ? { id: form.compra.id, nome: form.compra.descricao, tipo: "transacoes" as const } : { id: form.parcelamento!.id, nome: form.parcelamento!.descricao, tipo: "parcelamentos" as const }; setForm(null); setExcluir(alvo) }}><Trash2 aria-hidden />Excluir compra</button>}
+    </DialogContent></Dialog>
+    <Dialog open={conferir} onOpenChange={setConferir}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>Conferir fatura</DialogTitle><DialogDescription>Compras sem categoria e os pontos que esta fatura rende.</DialogDescription></DialogHeader><AjudaCartao cartao={cartao} mes={mes} objetivos={["fatura", "pontos"]} semCabecalho aoAbrir={(destino) => { setConferir(false); if (destino === "compras") setCategoria("sem"); setAba(destino) }} /></DialogContent></Dialog>
     <Dialog open={Boolean(excluir)} onOpenChange={(aberto) => !aberto && setExcluir(null)}><DialogContent><DialogHeader><DialogTitle>Excluir {excluir?.nome}?</DialogTitle><DialogDescription>Esta ação não pode ser desfeita.</DialogDescription></DialogHeader>{erro && <p role="alert">{erro}</p>}<div className={estilos.rodapeModal}><Button variant="outline" onClick={() => setExcluir(null)}>Cancelar</Button><Button variant="destructive" disabled={ocupado} onClick={() => void remover()}>Excluir</Button></div></DialogContent></Dialog>
   </div>
 }
@@ -290,96 +285,6 @@ function PainelVazio({ Icone, titulo, apoio, acao }: { Icone: LucideIcon; titulo
       {acao && <Button onClick={acao.aoTocar}>{acao.rotulo}</Button>}
     </div>
   )
-}
-
-/**
- * Campo de dinheiro que não briga com quem digita.
- *
- * O valor era reformatado a cada tecla: apagar para trocar "1.234,56" por
- * "1.200" reescrevia o texto no meio da digitação e jogava o cursor para o
- * fim. Aqui o texto digitado é preservado enquanto o campo tem foco, e só
- * vira centavos quando a pessoa sai dele.
- */
-function CampoDinheiro({ valorCentavos, aoMudar, rotulo }: { valorCentavos: number; aoMudar: (centavos: number) => void; rotulo: string }) {
-  const [texto, setTexto] = useState(formatarDecimal(valorCentavos / 100, 2))
-  const [editando, setEditando] = useState(false)
-  useEffect(() => { if (!editando) setTexto(formatarDecimal(valorCentavos / 100, 2)) }, [valorCentavos, editando])
-  return (
-    <input
-      aria-label={rotulo}
-      inputMode="decimal"
-      value={texto}
-      onFocus={() => setEditando(true)}
-      onChange={(evento) => setTexto(evento.target.value)}
-      onBlur={() => { aoMudar(Math.max(0, paraCentavos(texto))); setEditando(false) }}
-      onKeyDown={(evento) => { if (evento.key === "Enter") evento.currentTarget.blur() }}
-    />
-  )
-}
-
-function OrcamentoDoCartao({ cartao, mes, categorias, gastos, aoSalvar }: { cartao: DadosCartao; mes: string; categorias: { id: string; nome: string }[]; gastos: { id: string; nome: string; totalCentavos: number }[]; aoSalvar: () => void }) {
-  // Mês sem plano só herda o valor legado da conta sob a mesma regra da API —
-  // ver `lib/orcamento-cartao.ts`. Antes a tela herdava em qualquer mês, e
-  // navegar para um mês futuro mostrava um teto que ninguém tinha definido.
-  const inicialDoMes = useCallback((competencia: string) => {
-    const plano = cartao.orcamentos?.find((item) => item.competencia === competencia)
-    return {
-      total: orcamentoInicialCentavos({
-        planoDoMesCentavos: plano?.totalCentavos,
-        possuiPlanos: Boolean(cartao.orcamentos?.length),
-        mesCorrente: competencia === competenciaAtual(),
-        orcamentoMensalCentavos: cartao.orcamentoMensalCentavos,
-      }),
-      linhas: Object.fromEntries(plano?.categorias.map((linha) => [linha.categoriaId, linha.limiteCentavos]) ?? []),
-    }
-  }, [cartao])
-
-  const [total, setTotal] = useState(() => inicialDoMes(mes).total)
-  const [linhas, setLinhas] = useState<Record<string, number>>(() => inicialDoMes(mes).linhas)
-  const [erro, setErro] = useState("")
-  const [salvando, setSalvando] = useState(false)
-  const [novaCategoria, setNovaCategoria] = useState("")
-  useEffect(() => { const inicio = inicialDoMes(mes); setTotal(inicio.total); setLinhas(inicio.linhas); setErro("") }, [inicialDoMes, mes])
-
-  const distribuido = Object.values(linhas).reduce((soma, valor) => soma + valor, 0)
-  // Categoria presente no plano continua na lista mesmo valendo zero: zerar um
-  // limite não pode fazer a linha desaparecer de quem está editando.
-  const categoriasAtivas = useMemo(
-    () => categorias.filter((linha) => linha.id in linhas || gastos.some((gasto) => gasto.id === linha.id)),
-    [categorias, gastos, linhas],
-  )
-  async function salvar() {
-    setErro("")
-    if (distribuido > total) { setErro("As categorias ultrapassam o total."); return }
-    setSalvando(true)
-    try {
-      await enviar(`/api/cartoes/${cartao.id}/orcamento`, { competencia: mes, totalCentavos: total, categorias: Object.entries(linhas).map(([categoriaId, limiteCentavos]) => ({ categoriaId, limiteCentavos })) }, "PUT")
-      aoSalvar()
-    } catch (falha) { setErro(falha instanceof Error ? falha.message : "Não foi possível salvar.") }
-    finally { setSalvando(false) }
-  }
-  const gastoTotal = gastos.reduce((soma, linha) => soma + linha.totalCentavos, 0)
-  const maximo = Math.max(10000, cartao.limiteCentavos ?? 0, gastoTotal * 2)
-  const disponiveis = categorias.filter((linha) => !categoriasAtivas.some((ativa) => ativa.id === linha.id))
-
-  return <section className={estilos.painel}><Cabecalho titulo="Orçamento do cartão" apoio={rotuloCompetencia(mes, true)} /><div className={estilos.resumoOrcamento}><div><small>Planejado</small><strong>{total ? formatarMoeda(total) : "—"}</strong></div><div><small>Utilizado</small><strong>{formatarMoeda(gastoTotal)}</strong></div><div><small>Restante</small><strong>{total ? formatarMoeda(total - gastoTotal) : "—"}</strong></div><div><small>Sem destino</small><strong>{formatarMoeda(Math.max(0, total - distribuido))}</strong></div></div>
-    <label className={estilos.slider}><span><b>Total do mês</b><CampoDinheiro valorCentavos={total} aoMudar={setTotal} rotulo="Total do mês" /></span><input type="range" aria-label="Ajustar o total do mês" min="0" max={maximo} step="5000" value={Math.min(total, maximo)} onChange={(e) => setTotal(Number(e.target.value))} /></label>
-    {disponiveis.length > 0 && <div className={estilos.adicionarCategoria}><select aria-label="Adicionar categoria ao orçamento" value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)}><option value="">Adicionar categoria</option>{disponiveis.map((linha) => <option key={linha.id} value={linha.id}>{linha.nome}</option>)}</select><Button type="button" variant="outline" disabled={!novaCategoria} onClick={() => { setLinhas((atual) => ({ ...atual, [novaCategoria]: 0 })); setNovaCategoria("") }}>Adicionar</Button></div>}
-    <div className={estilos.orcamentoCategorias}>{categoriasAtivas.map((linha) => { const gasto = gastos.find((item) => item.id === linha.id)?.totalCentavos ?? 0; const limite = linhas[linha.id] ?? 0; return <label className={estilos.slider} key={linha.id} data-estourou={limite > 0 && gasto > limite}><span><b>{linha.nome}</b><small>{formatarMoeda(gasto)}{limite > 0 ? ` de ${formatarMoeda(limite)}` : ""}{limite > 0 && gasto > limite ? ` · passou ${formatarMoeda(gasto - limite)}` : ""}</small><CampoDinheiro valorCentavos={limite} aoMudar={(centavos) => setLinhas((atual) => ({ ...atual, [linha.id]: centavos }))} rotulo={`Limite de ${linha.nome}`} /></span><input type="range" aria-label={`Ajustar limite de ${linha.nome}`} min="0" max={Math.max(total, 10000, limite)} step="1000" value={Math.min(limite, Math.max(total, 10000, limite))} onChange={(e) => setLinhas((atual) => ({ ...atual, [linha.id]: Number(e.target.value) }))} /></label> })}</div>
-    {erro && <p className={estilos.erro} role="alert">{erro}</p>}<Button disabled={salvando} onClick={() => void salvar()}>Salvar orçamento</Button>
-  </section>
-}
-
-/**
- * Ícone da categoria, atrás da marca personalizada.
- *
- * `MarcaPersonalizada` devolve `null` quando o estabelecimento não tem logo
- * cadastrado, e o círculo ficava vazio. O CSS esconde este ícone quando a
- * marca existe, então nunca aparecem os dois.
- */
-function IconeCategoria({ compra }: { compra: CompraCartao }) {
-  const Icone = iconeDaCategoria(compra.categoria, compra.tipo === "RECEITA" ? "RECEITA" : "DESPESA")
-  return <Icone aria-hidden />
 }
 
 /// "06/10" a partir de "2026-10-06".
