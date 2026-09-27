@@ -18,6 +18,7 @@ import {
 } from "@/lib/datas"
 import {
   avaliarMei,
+  basesDaProjecao,
   compararEstrategias,
   mesesDeFolga,
   projetarAposentadoria,
@@ -398,13 +399,26 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     .filter((r) => r.tipo === "RECEITA" && r.periodicidade === "MENSAL")
     .reduce((soma, r) => soma + r.valorCentavos, 0)
 
+  // Pagamento de dívida já lançado no extrato está dentro da despesa média;
+  // a projeção soma a parcela contratada à parte, então ele sai da média.
+  const pagamentoDividasMedio = Math.round(
+    transacoesHistorico.filter((t) => t.tipo === "DESPESA" && t.dividaId).reduce((soma, t) => soma + t.valorCentavos, 0) / divisor,
+  )
+  const bases = basesDaProjecao({
+    receitasFixasCentavos: receitasFixas,
+    receitaMediaCentavos: medias.receitaCentavos,
+    custoFixoCentavos: medias.custoFixoCentavos,
+    despesaMediaCentavos: medias.despesaCentavos,
+    parcelaDividasCentavos: parcelaMensal,
+    pagamentoDividasMedioCentavos: pagamentoDividasMedio,
+  })
   const projecao = projetarFluxo({
     competenciaInicial: competenciaMaisMeses(competencia, 1),
     meses: 12,
     saldoInicialCentavos: saldoTotalCentavos,
-    receitasFixasCentavos: receitasFixas || medias.receitaCentavos,
-    despesasFixasCentavos: medias.custoFixoCentavos + parcelaMensal,
-    despesasVariaveisMediaCentavos: Math.max(0, medias.despesaCentavos - medias.custoFixoCentavos),
+    receitasFixasCentavos: bases.receitasCentavos,
+    despesasFixasCentavos: bases.despesasFixasCentavos,
+    despesasVariaveisMediaCentavos: bases.despesasVariaveisMediaCentavos,
     eventos: eventosFuturos,
     proximaCompetencia: competenciaMaisMeses,
   })

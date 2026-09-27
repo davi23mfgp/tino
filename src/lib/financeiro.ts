@@ -586,6 +586,36 @@ export interface EventoProjetado {
 }
 
 /**
+ * As três bases mensais da projeção, a partir do que foi observado e do que
+ * está cadastrado.
+ *
+ * Entrada e saída seguem a mesma regra: o fixo cadastrado, mais o que a média
+ * do histórico mostra além dele. Antes a entrada era só o fixo — um salário
+ * que cai todo mês mas não foi cadastrado em Contas fixas sumia da projeção,
+ * enquanto a saída usava a média inteira. Na conta demo, isso anunciava
+ * R$ 44 mil no vermelho em doze meses para uma casa que fecha o mês no azul.
+ *
+ * A parcela de dívida entra explícita, pelo valor contratado; o que o
+ * histórico já pagou de dívida sai da parte variável, senão a mesma parcela
+ * contaria duas vezes — uma dentro da média, outra somada por cima.
+ */
+export function basesDaProjecao(params: {
+  receitasFixasCentavos: number
+  receitaMediaCentavos: number
+  custoFixoCentavos: number
+  despesaMediaCentavos: number
+  parcelaDividasCentavos: number
+  pagamentoDividasMedioCentavos: number
+}) {
+  const variavelObservada = params.despesaMediaCentavos - params.custoFixoCentavos - params.pagamentoDividasMedioCentavos
+  return {
+    receitasCentavos: Math.max(params.receitasFixasCentavos, params.receitaMediaCentavos),
+    despesasFixasCentavos: params.custoFixoCentavos + params.parcelaDividasCentavos,
+    despesasVariaveisMediaCentavos: Math.max(0, variavelObservada),
+  }
+}
+
+/**
  * Projeta o caixa mês a mês somando o que já é conhecido do futuro:
  * recorrências ativas, parcelas de dívida e aportes de meta, sobre a média
  * das despesas variáveis observadas.
