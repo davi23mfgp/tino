@@ -1,0 +1,67 @@
+/* Fluxo de caixa (Davi, 27/09: B do canvas com a frase da C). */
+.pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; }
+.corpo { display:grid; gap:14px; min-width:0; }
+/* No computador, o gráfico e a lista do mês lado a lado: empilhados em
+   1.280px, a lista caía para baixo da dobra. */
+@media (min-width:1024px) { .corpo { grid-template-columns:minmax(0,1fr) 420px; gap:20px; align-items:start; } }
+
+.bloco { display:grid; gap:12px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.bloco[data-lista] { padding:14px 14px 12px; }
+.cabecalho { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.cabecalho h2 { font-size:calc(15px * var(--escala-letra)); font-weight:650; }
+.cabecalho small { flex-shrink:0; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+
+/* A frase da opção C: a conta inteira do mês, em texto corrido. */
+.frase { display:grid; gap:4px; padding:16px 18px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); }
+.frase small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.frase p:first-of-type b { font-size:calc(clamp(19px, 5vw, 24px) * var(--escala-letra)); font-weight:700; letter-spacing:-.02em; line-height:1.25; }
+.frase p:first-of-type span { white-space:nowrap; }
+.frase p:last-of-type { font-size:calc(15px * var(--escala-letra)); }
+.frase p[data-tom="sobra"] b { color:var(--acao); white-space:nowrap; }
+.frase p[data-tom="falta"] b { color:var(--negativo); white-space:nowrap; }
+
+/* Contas no fluxo: ligada tem ponto cheio; desligada, tracejada. */
+.contas { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.contas > span { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.contas button { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 12px; border-radius:999px; border:1px dashed color-mix(in oklab, var(--foreground), transparent 75%); font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.contas button i { width:8px; height:8px; border-radius:99px; border:1.5px solid color-mix(in oklab, var(--foreground), transparent 60%); }
+.contas button[aria-pressed="true"] { border:1px solid color-mix(in oklab, var(--acao), transparent 55%); background:color-mix(in oklab, var(--acao), transparent 86%); color:var(--foreground); }
+.contas button[aria-pressed="true"] i { border-color:var(--acao); background:var(--acao); }
+
+/* O gráfico: uma coluna por mês, a linha do zero no lugar certo da escala,
+   verde acima e vermelho abaixo, o valor em cima (ou embaixo) da barra. */
+.grafico { position:relative; display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:2px; }
+.grafico button { display:grid; grid-template-rows:auto auto; min-width:0; padding:0; border-radius:10px; }
+.grafico button:hover { background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.coluna { position:relative; display:block; height:180px; margin:18px 0 20px; }
+@media (min-width:1024px) { .coluna { height:260px; } }
+.coluna::before { content:""; position:absolute; left:-2px; right:-2px; top:var(--zero); height:1px; background:color-mix(in oklab, var(--foreground), transparent 70%); }
+.coluna i { position:absolute; left:18%; right:18%; min-height:3px; border-radius:6px 6px 2px 2px; background:var(--acao); }
+[data-negativo] .coluna i { border-radius:2px 2px 6px 6px; background:var(--negativo); }
+.grafico button[aria-pressed="true"] .coluna i { outline:2px solid var(--foreground); outline-offset:2px; }
+.coluna b { position:absolute; left:-6px; right:-6px; text-align:center; font-size:max(9px, calc(9.5px * var(--escala-letra))); font-weight:700; color:var(--foreground); white-space:nowrap; font-variant-numeric:tabular-nums; }
+@media (min-width:1024px) { .coluna b { font-size:calc(12px * var(--escala-letra)); } }
+.grafico button small { padding-top:6px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:center; font-size:max(10px, calc(10.5px * var(--escala-letra))); color:var(--texto-3); }
+.grafico button[aria-pressed="true"] small { font-weight:700; color:var(--foreground); }
+
+/* A lista do mês, com o interruptor de cada linha. O tamanho do interruptor
+   vai com !important: a regra global de botão dá 44px de altura mínima a
+   todo botão, e ele virava uma bola. */
+.itens { display:grid; margin:0; padding:0; list-style:none; }
+.itens li { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:10px; min-height:52px; padding:6px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.itens li:first-child { border-top:0; }
+.texto { min-width:0; }
+.texto strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.texto small { display:block; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.itens b { font-size:calc(14px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.itens b[data-tipo="ENTRADA"] { color:var(--acao); }
+.itens b[data-tipo="SAIDA"] { color:var(--negativo); }
+.itens li[data-fora] strong { text-decoration:line-through; color:var(--texto-3); }
+.itens li[data-fora] b { color:var(--texto-3); }
+.interruptor { position:relative; width:44px !important; height:26px !important; min-width:44px !important; min-height:26px !important; padding:0 !important; flex-shrink:0; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 80%); transition:background .2s var(--curva); }
+.interruptor i { position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:99px; background:white; box-shadow:0 1px 3px rgb(0 0 0 / .3); transition:transform .2s var(--curva); }
+.interruptor[aria-checked="true"] { background:var(--acao); }
+.interruptor[aria-checked="true"] i { transform:translateX(18px); }
+.vazio { padding:8px 2px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.nota { padding-top:8px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.nota a { margin-left:6px; font-weight:600; color:var(--acao); }

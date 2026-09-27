@@ -258,6 +258,13 @@ model Lar {
   // 1º a 31 — o orçamento dele começa no dia do salário.
   diaInicioMes Int @default(1)
 
+  /// O que a pessoa tirou do fluxo de caixa, por chave: "conta:<id>",
+  /// "recorrencia:<id>", "cartao:<id>", "detectada:<descrição>",
+  /// "outras-entradas", "gasto-variavel", "dividas". Uma lista só, e não um
+  /// campo em cada tabela: parte do que se tira (a média de gasto, a entrada
+  /// detectada no histórico) não tem linha própria no banco.
+  fluxoForaChaves String[] @default([])
+
   estrategiaDivida EstrategiaDivida @default(AVALANCHE)
   // Meses de custo fixo que a reserva de emergência deve cobrir.
   mesesReserva     Int              @default(6)
