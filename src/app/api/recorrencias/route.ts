@@ -139,6 +139,54 @@ export const PUT = comSessao(async (sessao, requisicao) => {
   return ok(resultado, 201)
 })
 
+/**
+ * Edita uma conta fixa. Não mexe no que já foi lançado: o extrato guarda o
+ * valor do dia em que a conta foi paga, e corrigir o aluguel de outubro não
+ * pode reescrever o de setembro.
+ *
+ * Trocar o dia de vencimento move a próxima ocorrência dentro do mesmo mês
+ * em que ela já estava — senão a conta pularia um mês ou venceria duas vezes.
+ */
+export const PATCH = comSessao(async (sessao, requisicao) => {
+  const dados = validar(
+    z.object({
+      id: campo.id(),
+      descricao: campo.textoObrigatorio(120),
+      valorCentavos: campo.centavos(),
+      tipo: z.enum(["RECEITA", "DESPESA"]),
+      periodicidade: z.enum(["MENSAL", "BIMESTRAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL"]),
+      diaVencimento: campo.dia(),
+      contaId: campo.id(),
+      categoriaId: campo.id().nullish(),
+      valorVariavel: z.boolean(),
+    }),
+    await corpo(requisicao),
+  )
+  const atual = await prisma.recorrencia.findFirst({ where: { id: dados.id, larId: sessao.larId } })
+  if (!atual) return ok({ erro: "Conta fixa não encontrada." }, 404)
+  await doLar(sessao.larId, { conta: dados.contaId, categoria: dados.categoriaId })
+
+  const proximaData = dados.diaVencimento === atual.diaVencimento
+    ? atual.proximaData
+    : diaSeguro(atual.proximaData.getUTCFullYear(), atual.proximaData.getUTCMonth() + 1, dados.diaVencimento)
+
+  const salvo = await prisma.recorrencia.update({
+    where: { id: atual.id },
+    data: {
+      descricao: dados.descricao,
+      valorCentavos: dados.valorCentavos,
+      tipo: dados.tipo,
+      periodicidade: dados.periodicidade,
+      diaVencimento: dados.diaVencimento,
+      proximaData,
+      contaId: dados.contaId,
+      categoriaId: dados.categoriaId ?? null,
+      valorVariavel: dados.valorVariavel,
+    },
+  })
+  return ok(salvo)
+})
+
 export const DELETE = comSessao(async (sessao, requisicao) => {
   const id = new URL(requisicao.url).searchParams.get("id")
   if (!id) return ok({ erro: "Informe a recorrência." }, 400)

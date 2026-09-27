@@ -1,29 +1,32 @@
 "use client"
 
 import { CompromissosMetas } from "@/components/compromissos-metas"
-import { AbasInternas } from "@/components/abas-internas"
 import { useCallback, useEffect, useState } from "react"
 import { Check, Plus, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
-import { formatarData } from "@/lib/datas"
-import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
+import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
+import { iconeDaCategoria } from "@/lib/icone-categoria"
+import { REFERENCIA_CUSTO_FIXO } from "@/lib/tino/diagnostico"
 import { showToast } from "@/components/ui/toast"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { SelectNative } from "@/components/ui/select-native"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import estilos from "./recorrencias.module.css"
 
 /**
- * Contas fixas.
+ * Contas fixas (Davi, 27/09: opção B do canvas, com o resumo da A no lugar da
+ * linha dos 30 dias).
  *
  * É a tela que faz a projeção valer alguma coisa: sem saber o que sai todo mês
  * de qualquer jeito, o app só sabe olhar para trás. Aluguel, luz, assinatura e
  * salário entram aqui uma vez e alimentam projeção, reserva e plano.
+ *
+ * O bloco claro responde a pergunta de quem abre a tela — "qual é a próxima e
+ * quando" —; o resumo diz quanto da renda as contas levam, com a faixa do app.
+ * Antes o custo fixo aparecia duas vezes antes da lista, e no celular cada
+ * linha espremia o nome até "Plan…" para caber Lançar e lixeira.
  */
 
 interface Recorrencia {
@@ -36,8 +39,10 @@ interface Recorrencia {
   proximaData: string
   valorVariavel: boolean
   ativa: boolean
+  contaId: string
+  categoriaId: string | null
   conta: { nome: string }
-  categoria: { nome: string } | null
+  categoria: { nome: string; grupo?: string | null } | null
 }
 
 interface Resposta {
@@ -53,10 +58,10 @@ const PERIODOS = [
   { valor: "SEMESTRAL", rotulo: "a cada 6 meses" },
   { valor: "ANUAL", rotulo: "uma vez por ano" },
 ]
-
-
+const MES_CURTO = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
 const VAZIO = {
+  id: "",
   descricao: "",
   valor: "",
   tipo: "DESPESA" as "RECEITA" | "DESPESA",
@@ -66,13 +71,27 @@ const VAZIO = {
   categoriaId: "",
   variavel: false,
 }
+type Formulario = typeof VAZIO
+
+const semCentavosZerados = (centavos: number) => formatarMoeda(centavos).replace(/,00$/, "")
+/// "AAAA-MM-DD" de hoje no fuso do Brasil: à meia-noite em UTC ainda é ontem
+/// aqui, e a conta de amanhã apareceria como "hoje".
+const hojeIso = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })
+const diasAte = (iso: string) => Math.round((Date.parse(`${iso.slice(0, 10)}T00:00:00Z`) - Date.parse(`${hojeIso()}T00:00:00Z`)) / 86_400_000)
+const dataCurta = (iso: string) => `${Number(iso.slice(8, 10))} ${MES_CURTO[Number(iso.slice(5, 7)) - 1]}`
+function quando(iso: string) {
+  const dias = diasAte(iso)
+  if (dias < 0) return { texto: dias === -1 ? "venceu ontem" : `venceu há ${-dias} dias`, atrasada: true }
+  if (dias === 0) return { texto: "vence hoje", atrasada: false }
+  return { texto: dias === 1 ? "amanhã" : `em ${dias} dias`, atrasada: false }
+}
 
 export default function Recorrencias() {
   const [dados, setDados] = useState<Resposta | null>(null)
   const [contas, setContas] = useState<{ id: string; nome: string }[]>([])
   const [categorias, setCategorias] = useState<{ id: string; nome: string }[]>([])
-  const [nova, setNova] = useState(VAZIO)
-  const [abrir, setAbrir] = useState(false)
+  const [form, setForm] = useState<Formulario | null>(null)
+  const [lado, setLado] = useState<"DESPESA" | "RECEITA">("DESPESA")
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState("")
   const [erroFormulario, setErroFormulario] = useState("")
@@ -86,31 +105,50 @@ export default function Recorrencias() {
     setDados(resposta)
     setContas(listaContas)
     setCategorias(listaCategorias)
-    setNova((atual) => ({ ...atual, contaId: atual.contaId || listaContas[0]?.id || "" }))
   }, [])
 
   useEffect(() => {
     carregar().catch((erro: unknown) => setErro(erro instanceof Error ? erro.message : "Não foi possível carregar as contas."))
   }, [carregar])
 
-  async function criar(evento: React.FormEvent) {
+  function abrirNova() {
+    setErroFormulario("")
+    setForm({ ...VAZIO, tipo: lado, contaId: contas[0]?.id ?? "" })
+  }
+  function abrirEdicao(recorrencia: Recorrencia) {
+    setErroFormulario("")
+    setForm({
+      id: recorrencia.id,
+      descricao: recorrencia.descricao,
+      valor: formatarDecimal(recorrencia.valorCentavos / 100, 2),
+      tipo: recorrencia.tipo,
+      periodicidade: recorrencia.periodicidade,
+      dia: String(recorrencia.diaVencimento),
+      contaId: recorrencia.contaId,
+      categoriaId: recorrencia.categoriaId ?? "",
+      variavel: recorrencia.valorVariavel,
+    })
+  }
+
+  async function salvar(evento: React.FormEvent) {
     evento.preventDefault()
-    if (ocupado) return
+    if (ocupado || !form) return
     setErroFormulario("")
     setOcupado(true)
     try {
-      await enviar("/api/recorrencias", {
-        descricao: nova.descricao,
-        valorCentavos: paraCentavos(nova.valor),
-        tipo: nova.tipo,
-        periodicidade: nova.periodicidade,
-        diaVencimento: Number(nova.dia) || 10,
-        contaId: nova.contaId,
-        categoriaId: nova.categoriaId || undefined,
-        valorVariavel: nova.variavel,
-      })
-      setNova({ ...VAZIO, contaId: contas[0]?.id ?? "" })
-      setAbrir(false)
+      const corpo = {
+        descricao: form.descricao,
+        valorCentavos: paraCentavos(form.valor),
+        tipo: form.tipo,
+        periodicidade: form.periodicidade,
+        diaVencimento: Number(form.dia) || 10,
+        contaId: form.contaId,
+        categoriaId: form.categoriaId || undefined,
+        valorVariavel: form.variavel,
+      }
+      if (form.id) await enviar("/api/recorrencias", { id: form.id, ...corpo }, "PATCH")
+      else await enviar("/api/recorrencias", corpo)
+      setForm(null)
       await carregar()
     } catch (erro) {
       setErroFormulario(erro instanceof Error ? erro.message : "Não foi possível salvar. Tente novamente.")
@@ -125,6 +163,7 @@ export default function Recorrencias() {
     setOcupado(true)
     try {
       await enviar("/api/recorrencias", { id: recorrencia.id }, "PUT")
+      showToast(`${recorrencia.descricao} lançada no extrato`, { description: `${formatarMoeda(recorrencia.valorCentavos)} · ${dataCurta(recorrencia.proximaData)}` })
       await carregar()
     } catch (erro) {
       showToast("Não foi possível concluir", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
@@ -134,15 +173,15 @@ export default function Recorrencias() {
   }
 
   /**
-   * "Desfazer em vez de confirmar" — item 4 do redesign de 07/09/2026. Em
-   * vez de perguntar "tem certeza?" antes de remover, a linha já some da
-   * tela na hora, e o DELETE de verdade só sai do navegador depois de 5s
-   * sem ninguém desfazer. Clicou em "Desfazer": a linha volta, e a
-   * requisição de exclusão nem chega a ser feita.
+   * "Desfazer em vez de confirmar" — item 4 do redesign de 07/09/2026. A
+   * linha some na hora, e o DELETE de verdade só sai do navegador depois de
+   * 5s sem ninguém desfazer. Remover mora dentro da edição desde 27/09: a
+   * lixeira em cada linha tirava o espaço do nome.
    */
   function remover(recorrencia: Recorrencia) {
     if (!dados) return
     const idAlvo = recorrencia.id
+    setForm(null)
     setDados({ ...dados, recorrencias: dados.recorrencias.filter((r) => r.id !== idAlvo) })
 
     let desfeito = false
@@ -172,222 +211,122 @@ export default function Recorrencias() {
     }, 5000)
   }
 
-  if (!dados) return <Cartao titulo="Contas fixas">
-    {erro ? <div role="alert"><p className="text-sm text-muted-fg">{erro}</p><button className="mt-3 min-h-11 text-acao" onClick={() => { setErro(""); carregar().catch((erro: unknown) => setErro(erro instanceof Error ? erro.message : "Não foi possível carregar as contas.")) }}>Tentar novamente</button></div> : <p role="status" className="text-sm text-muted-fg">Carregando suas contas…</p>}
-  </Cartao>
+  if (!dados) return <section className={estilos.bloco}>
+    {erro ? <div role="alert"><p className={estilos.apoio}>{erro}</p><button className={estilos.tentar} onClick={() => { setErro(""); carregar().catch((erro: unknown) => setErro(erro instanceof Error ? erro.message : "Não foi possível carregar as contas.")) }}>Tentar novamente</button></div> : <p role="status" className={estilos.apoio}>Carregando suas contas…</p>}
+  </section>
 
-  const ativas = dados?.recorrencias.filter((linha) => linha.ativa) ?? []
+  const ativas = dados.recorrencias.filter((linha) => linha.ativa)
   const despesas = ativas.filter((linha) => linha.tipo === "DESPESA")
   const receitas = ativas.filter((linha) => linha.tipo === "RECEITA")
-  const hoje = new Date()
-  // Mesma regra que a lista usa por linha: proximaData já passou.
-  const atrasadas = despesas.filter((linha) => new Date(linha.proximaData) < hoje).length
+  const lista = (lado === "DESPESA" ? despesas : receitas).slice().sort((a, b) => a.proximaData.localeCompare(b.proximaData))
+  const [proxima, depois] = despesas.slice().sort((a, b) => a.proximaData.localeCompare(b.proximaData))
+  const sai = dados.custoFixoMensalCentavos
+  const entra = dados.receitaFixaMensalCentavos
+  // Custo fixo sobre renda fixa, na régua do diagnóstico: duas réguas para o
+  // mesmo número fariam uma tela dizer "bom" e a outra "atenção".
+  const pesoBps = entra > 0 ? Math.round((sai / entra) * 10_000) : null
+  const faixa = pesoBps === null ? null : pesoBps <= REFERENCIA_CUSTO_FIXO.bom ? "bom" : pesoBps <= REFERENCIA_CUSTO_FIXO.atencao ? "atencao" : "alto"
+  const recorrenciaEditada = form?.id ? dados.recorrencias.find((linha) => linha.id === form.id) : undefined
 
   return (
-    <div className="space-y-4">
-      <CompromissosMetas/>
-      {/* O custo fixo é o número que responde "quanto da minha renda já está
-          comprometido antes de eu escolher qualquer coisa". */}
-      <Abertura
-        rotulo="Contas fixas"
-        titulo={<><em>{formatarMoeda(dados?.custoFixoMensalCentavos ?? 0)}</em> saem todo mês antes de qualquer escolha sua.</>}
-        apoio={<>{despesas.length} {despesas.length === 1 ? "conta fixa" : "contas fixas"}{atrasadas > 0 ? <> · <b>{atrasadas}</b> {atrasadas === 1 ? "atrasada" : "atrasadas"}</> : null}.</>}
-      />
+    <div className={estilos.pagina}>
+      <section className={`superficie-clara ${estilos.destaque}`}>
+        <header><p>{proxima && quando(proxima.proximaData).atrasada ? "Atrasada" : "Próxima"}</p><button type="button" onClick={abrirNova}><Plus aria-hidden />Nova conta</button></header>
+        {proxima ? <>
+          <h2>{proxima.descricao}, <span className="valor-sensivel">{semCentavosZerados(proxima.valorCentavos)}</span> {quando(proxima.proximaData).atrasada ? "venceu" : "em"} {dataCurta(proxima.proximaData)}</h2>
+          <p className="apoio-claro">{quando(proxima.proximaData).atrasada ? quando(proxima.proximaData).texto : `faltam ${Math.max(0, diasAte(proxima.proximaData))} ${diasAte(proxima.proximaData) === 1 ? "dia" : "dias"}`}{depois ? ` · depois, ${depois.descricao} no dia ${depois.diaVencimento}` : ""}</p>
+        </> : <>
+          <h2>Nenhuma conta fixa cadastrada</h2>
+          <p className="apoio-claro">Aluguel, luz, internet, assinatura, salário. Cinco minutos aqui deixam a projeção inteira mais precisa.</p>
+        </>}
+      </section>
 
-      <Cartao
-        titulo="Contas fixas"
-        acao={
-          <button onClick={() => setAbrir((atual) => !atual)} className="flex min-h-11 items-center gap-1.5">
-            <Plus className="size-4" /> Nova conta
-          </button>
-        }
-      >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Metrica
-            rotulo="Sai todo mês"
-            valor={formatarMoeda(dados?.custoFixoMensalCentavos ?? 0)}
-            detalhe="antes de qualquer escolha sua"
-            tom="negativo"
-          />
-          <Metrica rotulo="Entra todo mês" valor={formatarMoeda(dados?.receitaFixaMensalCentavos ?? 0)} tom="positivo" />
-          <Metrica
-            rotulo="Sobra fixa"
-            valor={formatarMoeda((dados?.receitaFixaMensalCentavos ?? 0) - (dados?.custoFixoMensalCentavos ?? 0))}
-            tom={
-              (dados?.receitaFixaMensalCentavos ?? 0) - (dados?.custoFixoMensalCentavos ?? 0) >= 0
-                ? "positivo"
-                : "negativo"
-            }
-          />
-        </div>
-
-        <Dialog open={abrir} onOpenChange={(aberto) => { if (!ocupado) setAbrir(aberto) }}>
-          <DialogContent>
-          <DialogHeader><DialogTitle>Nova conta fixa</DialogTitle></DialogHeader>
-          <form onSubmit={criar} className="grid gap-3 px-5 py-4 sm:grid-cols-2 sm:px-6">
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Descrição
-                <Input
-              value={nova.descricao}
-              onChange={(e) => setNova({ ...nova, descricao: e.target.value })}
-              placeholder="o que é (aluguel, luz, salário)"
-              required
-
-            />
-              </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Entrada ou saída
-                <SelectNative
-              value={nova.tipo}
-              onChange={(e) => setNova({ ...nova, tipo: e.target.value as "RECEITA" | "DESPESA" })}
-
-            >
-              <option value="DESPESA">sai da conta</option>
-              <option value="RECEITA">entra na conta</option>
-            </SelectNative>
-              </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Valor (R$)
-                <Input
-              value={nova.valor}
-              onChange={(e) => setNova({ ...nova, valor: e.target.value })}
-              placeholder="valor"
-              required
-
-              inputMode="decimal"
-            />
-              </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Repete a cada
-                <SelectNative
-              value={nova.periodicidade}
-              onChange={(e) => setNova({ ...nova, periodicidade: e.target.value })}
-
-            >
-              {PERIODOS.map((periodo) => (
-                <option key={periodo.valor} value={periodo.valor}>
-                  {periodo.rotulo}
-                </option>
-              ))}
-            </SelectNative>
-              </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Dia do vencimento
-                <Input
-              value={nova.dia}
-              onChange={(e) => setNova({ ...nova, dia: e.target.value })}
-              placeholder="dia do vencimento"
-
-              inputMode="numeric"
-            />
-              </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Conta
-                <SelectNative value={nova.contaId} onChange={(e) => setNova({ ...nova, contaId: e.target.value })} >
-              {contas.map((conta) => (
-                <option key={conta.id} value={conta.id}>
-                  {conta.nome}
-                </option>
-              ))}
-            </SelectNative>
-              </label>
-            <label className="flex min-w-0 flex-col gap-1.5 text-xs text-muted-fg">Categoria (opcional)
-                <SelectNative
-              value={nova.categoriaId}
-              onChange={(e) => setNova({ ...nova, categoriaId: e.target.value })}
-
-            >
-              <option value="">sem categoria</option>
-              {categorias.map((categoria) => (
-                <option key={categoria.id} value={categoria.id}>
-                  {categoria.nome}
-                </option>
-              ))}
-            </SelectNative>
-              </label>
-
-            {contas.length === 0 && <p role="status" className="text-sm text-muted-fg sm:col-span-2">Cadastre uma conta em <a href="/configuracoes" className="underline">Configurações</a> antes de adicionar uma conta fixa.</p>}
-            <label className="flex min-h-11 items-center gap-2 text-[calc(12px*var(--escala-letra))] sm:col-span-2">
-              <Switch checked={nova.variavel} onCheckedChange={(variavel) => setNova({ ...nova, variavel })} aria-label="O valor muda todo mês" />
-              o valor muda todo mês (luz, água) — a projeção usa o último valor lançado
-            </label>
-
-            {erroFormulario && <p role="alert" className="text-sm text-negativo sm:col-span-2">{erroFormulario}</p>}
-            <Button disabled={ocupado || !nova.contaId} className="sm:col-span-2">{ocupado ? "Salvando…" : "Adicionar conta fixa"}</Button>
-          </form>
-          </DialogContent>
-        </Dialog>
-      </Cartao>
-
-      {/* As duas listas viram abas, como na analise: uma por vez, em vez de
-          dois cartoes empilhados que dobram a rolagem da tela. */}
-      <AbasInternas
-        abas={[
-          { titulo: "Sai todo mês", lista: despesas },
-          { titulo: "Entra todo mês", lista: receitas },
-        ]
-          .filter((bloco) => bloco.lista.length > 0)
-          .map((bloco) => ({
-            chave: bloco.titulo,
-            titulo: bloco.titulo,
-            conteudo: (
-          <Cartao key={bloco.titulo} titulo={bloco.titulo}>
-            <div className="space-y-2">
-              {bloco.lista.map((recorrencia) => {
-                const proxima = new Date(recorrencia.proximaData)
-                const atrasada = proxima < hoje
-
-                return (
-                  <div
-                    key={recorrencia.id}
-                    className={cn(
-                      "flex items-center gap-3 rounded-2xl p-3",
-                      atrasada ? "border border-atencao/40 bg-atencao/5" : "vidro-menu",
-                    )}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[calc(14px*var(--escala-letra))]">{recorrencia.descricao}</p>
-                      <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
-                        {PERIODOS.find((p) => p.valor === recorrencia.periodicidade)?.rotulo} · dia{" "}
-                        {recorrencia.diaVencimento} · {recorrencia.conta.nome}
-                        {recorrencia.categoria && ` · ${recorrencia.categoria.nome}`}
-                        {recorrencia.valorVariavel && " · valor variável"}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-[calc(14px*var(--escala-letra))] tabular-nums">{formatarMoeda(recorrencia.valorCentavos)}</p>
-                      <p className={cn("text-[max(10px,calc(12px*var(--escala-letra)))]", atrasada ? "text-atencao" : "text-muted-fg")}>
-                        {atrasada ? "venceu" : "vence"} {formatarData(proxima)}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => lancar(recorrencia)}
-                      disabled={ocupado}
-                      className="flex min-h-11 items-center gap-2 rounded-full border border-pauta px-3 py-2 text-xs transition hover:border-positivo/40 hover:text-positivo disabled:opacity-40"
-                      title="lançar a ocorrência deste período"
-                    >
-                      <Check className="size-4" /> Lançar
-                    </button>
-                    <button
-                      onClick={() => remover(recorrencia)}
-                      aria-label={`Remover ${recorrencia.descricao}`}
-                      className="flex min-h-11 min-w-11 items-center justify-center text-muted-fg transition hover:text-negativo"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </div>
-                )
-              })}
+      <div className={estilos.corpo}>
+        <section className={estilos.bloco}>
+          <p className={estilos.rotulo}>Todo mês</p>
+          <dl className={estilos.tres}>
+            <div><dt>Sai</dt><dd className="valor-sensivel">{semCentavosZerados(sai)}</dd></div>
+            <div><dt>Entra</dt><dd className="valor-sensivel">{semCentavosZerados(entra)}</dd></div>
+            <div><dt>Sobra</dt><dd className="valor-sensivel" data-tom={entra - sai >= 0 ? "bom" : "alto"}>{semCentavosZerados(entra - sai)}</dd></div>
+          </dl>
+          {pesoBps !== null ? (
+            <div className={estilos.peso} data-faixa={faixa}>
+              <p><span>Da renda fixa</span><span><b>{formatarPercentual(pesoBps, 0)}</b> · bom até {formatarPercentual(REFERENCIA_CUSTO_FIXO.bom, 0)}</span></p>
+              <span className={estilos.regua} role="img" aria-label={`Contas fixas levam ${formatarPercentual(pesoBps, 0)} da renda fixa; bom até ${formatarPercentual(REFERENCIA_CUSTO_FIXO.bom, 0)}, atenção até ${formatarPercentual(REFERENCIA_CUSTO_FIXO.atencao, 0)}`}>
+                <i style={{ width: `${Math.min(100, pesoBps / 100)}%` }} />
+                <em style={{ left: `${REFERENCIA_CUSTO_FIXO.bom / 100}%` }} />
+                <em data-atencao style={{ left: `${REFERENCIA_CUSTO_FIXO.atencao / 100}%` }} />
+              </span>
             </div>
-          </Cartao>
-            ),
-          }))}
-      />
+          ) : (
+            // Sem renda fixa não há percentual: dizer quanto da renda as contas
+            // levam exigiria inventar a renda.
+            <p className={estilos.apoio}>Cadastre sua renda fixa (salário, pró-labore) em <b>Entradas</b> para ver quanto dela as contas levam.</p>
+          )}
+        </section>
 
-      {ativas.length === 0 && (
-        <Cartao>
-          <Vazio
-            titulo="Nenhuma conta fixa cadastrada"
-            texto="Aluguel, luz, internet, assinatura, salário. Cinco minutos aqui deixam a projeção inteira mais precisa."
-          />
-        </Cartao>
-      )}
+        <div className={estilos.coluna}>
+          <div className={estilos.segmento} role="radiogroup" aria-label="Saídas ou entradas">
+            <button type="button" role="radio" aria-checked={lado === "DESPESA"} onClick={() => setLado("DESPESA")}>Saídas · {despesas.length}</button>
+            <button type="button" role="radio" aria-checked={lado === "RECEITA"} onClick={() => setLado("RECEITA")}>Entradas · {receitas.length}</button>
+          </div>
+          {lista.length === 0 ? (
+            <div className={estilos.vazio}>
+              <p>{lado === "DESPESA" ? "Nenhuma conta que sai todo mês." : "Nenhuma entrada fixa. Salário e pró-labore entram aqui."}</p>
+              <button type="button" onClick={abrirNova}><Plus aria-hidden />{lado === "DESPESA" ? "Nova conta" : "Nova entrada"}</button>
+            </div>
+          ) : (
+            <section className={estilos.bloco} data-lista>
+              <ul>
+                {lista.map((recorrencia) => {
+                  const Icone = iconeDaCategoria(recorrencia.categoria, recorrencia.tipo)
+                  const prazo = quando(recorrencia.proximaData)
+                  const periodo = recorrencia.periodicidade === "MENSAL" ? "" : ` · ${PERIODOS.find((p) => p.valor === recorrencia.periodicidade)?.rotulo}`
+                  return <li key={recorrencia.id}>
+                    <button type="button" className={estilos.linha} onClick={() => abrirEdicao(recorrencia)} aria-label={`Editar ${recorrencia.descricao}`}>
+                      <span className={estilos.icone}><Icone aria-hidden /></span>
+                      <span className={estilos.texto}>
+                        <strong>{recorrencia.descricao}</strong>
+                        <small data-atrasada={prazo.atrasada || undefined}>dia {recorrencia.diaVencimento} · {prazo.texto}{periodo}{recorrencia.valorVariavel ? " · valor variável" : ""}</small>
+                      </span>
+                      <b className="valor-sensivel">{semCentavosZerados(recorrencia.valorCentavos)}</b>
+                    </button>
+                    <button type="button" className={estilos.lancar} onClick={() => void lancar(recorrencia)} disabled={ocupado} aria-label={`Lançar ${recorrencia.descricao} de ${dataCurta(recorrencia.proximaData)} no extrato`} title="Lançar no extrato"><Check aria-hidden /></button>
+                  </li>
+                })}
+              </ul>
+            </section>
+          )}
+        </div>
+      </div>
+
+      <CompromissosMetas />
+
+      <Dialog open={form !== null} onOpenChange={(aberto) => { if (!ocupado && !aberto) setForm(null) }}>
+        <DialogContent className={estilos.dialogo}>
+          <DialogHeader>
+            <DialogTitle>{form?.id ? "Editar conta fixa" : form?.tipo === "RECEITA" ? "Nova entrada fixa" : "Nova conta fixa"}</DialogTitle>
+            <DialogDescription>{form?.id ? "Muda as próximas; o que já foi lançado no extrato fica como está." : "Entra uma vez e alimenta projeção, reserva e plano."}</DialogDescription>
+          </DialogHeader>
+          {form && <form onSubmit={salvar} className={estilos.formulario}>
+            <label>Descrição<Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="aluguel, luz, salário" required /></label>
+            <label>Valor (R$)<Input value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required inputMode="decimal" /></label>
+            <label>Entrada ou saída<SelectNative value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as "RECEITA" | "DESPESA" })}><option value="DESPESA">sai da conta</option><option value="RECEITA">entra na conta</option></SelectNative></label>
+            <label>Dia do vencimento<Input value={form.dia} onChange={(e) => setForm({ ...form, dia: e.target.value })} inputMode="numeric" /></label>
+            <label>Repete<SelectNative value={form.periodicidade} onChange={(e) => setForm({ ...form, periodicidade: e.target.value })}>{PERIODOS.map((periodo) => <option key={periodo.valor} value={periodo.valor}>{periodo.rotulo}</option>)}</SelectNative></label>
+            <label>Conta<SelectNative value={form.contaId} onChange={(e) => setForm({ ...form, contaId: e.target.value })}>{contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}</SelectNative></label>
+            <label data-largo>Categoria<SelectNative value={form.categoriaId} onChange={(e) => setForm({ ...form, categoriaId: e.target.value })}><option value="">sem categoria</option>{categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}</SelectNative></label>
+            {contas.length === 0 && <p role="status" data-largo>Cadastre uma conta em <a href="/configuracoes">Configurações</a> antes de adicionar uma conta fixa.</p>}
+            <label data-largo className={estilos.interruptor}>
+              <span>O valor muda todo mês (luz, água)<small>a projeção usa o último valor lançado</small></span>
+              <Switch checked={form.variavel} onCheckedChange={(variavel) => setForm({ ...form, variavel })} aria-label="O valor muda todo mês" />
+            </label>
+            {erroFormulario && <p role="alert" data-largo data-erro>{erroFormulario}</p>}
+            <button className={estilos.salvar} disabled={ocupado || !form.contaId} data-largo>{ocupado ? "Salvando…" : form.id ? "Salvar" : "Adicionar"}</button>
+            {recorrenciaEditada && <button type="button" className={estilos.remover} data-largo onClick={() => remover(recorrenciaEditada)}><Trash2 aria-hidden />Remover conta fixa</button>}
+          </form>}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
