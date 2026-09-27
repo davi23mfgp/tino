@@ -1,9 +1,24 @@
 /* Fluxo de caixa (Davi, 27/09: B do canvas com a frase da C). */
 .pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; }
-.corpo { display:grid; gap:14px; min-width:0; }
-/* No computador, o gráfico e a lista do mês lado a lado: empilhados em
-   1.280px, a lista caía para baixo da dobra. */
-@media (min-width:1024px) { .corpo { grid-template-columns:minmax(0,1fr) 420px; gap:20px; align-items:start; } }
+/* Entradas e saídas: no computador lado a lado; no celular, uma por vez,
+   escolhida no seletor. */
+.lados { display:grid; gap:14px; min-width:0; }
+@media (min-width:1024px) { .lados { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; } }
+@media (max-width:1023px) { .lados > section:not([data-lado-ativo]) { display:none; } }
+.seletor { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 93%); }
+@media (min-width:1024px) { .seletor { display:none; } }
+.seletor button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; min-height:52px; border-radius:var(--raio-pilula); font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.seletor button b { font-size:calc(15px * var(--escala-letra)); font-weight:700; color:var(--foreground); font-variant-numeric:tabular-nums; }
+.seletor button[aria-selected="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); }
+.seletor button[aria-selected="true"] b { color:oklch(var(--primary-foreground)); }
+.cabecalho > b { font-size:calc(15px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cabecalho > b[data-tipo="ENTRADA"] { color:var(--acao); }
+.cabecalho > b[data-tipo="SAIDA"] { color:var(--negativo); }
+/* Filtros das saídas: deslizam de lado no celular em vez de quebrar linha. */
+.filtros { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -14px; padding:0 14px; }
+.filtros::-webkit-scrollbar { display:none; }
+.filtros button { flex-shrink:0; min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); font-size:calc(13px * var(--escala-letra)); white-space:nowrap; }
+.filtros button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 
 .bloco { display:grid; gap:12px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
 .bloco[data-lista] { padding:14px 14px 12px; }
@@ -30,17 +45,21 @@
 
 /* O gráfico: uma coluna por mês, a linha do zero no lugar certo da escala,
    verde acima e vermelho abaixo, o valor em cima (ou embaixo) da barra. */
-.grafico { position:relative; display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:2px; }
+.rolagem { overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:0 16px; }
+.rolagem::-webkit-scrollbar { display:none; }
+/* 68px por mês no celular: é o que cabe "−R$ 11.637" em cima da barra. */
+.grafico { position:relative; display:grid; grid-template-columns:repeat(12, minmax(68px,1fr)); gap:2px; }
+@media (min-width:1024px) { .grafico { grid-template-columns:repeat(12, minmax(0,1fr)); } }
 .grafico button { display:grid; grid-template-rows:auto auto; min-width:0; padding:0; border-radius:10px; }
 .grafico button:hover { background:color-mix(in oklab, var(--foreground), transparent 95%); }
 .coluna { position:relative; display:block; height:180px; margin:18px 0 20px; }
-@media (min-width:1024px) { .coluna { height:260px; } }
+@media (min-width:1024px) { .coluna { height:240px; } }
 .coluna::before { content:""; position:absolute; left:-2px; right:-2px; top:var(--zero); height:1px; background:color-mix(in oklab, var(--foreground), transparent 70%); }
 .coluna i { position:absolute; left:18%; right:18%; min-height:3px; border-radius:6px 6px 2px 2px; background:var(--acao); }
 [data-negativo] .coluna i { border-radius:2px 2px 6px 6px; background:var(--negativo); }
 .grafico button[aria-pressed="true"] .coluna i { outline:2px solid var(--foreground); outline-offset:2px; }
-.coluna b { position:absolute; left:-6px; right:-6px; text-align:center; font-size:max(9px, calc(9.5px * var(--escala-letra))); font-weight:700; color:var(--foreground); white-space:nowrap; font-variant-numeric:tabular-nums; }
-@media (min-width:1024px) { .coluna b { font-size:calc(12px * var(--escala-letra)); } }
+.coluna b { position:absolute; left:-6px; right:-6px; text-align:center; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; color:var(--foreground); white-space:nowrap; font-variant-numeric:tabular-nums; }
+@media (min-width:1024px) { .coluna b { font-size:calc(12.5px * var(--escala-letra)); } }
 .grafico button small { padding-top:6px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:center; font-size:max(10px, calc(10.5px * var(--escala-letra))); color:var(--texto-3); }
 .grafico button[aria-pressed="true"] small { font-weight:700; color:var(--foreground); }
 
@@ -63,5 +82,5 @@
 .interruptor[aria-checked="true"] { background:var(--acao); }
 .interruptor[aria-checked="true"] i { transform:translateX(18px); }
 .vazio { padding:8px 2px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
-.nota { padding-top:8px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.nota { padding:0 4px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .nota a { margin-left:6px; font-weight:600; color:var(--acao); }

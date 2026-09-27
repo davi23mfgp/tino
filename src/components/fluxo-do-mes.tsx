@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 
 import { enviar } from "@/lib/cliente"
@@ -11,12 +11,13 @@ import { showToast } from "@/components/ui/toast"
 import estilos from "./fluxo-do-mes.module.css"
 
 const semCentavosZerados = (centavos: number) => formatarMoeda(centavos).replace(/,00$/, "")
-/// "11,5" para R$ 11.467: doze colunas no celular não cabem "R$ 11.467".
-function emMil(centavos: number) {
-  if (Math.abs(centavos) < 5_000) return "0"
-  return `${centavos < 0 ? "−" : ""}${(Math.abs(centavos) / 100_000).toFixed(1).replace(".", ",")}`
-}
 const nomeDoMes = (competencia: string) => rotuloCompetencia(competencia).split(" ")[0]
+/// "R$ 6.982" / "−R$ 1.602": o valor do mês em reais inteiros, sem centavos.
+const emReais = (centavos: number) => `${centavos < 0 ? "−" : ""}${semCentavosZerados(Math.round(Math.abs(centavos) / 100) * 100)}`
+type Grupo = "todas" | "cartao" | "fixas" | "outras"
+const GRUPOS: [Grupo, string][] = [["todas", "Todas"], ["cartao", "Cartões"], ["fixas", "Contas fixas"], ["outras", "Outras"]]
+/// Pela chave da linha: a fatura, a conta fixa, e o resto (dívidas e gasto do dia a dia).
+const grupoDaSaida = (item: ItemDoFluxo): Grupo => item.chave.startsWith("cartao:") ? "cartao" : item.chave.startsWith("recorrencia:") ? "fixas" : "outras"
 
 /**
  * Fluxo de caixa (Davi, 27/09: opção B do canvas com a frase da C).
@@ -35,6 +36,15 @@ export function FluxoDoMes({ dados, contas }: { dados: DadosDoFluxo; contas: { i
   const diasQueFaltam = new Date(Date.UTC(Number(dados.hoje.slice(0, 4)), Number(dados.hoje.slice(5, 7)), 0)).getUTCDate() - Number(dados.hoje.slice(8, 10))
   const [escolhido, setEscolhido] = useState(diasQueFaltam < 7 && meses.length > 1 ? 1 : 0)
   const mes = meses[escolhido]
+  const [lado, setLado] = useState<"ENTRADA" | "SAIDA">("SAIDA")
+  const [grupo, setGrupo] = useState<Grupo>("todas")
+  const rolagem = useRef<HTMLDivElement>(null)
+  // A barra escolhida fica à vista quando o gráfico desliza (celular).
+  useEffect(() => {
+    const trilho = rolagem.current
+    const barra = trilho?.querySelector<HTMLElement>(`[data-mes="${escolhido}"]`)
+    if (trilho && barra && trilho.scrollWidth > trilho.clientWidth) trilho.scrollTo({ left: barra.offsetLeft - trilho.clientWidth / 2 + barra.offsetWidth / 2, behavior: "smooth" })
+  }, [escolhido])
 
   async function alternar(chave: string, tirar: boolean) {
     setFora((atual) => { const novo = new Set(atual); if (tirar) novo.add(chave); else novo.delete(chave); return novo })
@@ -54,6 +64,7 @@ export function FluxoDoMes({ dados, contas }: { dados: DadosDoFluxo; contas: { i
   const sobra = mes.terminaCentavos
   const entradas = mes.itens.filter((item) => item.tipo === "ENTRADA")
   const saidas = mes.itens.filter((item) => item.tipo === "SAIDA")
+  const saidasDoGrupo = saidas.filter((item) => grupo === "todas" || grupoDaSaida(item) === grupo)
 
   return <div className={estilos.pagina}>
     <section className={estilos.frase} aria-live="polite">
@@ -62,41 +73,65 @@ export function FluxoDoMes({ dados, contas }: { dados: DadosDoFluxo; contas: { i
       <p data-tom={sobra < 0 ? "falta" : "sobra"}>{sobra < 0 ? "Falta" : "Sobra"} <b className="valor-sensivel">{semCentavosZerados(Math.abs(sobra))}</b> no fim do mês.</p>
     </section>
 
-    <div className={estilos.corpo}>
-      <section className={estilos.bloco}>
-        <header className={estilos.cabecalho}><h2>Caixa no fim de cada mês</h2><small>em mil reais</small></header>
-        <div className={estilos.contas} role="group" aria-label="Contas no fluxo">
-          <span>No fluxo:</span>
-          {contas.map((conta) => {
-            const dentro = !fora.has(`conta:${conta.id}`)
-            return <button key={conta.id} type="button" aria-pressed={dentro} onClick={() => void alternar(`conta:${conta.id}`, dentro)}><i aria-hidden />{conta.nome} · <span className="valor-sensivel">{semCentavosZerados(conta.saldoCentavos)}</span></button>
-          })}
-        </div>
+    <section className={estilos.bloco}>
+      <header className={estilos.cabecalho}><h2>Caixa no fim de cada mês</h2><small>toque num mês</small></header>
+      <div className={estilos.contas} role="group" aria-label="Contas no fluxo">
+        <span>No fluxo:</span>
+        {contas.map((conta) => {
+          const dentro = !fora.has(`conta:${conta.id}`)
+          return <button key={conta.id} type="button" aria-pressed={dentro} onClick={() => void alternar(`conta:${conta.id}`, dentro)}><i aria-hidden />{conta.nome} · <span className="valor-sensivel">{semCentavosZerados(conta.saldoCentavos)}</span></button>
+        })}
+      </div>
+      {/* No celular o gráfico desliza de lado: com o valor inteiro em reais
+          (Davi, 27/09: "7,0" não dizia que era R$ 7 mil), doze colunas não
+          cabem em 390px. No computador, cabem todas. */}
+      <div className={estilos.rolagem} ref={rolagem}>
         <div className={estilos.grafico} style={{ "--zero": `${zero}%` } as React.CSSProperties}>
           {meses.map((linha, indice) => {
             const valor = linha.terminaCentavos
             const altura = (Math.abs(valor) / faixa) * 100
-            return <button key={linha.competencia} type="button" aria-pressed={indice === escolhido} onClick={() => setEscolhido(indice)} aria-label={`${rotuloCompetencia(linha.competencia)}: ${valor < 0 ? "falta" : "sobra"} ${formatarMoeda(Math.abs(valor))} no fim do mês`} data-negativo={valor < 0 || undefined}>
+            return <button key={linha.competencia} type="button" data-mes={indice} aria-pressed={indice === escolhido} onClick={() => setEscolhido(indice)} aria-label={`${rotuloCompetencia(linha.competencia)}: ${valor < 0 ? "falta" : "sobra"} ${formatarMoeda(Math.abs(valor))} no fim do mês`} data-negativo={valor < 0 || undefined}>
               <span className={estilos.coluna}>
                 <i style={valor >= 0 ? { bottom: `${100 - zero}%`, height: `${altura}%` } : { top: `${zero}%`, height: `${altura}%` }} />
-                <b style={valor >= 0 ? { bottom: `calc(${100 - zero + altura}% + 3px)` } : { top: `calc(${zero + altura}% + 3px)` }}>{emMil(valor)}</b>
+                <b className="valor-sensivel" style={valor >= 0 ? { bottom: `calc(${100 - zero + altura}% + 3px)` } : { top: `calc(${zero + altura}% + 3px)` }}>{emReais(valor)}</b>
               </span>
               <small>{rotuloCompetencia(linha.competencia, true).split("/")[0]}</small>
             </button>
           })}
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section className={estilos.bloco} data-lista>
-        <header className={estilos.cabecalho}><h2>{nomeDoMes(mes.competencia)[0].toUpperCase() + nomeDoMes(mes.competencia).slice(1)} · o que entra na conta</h2><small>toque para tirar</small></header>
-        {mes.itens.length === 0 ? <p className={estilos.vazio}>Nada previsto para o resto do mês.</p> : (
-          <ul className={estilos.itens}>
-            {[...entradas, ...saidas].map((item, indice) => <Linha key={`${item.chave}-${indice}`} item={item} aoAlternar={() => void alternar(item.chave, !item.fora)} />)}
-          </ul>
+    {/* Entradas e saídas separadas (Davi, 27/09: "com filtros, pra não ter
+        que procurar numa lista imensa"). No celular, uma de cada vez pelo
+        seletor; no computador, lado a lado, ocupando o espaço embaixo do
+        gráfico que antes ficava vazio. */}
+    <div className={estilos.seletor} role="tablist" aria-label="Entradas ou saídas">
+      <button type="button" role="tab" aria-selected={lado === "ENTRADA"} onClick={() => setLado("ENTRADA")}>Entradas <b className="valor-sensivel">{semCentavosZerados(mes.entraCentavos)}</b></button>
+      <button type="button" role="tab" aria-selected={lado === "SAIDA"} onClick={() => setLado("SAIDA")}>Saídas <b className="valor-sensivel">{semCentavosZerados(mes.saiCentavos)}</b></button>
+    </div>
+    <div className={estilos.lados}>
+      <section className={estilos.bloco} data-lista data-lado-ativo={lado === "ENTRADA" || undefined}>
+        <header className={estilos.cabecalho}><h2>Entradas de {nomeDoMes(mes.competencia)}</h2><b className="valor-sensivel" data-tipo="ENTRADA">+ {semCentavosZerados(mes.entraCentavos)}</b></header>
+        {entradas.length === 0 ? <p className={estilos.vazio}>Nada previsto para entrar.</p> : (
+          <ul className={estilos.itens}>{entradas.map((item, indice) => <Linha key={`${item.chave}-${indice}`} item={item} aoAlternar={() => void alternar(item.chave, !item.fora)} />)}</ul>
         )}
-        <p className={estilos.nota}>≈ vem da média dos últimos meses. <Link href="/simulador">Simular uma mudança</Link></p>
+      </section>
+      <section className={estilos.bloco} data-lista data-lado-ativo={lado === "SAIDA" || undefined}>
+        <header className={estilos.cabecalho}><h2>Saídas de {nomeDoMes(mes.competencia)}</h2><b className="valor-sensivel" data-tipo="SAIDA">− {semCentavosZerados(mes.saiCentavos)}</b></header>
+        <div className={estilos.filtros} role="group" aria-label="Filtrar saídas">
+          {GRUPOS.map(([valor, rotulo]) => {
+            const doGrupo = saidas.filter((item) => valor === "todas" || grupoDaSaida(item) === valor)
+            if (valor !== "todas" && doGrupo.length === 0) return null
+            return <button key={valor} type="button" aria-pressed={grupo === valor} onClick={() => setGrupo(valor)}>{rotulo}{valor !== "todas" ? ` · ${doGrupo.length}` : ""}</button>
+          })}
+        </div>
+        {saidasDoGrupo.length === 0 ? <p className={estilos.vazio}>Nada previsto para sair.</p> : (
+          <ul className={estilos.itens}>{saidasDoGrupo.map((item, indice) => <Linha key={`${item.chave}-${indice}`} item={item} aoAlternar={() => void alternar(item.chave, !item.fora)} />)}</ul>
+        )}
       </section>
     </div>
+    <p className={estilos.nota}>≈ vem da média dos últimos meses. Desligue o que não quer contar. <Link href="/simulador">Simular uma mudança</Link></p>
   </div>
 }
 
