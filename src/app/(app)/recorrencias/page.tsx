@@ -6,7 +6,6 @@ import { Check, Plus, Trash2 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
-import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { REFERENCIA_CUSTO_FIXO } from "@/lib/tino/diagnostico"
 import { showToast } from "@/components/ui/toast"
 import { Switch } from "@/components/ui/switch"
@@ -16,15 +15,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import estilos from "./recorrencias.module.css"
 
 /**
- * Contas fixas (Davi, 27/09: opção B do canvas, com o resumo da A no lugar da
- * linha dos 30 dias).
+ * Contas fixas (Davi, 27/09: opção A do canvas com o texto da B nas linhas —
+ * "em 9 dias" em vez da categoria sozinha).
  *
  * É a tela que faz a projeção valer alguma coisa: sem saber o que sai todo mês
  * de qualquer jeito, o app só sabe olhar para trás. Aluguel, luz, assinatura e
  * salário entram aqui uma vez e alimentam projeção, reserva e plano.
  *
- * O bloco claro responde a pergunta de quem abre a tela — "qual é a próxima e
- * quando" —; o resumo diz quanto da renda as contas levam, com a faixa do app.
+ * O resumo diz quanto da renda as contas levam, com a faixa do app; a lista,
+ * por vencimento, diz qual é a próxima e em quantos dias.
  * Antes o custo fixo aparecia duas vezes antes da lista, e no celular cada
  * linha espremia o nome até "Plan…" para caber Lançar e lixeira.
  */
@@ -219,7 +218,6 @@ export default function Recorrencias() {
   const despesas = ativas.filter((linha) => linha.tipo === "DESPESA")
   const receitas = ativas.filter((linha) => linha.tipo === "RECEITA")
   const lista = (lado === "DESPESA" ? despesas : receitas).slice().sort((a, b) => a.proximaData.localeCompare(b.proximaData))
-  const [proxima, depois] = despesas.slice().sort((a, b) => a.proximaData.localeCompare(b.proximaData))
   const sai = dados.custoFixoMensalCentavos
   const entra = dados.receitaFixaMensalCentavos
   // Custo fixo sobre renda fixa, na régua do diagnóstico: duas réguas para o
@@ -230,20 +228,9 @@ export default function Recorrencias() {
 
   return (
     <div className={estilos.pagina}>
-      <section className={`superficie-clara ${estilos.destaque}`}>
-        <header><p>{proxima && quando(proxima.proximaData).atrasada ? "Atrasada" : "Próxima"}</p><button type="button" onClick={abrirNova}><Plus aria-hidden />Nova conta</button></header>
-        {proxima ? <>
-          <h2>{proxima.descricao}, <span className="valor-sensivel">{semCentavosZerados(proxima.valorCentavos)}</span> {quando(proxima.proximaData).atrasada ? "venceu" : "em"} {dataCurta(proxima.proximaData)}</h2>
-          <p className="apoio-claro">{quando(proxima.proximaData).atrasada ? quando(proxima.proximaData).texto : `faltam ${Math.max(0, diasAte(proxima.proximaData))} ${diasAte(proxima.proximaData) === 1 ? "dia" : "dias"}`}{depois ? ` · depois, ${depois.descricao} no dia ${depois.diaVencimento}` : ""}</p>
-        </> : <>
-          <h2>Nenhuma conta fixa cadastrada</h2>
-          <p className="apoio-claro">Aluguel, luz, internet, assinatura, salário. Cinco minutos aqui deixam a projeção inteira mais precisa.</p>
-        </>}
-      </section>
-
       <div className={estilos.corpo}>
         <section className={estilos.bloco}>
-          <p className={estilos.rotulo}>Todo mês</p>
+          <header className={estilos.cabecalho}><p className={estilos.rotulo}>Todo mês</p><button type="button" onClick={abrirNova}><Plus aria-hidden />Nova conta</button></header>
           <dl className={estilos.tres}>
             <div><dt>Sai</dt><dd className="valor-sensivel">{semCentavosZerados(sai)}</dd></div>
             <div><dt>Entra</dt><dd className="valor-sensivel">{semCentavosZerados(entra)}</dd></div>
@@ -279,15 +266,16 @@ export default function Recorrencias() {
             <section className={estilos.bloco} data-lista>
               <ul>
                 {lista.map((recorrencia) => {
-                  const Icone = iconeDaCategoria(recorrencia.categoria, recorrencia.tipo)
                   const prazo = quando(recorrencia.proximaData)
                   const periodo = recorrencia.periodicidade === "MENSAL" ? "" : ` · ${PERIODOS.find((p) => p.valor === recorrencia.periodicidade)?.rotulo}`
                   return <li key={recorrencia.id}>
                     <button type="button" className={estilos.linha} onClick={() => abrirEdicao(recorrencia)} aria-label={`Editar ${recorrencia.descricao}`}>
-                      <span className={estilos.icone}><Icone aria-hidden /></span>
+                      {/* A data num bloco, como na opção A; o "em 9 dias" é o
+                          texto da B, que diz o prazo sem fazer conta. */}
+                      <span className={estilos.data} data-atrasada={prazo.atrasada || undefined}><b>{Number(recorrencia.proximaData.slice(8, 10))}</b><small>{MES_CURTO[Number(recorrencia.proximaData.slice(5, 7)) - 1]}</small></span>
                       <span className={estilos.texto}>
                         <strong>{recorrencia.descricao}</strong>
-                        <small data-atrasada={prazo.atrasada || undefined}>dia {recorrencia.diaVencimento} · {prazo.texto}{periodo}{recorrencia.valorVariavel ? " · valor variável" : ""}</small>
+                        <small data-atrasada={prazo.atrasada || undefined}>{prazo.texto}{periodo}{recorrencia.valorVariavel ? " · valor variável" : ""}{recorrencia.categoria ? ` · ${recorrencia.categoria.nome}` : ""}</small>
                       </span>
                       <b className="valor-sensivel">{semCentavosZerados(recorrencia.valorCentavos)}</b>
                     </button>

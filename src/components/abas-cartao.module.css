@@ -91,23 +91,31 @@
 .legendaCapsula { display:flex; gap:14px; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
 .legendaCapsula span { display:inline-flex; align-items:center; gap:6px; }
 .legendaCapsula i[data-marca] { width:2px; height:12px; border-radius:2px; background:var(--foreground); }
-.legendaCapsula i[data-passou] { width:14px; height:8px; border-radius:999px; background:repeating-linear-gradient(135deg, var(--negativo) 0 3px, color-mix(in oklab, var(--negativo), black 25%) 3px 6px); }
-.capsulas { display:grid; }
-.capsulas button { display:grid; gap:8px; width:100%; padding:11px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:left; }
-.capsulas li:first-child button { border-top:0; padding-top:2px; }
-.capsulas button:hover strong { text-decoration:underline; text-underline-offset:3px; }
-.linhaCapsula { display:grid; grid-template-columns:18px minmax(0,1fr) auto auto; align-items:center; gap:10px; }
-.linhaCapsula svg { width:17px; height:17px; color:var(--cor); }
-.linhaCapsula strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
-.linhaCapsula b { font-size:calc(14px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.linhaCapsula small { min-width:64px; text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.linhaCapsula small[data-passou] { color:var(--negativo); font-weight:650; }
-/* A escala é a mesma para todas as categorias: a maior (gasto ou limite)
-   ocupa a largura toda, e as outras se comparam com ela. */
-.capsula { position:relative; display:block; height:8px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
-.capsula i { position:absolute; left:0; top:0; bottom:0; border-radius:999px; background:var(--cor); }
-.capsula i[data-passou] { border-radius:0 999px 999px 0; background:repeating-linear-gradient(135deg, var(--negativo) 0 4px, color-mix(in oklab, var(--negativo), black 25%) 4px 8px); }
-.capsula em { position:absolute; top:-4px; bottom:-4px; width:2px; margin-left:-1px; border-radius:2px; background:var(--foreground); }
+/* A rosca da opção B, fina e com folga entre as fatias. */
+.rosca { position:relative; justify-self:center; width:min(200px, 58vw); aspect-ratio:1; }
+.rosca svg { display:block; width:100%; height:100%; }
+.rosca circle { fill:none; stroke-width:2.6; stroke-linecap:round; }
+.rosca .roscaFundo { stroke:color-mix(in oklab, var(--foreground), transparent 93%); stroke-linecap:butt; }
+.rosca > span { position:absolute; inset:0; display:grid; place-content:center; justify-items:center; gap:2px; text-align:center; }
+.rosca b { font-size:calc(22px * var(--escala-letra)); font-weight:720; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.rosca small { font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+
+/* A lista da opção A: nome, percentual e valor, e a barra fina embaixo, na
+   cor da fatia. */
+.linhasCategoria { display:grid; }
+.linhasCategoria button { display:grid; gap:7px; width:100%; padding:11px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:left; }
+.linhasCategoria li:first-child button { border-top:0; }
+.linhasCategoria button:hover strong { text-decoration:underline; text-underline-offset:3px; }
+.linhaCategoria { display:grid; grid-template-columns:8px minmax(0,1fr) auto auto; align-items:center; gap:10px; }
+.linhaCategoria > i { width:8px; height:8px; border-radius:99px; background:var(--cor); }
+.linhaCategoria strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.linhaCategoria small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.linhaCategoria b { min-width:70px; text-align:right; font-size:calc(14px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.barraCategoria { position:relative; display:block; height:5px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.barraCategoria i { position:absolute; left:0; top:0; bottom:0; border-radius:999px; background:var(--cor); }
+.barraCategoria em { position:absolute; top:-4px; bottom:-4px; width:2px; margin-left:-1px; border-radius:2px; background:var(--foreground); }
+.situacao { justify-self:end; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.situacao[data-passou] { color:var(--negativo); font-weight:650; }
 .dica { padding:0 4px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .erro { padding:0 4px; font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
 .repetir { justify-self:start; min-height:44px; padding:0 18px; border-radius:999px; border:1px solid color-mix(in oklab, var(--acao), transparent 55%); color:var(--acao); font-size:calc(13.5px * var(--escala-letra)); font-weight:600; }

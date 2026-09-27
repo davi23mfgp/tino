@@ -157,6 +157,12 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
 
     <div className={estilos.corpo}>
       <div className={estilos.coluna}>
+        <FaturaDoMes
+          mes={mes}
+          hoje={hoje}
+          ciclo={ciclo}
+          valorCentavos={resumo.saldo}
+        />
         <div className={estilos.faturas}>
           <header><div><h2>Faturas por mês</h2><p className={estilos.apoioGrafico}>Toque num mês para abrir</p></div>{/* As setas andam uma fatura por vez e, entre elas, a data dela por
               extenso — dia, mês e ano do vencimento (Davi, 25/09). Setas
@@ -201,13 +207,6 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
           </div>
           <p className={estilos.legenda}><span />Fatura <span />Parcelas já compradas</p>
         </div>
-
-        <FaturaDoMes
-          mes={mes}
-          hoje={hoje}
-          ciclo={ciclo}
-          valorCentavos={resumo.saldo}
-        />
 
         <div className={estilos.acoes}><Button onClick={() => setForm({})}><Plus />Nova compra</Button><Button variant="outline" onClick={() => setAba("importar")}><Upload />Importar fatura</Button></div>
       </div>
@@ -292,14 +291,14 @@ const MES_CURTO = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set"
 const dataPorExtenso = (iso: string) => `${iso.slice(8, 10)} ${MES_CURTO[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`
 
 /**
- * A fatura escolhida, bem pequena (Davi, 25/09: "ficou muito grande", depois
- * "quero que fique realmente pequena").
+ * A fatura escolhida (Davi, 27/09: opção L1 do canvas, que voltou depois da
+ * versão de uma linha só).
  *
- * Uma linha — estado, valor, vencimento — e embaixo o ciclo num traço fino,
- * com um ponto em hoje e um corte no fechamento: mostra se a compra de hoje
- * ainda cai nesta fatura sem o parágrafo que explicava isso. As parcelas já
- * compradas estão na barra cinza do gráfico logo acima. Sem fechamento e vencimento cadastrados, o
- * traço dá lugar ao pedido de cadastro, em vez de datas inventadas.
+ * O valor grande, os centavos menores, e embaixo o ciclo com os quatro marcos
+ * nomeados — abriu, hoje, fecha, vence —: mostra se a compra de hoje ainda
+ * cai nesta fatura sem o parágrafo que explicava isso. Sem fechamento e
+ * vencimento cadastrados, o ciclo dá lugar ao pedido de cadastro, em vez de
+ * datas inventadas.
  */
 function FaturaDoMes({ mes, hoje, ciclo, valorCentavos }: {
   mes: string
@@ -310,20 +309,24 @@ function FaturaDoMes({ mes, hoje, ciclo, valorCentavos }: {
   const estado = !ciclo ? null : hoje < ciclo.abreEm ? "futura" : hoje <= ciclo.fechaEm ? "aberta" : hoje <= ciclo.venceEm ? "fechada" : "vencida"
   const ROTULO = { futura: "ainda não abriu", aberta: "aberta", fechada: "fechada", vencida: "vencida" } as const
   const total = ciclo ? Math.max(1, diasEntreIso(ciclo.abreEm, ciclo.venceEm)) : 1
-  const posicao = (iso: string) => `${Math.min(100, Math.max(0, (diasEntreIso(ciclo!.abreEm, iso) / total) * 100))}%`
+  const posicao = (iso: string) => Math.min(100, Math.max(0, (diasEntreIso(ciclo!.abreEm, iso) / total) * 100))
+  const [reais, centavos] = formatarMoeda(valorCentavos).split(",")
+  const mostraHoje = estado === "aberta" || estado === "fechada"
+  const pontoHoje = mostraHoje ? posicao(hoje) : 0
 
   return <section className={estilos.fatura}>
-    <div className={estilos.linhaFatura}>
+    <div>
       <small>Fatura de {rotuloCompetencia(mes).split(" ")[0]}{estado ? ` · ${ROTULO[estado]}` : ""}</small>
-      <b className="valor-sensivel">{formatarMoeda(valorCentavos)}</b>
-      {ciclo && <span className={estilos.vence}>vence {diaMes(ciclo.venceEm)}</span>}
+      <b className={`${estilos.valorFatura} valor-sensivel`}>{reais}<small>,{centavos}</small></b>
     </div>
     {ciclo && estado ? (
-      <span className={estilos.trilho} role="img" aria-label={`Abriu ${diaMes(ciclo.abreEm)}, fecha ${diaMes(ciclo.fechaEm)}, vence ${diaMes(ciclo.venceEm)}`} title={`abriu ${diaMes(ciclo.abreEm)} · fecha ${diaMes(ciclo.fechaEm)} · vence ${diaMes(ciclo.venceEm)}`}>
-        <i style={{ width: estado === "futura" ? "0%" : posicao(hoje < ciclo.venceEm ? hoje : ciclo.venceEm) }} />
-        <em style={{ left: posicao(ciclo.fechaEm) }} />
-        {estado !== "futura" && estado !== "vencida" && <u style={{ left: posicao(hoje) }} />}
-      </span>
+      <div className={estilos.ciclo} role="img" aria-label={`Abriu ${diaMes(ciclo.abreEm)}, fecha ${diaMes(ciclo.fechaEm)}, vence ${diaMes(ciclo.venceEm)}`}>
+        <i><i style={{ width: `${estado === "futura" ? 0 : estado === "vencida" ? 100 : pontoHoje}%` }} /></i>
+        <span className={estilos.marco} data-marco="abriu">abriu {diaMes(ciclo.abreEm)}</span>
+        {mostraHoje && <span className={estilos.marco} data-marco="hoje" style={{ left: `${pontoHoje}%` }}><span>hoje</span></span>}
+        <span className={estilos.marco} data-marco="fecha" style={{ left: `${posicao(ciclo.fechaEm)}%` }}><span>fecha {Number(ciclo.fechaEm.slice(8, 10))}</span></span>
+        <span className={estilos.marco} data-marco="vence">vence {diaMes(ciclo.venceEm)}</span>
+      </div>
     ) : (
       <p className={estilos.pedido}>Sem dia de fechamento e vencimento. <Link href="/configuracoes">Cadastrar</Link></p>
     )}

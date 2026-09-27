@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { enviar } from "@/lib/cliente"
 import { competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarDecimal, formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { iconeDaCategoria } from "@/lib/icone-categoria"
 import type { DadosCartao } from "@/lib/cartoes"
 import estilos from "./abas-cartao.module.css"
 
@@ -19,11 +18,13 @@ const semCentavosZerados = (centavos: number) => formatarMoeda(centavos).replace
 type Categoria = { id: string; nome: string; totalCentavos: number }
 
 /**
- * Gastos por categoria (Davi, 26/09: opção M3 do canvas).
+ * Gastos por categoria (Davi, 27/09: a lista de barras finas da opção A com
+ * a rosca da B no topo; antes era a M3, de cápsulas).
  *
- * Uma cápsula por categoria, na mesma escala para todas, com um traço onde
- * fica o limite: o que passa dele sai listrado em vermelho depois do traço.
- * Assim se vê de uma vez quem gastou mais e quem estourou, sem ler número.
+ * A rosca dá a proporção de relance e o total no meio; a lista embaixo dá o
+ * nome, o percentual e o valor, com a barra na mesma cor da fatia — é a cor
+ * que liga uma à outra. Com limite, um traço na barra marca onde ele fica, e
+ * a linha de baixo diz quanto falta ou quanto passou.
  *
  * O limite é o do orçamento do próprio cartão, desta fatura — não o da tela
  * Orçamento. Aquele soma o gasto de todas as contas no mês do calendário;
@@ -70,30 +71,25 @@ export function CategoriasDoCartao({ cartao, mes, categorias, aoVerCompras, aoSa
 
   return <div className={estilos.aba}>
     <section className={estilos.bloco} data-respiro>
-      <div className={estilos.topoNumero}>
-        <div><small>Em compras em {rotuloCompetencia(mes).split(" ")[0]}</small><b className="valor-sensivel">{semCentavosZerados(total)}</b></div>
-        <p>{categorias.length} {categorias.length === 1 ? "categoria" : "categorias"}</p>
-      </div>
-      {temLimite && <p className={estilos.legendaCapsula}><span><i data-marca />limite</span><span><i data-passou />passou</span></p>}
-      <ul className={estilos.capsulas}>
+      <Rosca categorias={categorias} total={total} mes={mes} />
+      {temLimite && <p className={estilos.legendaCapsula}><span><i data-marca />limite desta fatura</span></p>}
+      <ul className={estilos.linhasCategoria}>
         {categorias.map((linha, indice) => {
           const limite = limiteDe(linha.id)
-          const dentro = limite !== undefined ? Math.min(linha.totalCentavos, limite) : linha.totalCentavos
           const passou = limite !== undefined && linha.totalCentavos > limite ? linha.totalCentavos - limite : 0
-          const Icone = iconeDaCategoria({ nome: linha.nome }, "DESPESA")
           return <li key={linha.id} style={{ "--cor": CORES[indice % CORES.length] } as CSSProperties}>
-            <button type="button" onClick={() => { setAberta(linha); setErro("") }} aria-label={`${linha.nome}: ${formatarMoeda(linha.totalCentavos)}${limite !== undefined ? `, limite ${formatarMoeda(limite)}` : ""}`}>
-              <span className={estilos.linhaCapsula}>
-                <Icone aria-hidden />
+            <button type="button" onClick={() => { setAberta(linha); setErro("") }} aria-label={`${linha.nome}: ${formatarMoeda(linha.totalCentavos)}${limite !== undefined ? `, limite ${formatarMoeda(limite)}${passou ? `, passou ${formatarMoeda(passou)}` : ""}` : ""}`}>
+              <span className={estilos.linhaCategoria}>
+                <i aria-hidden />
                 <strong>{linha.nome}</strong>
+                <small>{total ? Math.round((linha.totalCentavos / total) * 100) : 0}%</small>
                 <b className="valor-sensivel">{semCentavosZerados(linha.totalCentavos)}</b>
-                <small data-passou={passou > 0 || undefined}>{limite === undefined ? "sem limite" : passou > 0 ? `+${semCentavosZerados(passou)}` : `de ${semCentavosZerados(limite)}`}</small>
               </span>
-              <span className={estilos.capsula} aria-hidden>
-                <i style={{ width: `${(dentro / escala) * 100}%` }} />
-                {passou > 0 && <i data-passou style={{ left: `calc(${(limite! / escala) * 100}% + 2px)`, width: `calc(${(passou / escala) * 100}% - 2px)` }} />}
+              <span className={estilos.barraCategoria} aria-hidden>
+                <i style={{ width: `${(linha.totalCentavos / escala) * 100}%` }} />
                 {limite !== undefined && <em style={{ left: `${(limite / escala) * 100}%` }} />}
               </span>
+              {limite !== undefined && <small className={estilos.situacao} data-passou={passou > 0 || undefined}>{passou > 0 ? `passou ${semCentavosZerados(passou)} do limite de ${semCentavosZerados(limite)}` : `faltam ${semCentavosZerados(limite - linha.totalCentavos)} de ${semCentavosZerados(limite)}`}</small>}
             </button>
           </li>
         })}
@@ -168,4 +164,30 @@ function AjusteDaCategoria({ categoria, total, limite, ocupado, erro, aoSalvar, 
       </div>
     </div>
   </>
+}
+
+/**
+ * A rosca fina, com uma folga entre as fatias: sem a folga, duas fatias de
+ * tons vizinhos viravam uma só. O círculo tem circunferência 100, então cada
+ * fatia mede o próprio percentual.
+ */
+function Rosca({ categorias, total, mes }: { categorias: Categoria[]; total: number; mes: string }) {
+  const raio = 100 / (2 * Math.PI)
+  const folga = categorias.length > 1 ? 1.2 : 0
+  let acumulado = 0
+  return (
+    <div className={estilos.rosca} role="img" aria-label={`${formatarMoeda(total)} em compras, ${categorias.map((linha) => `${linha.nome} ${total ? Math.round((linha.totalCentavos / total) * 100) : 0}%`).join(", ")}`}>
+      <svg viewBox="0 0 42 42" aria-hidden>
+        <circle cx="21" cy="21" r={raio} className={estilos.roscaFundo} />
+        {categorias.map((linha, indice) => {
+          const fatia = total ? (linha.totalCentavos / total) * 100 : 0
+          const tamanho = Math.max(0.4, fatia - folga)
+          const circulo = <circle key={linha.id} cx="21" cy="21" r={raio} stroke={CORES[indice % CORES.length]} strokeDasharray={`${tamanho} ${100 - tamanho}`} strokeDashoffset={25 - acumulado - folga / 2} />
+          acumulado += fatia
+          return circulo
+        })}
+      </svg>
+      <span><b className="valor-sensivel">{semCentavosZerados(total)}</b><small>{rotuloCompetencia(mes).split(" ")[0]} · {categorias.length} {categorias.length === 1 ? "categoria" : "categorias"}</small></span>
+    </div>
+  )
 }
