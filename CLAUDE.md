@@ -71,6 +71,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   verdade ("control c control v, do nosso jeito") — ver
   `docs/SPEC-CALEN-PRECISO.md` PARTE 5 e `docs/PESQUISA-OPEN-FINANCE.md`.
   Linha antiga mantida aqui por registro, não por valer ainda.
+  **Decisão atual (28/09/2026): sem Open Finance** ("não vamos ter open
+  finance, então tire essa parte"). A tela Entrada automática saiu do menu
+  e dos ajustes, e `/conectar` leva para Anotar. O código do provedor
+  (`src/lib/open-finance/`, `src/app/api/open-finance/`) fica desligado no
+  repositório. Não ofereça conexão com banco em tela nenhuma.
 - Já disse (registro antigo): por enquanto, esqueça Telegram, PDF de fatura
   e integração com modelo de linguagem. **Também superado**: as três coisas
   foram pedidas e construídas depois (Telegram e assistente Tino, ver

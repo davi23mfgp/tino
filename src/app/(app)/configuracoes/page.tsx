@@ -407,13 +407,6 @@ export default function Configuracoes() {
         </LinhaAjuste>}
 
         <LinhaAjuste
-          titulo="Entrada automática"
-          descricao="Como o gasto entra sem você digitar"
-          href="/conectar"
-          acao="Ver"
-        />
-
-        <LinhaAjuste
           titulo="Assinatura"
           descricao="Plano, cobrança e cancelamento"
           href="/assinatura"
