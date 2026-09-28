@@ -7,7 +7,7 @@ import { Bell, ChevronRight, Mail, MessageCircle, Send, Share2, X } from "lucide
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
-import { useIdentidadeVisual } from "@/components/identidades-visuais"
+import { useMarca } from "@/components/identidades-visuais"
 import { LigarAvisoDoBanco } from "@/components/ligar-aviso-do-banco"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
@@ -397,13 +397,15 @@ function Valor({ centavos }: { centavos: number }) {
   return <p className={cn(estilos.valor, "valor-sensivel")}>{inteiro}<small>,{fracao}</small></p>
 }
 
-/** Logo cadastrado do estabelecimento, ou a inicial numa cor que vem do nome. */
+/** Logo da loja (o associado ou o da lista de conhecidas), ou a inicial numa cor que vem do nome. */
 function Marca({ nome, pequena = false }: { nome: string; pequena?: boolean }) {
-  const identidade = useIdentidadeVisual(nome)
+  const marca = useMarca(nome)
+  const [falhou, setFalhou] = useState(false)
   const cor = CORES[[...nome].reduce((soma, letra) => soma + letra.charCodeAt(0), 0) % CORES.length]
-  return <span aria-hidden className={cn(estilos.marca, pequena && estilos.marcaPequena)} style={identidade?.logoUrl ? undefined : ({ background: cor } as CSSProperties)}>
+  const logo = marca?.logoUrl && !falhou ? marca.logoUrl : null
+  return <span aria-hidden className={cn(estilos.marca, pequena && estilos.marcaPequena)} style={logo ? undefined : ({ background: cor } as CSSProperties)}>
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    {identidade?.logoUrl ? <img src={identidade.logoUrl} alt="" /> : identidade?.emoji ?? nome.trim().charAt(0).toUpperCase()}
+    {logo ? <img src={logo} alt="" onError={() => setFalhou(true)} /> : marca?.emoji ?? nome.trim().charAt(0).toUpperCase()}
   </span>
 }
 

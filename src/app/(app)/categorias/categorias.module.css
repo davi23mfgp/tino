@@ -1,0 +1,86 @@
+/* Categorias (Davi, 28/09: opção A do canvas — lista por grupo, edição numa
+   folha; no computador, a edição fica aberta ao lado da lista). */
+.pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; }
+.corpo, .coluna { display:grid; gap:14px; min-width:0; align-content:start; }
+@media (min-width:1024px) {
+  .corpo { grid-template-columns:minmax(0,1fr) 400px; gap:20px; align-items:start; }
+  .corpo > .coluna:last-child { position:sticky; top:16px; }
+}
+
+.bloco { display:grid; gap:14px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.apoio { font-size:calc(13px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+
+/* ── Busca, "+ Nova" e Saídas/Entradas ──────────────────── */
+.barra { display:flex; gap:8px; min-width:0; }
+.busca { flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:0 16px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.busca:focus-within { border-color:color-mix(in oklab, var(--acao), transparent 40%); }
+.busca svg { flex-shrink:0; width:17px; height:17px; color:var(--texto-3); }
+.busca input { flex:1; min-width:0; min-height:46px !important; padding:0 !important; border:0 !important; background:transparent !important; box-shadow:none !important; outline:none; font-size:calc(14.5px * var(--escala-letra)); }
+.nova { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; min-height:46px; padding:0 18px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14px * var(--escala-letra)); font-weight:680; }
+.nova svg { width:16px; height:16px; }
+.segmento { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.segmento button { min-height:42px; border-radius:999px; font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-2); }
+.segmento button[aria-selected="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:680; }
+
+/* ── A lista, por grupo ────────────────────────────────── */
+.lista { padding-top:2px; gap:0; }
+@media (min-width:1440px) { .lista { display:block; columns:2; column-gap:28px; } }
+.grupo { break-inside:avoid; }
+.grupo > p { padding:14px 0 4px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650; letter-spacing:.1em; text-transform:uppercase; color:var(--texto-3); }
+.linha { display:flex; align-items:center; gap:12px; width:100%; min-height:60px; padding:8px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); text-align:left; }
+.linha[aria-current="true"] strong { color:var(--acao); }
+.linha > span:nth-child(2) { flex:1; min-width:0; }
+.linha strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14.5px * var(--escala-letra)); font-weight:620; }
+.linha small { display:flex; align-items:center; gap:6px; margin-top:2px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.linha > svg { flex-shrink:0; width:16px; height:16px; color:var(--texto-3); }
+.selo { padding:1px 8px; border-radius:99px; border:1px solid color-mix(in oklab, var(--acao), transparent 55%); color:var(--acao); font-weight:650; font-size:max(10px, calc(11px * var(--escala-letra))); }
+.vazio { padding:16px 0; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+/* O círculo do ícone: o símbolo da categoria já vem pronto; aqui só o tamanho. */
+.circulo { display:grid; place-items:center; flex-shrink:0; width:42px; height:42px; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.circulo :global(.simbolo-categoria) { background:none !important; box-shadow:none !important; }
+.circulo[data-grande] { width:54px; height:54px; background:color-mix(in oklab, var(--acao), transparent 85%); color:var(--acao); }
+
+/* ── Edição ─────────────────────────────────────────────── */
+.editor { display:grid; gap:16px; min-width:0; }
+.cabecalho { display:flex; align-items:center; gap:14px; min-width:0; }
+.cabecalho strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(18px * var(--escala-letra)); font-weight:700; }
+.cabecalho small { display:block; font-size:max(10px, calc(12.5px * var(--escala-letra))); color:var(--texto-3); }
+.campo { display:grid; gap:7px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.campo input { min-height:46px; font-size:calc(15px * var(--escala-letra)); color:var(--foreground); }
+.icones { display:flex; flex-wrap:wrap; gap:8px; }
+.icones button { display:grid; place-items:center; width:40px; height:40px; min-height:40px !important; padding:0 !important; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 93%); color:var(--foreground); }
+.icones button svg { width:18px; height:18px; }
+.icones button[aria-pressed="true"] { background:color-mix(in oklab, var(--acao), transparent 82%); color:var(--acao); outline:1.5px solid color-mix(in oklab, var(--acao), transparent 40%); }
+.icones .mais { width:auto; padding:0 12px !important; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chips button { min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); font-size:calc(13px * var(--escala-letra)); color:var(--foreground); }
+.chips button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.interruptor { display:flex; align-items:center; gap:12px; width:100%; min-height:48px !important; padding:0 !important; text-align:left; }
+.interruptor > span:first-child { flex:1; min-width:0; }
+.interruptor strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:620; }
+.interruptor small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
+.chave { position:relative; flex-shrink:0; width:44px; height:26px; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 80%); transition:background .2s var(--curva); }
+.chave i { position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:99px; background:white; box-shadow:0 1px 3px rgb(0 0 0 / .3); transition:transform .2s var(--curva); }
+.interruptor[aria-checked="true"] .chave { background:var(--acao); }
+.interruptor[aria-checked="true"] .chave i { transform:translateX(18px); }
+.botoes { display:grid; grid-template-columns:1fr 1.3fr; gap:10px; }
+.botoes button { min-height:50px; border-radius:999px; font-size:calc(14.5px * var(--escala-letra)); font-weight:650; }
+.botoes button:first-child { border:1px solid color-mix(in oklab, var(--foreground), transparent 82%); color:var(--texto-2); }
+.botoes button:last-child { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:720; }
+.botoes button:disabled { opacity:.4; }
+.botoes button[data-perigo] { border-color:color-mix(in oklab, var(--negativo), transparent 50%); background:var(--negativo); color:white; }
+.nota { font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.45; color:var(--texto-3); }
+.confirmar { display:grid; gap:10px; padding:12px; border-radius:16px; border:1px solid color-mix(in oklab, var(--negativo), transparent 60%); font-size:calc(13px * var(--escala-letra)); }
+.confirmar select { min-height:44px; }
+.dica { display:grid; gap:6px; }
+.dica strong { font-size:calc(16px * var(--escala-letra)); font-weight:680; }
+
+/* Linha "Logos das lojas" e o diálogo. */
+.logosLinha { display:flex; align-items:center; gap:12px; width:100%; min-height:64px; padding:6px 16px !important; text-align:left; }
+.logosLinha > span:first-child { display:grid; place-items:center; flex-shrink:0; width:38px; height:38px; border-radius:12px; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.logosLinha > span:nth-child(2) { flex:1; min-width:0; }
+.logosLinha strong { display:block; font-size:calc(14.5px * var(--escala-letra)); font-weight:620; }
+.logosLinha small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.logosLinha svg { width:17px; height:17px; }
+.dialogo { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }

@@ -1,6 +1,15 @@
 import {
   ArrowLeftRight,
+  Baby,
   Banknote,
+  Bus,
+  Coffee,
+  Droplet,
+  Gamepad2,
+  Gift,
+  Heart,
+  Music,
+  Wrench,
   BookOpen,
   Car,
   CreditCard,
@@ -75,6 +84,20 @@ const POR_NOME: [RegExp, Icone][] = [
   [/energia|luz|agua|gas/, Zap],
 ]
 
+/**
+ * Ícones que a pessoa escolhe para a categoria. Ficam gravados no campo
+ * `icone` com o prefixo "i:" — o mesmo campo guarda emoji, e o banco ainda tem
+ * "circle" de versões antigas, que não é nenhum dos dois. Escolhido, vale
+ * antes do nome e do grupo.
+ */
+export const ICONES_ESCOLHIVEIS: Record<string, Icone> = {
+  "i:casa": Home, "i:luz": Zap, "i:agua": Droplet, "i:mercado": ShoppingCart, "i:talheres": Utensils, "i:cafe": Coffee,
+  "i:carro": Car, "i:combustivel": Fuel, "i:onibus": Bus, "i:viagem": Plane, "i:remedio": Pill, "i:academia": Dumbbell,
+  "i:saude": Heart, "i:livro": BookOpen, "i:tv": Tv, "i:jogo": Gamepad2, "i:musica": Music, "i:lazer": Sparkles,
+  "i:roupa": Shirt, "i:sacola": ShoppingBag, "i:presente": Gift, "i:bebe": Baby, "i:pet": Dog, "i:internet": Wifi,
+  "i:conserto": Wrench, "i:juros": Percent, "i:banco": Landmark, "i:cartao": CreditCard, "i:dinheiro": Banknote, "i:caixa": Package,
+}
+
 // A faixa dos acentos combinantes vem por `RegExp` de string, e não por
 // literal `/.../`: escrita direta, ela guardaria caractere invisível no
 // arquivo, que qualquer conversão de codificação estraga sem avisar.
@@ -85,9 +108,10 @@ function semAcento(texto: string) {
 }
 
 export function iconeDaCategoria(
-  categoria?: { nome?: string | null; grupo?: string | null } | null,
+  categoria?: { nome?: string | null; grupo?: string | null; icone?: string | null } | null,
   tipo?: "RECEITA" | "DESPESA" | "TRANSFERENCIA" | null,
 ): Icone {
+  if (categoria?.icone && ICONES_ESCOLHIVEIS[categoria.icone]) return ICONES_ESCOLHIVEIS[categoria.icone]
   if (categoria?.nome) {
     const nome = semAcento(categoria.nome)
     for (const [padrao, icone] of POR_NOME) if (padrao.test(nome)) return icone
