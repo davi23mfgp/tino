@@ -60,7 +60,7 @@ export function LogosDasLojas() {
         <p className={estilos.apoio}>Quando a compra tem o nome de uma destas lojas, o logo aparece no extrato sem você fazer nada.</p>
         <div className={estilos.conhecidas}>
           {(todas ? MARCAS : MARCAS.slice(0, VISIVEIS)).map((marca) => (
-            <span key={marca.site}><Logo url={`/api/logo/${marca.site}`} nome={marca.nome} />{marca.nome}</span>
+            <span key={marca.site}><Logo url={marca.logo ?? `/api/logo/${marca.site}`} nome={marca.nome} />{marca.nome}</span>
           ))}
           {MARCAS.length > VISIVEIS && <button type="button" onClick={() => setTodas((atual) => !atual)}>{todas ? "mostrar menos" : `+ ${MARCAS.length - VISIVEIS}`}</button>}
         </div>

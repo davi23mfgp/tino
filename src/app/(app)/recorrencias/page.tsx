@@ -8,6 +8,7 @@ import { buscar, enviar } from "@/lib/cliente"
 import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { REFERENCIA_CUSTO_FIXO } from "@/lib/tino/diagnostico"
 import { showToast } from "@/components/ui/toast"
+import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { SelectNative } from "@/components/ui/select-native"
@@ -274,7 +275,10 @@ export default function Recorrencias() {
                           texto da B, que diz o prazo sem fazer conta. */}
                       <span className={estilos.data} data-atrasada={prazo.atrasada || undefined}><b>{Number(recorrencia.proximaData.slice(8, 10))}</b><small>{MES_CURTO[Number(recorrencia.proximaData.slice(5, 7)) - 1]}</small></span>
                       <span className={estilos.texto}>
-                        <strong>{recorrencia.descricao}</strong>
+                        {/* Logo da marca ao lado do nome (Netflix, Enel, Unimed): a
+                            conta se acha pela cor antes de ler. Sem marca
+                            conhecida, fica só o nome. */}
+                        <span className={estilos.nomeComLogo}><MarcaPersonalizada nome={recorrencia.descricao} /><strong>{recorrencia.descricao}</strong></span>
                         <small data-atrasada={prazo.atrasada || undefined}>{prazo.texto}{periodo}{recorrencia.valorVariavel ? " · valor variável" : ""}{recorrencia.categoria ? ` · ${recorrencia.categoria.nome}` : ""}</small>
                       </span>
                       <b className="valor-sensivel">{semCentavosZerados(recorrencia.valorCentavos)}</b>

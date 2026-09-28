@@ -92,3 +92,18 @@ Instituição desconhecida ganha **ícone neutro + nome por extenso**, e a
 pessoa pode subir o próprio logo em Configurações. Iniciais como "BP", "X" e
 "S" foram removidas de propósito — não identificam nada e foram apontadas
 como defeito nas capturas de 13/09/2026.
+
+## Logos de lojas, mercados e assinaturas (28/09/2026)
+
+Catálogo em `src/lib/marcas.ts` (212 marcas). Dois caminhos:
+
+- **Guardado no app** (`public/marcas/`, 69 marcas): desenho do pacote npm
+  `simple-icons` 16.33.0 (CC0), com a cor oficial que o próprio pacote
+  registra, num quadrado arredondado. Marca de cor clara (Shell,
+  McDonald's) leva o desenho escuro por cima.
+- **Puxado do site da loja pelo servidor** (`/api/logo/<site>`): as outras
+  143, principalmente mercados, farmácias, concessionárias de luz e água e
+  planos de saúde brasileiros, que não estão no Simple Icons. Depende do
+  serviço de ícones; quando falha, a tela volta ao ícone da categoria. Não
+  foi possível testar este caminho na sessão remota (a rede de lá só alcança
+  o registro do npm) — conferir no Vercel.

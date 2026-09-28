@@ -42,7 +42,10 @@ export function useMarca(nome: string): { nome: string; logoUrl: string | null; 
   const propria = useIdentidadeVisual(nome)
   if (propria) return { ...propria, automatica: false }
   const conhecida = marcaDaCompra(nome)
-  return conhecida ? { nome: conhecida.nome, logoUrl: `/api/logo/${conhecida.site}`, emoji: null, automatica: true } : null
+  // Logo guardado no app vem primeiro: não depende do serviço de ícones.
+  return conhecida
+    ? { nome: conhecida.nome, logoUrl: conhecida.logo ?? `/api/logo/${conhecida.site}`, emoji: null, automatica: true }
+    : null
 }
 
 export function MarcaPersonalizada({ nome }: { nome: string }) {

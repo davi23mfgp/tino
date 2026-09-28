@@ -82,3 +82,6 @@
 .salvar:disabled { opacity:.5; }
 .remover { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border-radius:999px; border:1px solid color-mix(in oklab, var(--negativo), transparent 60%); color:var(--negativo); font-size:calc(14px * var(--escala-letra)); font-weight:600; }
 .remover svg { width:16px; height:16px; }
+.nomeComLogo { display:flex; align-items:center; gap:8px; min-width:0; }
+.nomeComLogo strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nomeComLogo > img, .nomeComLogo > span { width:22px !important; height:22px !important; min-width:22px; border-radius:6px !important; font-size:14px !important; }

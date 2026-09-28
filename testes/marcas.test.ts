@@ -1,4 +1,6 @@
 import assert from "node:assert/strict"
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import { describe, it } from "node:test"
 
 import { MARCAS, marcaDaCompra, siteConhecido } from "@/lib/marcas"
@@ -34,5 +36,24 @@ describe("loja pelo texto da compra", () => {
     assert.equal(new Set(sites).size, sites.length)
     assert.equal(siteConhecido("ifood.com.br"), true)
     assert.equal(siteConhecido("exemplo.com"), false)
+  })
+
+  it("reconhece mercado, farmácia e assinatura novos, sem pegar palavra comum", () => {
+    assert.equal(nome("SUPERMERCADO EXTRA 123"), "Extra")
+    assert.equal(nome("DOMINOS PIZZA"), "Domino's")
+    assert.equal(nome("DROGARIA PACHECO 45"), "Pacheco")
+    assert.equal(nome("OPENAI *CHATGPT SUBSCR"), "ChatGPT")
+    assert.equal(nome("APPLE.COM/BILL ICLOUD"), "iCloud")
+    // "Extra", "Dia" e "Oi" sozinhos são palavras comuns: sem a companhia
+    // certa, não são a marca.
+    assert.equal(nome("PAGAMENTO EXTRA"), null)
+    assert.equal(nome("PADARIA BOM DIA"), null)
+    assert.equal(nome("OI TUDO BEM"), null)
+  })
+
+  it("todo logo guardado no app existe em public/", () => {
+    const comLogo = MARCAS.filter((marca) => marca.logo)
+    assert.ok(comLogo.length > 50)
+    for (const marca of comLogo) assert.ok(existsSync(join("public", marca.logo!)), marca.logo)
   })
 })
