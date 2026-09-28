@@ -1,0 +1,119 @@
+/* Importar (Davi, 28/09: opção A do canvas — passo a passo — com a linha de
+   conta da B). O âmbar é local, como nas outras telas: o --atencao global é
+   cinza. */
+.pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; --ambar:oklch(0.8 0.15 80); }
+:global(.light) .pagina { --ambar:oklch(0.55 0.13 65); }
+.coluna, .conferir { display:grid; gap:14px; min-width:0; align-content:start; }
+/* Na conferência, no computador: o arquivo, o resumo e o botão numa coluna,
+   a lista na outra — empilhados em 1.280px, o botão ficava depois de doze
+   linhas de lista. */
+@media (min-width:1024px) {
+  .conferir { display:grid; grid-template-columns:360px minmax(0,1fr); gap:20px; align-items:start; }
+  .conferir > .coluna:first-child { position:sticky; top:16px; }
+}
+
+.bloco { display:grid; gap:14px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.apoio { font-size:calc(13px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+
+/* ── Os três passos ────────────────────────────────────── */
+.passos { display:flex; align-items:center; gap:8px; margin:0; padding:0 2px; list-style:none; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.passos li { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.passos li + li::before { content:""; width:clamp(16px, 8vw, 200px); height:1px; margin-right:2px; background:color-mix(in oklab, var(--foreground), transparent 85%); }
+.passos i { display:grid; place-items:center; width:22px; height:22px; border-radius:99px; border:1px solid color-mix(in oklab, var(--foreground), transparent 80%); font-style:normal; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:700; }
+.passos li[data-feito] i, .passos li[aria-current] i { border-color:transparent; background:var(--acao); color:oklch(var(--primary-foreground)); }
+.passos li[aria-current] { color:var(--foreground); font-weight:650; }
+
+/* ── Passo 1: conta, arquivo e fatura ──────────────────── */
+.campo { position:relative; display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:50px; padding:0 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.campo > span { flex-shrink:0; font-size:calc(13px * var(--escala-letra)); font-weight:400; letter-spacing:0; text-transform:none; color:var(--texto-3); }
+.campo select { min-width:0; max-width:72%; min-height:48px !important; margin-left:auto; padding:0 !important; border:0 !important; background:transparent !important; box-shadow:none !important; appearance:none; -webkit-appearance:none; direction:rtl; text-align:right; font-size:calc(14.5px * var(--escala-letra)) !important; font-weight:650; color:var(--foreground); cursor:pointer; }
+.campo select option { direction:ltr; }
+.campo select:disabled { cursor:default; opacity:1; }
+.campo > svg { flex-shrink:0; width:16px; height:16px; color:var(--texto-3); pointer-events:none; }
+
+.zona { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-height:180px; padding:20px; border-radius:22px; border:1.5px dashed color-mix(in oklab, var(--foreground), transparent 78%); background:color-mix(in oklab, var(--foreground), transparent 97%); text-align:center; cursor:pointer; transition:border-color .2s var(--curva), background .2s var(--curva); }
+.zona[data-arrastando] { border-color:var(--acao); background:color-mix(in oklab, var(--acao), transparent 92%); }
+.zona input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.zona > span { display:grid; place-items:center; width:52px; height:52px; border-radius:99px; background:color-mix(in oklab, var(--acao), transparent 86%); color:var(--acao); }
+.zona svg { width:24px; height:24px; }
+.zona strong { font-size:calc(15px * var(--escala-letra)); font-weight:680; }
+.zona small { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+
+.arquivo { display:flex; align-items:center; gap:12px; min-width:0; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.arquivo > span:first-child { display:grid; place-items:center; flex-shrink:0; width:38px; height:38px; border-radius:11px; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.arquivo svg { width:17px; height:17px; }
+.arquivo div { flex:1; min-width:0; }
+.arquivo strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.arquivo small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.arquivo button { flex-shrink:0; min-height:40px !important; padding:0 4px; font-size:calc(13px * var(--escala-letra)); font-weight:650; color:var(--acao); }
+
+.interruptor { display:flex; align-items:center; gap:12px; width:100%; min-height:48px !important; padding:0 !important; text-align:left; }
+.interruptor > span:first-child { flex:1; min-width:0; }
+.interruptor strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:620; }
+.interruptor small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.chave { position:relative; flex-shrink:0; width:44px; height:26px; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 80%); transition:background .2s var(--curva); }
+.chave i { position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:99px; background:white; box-shadow:0 1px 3px rgb(0 0 0 / .3); transition:transform .2s var(--curva); }
+.interruptor[aria-checked="true"] .chave { background:var(--acao); }
+.interruptor[aria-checked="true"] .chave i { transform:translateX(18px); }
+
+.senha { display:grid; gap:8px; padding:12px; border-radius:16px; background:color-mix(in oklab, var(--ambar), transparent 88%); color:var(--ambar); font-size:calc(13px * var(--escala-letra)); }
+.senha small { font-size:max(10px, calc(12px * var(--escala-letra))); opacity:.85; }
+
+.principal { display:flex; align-items:center; justify-content:center; width:100%; min-height:52px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(15px * var(--escala-letra)); font-weight:700; }
+.principal:disabled { opacity:.4; }
+.secundario { display:flex; align-items:center; justify-content:center; width:100%; min-height:52px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 82%); font-size:calc(14px * var(--escala-letra)); font-weight:620; }
+
+/* Receber por e-mail: uma linha, e as faturas que chegaram embaixo dela. */
+.email { display:grid; gap:4px; padding:4px 16px; }
+.email > div { display:flex; align-items:center; gap:12px; min-height:56px; }
+.email > div > span:first-child { display:grid; place-items:center; flex-shrink:0; width:36px; height:36px; border-radius:12px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.email svg { width:17px; height:17px; }
+.email p { flex:1; min-width:0; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.email p small { display:block; font-weight:400; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); overflow-wrap:anywhere; }
+.email[data-desligado] > div:first-child { opacity:.6; }
+.email code { user-select:all; }
+.email button { flex-shrink:0; min-height:36px !important; padding:0 12px; border-radius:99px; border:1px solid color-mix(in oklab, var(--foreground), transparent 82%); font-size:calc(12.5px * var(--escala-letra)); font-weight:620; }
+
+/* ── Passo 2: conferir ─────────────────────────────────── */
+.resumo { display:grid; gap:4px; }
+.resumo strong { font-size:calc(20px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; }
+.resumo p { font-size:calc(13px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.resumo b { font-weight:700; color:var(--foreground); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.resumo b[data-tom="entra"] { color:var(--acao); }
+.nota { padding:10px 12px; border-radius:14px; font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); color:var(--texto-2); }
+.nota[data-tom="bom"] { border-color:color-mix(in oklab, var(--acao), transparent 60%); color:var(--acao); }
+.nota[data-tom="atencao"] { border-color:color-mix(in oklab, var(--ambar), transparent 55%); color:var(--ambar); }
+.nota ul { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:2px 14px; margin:6px 0 0; padding:0; list-style:none; }
+.nota li { display:flex; justify-content:space-between; gap:8px; font-variant-numeric:tabular-nums; }
+
+.filtros { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+.filtros::-webkit-scrollbar { display:none; }
+.filtros button { flex-shrink:0; min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); font-size:calc(13px * var(--escala-letra)); white-space:nowrap; }
+.filtros button[data-alerta] { border-color:color-mix(in oklab, var(--ambar), transparent 50%); color:var(--ambar); }
+.filtros button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+
+/* A lista por dia, como no extrato. No computador largo, em duas colunas. */
+.lista { min-width:0; }
+@media (min-width:1180px) { .lista { columns:2; column-gap:28px; } }
+.dia { break-inside:avoid; }
+.dia > p { padding:12px 0 2px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+.linha { display:flex; align-items:center; gap:10px; min-height:58px; padding:8px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.linha[data-fora] { opacity:.45; }
+.linha > div { flex:1; min-width:0; display:grid; justify-items:start; gap:4px; }
+.linha strong { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:620; }
+.linha small { font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.linha > b { flex-shrink:0; font-size:calc(14px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.linha > b[data-tipo="RECEITA"] { color:var(--acao); }
+/* A categoria é um botão com cara de etiqueta; sem categoria, em âmbar. */
+.etiqueta { max-width:100%; min-height:24px !important; height:auto !important; padding:2px 10px !important; border:0 !important; border-radius:99px !important; background:color-mix(in oklab, var(--foreground), transparent 92%) !important; box-shadow:none !important; font-size:max(10px, calc(12px * var(--escala-letra))) !important; font-weight:500 !important; color:var(--texto-2) !important; }
+.etiquetaVazia { background:color-mix(in oklab, var(--ambar), transparent 86%) !important; color:var(--ambar) !important; font-weight:650 !important; }
+.incluir { display:flex; align-items:center; gap:6px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); }
+.vazio { padding:8px 0; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+
+/* ── Passo 3: pronto ───────────────────────────────────── */
+.pronto { justify-items:start; gap:10px; }
+.pronto > span:first-child { display:grid; place-items:center; width:48px; height:48px; border-radius:99px; background:color-mix(in oklab, var(--acao), transparent 84%); color:var(--acao); }
+.pronto svg { width:24px; height:24px; }
+.pronto strong { font-size:calc(20px * var(--escala-letra)); font-weight:720; }
+.botoes { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
