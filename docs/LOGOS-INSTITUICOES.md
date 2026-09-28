@@ -1,5 +1,30 @@
 # Logos de instituições — origem e data
 
+## Atualização de 28/09/2026: catálogo completo
+
+Davi pediu "todos os logos de banco para cadastro fácil". Os arquivos de
+`public/bancos/` passaram a vir do pacote npm **`logos-bancos-br` 0.8.0**
+(licença MIT, https://github.com/rzmt/logos-bancos-br). O pacote tira cada
+logo do **diretório de participantes do Open Finance Brasil** (`openfinance`)
+ou do **site oficial** da instituição (`direct-uri`, com curadoria visual), e
+registra URI, SHA-256 e data (17/07/2026) de cada arquivo em
+`data/bancos.json` do pacote.
+
+- 56 instituições com logo (bancos de varejo, digitais, cooperativas,
+  maquininhas e corretoras). Lista e apelidos em `src/lib/bancos-perfil.ts`.
+- Reduzidos para 128 px e 128 cores (PNG): 228 KB no total.
+- Ficaram de fora "Nu Investimentos" (repetia o logo do Nubank) e "Paraná
+  Banco" (logo de `direct-uri` que não deu para confirmar como a marca atual).
+- Rico, Clear, Avenue e Nomad continuam sem logo: não estão no pacote, e a
+  tela mostra ícone neutro com o nome.
+- A cor do cartão (`cor` no catálogo) é a cor da marca: as que já estavam à
+  mão ficaram; as novas saíram da cor dominante do próprio logo.
+
+Os arquivos antigos (`.ico` e `.svg` do Simple Icons) foram substituídos. A
+tabela abaixo é o registro histórico de 13/09.
+
+## Registro de 13/09/2026
+
 Consultado em **13/09/2026**. Todo arquivo listado está em `public/bancos/` e
 é servido pelo nosso próprio domínio.
 

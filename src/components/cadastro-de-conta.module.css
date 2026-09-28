@@ -1,0 +1,30 @@
+/* Cadastro de conta em dois passos: escolher o banco pelo logo, depois os
+   dados (Davi, 28/09: "precisava de todos os logos de banco para cadastro
+   fácil"). */
+.busca { position:relative; }
+.busca svg { position:absolute; left:14px; top:50%; width:17px; height:17px; transform:translateY(-50%); color:var(--texto-3); pointer-events:none; }
+.busca input { padding-left:40px !important; }
+
+.grade { display:grid; grid-auto-rows:max-content; align-content:start; grid-template-columns:repeat(4, minmax(0,1fr)); gap:14px 8px; max-height:min(52vh, 460px); overflow-y:auto; overscroll-behavior:contain; margin:0 -4px; padding:4px; }
+@media (min-width:560px) { .grade { grid-template-columns:repeat(6, minmax(0,1fr)); } }
+.banco { display:grid; align-content:start; justify-items:center; gap:6px; min-width:0; height:auto !important; min-height:0 !important; padding:6px 2px !important; border-radius:14px; text-align:center; transition:background .15s var(--curva); }
+.banco:hover, .banco:focus-visible { background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.banco small { width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-2); }
+/* Fundo branco atrás do logo: vários chegam transparentes com letra escura
+   (C6, Digio, Realize) e sumiriam no tema escuro. É o que as carteiras de
+   cartão fazem. */
+.logo { display:grid; place-items:center; width:52px; height:52px; overflow:hidden; border-radius:15px; background:white; box-shadow:0 0 0 1px color-mix(in oklab, var(--foreground), transparent 88%), 0 6px 14px -8px oklch(0 0 0 / 45%); }
+.logo img { width:100%; height:100%; object-fit:contain; }
+.logo[data-neutro] { background:color-mix(in oklab, var(--foreground), transparent 90%); color:var(--foreground); }
+.logo svg { width:22px; height:22px; }
+.secao { grid-column:1 / -1; margin-top:4px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+
+.escolhido { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:16px; background:color-mix(in oklab, var(--foreground), transparent 94%); }
+.escolhido .logo { width:44px; height:44px; border-radius:13px; }
+.escolhido strong { flex:1; min-width:0; font-size:calc(15.5px * var(--escala-letra)); font-weight:680; }
+.trocar { min-height:36px !important; padding:0 12px !important; border-radius:999px; font-size:calc(13px * var(--escala-letra)); font-weight:650; color:var(--acao); }
+
+.tipos { display:flex; flex-wrap:wrap; gap:8px; }
+.tipos button { min-height:38px !important; padding:0 14px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%) !important; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.tipos button[aria-pressed="true"] { border-color:transparent !important; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.rotulo { font-size:calc(13px * var(--escala-letra)); font-weight:600; }

@@ -42,7 +42,7 @@ export function DemonstracaoReal() {
   }, [pausada, reduzido, visivel])
   return <div className="lp-demonstracao" ref={palco} data-pausada={pausada || reduzido}>
     <div className="lp-flutuante lp-flutuante-um"><span className="lp-ponto" /> Escola do Téo<small>Educação · 10 de setembro</small><strong>R$ 780,00</strong></div>
-    <div className="lp-flutuante lp-flutuante-dois"><span>Fatura atual · Platinum</span><strong>R$ 579,00</strong><div className="lp-mini-bancos"><img src="/bancos/bb.ico" alt="Banco do Brasil" /><small>Fecha dia 28 · vence dia 6</small></div></div>
+    <div className="lp-flutuante lp-flutuante-dois"><span>Fatura atual · Platinum</span><strong>R$ 579,00</strong><div className="lp-mini-bancos"><img src="/bancos/bb.png" alt="Banco do Brasil" /><small>Fecha dia 28 · vence dia 6</small></div></div>
     <div className="lp-janela" role="group" aria-label="Telas reais do aplicativo Tino com dados de demonstração">
       <div className="lp-janela-barra" aria-hidden="true">
         <i /><i /><i />

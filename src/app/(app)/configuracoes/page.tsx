@@ -24,8 +24,8 @@ import {
 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
-import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { encontrarBanco, corDoBanco } from "@/lib/bancos-perfil"
+import { formatarMoeda } from "@/lib/dinheiro"
+import { encontrarBanco } from "@/lib/bancos-perfil"
 import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
@@ -34,12 +34,10 @@ import { MeusDados } from "@/components/meus-dados"
 import { FotoDePerfil } from "@/components/foto-de-perfil"
 import { CORES_DE_TEMA, useTheme } from "@/components/theme-provider"
 import { useValoresOcultos } from "@/components/ocultar-valores"
-import { Input } from "@/components/ui/input"
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { BuscaBancoPerfil, IdentidadeBanco } from "@/components/banco-perfil"
+import { IdentidadeBanco } from "@/components/banco-perfil"
+import { CadastroDeConta } from "@/components/cadastro-de-conta"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog"
-import { SelectNative } from "@/components/ui/select-native"
 
 import estilos from "./perfil.module.css"
 
@@ -67,17 +65,6 @@ interface Usuario {
   avatarUrl: string | null
   lar: { nome: string; tipo: "SOLO" | "CASAL" | "FAMILIA" } | null
 }
-
-/// Bandeiras que o Tino sabe desenhar. "Outra" existe para quem tem uma que
-/// não está na lista e ainda assim quer o campo preenchido.
-const BANDEIRAS = [
-  { valor: "VISA", rotulo: "Visa" },
-  { valor: "MASTERCARD", rotulo: "Mastercard" },
-  { valor: "ELO", rotulo: "Elo" },
-  { valor: "AMERICAN_EXPRESS", rotulo: "American Express" },
-  { valor: "HIPERCARD", rotulo: "Hipercard" },
-  { valor: "OUTRA", rotulo: "Outra" },
-]
 
 const TIPOS_CONTA = [
   { valor: "CORRENTE", rotulo: "Conta corrente" },
@@ -115,12 +102,10 @@ const AMOSTRA: Record<string, string> = {
  * não saírem idênticos.
  */
 function fundoDoCartao(conta: Conta, indice: number) {
-  if (encontrarBanco(conta.instituicao ?? "")) {
-    const cor = corDoBanco(conta.instituicao)
-    // O escurecimento é o "véu" que o `corDoBanco` promete: sem ele o
-    // amarelo do Banco do Brasil deixa o texto branco ilegível.
-    return `linear-gradient(135deg, color-mix(in oklab, ${cor}, black 22%), color-mix(in oklab, ${cor}, black 62%))`
-  }
+  const cor = encontrarBanco(conta.instituicao ?? "")?.cor
+  // O escurecimento é o "véu" que o `corDoBanco` promete: sem ele o amarelo
+  // do Banco do Brasil deixa o texto branco ilegível.
+  if (cor) return `linear-gradient(135deg, color-mix(in oklab, ${cor}, black 22%), color-mix(in oklab, ${cor}, black 62%))`
   const giro = indice * 38
   return `linear-gradient(135deg, oklch(0.55 0.13 calc(var(--matiz) + ${giro})), oklch(0.3 0.08 calc(var(--matiz) + ${giro + 30})))`
 }
@@ -144,11 +129,9 @@ export default function Configuracoes() {
   const [openFinance, setOpenFinance] = useState<{ provedor: string; sandbox: boolean; conexoes: Conexao[] } | null>(null)
 
   const [dialogo, setDialogo] = useState<null | "perfil" | "contas" | "nova" | "avisos" | "atalho" | "dados" | "suporte" | "banco">(null)
-  const [nova, setNova] = useState({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "", bandeira: "" })
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [salvandoConta, setSalvandoConta] = useState(false)
   const [completando, setCompletando] = useState(false)
-  const [erroConta, setErroConta] = useState<string | null>(null)
   const [saindo, setSaindo] = useState(false)
 
   async function recarregarContas() {
@@ -187,42 +170,6 @@ export default function Configuracoes() {
     if (dialogo === "perfil") buscar<Usuario>("/api/usuario").then(setUsuario).catch(() => undefined)
     if (dialogo === "avisos") recarregarContagens().catch(() => undefined)
     setDialogo(null)
-  }
-
-  async function criarConta(evento: React.FormEvent) {
-    evento.preventDefault()
-    if (salvandoConta) return
-    setSalvandoConta(true)
-    setErroConta(null)
-    try {
-      if (!nova.nome.trim()) throw new Error("Dê um nome à conta.")
-      const campos = nova.tipo === "CARTAO_CREDITO" ? [nova.saldo, nova.limite] : [nova.saldo]
-      if (campos.some((valor) => valor.trim() && !/^-?(?:\d+|\d{1,3}(?:\.\d{3})+)(?:[,.]\d{1,2})?$/.test(valor.trim()))) {
-        throw new Error("Informe os valores como 1.234,56 ou 1234.56.")
-      }
-      if (campos.some((valor) => Math.abs(paraCentavos(valor)) > 2147483647)) throw new Error("Valor acima do limite permitido.")
-      if (nova.tipo === "CARTAO_CREDITO") {
-        if (paraCentavos(nova.limite) < 0) throw new Error("O limite não pode ser negativo.")
-        if (nova.venc && (!Number.isInteger(Number(nova.venc)) || Number(nova.venc) < 1 || Number(nova.venc) > 31)) throw new Error("Escolha um dia entre 1 e 31.")
-      }
-      await enviar("/api/contas", {
-        nome: nova.nome.trim(),
-        tipo: nova.tipo,
-        instituicao: nova.instituicao.trim() || undefined,
-        saldoInicialCentavos: nova.saldo ? paraCentavos(nova.saldo) : 0,
-        limiteCentavos: nova.tipo === "CARTAO_CREDITO" && nova.limite ? paraCentavos(nova.limite) : undefined,
-        diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc) : undefined,
-        bandeira: nova.tipo === "CARTAO_CREDITO" && nova.bandeira ? nova.bandeira : undefined,
-      })
-      setNova({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "", bandeira: "" })
-      setDialogo(null)
-      showToast("Conta adicionada")
-      await recarregarContas().catch(() => setMensagem("Conta salva. Atualize a página para recarregar."))
-    } catch (erro) {
-      setErroConta(erro instanceof Error ? erro.message : "Não consegui salvar a conta.")
-    } finally {
-      setSalvandoConta(false)
-    }
   }
 
   async function sincronizar(conexaoId: string) {
@@ -567,109 +514,18 @@ export default function Configuracoes() {
             <>
               <DialogHeader>
                 <DialogTitle>Adicionar conta ou cartão</DialogTitle>
-                <DialogDescription>Informe os dados da sua conta.</DialogDescription>
+                <DialogDescription>Toque no seu banco.</DialogDescription>
               </DialogHeader>
               <DialogBody>
-                {/* Formulário longo: duas colunas no desktop, uma no celular. */}
-                <form onSubmit={criarConta} className="grid gap-3">
-                  <fieldset disabled={salvandoConta} className="min-w-0">
-                    <FieldGroup className="sm:grid sm:grid-cols-2 sm:gap-x-4">
-                      <Field>
-                        <FieldLabel htmlFor="conta-nome">Nome da conta</FieldLabel>
-                        <Input
-                          id="conta-nome"
-                          value={nova.nome}
-                          onChange={(evento) => setNova({ ...nova, nome: evento.target.value })}
-                          placeholder="Ex.: Conta corrente"
-                          required
-                        />
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="conta-tipo">Tipo</FieldLabel>
-                        <SelectNative id="conta-tipo" value={nova.tipo} onChange={(evento) => setNova({ ...nova, tipo: evento.target.value })}>
-                          {TIPOS_CONTA.map((tipo) => (
-                            <option key={tipo.valor} value={tipo.valor}>
-                              {tipo.rotulo}
-                            </option>
-                          ))}
-                        </SelectNative>
-                      </Field>
-                      <Field className="sm:col-span-2">
-                        <FieldLabel htmlFor="conta-instituicao">Banco ou instituição</FieldLabel>
-                        <BuscaBancoPerfil
-                          valor={nova.instituicao}
-                          aoMudar={(instituicao) => setNova({ ...nova, instituicao })}
-                          nomesExistentes={(contas ?? []).flatMap((conta) => (conta.instituicao ? [conta.instituicao] : []))}
-                          desabilitado={salvandoConta}
-                        />
-                      </Field>
-                      <Field>
-                        <FieldLabel htmlFor="conta-saldo">Saldo atual (R$)</FieldLabel>
-                        <Input
-                          inputMode="decimal"
-                          id="conta-saldo"
-                          value={nova.saldo}
-                          onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
-                          placeholder="-6.582,74"
-                        />
-                      </Field>
-                      {nova.tipo === "CARTAO_CREDITO" && (
-                        <>
-                          <Field>
-                            <FieldLabel htmlFor="conta-limite">Limite total (R$)</FieldLabel>
-                            <Input
-                              inputMode="decimal"
-                              id="conta-limite"
-                              value={nova.limite}
-                              onChange={(evento) => setNova({ ...nova, limite: evento.target.value })}
-                              placeholder="6.000,00"
-                            />
-                          </Field>
-                          <Field>
-                            <FieldLabel htmlFor="conta-bandeira">Bandeira</FieldLabel>
-                            <SelectNative
-                              id="conta-bandeira"
-                              value={nova.bandeira}
-                              onChange={(evento) => setNova({ ...nova, bandeira: evento.target.value })}
-                            >
-                              <option value="">Não informar</option>
-                              {BANDEIRAS.map((bandeira) => (
-                                <option key={bandeira.valor} value={bandeira.valor}>
-                                  {bandeira.rotulo}
-                                </option>
-                              ))}
-                            </SelectNative>
-                            <FieldDescription>Aparece no cartão. Fica em branco se você não souber.</FieldDescription>
-                          </Field>
-                          <Field>
-                            <FieldLabel htmlFor="conta-venc">Dia do vencimento</FieldLabel>
-                            <Input
-                              id="conta-venc"
-                              value={nova.venc}
-                              onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
-                              type="number"
-                              min={1}
-                              max={31}
-                              step={1}
-                              placeholder="10"
-                            />
-                          </Field>
-                        </>
-                      )}
-                    </FieldGroup>
-                  </fieldset>
-                  {erroConta && (
-                    <p role="alert" className="text-sm text-negativo">
-                      {erroConta}
-                    </p>
-                  )}
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="ghost" disabled={salvandoConta} onClick={() => setDialogo(null)}>
-                      Cancelar
-                    </Button>
-                    <Button disabled={salvandoConta}>{salvandoConta ? "Salvando…" : "Adicionar"}</Button>
-                  </div>
-                </form>
+                <CadastroDeConta
+                  nomesExistentes={(contas ?? []).flatMap((conta) => (conta.instituicao ? [conta.instituicao] : []))}
+                  aoMudarSalvando={setSalvandoConta}
+                  aoCancelar={() => setDialogo(null)}
+                  aoCriar={() => {
+                    setDialogo(null)
+                    recarregarContas().catch(() => setMensagem("Conta salva. Atualize a página para recarregar."))
+                  }}
+                />
               </DialogBody>
             </>
           )}
