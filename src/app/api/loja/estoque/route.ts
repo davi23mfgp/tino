@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
 import { situacaoDoProduto } from "@/lib/loja/estoque"
+import { referenciaDaBarra } from "@/lib/loja/prateleira"
 import type { Movimento, TipoMovimento } from "@/lib/loja/estoque"
 import { desempenhoDosProdutos } from "@/lib/loja/desempenho"
 import type { VendaDoProduto } from "@/lib/loja/desempenho"
@@ -42,14 +43,31 @@ export const GET = comSessao(async (sessao) => {
       criadoEm: linha.criadoEm,
     }))
 
-    const situacao = situacaoDoProduto({ precoCentavos: produto.precoCentavos, movimentos })
+    const situacao = situacaoDoProduto({ precoCentavos: produto.precoCentavos, movimentos, minimo: produto.estoqueMinimo ?? undefined })
 
     return {
       id: produto.id,
       nome: produto.nome,
       precoCentavos: produto.precoCentavos,
       ncm: produto.ncm,
+      codigoBarras: produto.codigoBarras,
+      estoqueMinimo: produto.estoqueMinimo,
       ...situacao,
+      referencia: referenciaDaBarra(movimentos, situacao.saldo),
+      // Os últimos movimentos, do mais novo para o mais velho: é o que o dono
+      // confere quando o saldo parece errado. Custo fora para o funcionário.
+      movimentos: produto.movimentos
+        .slice(-8)
+        .reverse()
+        .map((linha) => ({
+          id: linha.id,
+          tipo: linha.tipo,
+          quantidade: linha.quantidade,
+          custoUnitarioCentavos: podeVerFinanceiro && linha.custoUnitarioCentavos > 0 ? linha.custoUnitarioCentavos : null,
+          motivo: linha.motivo,
+          venda: Boolean(linha.vendaId),
+          criadoEm: linha.criadoEm,
+        })),
       ...(podeVerFinanceiro
         ? {}
         : { custoMedioCentavos: null, margem: { lucroCentavos: null, margemBps: null, markupBps: null } }),

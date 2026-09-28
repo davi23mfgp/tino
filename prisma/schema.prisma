@@ -1262,6 +1262,10 @@ model ProdutoLoja {
   /// margem não é calculada, e margem estimada é pior que margem ausente.
   custoCentavos Int     @default(0)
   ativo         Boolean @default(true)
+  /// Com quantas peças o Tino avisa que está acabando. Nulo = só no último
+  /// item (ver situacaoDoProduto): melhor avisar tarde do que inventar um
+  /// limite que não é o do dono.
+  estoqueMinimo Int?
 
   /// Exigido pela nota fiscal (NCM = código da mercadoria perante a Receita).
   /// Fica opcional aqui porque a venda sem nota não precisa dele — só passa a
