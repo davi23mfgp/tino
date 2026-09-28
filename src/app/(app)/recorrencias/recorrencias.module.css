@@ -21,10 +21,10 @@
 .tres > div { min-width:0; padding:10px 12px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 95%); }
 .tres dt { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .tres dd { margin-top:2px; font-size:clamp(13px, 4vw, calc(16px * var(--escala-letra))); font-weight:720; letter-spacing:-.02em; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.tres dd[data-tom="bom"] { color:var(--acao); }
+.tres dd[data-tom="bom"] { color:var(--bom); }
 .tres dd[data-tom="alto"] { color:var(--negativo); }
 
-.peso { --cor:var(--acao); display:grid; gap:8px; }
+.peso { --cor:var(--bom); display:grid; gap:8px; }
 .peso[data-faixa="atencao"] { --cor:var(--ambar); }
 .peso[data-faixa="alto"] { --cor:var(--negativo); }
 .peso p { display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }

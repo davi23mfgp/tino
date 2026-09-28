@@ -2,7 +2,7 @@
    O âmbar é local, como em Contas fixas e Dívidas: o --atencao global é cinza. */
 .pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; --ambar:oklch(0.8 0.15 80); }
 :global(.light) .pagina { --ambar:oklch(0.55 0.13 65); }
-.pagina [data-faixa="BOM"] { --cor:var(--acao); }
+.pagina [data-faixa="BOM"] { --cor:var(--bom); }
 .pagina [data-faixa="ATENCAO"] { --cor:var(--ambar); }
 .pagina [data-faixa="CRITICO"] { --cor:var(--negativo); }
 .pagina [data-faixa="SEM_DADO"] { --cor:var(--texto-3); }
@@ -49,7 +49,7 @@
 .regua i { position:absolute; top:0; bottom:0; }
 .regua i:first-child { border-radius:99px 0 0 99px; }
 .regua i:nth-child(3) { border-radius:0 99px 99px 0; }
-.regua i[data-zona="bom"] { background:color-mix(in oklab, var(--acao), transparent 20%); }
+.regua i[data-zona="bom"] { background:color-mix(in oklab, var(--bom), transparent 20%); }
 .regua i[data-zona="atencao"] { background:color-mix(in oklab, var(--ambar), transparent 20%); }
 .regua i[data-zona="alto"] { background:color-mix(in oklab, var(--negativo), transparent 20%); }
 .regua em { position:absolute; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:99px; background:oklch(0.96 0 0); border:2px solid var(--papel-1); box-shadow:0 1px 4px rgb(0 0 0 / .35); }
@@ -77,7 +77,7 @@
 .subiu li > b { flex-shrink:0; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .variacao { display:inline-block; min-width:48px; margin-left:8px; text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .variacao[data-sentido="subiu"] { color:var(--negativo); }
-.variacao[data-sentido="caiu"] { color:var(--acao); }
+.variacao[data-sentido="caiu"] { color:var(--bom); }
 .variacao[data-sentido="igual"], .variacao[data-sentido="novo"] { font-weight:500; color:var(--texto-3); }
 .vazio { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
 

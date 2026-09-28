@@ -2,11 +2,12 @@ import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { prisma } from "@/lib/prisma"
 
 export const GET = comSessao(async (sessao) => {
-  const usuario = await prisma.usuario.findUniqueOrThrow({
-    where: { id: sessao.usuarioId },
-    select: { nome: true, avatarUrl: true },
-  })
-  return ok(usuario)
+  const [usuario, lar] = await Promise.all([
+    prisma.usuario.findUniqueOrThrow({ where: { id: sessao.usuarioId }, select: { nome: true, avatarUrl: true, email: true } }),
+    // O perfil mostra de que casa a pessoa é ("Casa da Marina · casal").
+    prisma.lar.findUnique({ where: { id: sessao.larId }, select: { nome: true, tipo: true } }),
+  ])
+  return ok({ ...usuario, lar })
 })
 
 /**

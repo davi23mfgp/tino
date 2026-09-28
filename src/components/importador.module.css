@@ -80,9 +80,9 @@
 .resumo strong { font-size:calc(20px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; }
 .resumo p { font-size:calc(13px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
 .resumo b { font-weight:700; color:var(--foreground); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.resumo b[data-tom="entra"] { color:var(--acao); }
+.resumo b[data-tom="entra"] { color:var(--bom); }
 .nota { padding:10px 12px; border-radius:14px; font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); color:var(--texto-2); }
-.nota[data-tom="bom"] { border-color:color-mix(in oklab, var(--acao), transparent 60%); color:var(--acao); }
+.nota[data-tom="bom"] { border-color:color-mix(in oklab, var(--bom), transparent 60%); color:var(--bom); }
 .nota[data-tom="atencao"] { border-color:color-mix(in oklab, var(--ambar), transparent 55%); color:var(--ambar); }
 .nota ul { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:2px 14px; margin:6px 0 0; padding:0; list-style:none; }
 .nota li { display:flex; justify-content:space-between; gap:8px; font-variant-numeric:tabular-nums; }
@@ -104,7 +104,7 @@
 .linha strong { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14px * var(--escala-letra)); font-weight:620; }
 .linha small { font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
 .linha > b { flex-shrink:0; font-size:calc(14px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.linha > b[data-tipo="RECEITA"] { color:var(--acao); }
+.linha > b[data-tipo="RECEITA"] { color:var(--bom); }
 /* A categoria é um botão com cara de etiqueta; sem categoria, em âmbar. */
 .etiqueta { max-width:100%; min-height:24px !important; height:auto !important; padding:2px 10px !important; border:0 !important; border-radius:99px !important; background:color-mix(in oklab, var(--foreground), transparent 92%) !important; box-shadow:none !important; font-size:max(10px, calc(12px * var(--escala-letra))) !important; font-weight:500 !important; color:var(--texto-2) !important; }
 .etiquetaVazia { background:color-mix(in oklab, var(--ambar), transparent 86%) !important; color:var(--ambar) !important; font-weight:650 !important; }

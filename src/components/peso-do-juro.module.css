@@ -9,5 +9,5 @@
 .peso[data-peso="caro"] { --peso:var(--negativo); }
 .peso[data-peso="medio"] { --peso:oklch(0.8 0.15 80); }
 :global(.light) .peso[data-peso="medio"] { --peso:oklch(0.55 0.13 65); }
-.peso[data-peso="leve"] { --peso:var(--acao); }
+.peso[data-peso="leve"] { --peso:var(--bom); }
 .peso[data-peso="sem-juro"] { --peso:var(--texto-3); }

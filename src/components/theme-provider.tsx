@@ -25,7 +25,18 @@ import * as React from "react";
 
 type Tema = "light" | "dark";
 
-type ContextoTema = { theme: Tema; setTheme: (tema: Tema) => void };
+/// As cores de `src/app/cores-de-tema.css`. "verde" é a de sempre.
+export const CORES_DE_TEMA = [
+  { valor: "verde", nome: "Verde" }, { valor: "menta", nome: "Menta" }, { valor: "turquesa", nome: "Turquesa" },
+  { valor: "azul", nome: "Azul" }, { valor: "indigo", nome: "Índigo" }, { valor: "lilas", nome: "Lilás" },
+  { valor: "rosa", nome: "Rosa" }, { valor: "coral", nome: "Coral" }, { valor: "vinho", nome: "Vinho" },
+  { valor: "laranja", nome: "Laranja" }, { valor: "dourado", nome: "Dourado" }, { valor: "grafite", nome: "Grafite" },
+] as const;
+export type CorDeTema = (typeof CORES_DE_TEMA)[number]["valor"];
+const CHAVE_COR = "tino:cor";
+const ehCor = (valor: string | null): valor is CorDeTema => CORES_DE_TEMA.some((cor) => cor.valor === valor);
+
+type ContextoTema = { theme: Tema; setTheme: (tema: Tema) => void; cor: CorDeTema; setCor: (cor: CorDeTema) => void };
 
 const ContextoTema = React.createContext<ContextoTema | undefined>(undefined);
 
@@ -41,6 +52,32 @@ export function ThemeProvider({
   defaultTheme?: Tema;
 }) {
   const [theme, setThemeState] = React.useState<Tema>(defaultTheme);
+  const [cor, setCorState] = React.useState<CorDeTema>("verde");
+
+  React.useEffect(() => {
+    try {
+      const salva = localStorage.getItem(CHAVE_COR);
+      if (ehCor(salva)) setCorState(salva);
+    } catch {
+      // Storage indisponível: fica o verde.
+    }
+  }, []);
+
+  // Verde é o `globals.css` puro: sem atributo, nada muda para quem nunca
+  // escolheu cor.
+  React.useEffect(() => {
+    if (cor === "verde") delete document.documentElement.dataset.cor;
+    else document.documentElement.dataset.cor = cor;
+  }, [cor]);
+
+  const setCor = React.useCallback((nova: CorDeTema) => {
+    setCorState(nova);
+    try {
+      localStorage.setItem(CHAVE_COR, nova);
+    } catch {
+      // A troca vale na sessão, só não persiste.
+    }
+  }, []);
 
   React.useEffect(() => {
     let salvo: string | null = null;
@@ -65,7 +102,7 @@ export function ThemeProvider({
     }
   }, []);
 
-  const valor = React.useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+  const valor = React.useMemo(() => ({ theme, setTheme, cor, setCor }), [theme, setTheme, cor, setCor]);
 
   return <ContextoTema.Provider value={valor}>{children}</ContextoTema.Provider>;
 }
