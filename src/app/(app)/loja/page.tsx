@@ -105,6 +105,12 @@ export default function Balcao() {
     carregar()
   }, [carregar])
 
+  // "Vender fiado" na tela do Fiado chega aqui com a forma já escolhida.
+  useEffect(() => {
+    const pedida = new URLSearchParams(window.location.search).get("forma")
+    if (pedida && FORMAS.some((opcao) => opcao.valor === pedida)) setForma(pedida as FormaPagamento)
+  }, [])
+
   // O valor que está no visor e ainda não virou item entra na venda como
   // item avulso: quem digita 35,00 e cobra vendeu 35,00, sem passo a mais.
   const itens = useMemo(

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { montarDevedores, resumirFiado, textoDeCobranca } from "@/lib/loja/fiado"
+import { idadeDoFiado, montarDevedores, nomeDeTratamento, resumirFiado, textoDeCobranca } from "@/lib/loja/fiado"
 import { formatarMoeda } from "@/lib/dinheiro"
 
 const HOJE = new Date("2026-09-01T12:00:00.000Z")
@@ -141,5 +141,38 @@ describe("texto de cobrança", () => {
   it("chama a pessoa pelo primeiro nome", () => {
     const [devedor] = montarDevedores([cliente("Ana Paula", [{ numero: 1, valor: 5000, diasAtras: 10 }])], HOJE)
     assert.match(textoDeCobranca(devedor, "Box 24", formatarMoeda), /^Oi, Ana!/)
+  })
+})
+
+describe("idade do fiado", () => {
+  it("cada compra cai na faixa da própria idade, e a soma fecha com o total", () => {
+    const devedores = montarDevedores(
+      [
+        cliente("Dona Cida", [{ numero: 1, valor: 3850, diasAtras: 75 }, { numero: 2, valor: 2200, diasAtras: 20 }]),
+        cliente("Seu Jorge", [{ numero: 3, valor: 6400, diasAtras: 42 }]),
+        cliente("Bruno", [{ numero: 4, valor: 1200, diasAtras: 30 }, { numero: 5, valor: 999, diasAtras: 91 }]),
+      ],
+      HOJE,
+    )
+    const faixas = idadeDoFiado(devedores, HOJE)
+
+    assert.deepEqual(faixas.map((faixa) => faixa.totalCentavos), [2200 + 1200, 6400, 3850, 999])
+    assert.deepEqual(faixas[0].clientes.sort(), ["Bruno", "Dona Cida"])
+    assert.equal(faixas.reduce((soma, faixa) => soma + faixa.totalCentavos, 0), resumirFiado(devedores).totalCentavos)
+  })
+})
+
+describe("como chamar o cliente", () => {
+  it("tratamento não é nome: Dona Cida, Seu Jorge; o resto, o primeiro nome", () => {
+    assert.equal(nomeDeTratamento("Dona Cida"), "Dona Cida")
+    assert.equal(nomeDeTratamento("seu Jorge da banca"), "seu Jorge")
+    assert.equal(nomeDeTratamento("Sr. Antônio"), "Sr. Antônio")
+    assert.equal(nomeDeTratamento("Paula Menezes"), "Paula")
+    assert.equal(nomeDeTratamento("Dona"), "Dona")
+  })
+
+  it("a mensagem usa o tratamento", () => {
+    const [devedor] = montarDevedores([cliente("Dona Cida", [{ numero: 1, valor: 3850, diasAtras: 10 }])], HOJE)
+    assert.match(textoDeCobranca(devedor, "Minha loja", formatarMoeda), /^Oi, Dona Cida!/)
   })
 })
