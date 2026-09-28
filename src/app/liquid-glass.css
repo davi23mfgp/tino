@@ -26,7 +26,7 @@
   --vidro-borda: oklch(1 0 0 / 13%);
   --vidro-luz: inset 0 1px 0 oklch(1 0 0 / 20%), inset 0 -1px 0 oklch(0 0 0 / 22%);
   --vidro-sombra: 0 18px 40px -24px oklch(0 0 0 / 85%);
-  --vidro-grosso-tinta: oklch(0.16 0.012 145 / 66%);
+  --vidro-grosso-tinta: oklch(0.16 0.012 145 / 92%);
   --raio-bloco: 26px;
   --raio-cartao: 22px;
   /* Superfícies internas (linhas de lista, trilhos, chips) seguem o vidro. */
@@ -53,7 +53,7 @@
   --vidro-borda: oklch(1 0 0 / 92%);
   --vidro-luz: inset 0 1px 0 oklch(1 0 0 / 100%), inset 0 -1px 0 oklch(0.3 0.05 150 / 10%), 0 0 0 1px oklch(0.35 0.06 150 / 12%);
   --vidro-sombra: 0 20px 44px -22px oklch(0.3 0.08 150 / 50%);
-  --vidro-grosso-tinta: oklch(0.99 0.005 145 / 72%);
+  --vidro-grosso-tinta: oklch(0.99 0.005 145 / 94%);
   --papel-solido: oklch(1 0 0 / 55%);
   --papel-1: oklch(0 0 0 / 5%);
   --papel-2: oklch(0 0 0 / 8%);
@@ -216,13 +216,27 @@ body::before {
 .ios-icone { border-radius: 50%; }
 .app-subabas--interna { background: oklch(1 0 0 / 6%); border: 1px solid oklch(1 0 0 / 8%); }
 
-/* Painéis que abrem por cima: vidro grosso, quase opaco. */
+/* ---------- o que abre por cima: SÓLIDO ----------
+   Davi, 28/09: "toda parte de menu tá basicamente transparente. Tem que ser
+   bem visível". Estava: a gaveta "Seu Tino", os diálogos e os avisos usavam
+   `--papel-solido`, que o vidro redefine como 6% de branco — o extrato
+   aparecia inteiro atrás do texto do menu. Menu, diálogo, gaveta, lista de
+   opções, dica e aviso agora têm fundo sólido, com o matiz da cor de tema e
+   só um brilho leve em cima (o gradiente continua; a transparência não).
+   O vidro fica no que está NA página, onde há o que revelar sem atrapalhar
+   a leitura. */
+:root { --superficie-flutuante: oklch(0.205 0.014 var(--matiz)); }
+.light { --superficie-flutuante: oklch(0.99 0.005 var(--matiz)); }
+.superficie-flutuante,
 .liquid-glass-elevated,
 .vidro-menu {
-  background: var(--vidro-brilho), var(--papel-3);
+  background: linear-gradient(160deg, oklch(1 0 0 / 5%), transparent 40%), var(--superficie-flutuante) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   border-color: var(--vidro-borda);
   box-shadow: var(--vidro-luz), var(--sombra-flutuante);
 }
+.light :is(.superficie-flutuante, .liquid-glass-elevated, .vidro-menu) { border-color: oklch(0 0 0 / 10%); }
 
 /* ---------- acessibilidade ----------
    Quem pede menos transparência no sistema recebe superfície sólida; o

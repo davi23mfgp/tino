@@ -103,6 +103,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   estranhas no computador. Testar e mandar captura dos dois, e do tema
   claro no celular.
 - Vidro líquido e gradiente continuam em todos os temas.
+- **O que abre por cima é sólido** (28/09/2026: "toda parte de menu tá
+  basicamente transparente, tem que ser bem visível"). Menu, gaveta, diálogo,
+  lista de opções, dica e aviso usam a classe `superficie-flutuante`
+  (`liquid-glass.css`), nunca `--papel-solido` ou vidro translúcido. O vidro
+  fica no que está na própria página.
 - **Cada passo numa página própria do canvas** (28/09/2026: o Davi não
   achava o passo 22 — com 274 quadros numa página só, os novos ficavam a
   95 mil px do topo). O passo novo ganha uma entrada em `pages`, seus

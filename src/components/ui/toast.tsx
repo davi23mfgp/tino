@@ -76,7 +76,7 @@ export function Toaster() {
           <div key={t.id} role={t.variant === "error" ? "alert" : "status"}
             className={cn(
               "pointer-events-auto flex items-start gap-2.5 w-full",
-              "bg-[var(--papel-solido)] border border-pauta rounded-[14px] shadow-lg shadow-black/30",
+              "superficie-flutuante border border-pauta rounded-[14px] shadow-lg shadow-black/30",
               "px-4 py-3 spring-slide-up",
             )}>
             <Icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", ACCENT[t.variant])} strokeWidth={2.2} />

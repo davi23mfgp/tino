@@ -146,7 +146,7 @@ function Dica({
     /* `papel-1` e translucido: sobre as barras a caixa ficava transparente e o
        valor sumia. Fundo solido aqui, que e o unico lugar do app em que algo
        flutua por cima de cor cheia. */
-    <div className="rounded-xl border border-pauta bg-[color:var(--papel-solido)] px-3 py-2 shadow-alta">
+    <div className="rounded-xl border border-pauta superficie-flutuante px-3 py-2 shadow-alta">
       {label && <p className="mb-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{label}</p>}
       {payload.map((linha, indice) => (
         <p key={indice} className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))]">

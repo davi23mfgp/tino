@@ -17,7 +17,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm",
+      "fixed inset-0 z-50 bg-black/55 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       "duration-200 motion-reduce:!animate-none motion-reduce:!transition-none",
@@ -52,7 +52,7 @@ const DialogContent = React.forwardRef<
               ? "max-w-[min(calc(100vw-32px),420px)]"
               : "max-w-[min(calc(100vw-32px),560px)]",
           // 20px: raio de cartao grande. 28px lia como bolha.
-          "border border-pauta bg-[var(--papel-solido)] rounded-[20px] shadow-alta",
+          "border border-pauta superficie-flutuante rounded-[20px] shadow-alta",
           "max-h-[calc(100dvh-2rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
