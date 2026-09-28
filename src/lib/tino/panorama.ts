@@ -13,6 +13,7 @@ import {
   competenciaMaisMeses,
   distanciaEmMeses,
   janelaDoMes,
+  corteDoMesAnterior,
   partesCompetencia,
   ultimasCompetencias,
 } from "@/lib/datas"
@@ -231,9 +232,11 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   // supermercado" em vez de só mostrar o número do mês, que sozinho não diz se
   // a pessoa está melhorando ou piorando.
   const competenciaAnterior = competenciaMaisMeses(competencia, -1)
+  const corteAnterior = corteDoMesAnterior(competencia, new Date(), lar.diaInicioMes)
   const porCategoriaAnterior = new Map<string, number>()
   for (const transacao of transacoesHistorico) {
     if (transacao.competencia !== competenciaAnterior || transacao.tipo !== "DESPESA") continue
+    if (corteAnterior && transacao.data.getTime() > corteAnterior.getTime()) continue
     const chave = transacao.categoriaId ?? "sem-categoria"
     porCategoriaAnterior.set(chave, (porCategoriaAnterior.get(chave) ?? 0) + transacao.valorCentavos)
   }

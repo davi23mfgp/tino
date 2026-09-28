@@ -1,52 +1,28 @@
 import estilos from "./avancadas.module.css"
+import analise from "@/components/analise.module.css"
 import { ArrowDownRight, ArrowUpRight } from "lucide-react"
 
 import { sessaoDaPagina } from "@/lib/pagina"
-import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
+import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { balancoMensal } from "@/lib/tino/balanco"
-import { montarDiagnostico, type Faixa } from "@/lib/tino/diagnostico"
+import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { Cartao, Detalhe, Pilula, Vazio } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
-import { ONDE_RESOLVER, ONDE_RESOLVER_INDICADOR } from "@/lib/tino/onde-resolver"
-import Link from "next/link"
-import { GraficoBalanco, GraficoCategorias, GraficoDozeMeses } from "@/components/graficos"
-import { MapaDeCalor } from "@/components/mapa-de-calor"
-import { CategoriasComparadas } from "@/components/categorias-comparadas"
+import { Cartao, Vazio } from "@/components/ui/painel"
+import { GraficoBalanco, GraficoDozeMeses } from "@/components/graficos"
 import { cn } from "@/lib/utils"
 import { AbasInternas } from "@/components/abas-internas"
-import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { EntradasESaidas } from "@/components/entradas-saidas"
+import { IndicadoresDaAnalise, TopoDaAnalise } from "@/components/indicadores-da-analise"
+import { CategoriasDoMes } from "@/components/categorias-do-mes"
 
 export const dynamic = "force-dynamic"
-
-const COR_FAIXA: Record<Faixa, string> = {
-  BOM: "text-positivo",
-  ATENCAO: "text-atencao",
-  CRITICO: "text-negativo",
-  SEM_DADO: "text-muted-fg",
-}
 
 /// Cabeçalho de grupo do balanço: o nome contábil e, ao lado, o que ele
 /// significa para quem não é contador.
 const estiloGrupo =
   "flex items-baseline gap-2 pb-1 text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-widest text-muted-fg [&>span]:text-[max(10px,calc(12px*var(--escala-letra)))] [&>span]:font-normal [&>span]:normal-case [&>span]:tracking-normal [&>span]:opacity-70"
-
-const ROTULO_FAIXA: Record<Faixa, string> = {
-  BOM: "saudável",
-  ATENCAO: "atenção",
-  CRITICO: "crítico",
-  SEM_DADO: "sem faixa",
-}
-
-const ROTULO_SITUACAO = {
-  SAUDAVEL: { texto: "Saudável", tom: "text-positivo" },
-  ATENCAO: { texto: "Atenção", tom: "text-atencao" },
-  APERTADO: { texto: "Apertado", tom: "text-atencao" },
-  CRITICO: { texto: "Crítico", tom: "text-negativo" },
-}
 
 const NOME_GRUPO: Record<string, string> = {
   MORADIA: "Moradia",
@@ -82,7 +58,7 @@ export default async function Analise() {
   })
 
   const { dre, balanco } = diagnostico
-  const situacao = ROTULO_SITUACAO[diagnostico.situacao]
+  const nomeDoMes = rotuloCompetencia(competencia).split(" ")[0]
   const semMovimento = dre.receitasCentavos === 0 && dre.despesasCentavos === 0
 
   if (semMovimento) {
@@ -97,116 +73,15 @@ export default async function Analise() {
   }
 
   return (
-    <div className={cn(estilos.pagina, "space-y-4")}>
-      {/* ── Parecer ───────────────────────────────────── */}
-      {/* A resposta primeiro. Os quatro tiles de peso igual (entrou, saiu,
-          resultado, patrimônio) eram insumo: com todos do mesmo tamanho,
-          nenhum respondia nada. Eles continuam na tela, recolhidos. */}
-      <Abertura
-        rotulo={`Parecer de ${rotuloCompetencia(competencia)}`}
-        titulo={
-          dre.resultadoCentavos >= 0 ? (
-            <>Você fechou o mês com <em>{formatarMoeda(dre.resultadoCentavos)}</em> de sobra.</>
-          ) : (
-            <>Você fechou o mês <em>{formatarMoeda(Math.abs(dre.resultadoCentavos))} no vermelho</em>.</>
-          )
-        }
-        apoio={<>Situação geral: <b>{situacao.texto}</b>, nota {diagnostico.nota} de 100.</>}
-      >
-        <Detalhe titulo="Os números do mês">
-          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              { rotulo: "Entrou", valor: dre.receitasCentavos, tom: "text-positivo" },
-              { rotulo: "Saiu", valor: dre.despesasCentavos, tom: "text-negativo" },
-              { rotulo: "Resultado", valor: dre.resultadoCentavos, tom: dre.resultadoCentavos < 0 ? "text-negativo" : "" },
-              { rotulo: "Patrimônio", valor: balanco.patrimonioLiquidoCentavos, tom: balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "" },
-            ].map((linha) => (
-              <div key={linha.rotulo} className="vidro-menu rounded-2xl px-3 py-2.5">
-                <dt className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{linha.rotulo}</dt>
-                <dd className={cn("numero valor-sensivel mt-1 text-[calc(15px*var(--escala-letra))] font-semibold", linha.tom)}>
-                  {formatarMoeda(linha.valor)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </Detalhe>
-      </Abertura>
-
-      {/* O que fazer subiu para cá. Era a última coisa da primeira aba, depois
-          de dois blocos de diagnóstico — e é o que a pessoa veio buscar. Cada
-          item agora termina no botão que executa, não numa frase. */}
-      {diagnostico.prioridades.length > 0 && (
-        <Cartao titulo="O que fazer, nesta ordem">
-          <ol className="space-y-3">
-            {diagnostico.prioridades.map((prioridade) => (
-              <li key={prioridade.ordem} className="flex gap-3 rounded-[var(--raio-cartao)] border border-pauta p-3.5">
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.08] text-[calc(12px*var(--escala-letra))] font-semibold">
-                  {prioridade.ordem}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[calc(14px*var(--escala-letra))] font-medium">{prioridade.titulo}</p>
-                  <p className="mt-1 text-[calc(13px*var(--escala-letra))]">{prioridade.acao}</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {prioridade.impactoMensalCentavos ? (
-                      <Pilula tom="positivo">
-                        <span className="valor-inteiro">{formatarMoeda(prioridade.impactoMensalCentavos)}</span>&nbsp;por mês
-                      </Pilula>
-                    ) : null}
-                    <Link
-                      href={ONDE_RESOLVER[prioridade.chave]?.href ?? "/transacoes"}
-                      className="text-[calc(13px*var(--escala-letra))] font-medium text-acao underline-offset-4 hover:underline"
-                    >
-                      {ONDE_RESOLVER[prioridade.chave]?.texto ?? "Abrir"}
-                    </Link>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Cartao>
-      )}
+    <div className={cn(estilos.pagina, analise.pagina)}>
+      {/* Opção C do canvas (Davi, 28/09): o que pede atenção primeiro. O
+          parecer antigo abria com o resultado do mês, que a aba Entradas e
+          saídas já mostra; aqui o topo diz quantos indicadores pedem ação e
+          qual é o primeiro passo. */}
+      <TopoDaAnalise diagnostico={diagnostico} mes={nomeDoMes} />
 
       <AbasInternas abas={[{ chave: "indicadores", titulo: "Indicadores", conteudo: (<>
-      {/* ── Indicadores ───────────────────────────────── */}
-      <Cartao titulo="Indicadores">
-        <div className="grid gap-3 lg:grid-cols-2">
-          {diagnostico.indicadores.map((indicador) => (
-            <div key={indicador.chave} title={`Referência: ${indicador.referencia}`} className="rounded-2xl border border-pauta bg-papel-2 p-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="min-w-0 text-[calc(13px*var(--escala-letra))] font-medium">{indicador.nome}</p>
-                <div className="text-right">
-                  <p className={cn("text-[calc(20px*var(--escala-letra))] font-semibold leading-none", COR_FAIXA[indicador.faixa])}>
-                    {indicador.valor}
-                  </p>
-                  <p className={cn("mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest", COR_FAIXA[indicador.faixa])}>
-                    {ROTULO_FAIXA[indicador.faixa]}
-                  </p>
-                </div>
-              </div>
-
-              {/* A régua no lugar da palavra. "ATENÇÃO" não diz se falta muito
-                  ou pouco — 28% e 29% ganham o mesmo rótulo e parecem iguais.
-                  Aqui a faixa verde é o alvo, a amarela o limite, e o traço
-                  mostra onde a pessoa caiu. */}
-              {indicador.escala && (
-                <ReguaDoIndicador numero={indicador.numero} escala={indicador.escala} cor={COR_FAIXA[indicador.faixa]} />
-              )}
-
-              {/* Indicador fora da faixa aponta problema; sem um destino ele
-                  devolve o problema para a pessoa resolver sozinha. */}
-              {indicador.faixa !== "BOM" && indicador.faixa !== "SEM_DADO" && ONDE_RESOLVER_INDICADOR[indicador.chave] && (
-                <Link
-                  href={ONDE_RESOLVER_INDICADOR[indicador.chave].href}
-                  className="mt-3 inline-block text-[calc(13px*var(--escala-letra))] font-medium text-acao underline-offset-4 hover:underline"
-                >
-                  {ONDE_RESOLVER_INDICADOR[indicador.chave].texto}
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      </Cartao>
-
+      <IndicadoresDaAnalise indicadores={diagnostico.indicadores} />
       </>) }, { chave: "entradas", titulo: "Entradas e saídas", conteudo: (<>
       {/* ── A renda numa barra ─────────────────────────── */}
       <EntradasESaidas
@@ -292,8 +167,9 @@ export default async function Analise() {
         )}
       </EntradasESaidas>
 
+      {/* Sem risco nem ponto forte, o cartão ficava só com o título. */}
+      {(diagnostico.riscos.length > 0 || diagnostico.pontosFortes.length > 0) && (
       <Cartao titulo="O que pesa e o que ajuda">
-        {(diagnostico.riscos.length > 0 || diagnostico.pontosFortes.length > 0) && (
           <div className="space-y-3">
             {diagnostico.riscos.length > 0 && (
               <div>
@@ -321,43 +197,28 @@ export default async function Analise() {
               </div>
             )}
           </div>
-        )}
       </Cartao>
+      )}
 
       {/* ── Gráficos ──────────────────────────────────── */}
+      <Cartao titulo="Como cada mês fechou">
+        <GraficoDozeMeses dados={panorama.historico} competenciaDestacada={competencia} />
+        <p className="mt-3 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
+          Barra para cima é mês que sobrou; para baixo, mês que faltou. O mês atual vai cheio e os anteriores em
+          meio-tom, porque ele ainda não terminou — comparar mês pela metade com mês fechado engana.
+        </p>
+      </Cartao>
+
+      {/* ── Categorias ──────────────────────────────────── */}
       </>) }, { chave: "categorias", titulo: "Categorias", conteudo: (<>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Cartao titulo="Para onde foi o dinheiro">
-          {panorama.mes.despesasPorCategoria.length > 0 ? (
-            <GraficoCategorias dados={panorama.mes.despesasPorCategoria} />
-          ) : (
-            <Vazio titulo="Sem gastos classificados no mês" />
-          )}
-        </Cartao>
-
-        <Cartao titulo="Como cada mês fechou">
-          <GraficoDozeMeses dados={panorama.historico} competenciaDestacada={competencia} />
-          <p className="mt-3 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
-            Barra para cima é mês que sobrou; para baixo, mês que faltou. O mês atual vai cheio e os anteriores em
-            meio-tom, porque ele ainda não terminou — comparar mês pela metade com mês fechado engana.
-          </p>
-        </Cartao>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Cartao titulo="Quando o dinheiro sai">
-          <MapaDeCalor
-            dias={panorama.mes.gastosPorDia}
-            mediaDiariaCentavos={panorama.mes.mediaDiariaCentavos}
-            maiorGasto={panorama.mes.maiorGastoDoDia}
-          />
-        </Cartao>
-
-        <Cartao titulo="O que mudou desde o mês passado">
-          <CategoriasComparadas linhas={panorama.mes.despesasPorCategoria} limite={10} />
-        </Cartao>
-      </div>
-
+      <CategoriasDoMes
+        linhas={panorama.mes.despesasPorCategoria}
+        mesAnterior={rotuloCompetencia(competenciaMaisMeses(competencia, -1)).split(" ")[0]}
+        dias={panorama.mes.gastosPorDia}
+        maiorGasto={panorama.mes.maiorGastoDoDia}
+        mediaDiariaCentavos={panorama.mes.mediaDiariaCentavos}
+        hoje={Number(new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }).slice(8, 10))}
+      />
       </>) }]} />
       <p className="px-1 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-muted-fg">
         Leitura dos seus lançamentos. Não é recomendação nem substitui contador.

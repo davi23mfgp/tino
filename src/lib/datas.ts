@@ -99,6 +99,22 @@ export function janelaDoMes(competencia: string, diaInicio = 1): { de: Date; ate
   return { de, ate }
 }
 
+/**
+ * Até quando olhar o mês anterior para comparar com o mês em andamento.
+ *
+ * No dia 10, o mês corrente tem dez dias de gasto e o anterior tem trinta:
+ * comparar os dois inteiros fazia toda categoria "cair" no começo do mês e só
+ * "subir" no fim. O corte é o mesmo tanto de tempo desde o início do mês
+ * anterior. Mês já encerrado compara inteiro com inteiro (devolve `null`).
+ */
+export function corteDoMesAnterior(competencia: string, agora: Date, diaInicio = 1): Date | null {
+  const atual = janelaDoMes(competencia, diaInicio)
+  if (agora.getTime() > atual.ate.getTime()) return null
+  const anterior = janelaDoMes(competenciaMaisMeses(competencia, -1), diaInicio)
+  // O mês anterior pode ser mais curto (fevereiro): o corte não passa do fim dele.
+  return new Date(Math.min(anterior.de.getTime() + (agora.getTime() - atual.de.getTime()), anterior.ate.getTime()))
+}
+
 export function formatarData(data: Date): string {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(data)
 }

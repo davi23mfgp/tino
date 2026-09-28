@@ -3,6 +3,7 @@ import { describe, it } from "node:test"
 
 import {
   competenciaDe,
+  corteDoMesAnterior,
   competenciaMaisMeses,
   distanciaEmMeses,
   diaSeguro,
@@ -107,5 +108,27 @@ describe("lerData", () => {
     // Datas gravadas em UTC à meia-noite: sem isso, o dia muda ao renderizar
     // em America/Sao_Paulo.
     assert.equal(lerData("2026-08-24")?.getUTCHours(), 0)
+  })
+})
+
+describe("corte do mês anterior para comparar", () => {
+  it("no dia 10 compara com os dez primeiros dias do mês passado", () => {
+    const corte = corteDoMesAnterior("2026-09", new Date("2026-09-10T15:00:00Z"))
+    assert.equal(corte?.toISOString(), "2026-08-10T15:00:00.000Z")
+  })
+
+  it("mês já encerrado compara inteiro com inteiro", () => {
+    assert.equal(corteDoMesAnterior("2026-08", new Date("2026-09-10T15:00:00Z")), null)
+  })
+
+  it("não passa do fim de um mês anterior mais curto", () => {
+    const corte = corteDoMesAnterior("2026-03", new Date("2026-03-31T12:00:00Z"))
+    assert.equal(corte?.toISOString(), "2026-02-28T23:59:59.999Z")
+  })
+
+  it("respeita o mês que começa no dia do salário", () => {
+    // Mês de 5 a 4: no dia 7 de outubro, dois dias e meio desde o dia 5.
+    const corte = corteDoMesAnterior("2026-10", new Date("2026-10-07T12:00:00Z"), 5)
+    assert.equal(corte?.toISOString(), "2026-09-07T12:00:00.000Z")
   })
 })
