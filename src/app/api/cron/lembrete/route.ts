@@ -4,8 +4,11 @@ import { prisma } from "@/lib/prisma"
 import { empurrar, pushConfigurado } from "@/lib/push"
 import { segredoConfere } from "@/lib/segredo"
 import { expurgarRegistrosVencidos } from "@/lib/registro-acesso"
+import { identificarLojasComIA } from "@/lib/marcas-ia"
 
 export const dynamic = "force-dynamic"
+/// A rodada da IA das lojas pode levar até meio minuto esperando o modelo.
+export const maxDuration = 120
 
 /**
  * O lembrete diário que repõe o atalho de lançar na barra.
@@ -38,8 +41,14 @@ export async function GET(requisicao: Request) {
     where: { janelaInicio: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
   })
 
+  // A rodada diária da IA que identifica lojas (camada 4 dos logos). Mora
+  // aqui porque o plano gratuito da Vercel dá um disparo por dia, e ela tem
+  // de rodar uma vez só por dia de qualquer jeito — a cota dela é diária.
+  // Falha dela não derruba o lembrete.
+  const lojas = await identificarLojasComIA().catch(() => ({ motivo: "falha-na-ia" as const }))
+
   if (!pushConfigurado()) {
-    return NextResponse.json({ erro: "Push não configurado neste ambiente." }, { status: 503 })
+    return NextResponse.json({ erro: "Push não configurado neste ambiente.", lojas }, { status: 503 })
   }
 
   const agora = new Date()
@@ -76,5 +85,5 @@ export async function GET(requisicao: Request) {
     }
   }
 
-  return NextResponse.json({ enviados, pulados, total: inscricoes.length })
+  return NextResponse.json({ enviados, pulados, total: inscricoes.length, lojas })
 }

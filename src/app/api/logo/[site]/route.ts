@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma"
 import { siteConhecido } from "@/lib/marcas"
 import { logoDaInternet } from "@/lib/logo-da-internet"
 
@@ -13,12 +14,18 @@ const memoria = new Map<string, { tipo: string; bytes: Buffer } | null>()
  * lado da compra.
  *
  * Sem sessão de propósito: o logo é público, a resposta é igual para todo
- * mundo e pode ficar guardada na borda. Só atende site do catálogo — não é um
- * atalho para o servidor buscar ícone de qualquer endereço.
+ * mundo e pode ficar guardada na borda. Só atende site do catálogo ou de loja
+ * identificada pela IA — não é um atalho para o servidor buscar ícone de
+ * qualquer endereço.
  */
 export async function GET(_requisicao: Request, contexto: Contexto) {
   const { site } = await contexto.params
-  if (!siteConhecido(site)) return new Response(null, { status: 404 })
+  // Além do catálogo, o site de uma loja que a IA identificou. Quem grava
+  // esses sites é só a rodada da noite, nunca uma requisição de fora.
+  const permitido =
+    siteConhecido(site) ||
+    Boolean(await prisma.marcaDescoberta.findFirst({ where: { site, situacao: { in: ["IDENTIFICADA", "SUGERIDA"] } }, select: { chave: true } }))
+  if (!permitido) return new Response(null, { status: 404 })
 
   if (!memoria.has(site)) memoria.set(site, await logoDaInternet(site))
   const logo = memoria.get(site)

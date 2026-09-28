@@ -52,7 +52,7 @@
    botão e, no celular, uma terceira linha — cada lançamento ocupava 110px. */
 .linha { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; align-items: center; gap: 12px; min-height: 60px; padding: 6px 0; border-bottom: 1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
 .grupoDia li:last-child { border-bottom: 0; }
-.simbolo { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 999px; background: color-mix(in oklab, var(--foreground), transparent 92%); }
+.simbolo { display: grid; place-items: center; flex-shrink: 0; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border-radius: 999px; background: color-mix(in oklab, var(--foreground), transparent 92%); }
 .simbolo>:first-child:not(:last-child)+* { display: none; }
 .simbolo :global(.simbolo-categoria) { background: none !important; box-shadow: none !important; }
 .texto { min-width: 0; }
@@ -68,3 +68,4 @@
   .movimentos { padding: 4px 12px 10px; }
   .valor, .moeda { font-size: 13px !important; }
 }
+.simbolo:disabled { opacity: 1; cursor: default; }

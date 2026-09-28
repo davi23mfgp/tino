@@ -56,4 +56,17 @@ describe("loja pelo texto da compra", () => {
     assert.ok(comLogo.length > 50)
     for (const marca of comLogo) assert.ok(existsSync(join("public", marca.logo!)), marca.logo)
   })
+
+  it("com intermediário na frente, a loja é o que vem depois do asterisco", () => {
+    assert.equal(nome("PAYPAL *NETFLIX"), "Netflix")
+    assert.equal(nome("EBW*SPOTIFY"), "Spotify")
+    assert.equal(nome("DL*GOOGLE YOUTUBE"), "YouTube")
+    // Loja desconhecida dentro do iFood: o pedido é do iFood.
+    assert.equal(nome("IFD*BURGER DO ZE"), "iFood")
+    assert.equal(nome("PAYPAL *LOJINHA123"), "PayPal")
+    // Maquininha não é a loja: sem logo, em vez do logo do Mercado Pago.
+    assert.equal(nome("MP*PADARIAPAOQUENTE"), null)
+    assert.equal(nome("PAG*MERCADINHOSAOJOSE"), null)
+    assert.equal(nome("EC *DROGASIL 123"), "Drogasil")
+  })
 })

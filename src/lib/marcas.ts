@@ -60,7 +60,7 @@ export const MARCAS: Marca[] = [
   { nome: "Pão de Açúcar", site: "paodeacucar.com", termos: ["pao de acucar", "paodeacucar"] },
   { nome: "Sam's Club", site: "samsclub.com.br", termos: ["sams club", "samsclub"] },
   { nome: "Drogasil", site: "drogasil.com.br", termos: ["drogasil"] },
-  { nome: "Droga Raia", site: "drogaraia.com.br", termos: ["droga raia", "drogaraia", "raia drogasil"] },
+  { nome: "Droga Raia", site: "drogaraia.com.br", termos: ["droga raia", "drogaraia", "raia drogasil", "drogaria raia"] },
   { nome: "Pague Menos", site: "paguemenos.com.br", termos: ["pague menos", "paguemenos"] },
   { nome: "Drogaria São Paulo", site: "drogariasaopaulo.com.br", termos: ["drogaria sao paulo"] },
   { nome: "Panvel", site: "panvel.com", termos: ["panvel"] },
@@ -264,13 +264,43 @@ const SITES = new Set(MARCAS.map((marca) => marca.site))
 export const siteConhecido = (site: string) => SITES.has(site)
 
 /**
- * A loja da compra, se for uma das conhecidas.
+ * Quem cobrou no lugar da loja: maquininha, carteira ou intermediador de
+ * pagamento. O banco escreve o nome dele na frente ("IFD*BURGER DO ZE",
+ * "EBW*SPOTIFY", "PAYPAL *NETFLIX"), e a loja de verdade é o que vem depois
+ * do asterisco.
  *
- * Com mais de uma no mesmo texto, ganha o termo com mais palavras ("google
- * youtube" é YouTube, não Google) e, empatado, o que aparece primeiro ("posto
- * shell ipiranga" é Shell: Ipiranga ali costuma ser o nome da rua).
+ * `marca` é o logo a usar quando o que vem depois não é loja conhecida — só
+ * para quem É a loja da compra: pedido feito dentro do iFood é do iFood;
+ * cobrança do PayPal é do PayPal. Maquininha (MP*, PAG*, EC*) fica sem: o
+ * logo do Mercado Pago numa compra da padaria que usa a maquininha dele seria
+ * logo errado.
  */
-export function marcaDaCompra(descricao: string): Marca | null {
+const INTERMEDIARIOS: { prefixo: string; marca?: string }[] = [
+  { prefixo: "IFD", marca: "iFood" },
+  { prefixo: "IFOOD", marca: "iFood" },
+  { prefixo: "PAYPAL", marca: "PayPal" },
+  { prefixo: "APL", marca: "Apple" },
+  { prefixo: "APPLE", marca: "Apple" },
+  { prefixo: "GOOGLE", marca: "Google" },
+  { prefixo: "UBER", marca: "Uber" },
+  { prefixo: "PAG" }, { prefixo: "PG" }, { prefixo: "PAGSEGURO" },
+  { prefixo: "MP" }, { prefixo: "MERCPAGO" }, { prefixo: "MERCADOPAGO" },
+  { prefixo: "EC" }, { prefixo: "EBW" }, { prefixo: "EBN" }, { prefixo: "EBANX" },
+  { prefixo: "DL" }, { prefixo: "DLOCAL" }, { prefixo: "PP" }, { prefixo: "PICPAY" },
+  { prefixo: "SUMUP" }, { prefixo: "STONE" }, { prefixo: "TON" }, { prefixo: "CIELO" },
+  { prefixo: "REDE" }, { prefixo: "GETNET" }, { prefixo: "SAFRAPAY" }, { prefixo: "INFINITEPAY" },
+  { prefixo: "HTM" }, { prefixo: "HOTMART" }, { prefixo: "KIWIFY" }, { prefixo: "ASAAS" },
+]
+const PREFIXO = new RegExp(`^\\s*(${INTERMEDIARIOS.map((item) => item.prefixo).join("|")})\\s*\\*\\s*`, "i")
+
+/** "EBW*SPOTIFY" → { intermediario: "EBW", resto: "SPOTIFY" }. Sem prefixo, null. */
+export function separarIntermediario(descricao: string): { intermediario: string; resto: string } | null {
+  const achado = PREFIXO.exec(descricao)
+  if (!achado) return null
+  return { intermediario: achado[1].toUpperCase(), resto: descricao.slice(achado[0].length) }
+}
+
+function buscarNoCatalogo(descricao: string): Marca | null {
   const texto = palavras(descricao)
   let melhor: { marca: Marca; tamanho: number; posicao: number } | null = null
   for (const marca of MARCAS) {
@@ -285,4 +315,54 @@ export function marcaDaCompra(descricao: string): Marca | null {
     }
   }
   return melhor?.marca ?? null
+}
+
+/**
+ * A loja da compra, se for uma das conhecidas.
+ *
+ * Com mais de uma no mesmo texto, ganha o termo com mais palavras ("google
+ * youtube" é YouTube, não Google) e, empatado, o que aparece primeiro ("posto
+ * shell ipiranga" é Shell: Ipiranga ali costuma ser o nome da rua).
+ *
+ * Com intermediário na frente, a loja é procurada só no que vem depois do
+ * asterisco: em "PAYPAL *NETFLIX" é o Netflix, não o PayPal.
+ */
+export function marcaDaCompra(descricao: string): Marca | null {
+  const separado = separarIntermediario(descricao)
+  if (!separado) return buscarNoCatalogo(descricao)
+  const daLoja = buscarNoCatalogo(separado.resto)
+  if (daLoja) return daLoja
+  const marca = INTERMEDIARIOS.find((item) => item.prefixo === separado.intermediario)?.marca
+  return marca ? (MARCAS.find((item) => item.nome === marca) ?? null) : null
+}
+
+/**
+ * A chave de uma descrição para guardar o que já se descobriu dela: sem o
+ * intermediário, sem números e sem pontuação. "MP*SUPERM BOA ESPERANCA 0123"
+ * e "SUPERM BOA ESPERANCA 0456" são a mesma loja, e a IA só é perguntada uma
+ * vez.
+ */
+export function chaveDaDescricao(descricao: string): string {
+  const texto = separarIntermediario(descricao)?.resto ?? descricao
+  return palavras(texto)
+    .trim()
+    .split(" ")
+    .filter((palavra) => palavra && !/^\d+$/.test(palavra))
+    .join(" ")
+    .slice(0, 80)
+}
+
+/** Acha a marca do catálogo pelo site ou pelo nome — para validar o que a IA respondeu. */
+export function marcaDoCatalogo(nome: string | null, site: string | null): Marca | null {
+  if (site) {
+    const limpo = site.toLowerCase().replace(/^www\./, "")
+    const pelaSite = MARCAS.find((marca) => marca.site === limpo)
+    if (pelaSite) return pelaSite
+  }
+  if (nome) {
+    const alvo = palavras(nome)
+    const peloNome = MARCAS.find((marca) => palavras(marca.nome) === alvo)
+    if (peloNome) return peloNome
+  }
+  return null
 }

@@ -1775,3 +1775,29 @@ model RegistroAcesso {
   @@index([criadoEm])
   @@index([usuarioId])
 }
+
+/// Loja identificada pela IA a partir do texto da compra (camada 4 dos logos,
+/// 28/09/2026).
+///
+/// Uma linha por descrição, compartilhada por todos os lares: "SUPERM BOA
+/// ESPERANCA" é o mesmo mercado para qualquer pessoa, e perguntar de novo a
+/// cada lar gastaria a cota de IA que o assistente e as outras ferramentas
+/// usam. Não guarda lar, valor nem data — só o texto e a resposta.
+///
+/// `situacao`:
+/// - IDENTIFICADA: vira logo sozinho (marca do catálogo, ou site que devolveu
+///   um logo de verdade com confiança alta);
+/// - SUGERIDA: aparece só como sugestão em "Qual loja é esta?";
+/// - DESCONHECIDA: a IA não soube; não é perguntada de novo.
+model MarcaDescoberta {
+  chave     String   @id
+  exemplo   String
+  situacao  String
+  marcaNome String?
+  site      String?
+  confianca Int?
+  criadoEm  DateTime @default(now())
+
+  @@index([site])
+  @@index([criadoEm])
+}
