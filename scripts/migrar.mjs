@@ -13,6 +13,19 @@
  */
 import { spawnSync } from "node:child_process"
 
+// Variável faltando não é banco dormindo: tentar de novo não resolve, e a
+// mensagem "o banco não respondeu" mandava procurar o problema no lugar
+// errado. Acontece quando um projeto da Vercel não tem as variáveis (projeto
+// novo, ou variável marcada só para Production num deploy de Preview).
+const faltando = ["DATABASE_URL", "DIRECT_URL"].filter((nome) => !process.env[nome])
+if (faltando.length) {
+  console.error(
+    `Falta ${faltando.join(" e ")} neste ambiente (${process.env.VERCEL_ENV ?? "local"}). ` +
+      "Na Vercel: Settings → Environment Variables, marque Production e Preview.",
+  )
+  process.exit(1)
+}
+
 const TENTATIVAS = 3
 const ESPERA_MS = [0, 5_000, 15_000]
 
