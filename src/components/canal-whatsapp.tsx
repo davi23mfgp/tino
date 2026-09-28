@@ -34,9 +34,11 @@ interface Props {
   /** Devolve a chave em claro — que aparece uma vez só. */
   aoGerar: () => Promise<void>
   chaveNova: string | null
+  /** Dentro de um diálogo que já tem o título: sem a moldura e sem repetir o nome. */
+  semCabecalho?: boolean
 }
 
-export function CanalWhatsApp({ disponivel, chaves, aoGerar, chaveNova }: Props) {
+export function CanalWhatsApp({ disponivel, chaves, aoGerar, chaveNova, semCabecalho = false }: Props) {
   const [copiado, setCopiado] = useState(false)
   const [gerando, setGerando] = useState(false)
 
@@ -53,11 +55,13 @@ export function CanalWhatsApp({ disponivel, chaves, aoGerar, chaveNova }: Props)
         : "desligado"
 
   return (
-    <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
+    <div className={semCabecalho ? undefined : "rounded-[var(--raio-cartao)] border border-pauta p-4"}>
       <div className="flex items-center justify-between gap-3">
-        <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
-          <MessageCircle className="size-4" /> WhatsApp
-        </p>
+        {!semCabecalho && (
+          <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
+            <MessageCircle className="size-4" /> WhatsApp
+          </p>
+        )}
         <Selo estado={estado} />
       </div>
 

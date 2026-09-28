@@ -12,7 +12,7 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
   const status = url.searchParams.get("status") ?? "PENDENTE"
 
-  const [capturas, chaves, pendentes] = await Promise.all([
+  const [capturas, chaves, pendentes, maisUsadas] = await Promise.all([
     prisma.captura.findMany({
       where: { larId: sessao.larId, ...(status === "TODAS" ? {} : { status: status as never }) },
       orderBy: { criadoEm: "desc" },
@@ -28,11 +28,21 @@ export const GET = comSessao(async (sessao, requisicao) => {
       select: { id: true, nome: true, sufixo: true, origem: true, ativa: true, ultimoUso: true, usos: true, chatId: true },
     }),
     prisma.captura.count({ where: { larId: sessao.larId, status: "PENDENTE" } }),
+    // As categorias que a pessoa mais usou nos últimos 90 dias viram atalho na
+    // conferência: a maioria das compras cai sempre nas mesmas quatro ou cinco.
+    prisma.transacao.groupBy({
+      by: ["categoriaId"],
+      where: { larId: sessao.larId, tipo: "DESPESA", categoriaId: { not: null }, data: { gte: new Date(Date.now() - 90 * 86_400_000) } },
+      _count: { categoriaId: true },
+      orderBy: { _count: { categoriaId: "desc" } },
+      take: 4,
+    }),
   ])
 
   return ok({
     capturas,
     pendentes,
+    maisUsadas: maisUsadas.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)),
     chaves: chaves.map(({ chatId, ...chave }) => ({ ...chave, conectada: Boolean(chatId) })),
     // Sem as chaves da Meta configuradas no servidor, gerar chave de WhatsApp
     // seria entregar um caminho que não leva a lugar nenhum. A tela precisa
