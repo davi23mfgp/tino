@@ -108,6 +108,12 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   95 mil px do topo). O passo novo ganha uma entrada em `pages`, seus
   quadros começam em y = 0 com `"page"` próprio, e `launch.page` aponta para
   ele, para o canvas abrir direto no que está em escolha.
+- **O canvas só carrega os primeiros 199 arquivos**, em ordem alfabética; o
+  resto não aparece, sem aviso. O primeiro canvas ("Tino — telas passo a
+  passo", Nh6zs8PsNNNF51HqZq2ycD) passou disso e guarda os passos 1 a 17.
+  Do 18 em diante: "Tino — telas, parte 2"
+  (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK). Chegando perto de 190
+  arquivos, abrir uma parte 3.
 - **Aprovou, sobe** (pedido em 2026-09-26): tela aprovada vai na hora para a
   branch da sessão e o trabalho segue para a próxima tela sem perguntar. O
   Davi quer também no Vercel, que publica o `main`; a sessão remota não tem
