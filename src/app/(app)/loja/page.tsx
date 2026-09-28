@@ -1,20 +1,27 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import Link from "next/link"
+import { Delete, Package, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Cartao, Metrica, Valor, Vazio } from "@/components/ui/painel"
 import { conferirVenda, totalDaVenda } from "@/lib/loja/venda"
+import { digitar, type Tecla } from "@/lib/loja/teclado"
 import type { FormaPagamento, ItemDaVenda, PagamentoInformado, RegraDeRecebimento } from "@/lib/loja/venda"
-import { Destaque } from "@/components/ui/destaque"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
+import estilos from "./balcao.module.css"
 
 /**
- * Balcão.
+ * Balcão — opção A do canvas (Davi, 28/09/2026): teclado de balcão.
  *
- * A tela é a venda. Tudo que não for fechar a venda em poucos toques desce ou
- * sai — o concorrente aqui é o caderno, que abre na hora e não pede cadastro.
+ * A tela é a venda. O valor grande e o teclado são o que a maquininha já
+ * ensinou: digita o valor, escolhe como pagou, cobra. Produto cadastrado é
+ * atalho, não requisito — o concorrente aqui é o caderno, que abre na hora e
+ * não pede cadastro.
  *
  * O cálculo mostrado vem do mesmo módulo que o servidor usa para gravar
  * (`@/lib/loja/venda`), então o que o cliente vê no visor é o que vai ser
@@ -68,16 +75,17 @@ const FORMAS: { valor: FormaPagamento; rotulo: string }[] = [
   { valor: "PIX", rotulo: "Pix" },
   { valor: "DEBITO", rotulo: "Débito" },
   { valor: "CREDITO_VISTA", rotulo: "Crédito" },
-  { valor: "CREDITO_PARCELADO", rotulo: "Crédito parcelado" },
+  { valor: "CREDITO_PARCELADO", rotulo: "Parcelado" },
   { valor: "FIADO", rotulo: "Fiado" },
 ]
 
-const campo = "rounded-[var(--raio-campo)] border border-pauta bg-background px-3.5 py-2.5 text-[calc(13px*var(--escala-letra))] outline-none focus:border-acao/50"
+const TECLAS: Tecla[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "apagar"]
 
-export default function Loja() {
+export default function Balcao() {
   const [dados, setDados] = useState<Estado | null>(null)
   const [carrinho, setCarrinho] = useState<(ItemDaVenda & { produtoId?: string })[]>([])
-  const [avulso, setAvulso] = useState({ descricao: "", preco: "" })
+  const [digitado, setDigitado] = useState(0)
+  const [descricaoAvulso, setDescricaoAvulso] = useState("")
   const [forma, setForma] = useState<FormaPagamento>("DINHEIRO")
   const [recebido, setRecebido] = useState("")
   const [cliente, setCliente] = useState("")
@@ -86,6 +94,8 @@ export default function Loja() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [notaEmOperacao, setNotaEmOperacao] = useState<string | null>(null)
   const [notaErro, setNotaErro] = useState<string | null>(null)
+  const [abrindoCaixa, setAbrindoCaixa] = useState(false)
+  const [trocoInicial, setTrocoInicial] = useState("")
 
   const carregar = useCallback(async () => {
     setDados(await buscar<Estado>("/api/loja"))
@@ -95,7 +105,16 @@ export default function Loja() {
     carregar()
   }, [carregar])
 
-  const total = useMemo(() => totalDaVenda(carrinho), [carrinho])
+  // O valor que está no visor e ainda não virou item entra na venda como
+  // item avulso: quem digita 35,00 e cobra vendeu 35,00, sem passo a mais.
+  const itens = useMemo(
+    () =>
+      digitado > 0
+        ? [...carrinho, { descricao: descricaoAvulso.trim() || "Venda avulsa", quantidade: 1, precoUnitarioCentavos: digitado }]
+        : carrinho,
+    [carrinho, digitado, descricaoAvulso],
+  )
+  const total = useMemo(() => totalDaVenda(itens), [itens])
 
   // Em dinheiro o lojista digita o que recebeu para ver o troco. Nas outras
   // formas o valor é sempre o total: passar diferente no cartão é erro.
@@ -106,7 +125,30 @@ export default function Loja() {
 
   const conferencia = useMemo(() => conferirVenda(total, pagamentos), [total, pagamentos])
 
+  const tocar = useCallback((tecla: Tecla) => {
+    setAviso(null)
+    setDigitado((atual) => digitar(atual, tecla))
+  }, [])
+
+  // No computador, o teclado físico também digita no visor — quem vende no
+  // notebook não vai clicar número por número. Só quando nenhum campo está
+  // com o foco, para não roubar o que se digita no nome do item.
+  useEffect(() => {
+    function aoTeclar(evento: KeyboardEvent) {
+      const alvo = evento.target as HTMLElement | null
+      if (alvo && (alvo.tagName === "INPUT" || alvo.tagName === "TEXTAREA" || alvo.isContentEditable)) return
+      if (evento.ctrlKey || evento.metaKey || evento.altKey) return
+      if (/^[0-9]$/.test(evento.key)) tocar(evento.key as Tecla)
+      else if (evento.key === "Backspace") tocar("apagar")
+      else return
+      evento.preventDefault()
+    }
+    window.addEventListener("keydown", aoTeclar)
+    return () => window.removeEventListener("keydown", aoTeclar)
+  }, [tocar])
+
   function adicionar(produto: Produto) {
+    setAviso(null)
     setCarrinho((atual) => {
       const existente = atual.findIndex((item) => item.produtoId === produto.id)
       if (existente >= 0) {
@@ -114,22 +156,16 @@ export default function Loja() {
         copia[existente] = { ...copia[existente], quantidade: copia[existente].quantidade + 1 }
         return copia
       }
-      return [
-        ...atual,
-        { produtoId: produto.id, descricao: produto.nome, quantidade: 1, precoUnitarioCentavos: produto.precoCentavos },
-      ]
+      return [...atual, { produtoId: produto.id, descricao: produto.nome, quantidade: 1, precoUnitarioCentavos: produto.precoCentavos }]
     })
   }
 
-  function adicionarAvulso(evento: React.FormEvent) {
-    evento.preventDefault()
-    if (!avulso.descricao.trim()) return
-
-    setCarrinho((atual) => [
-      ...atual,
-      { descricao: avulso.descricao.trim(), quantidade: 1, precoUnitarioCentavos: paraCentavos(avulso.preco) },
-    ])
-    setAvulso({ descricao: "", preco: "" })
+  /** Guarda o valor do visor como item e libera o visor para o próximo. */
+  function guardarDigitado() {
+    if (digitado <= 0) return
+    setCarrinho((atual) => [...atual, { descricao: descricaoAvulso.trim() || "Item avulso", quantidade: 1, precoUnitarioCentavos: digitado }])
+    setDigitado(0)
+    setDescricaoAvulso("")
   }
 
   async function emitirNota(vendaId: string) {
@@ -145,24 +181,29 @@ export default function Loja() {
     }
   }
 
-  async function fechar() {
+  async function cobrar() {
+    if (ocupado || total <= 0) return
+    if (forma === "FIADO" && !cliente.trim()) {
+      setErro("No fiado, diga quem levou.")
+      return
+    }
     setOcupado(true)
     setErro(null)
     setAviso(null)
-
     try {
       const resposta = await enviar<{ troco: number; venda: { numero: number } }>("/api/loja/vendas", {
-        itens: carrinho,
+        itens,
         pagamentos,
-        clienteNome: cliente || undefined,
+        clienteNome: cliente.trim() || undefined,
       })
-
       setAviso(
         resposta.troco > 0
           ? `Venda ${resposta.venda.numero} fechada. Troco de ${formatarMoeda(resposta.troco)}.`
           : `Venda ${resposta.venda.numero} fechada.`,
       )
       setCarrinho([])
+      setDigitado(0)
+      setDescricaoAvulso("")
       setRecebido("")
       setCliente("")
       await carregar()
@@ -173,283 +214,293 @@ export default function Loja() {
     }
   }
 
-  async function abrirCaixa() {
+  async function abrirCaixa(evento: React.FormEvent) {
+    evento.preventDefault()
+    if (ocupado) return
     setOcupado(true)
+    setErro(null)
     try {
-      await enviar("/api/loja/caixa", { acao: "abrir", aberturaCentavos: 0 })
+      // O troco que já está na gaveta é o ponto de partida da conferência
+      // do fim do dia: sem ele, a gaveta "sobra" exatamente esse valor.
+      await enviar("/api/loja/caixa", { acao: "abrir", aberturaCentavos: trocoInicial ? paraCentavos(trocoInicial) : 0 })
+      setAbrindoCaixa(false)
+      setTrocoInicial("")
       await carregar()
+    } catch (falha) {
+      setErro(falha instanceof Error ? falha.message : "Não consegui abrir o caixa.")
+      setAbrindoCaixa(false)
     } finally {
       setOcupado(false)
     }
   }
 
   const caixa = dados?.caixa
+  const produtos = dados?.produtos ?? []
+
+  const pilulaCaixa = caixa ? (
+    <span className={estilos.caixa} data-aberto>
+      <i aria-hidden />
+      Caixa aberto
+      <b>{formatarMoeda(caixa.resumo.vendidoCentavos)}</b>
+    </span>
+  ) : (
+    <button type="button" className={estilos.caixa} onClick={() => setAbrindoCaixa(true)} disabled={!dados}>
+      <i aria-hidden />
+      Caixa fechado
+      <b>Abrir</b>
+    </button>
+  )
 
   return (
-    <div className="space-y-4">
-      {/* Quatro números de peso igual não dizem como foi o dia. A resposta do
-          balcão é uma só: quanto vendeu — e, com o caixa fechado, o que abrir
-          o caixa resolve. */}
-      {/* O bloco claro da tela: como foi o dia no balcão. */}
-      <Destaque
-        rotulo={dados?.loja.nome ?? "Balcão"}
-        titulo={caixa ? `Vendeu ${formatarMoeda(caixa.resumo.vendidoCentavos)} no caixa de hoje` : "O caixa está fechado"}
-        apoio={
-          caixa
-            ? `Esperado na gaveta: ${formatarMoeda(caixa.resumo.esperadoNaGavetaCentavos)}.`
-            : "Abra o caixa para registrar as vendas do dia."
-        }
-      />
+    <div className={estilos.pagina}>
+      <section className={`${estilos.bloco} ${estilos.coluna}`} aria-label="Venda">
+        <div className={estilos.topo}>
+          <span>{dados?.loja.nome ?? " "}</span>
+          {pilulaCaixa}
+        </div>
 
-      <Cartao
-        titulo={dados?.loja.nome ?? "Balcão"}
-        acao={
-          caixa ? null : (
-            <button onClick={abrirCaixa} disabled={ocupado} className="flex items-center gap-1.5">
-              <Plus className="size-3.5" /> abrir caixa
-            </button>
-          )
-        }
-      >
-        {caixa ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Metrica rotulo="Vendido no caixa" valor={formatarMoeda(caixa.resumo.vendidoCentavos)} />
-            <Metrica rotulo="Em dinheiro" valor={formatarMoeda(caixa.resumo.emDinheiroCentavos)} />
-            <Metrica rotulo="Sangria" valor={formatarMoeda(caixa.resumo.sangriaCentavos)} />
-            <Metrica
-              rotulo="Esperado na gaveta"
-              valor={formatarMoeda(caixa.resumo.esperadoNaGavetaCentavos)}
-              detalhe="abertura mais dinheiro menos sangria"
+        <div className={estilos.visor} aria-live="polite">
+          <small>valor da venda</small>
+          <strong>{formatarMoeda(total)}</strong>
+          <span>{itens.length ? `${itens.length} ${itens.length === 1 ? "item" : "itens"}` : "digite o valor ou toque num produto"}</span>
+        </div>
+
+        {carrinho.length > 0 && (
+          <div className={estilos.itens}>
+            {carrinho.map((item, indice) => (
+              <div key={`${item.descricao}-${indice}`} className={estilos.item}>
+                <span>
+                  {item.quantidade}× {item.descricao}
+                </span>
+                <b>{formatarMoeda(item.quantidade * item.precoUnitarioCentavos)}</b>
+                <button type="button" onClick={() => setCarrinho((atual) => atual.filter((_, i) => i !== indice))} aria-label={`Tirar ${item.descricao}`}>
+                  <X aria-hidden />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Com valor no visor, dá para dar nome ao item e guardá-lo para
+            digitar o próximo. Sem nome, ele entra como "Venda avulsa". */}
+        {digitado > 0 && (
+          <div className={estilos.digitado}>
+            <Input
+              value={descricaoAvulso}
+              onChange={(evento) => setDescricaoAvulso(evento.target.value)}
+              placeholder="O que é? (opcional)"
+              aria-label="Nome do item"
+              maxLength={80}
             />
+            <button type="button" onClick={guardarDigitado}>
+              + item
+            </button>
+          </div>
+        )}
+
+        {produtos.length > 0 ? (
+          <div className={estilos.produtos} aria-label="Produtos">
+            {produtos.map((produto) => (
+              <button key={produto.id} type="button" onClick={() => adicionar(produto)}>
+                {produto.nome}
+                <span>{formatarMoeda(produto.precoCentavos)}</span>
+              </button>
+            ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-fg">
-            Nenhum caixa aberto. Dá para vender assim mesmo — a venda fica registrada, só não entra na conferência da
-            gaveta no fim do dia.
-          </p>
+          dados && (
+            <div className={estilos.semProdutos}>
+              <Package aria-hidden />
+              <span>Sem produtos ainda. Os da Prateleira aparecem aqui como atalho.</span>
+              <Link href="/loja/estoque">Cadastrar</Link>
+            </div>
+          )
         )}
-      </Cartao>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Cartao titulo="Produtos">
-          {dados && dados.produtos.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {dados.produtos.map((produto) => (
-                <button
-                  key={produto.id}
-                  onClick={() => adicionar(produto)}
-                  className="rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 px-3.5 py-2.5 text-left text-[calc(13px*var(--escala-letra))]"
-                >
-                  <span className="block font-medium">{produto.nome}</span>
-                  <span className="text-muted-fg">{formatarMoeda(produto.precoCentavos)}</span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <Vazio
-              titulo="Nenhum produto cadastrado"
-              texto="Não precisa cadastrar nada para vender: lance o item avulso abaixo e siga atendendo."
-            />
-          )}
-
-          <form onSubmit={adicionarAvulso} className="mt-4 flex flex-wrap items-end gap-2">
-            <label className="flex flex-1 flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-              item avulso
-              <input
-                value={avulso.descricao}
-                onChange={(evento) => setAvulso({ ...avulso, descricao: evento.target.value })}
-                placeholder="o que está vendendo"
-                className={campo}
-              />
-            </label>
-            <label className="flex w-32 flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-              preço
-              <input
-                inputMode="decimal"
-                value={avulso.preco}
-                onChange={(evento) => setAvulso({ ...avulso, preco: evento.target.value })}
-                placeholder="0,00"
-                className={campo}
-              />
-            </label>
-            <button type="submit" className="rounded-full border border-pauta px-4 py-2.5 text-[calc(13px*var(--escala-letra))]">
-              incluir
-            </button>
-          </form>
-        </Cartao>
-
-        <Cartao titulo="Venda">
-          {carrinho.length === 0 ? (
-            <Vazio titulo="Nada no balcão" texto="Toque num produto ou lance um item avulso." />
-          ) : (
-            <div className="divide-y divide-pauta">
-              {carrinho.map((item, indice) => (
-                <div key={`${item.descricao}-${indice}`} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                  <span className="flex-1">
-                    {item.quantidade}× {item.descricao}
-                  </span>
-                  <span className="text-muted-fg">{formatarMoeda(item.quantidade * item.precoUnitarioCentavos)}</span>
-                  <button
-                    onClick={() => setCarrinho((atual) => atual.filter((_, i) => i !== indice))}
-                    className="text-negativo"
-                    aria-label={`tirar ${item.descricao}`}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <Valor className="mt-4">{formatarMoeda(total)}</Valor>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {FORMAS.map((opcao) => (
-              <button
-                key={opcao.valor}
-                onClick={() => setForma(opcao.valor)}
-                className={`rounded-full border px-3.5 py-2 text-[calc(13px*var(--escala-letra))] ${
-                  forma === opcao.valor ? "border-acao text-acao" : "border-pauta text-muted-fg"
-                }`}
-              >
-                {opcao.rotulo}
+        <div className={estilos.corpo}>
+          <div className={estilos.teclado} role="group" aria-label="Teclado">
+            {TECLAS.map((tecla) => (
+              <button key={tecla} type="button" onClick={() => tocar(tecla)} aria-label={tecla === "apagar" ? "Apagar" : tecla}>
+                {tecla === "apagar" ? <Delete aria-hidden /> : tecla}
               </button>
             ))}
           </div>
 
-          {forma === "DINHEIRO" && (
-            <label className="mt-3 flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-              recebeu quanto
-              <input
-                inputMode="decimal"
-                value={recebido}
-                onChange={(evento) => setRecebido(evento.target.value)}
-                placeholder={formatarMoeda(total, false)}
-                className={campo}
-              />
-            </label>
-          )}
-
-          {forma === "FIADO" && (
-            <label className="mt-3 flex flex-col gap-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-              quem levou
-              <input value={cliente} onChange={(evento) => setCliente(evento.target.value)} className={campo} />
-            </label>
-          )}
-
-          {conferencia.trocoCentavos > 0 && (
-            <p className="mt-3 text-sm text-positivo">Troco de {formatarMoeda(conferencia.trocoCentavos)}.</p>
-          )}
-
-          <button
-            onClick={fechar}
-            disabled={ocupado || carrinho.length === 0}
-            className="mt-4 w-full rounded-full bg-acao px-4 py-3 text-[calc(15px*var(--escala-letra))] font-medium text-primary-foreground disabled:opacity-50"
-          >
-            fechar venda
-          </button>
-
-          {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
-          {aviso && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-positivo">{aviso}</p>}
-        </Cartao>
-      </div>
-
-      <Cartao titulo="Os últimos 30 dias">
-        {dados && dados.resumo.vendas > 0 ? (
-          <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Metrica
-                rotulo="Vendeu"
-                valor={formatarMoeda(dados.resumo.brutoCentavos)}
-                detalhe={`${dados.resumo.vendas} ${dados.resumo.vendas === 1 ? "venda" : "vendas"}`}
-              />
-              <Metrica
-                rotulo="Vira seu"
-                valor={formatarMoeda(dados.resumo.liquidoCentavos)}
-                tom="positivo"
-                detalhe={`${formatarMoeda(dados.resumo.taxasCentavos)} ficaram com a maquininha`}
-              />
-              <Metrica
-                rotulo="Ainda vai cair"
-                valor={formatarMoeda(dados.resumo.aReceberCentavos)}
-                tom="atencao"
-                detalhe="cartão que a adquirente ainda deve"
-              />
-              <Metrica
-                rotulo="No fiado"
-                valor={formatarMoeda(dados.resumo.fiadoCentavos)}
-                tom={dados.resumo.fiadoCentavos > 0 ? "negativo" : "neutro"}
-                detalhe="sem data para cair"
-              />
+          <div className={estilos.pagar}>
+            <span className={estilos.rotulo}>Como pagou</span>
+            <div className={estilos.formas} role="group" aria-label="Forma de pagamento">
+              {FORMAS.map((opcao) => (
+                <button key={opcao.valor} type="button" aria-pressed={forma === opcao.valor} onClick={() => setForma(opcao.valor)}>
+                  {opcao.rotulo}
+                </button>
+              ))}
             </div>
 
-            {dados.aCair.length > 0 && (
-              <div className="mt-4 rounded-[var(--raio-cartao)] border border-pauta bg-papel-2 p-4">
-                <p className="text-[calc(12px*var(--escala-letra))] uppercase tracking-widest text-muted-fg">Próximos dias</p>
-                <div className="mt-2 space-y-1">
+            {forma === "DINHEIRO" && (
+              <label className={estilos.campo}>
+                Recebeu quanto
+                <Input inputMode="decimal" value={recebido} onChange={(evento) => setRecebido(evento.target.value)} placeholder={formatarMoeda(total, false)} />
+              </label>
+            )}
+            {forma === "FIADO" && (
+              <label className={estilos.campo}>
+                Quem levou
+                <Input value={cliente} onChange={(evento) => setCliente(evento.target.value)} placeholder="Nome do cliente" maxLength={80} />
+              </label>
+            )}
+            {conferencia.trocoCentavos > 0 && <p className={estilos.troco}>Troco de {formatarMoeda(conferencia.trocoCentavos)}</p>}
+
+            <button type="button" className={estilos.cobrar} onClick={() => void cobrar()} disabled={ocupado || total <= 0}>
+              {ocupado ? "Fechando…" : `Cobrar ${formatarMoeda(total)}`}
+            </button>
+            {erro && (
+              <p role="alert" className={estilos.erro}>
+                {erro}
+              </p>
+            )}
+            {aviso && (
+              <p role="status" className={estilos.aviso}>
+                {aviso}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <div className={estilos.coluna}>
+        <section className={`${estilos.bloco} ${estilos.dia}`} aria-labelledby="titulo-hoje">
+          <h2 id="titulo-hoje">Hoje</h2>
+          {caixa ? (
+            <>
+              <div className={estilos.linha}>
+                <span>Vendido no caixa</span>
+                <b>{formatarMoeda(caixa.resumo.vendidoCentavos)}</b>
+              </div>
+              <div className={estilos.linha}>
+                <span>Em dinheiro</span>
+                <b>{formatarMoeda(caixa.resumo.emDinheiroCentavos)}</b>
+              </div>
+              <div className={estilos.linha}>
+                <span>Sangria</span>
+                <b>{formatarMoeda(caixa.resumo.sangriaCentavos)}</b>
+              </div>
+              <div className={estilos.linha}>
+                <span>
+                  Esperado na gaveta<small>troco inicial + dinheiro − sangria</small>
+                </span>
+                <b>{formatarMoeda(caixa.resumo.esperadoNaGavetaCentavos)}</b>
+              </div>
+            </>
+          ) : (
+            <p className={estilos.vazio}>
+              Caixa fechado. Dá para vender assim mesmo — a venda fica registrada, só não entra na conferência da gaveta.
+            </p>
+          )}
+        </section>
+
+        <section className={`${estilos.bloco} ${estilos.dia}`} aria-labelledby="titulo-30">
+          <h2 id="titulo-30">Os últimos 30 dias</h2>
+          {dados && dados.resumo.vendas > 0 ? (
+            <>
+              <div className={estilos.linha}>
+                <span>
+                  Vendeu<small>{`${dados.resumo.vendas} ${dados.resumo.vendas === 1 ? "venda" : "vendas"}`}</small>
+                </span>
+                <b>{formatarMoeda(dados.resumo.brutoCentavos)}</b>
+              </div>
+              <div className={estilos.linha}>
+                <span>
+                  Vira seu<small>{formatarMoeda(dados.resumo.taxasCentavos)} ficaram com a maquininha</small>
+                </span>
+                <b className="text-positivo">{formatarMoeda(dados.resumo.liquidoCentavos)}</b>
+              </div>
+              <div className={estilos.linha}>
+                <span>
+                  Ainda vai cair<small>cartão que a adquirente ainda deve</small>
+                </span>
+                <b>{formatarMoeda(dados.resumo.aReceberCentavos)}</b>
+              </div>
+              <div className={estilos.linha}>
+                <span>
+                  No fiado<small>sem data para cair</small>
+                </span>
+                <b className={dados.resumo.fiadoCentavos > 0 ? "text-negativo" : undefined}>{formatarMoeda(dados.resumo.fiadoCentavos)}</b>
+              </div>
+              {dados.aCair.length > 0 && (
+                <div className={estilos.separa}>
+                  <span className={estilos.rotulo}>Próximos dias</span>
                   {dados.aCair.slice(0, 6).map((linha) => (
-                    <div key={linha.dia} className="flex items-center justify-between text-[calc(13px*var(--escala-letra))]">
-                      <span className="text-muted-fg">
-                        {new Date(`${linha.dia}T12:00:00Z`).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "short",
-                        })}
-                      </span>
-                      <span className="numero">{formatarMoeda(linha.valorCentavos)}</span>
+                    <div key={linha.dia} className={estilos.linha}>
+                      <span>{new Date(`${linha.dia}T12:00:00Z`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
+                      <b>{formatarMoeda(linha.valorCentavos)}</b>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <Vazio titulo="Nenhuma venda nos últimos 30 dias" />
-        )}
-      </Cartao>
+              )}
+            </>
+          ) : (
+            <p className={estilos.vazio}>Nenhuma venda nos últimos 30 dias.</p>
+          )}
+        </section>
 
-      <Cartao titulo="Últimas vendas">
-        {!dados || dados.ultimasVendas.length === 0 ? (
-          <Vazio titulo="Nenhuma venda ainda" />
-        ) : (
-          <div className="divide-y divide-pauta">
-            {dados.ultimasVendas.map((venda) => (
-              <div key={venda.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                <span className="text-muted-fg">#{venda.numero}</span>
-                <span>{new Date(venda.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</span>
-                <span>{formatarMoeda(venda.totalCentavos)}</span>
+        <section className={`${estilos.bloco} ${estilos.dia}`} aria-labelledby="titulo-ultimas">
+          <h2 id="titulo-ultimas">Últimas vendas</h2>
+          {!dados || dados.ultimasVendas.length === 0 ? (
+            <p className={estilos.vazio}>Nenhuma venda ainda. Cada venda aparece aqui, com a nota para emitir ao lado.</p>
+          ) : (
+            <div>
+              {dados.ultimasVendas.map((venda) => (
+                <div key={venda.id} className={estilos.venda}>
+                  <span>#{venda.numero}</span>
+                  <span>{new Date(venda.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</span>
+                  <b>{formatarMoeda(venda.totalCentavos)}</b>
+                  {venda.notaFiscal?.status === "EMITIDA" ? (
+                    <span className={estilos.nota} data-status="EMITIDA">
+                      nota emitida
+                    </span>
+                  ) : venda.notaFiscal?.status === "CANCELADA" ? (
+                    <span className={estilos.nota}>nota cancelada</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className={estilos.nota}
+                      onClick={() => void emitirNota(venda.id)}
+                      disabled={notaEmOperacao === venda.id}
+                      title={venda.notaFiscal?.status === "REJEITADA" ? "A tentativa anterior foi rejeitada. Corrija o que faltar e tente de novo." : undefined}
+                    >
+                      {notaEmOperacao === venda.id ? "emitindo…" : venda.notaFiscal?.status === "REJEITADA" ? "tentar de novo" : "emitir nota"}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {notaErro && <p className={estilos.erro}>{notaErro}</p>}
+        </section>
+      </div>
 
-                {venda.notaFiscal?.status === "EMITIDA" ? (
-                  <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-positivo">
-                    nota emitida
-                  </span>
-                ) : venda.notaFiscal?.status === "CANCELADA" ? (
-                  <span className="rounded-full bg-muted-fg/10 px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
-                    nota cancelada
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => emitirNota(venda.id)}
-                    disabled={notaEmOperacao === venda.id}
-                    title={
-                      venda.notaFiscal?.status === "REJEITADA"
-                        ? "A tentativa anterior foi rejeitada. Corrija o que faltar e tente de novo."
-                        : undefined
-                    }
-                    className="rounded-full border border-pauta px-2.5 py-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg hover:border-acao/40 disabled:opacity-50"
-                  >
-                    {notaEmOperacao === venda.id
-                      ? "emitindo…"
-                      : venda.notaFiscal?.status === "REJEITADA"
-                        ? "tentar de novo"
-                        : "emitir nota"}
-                  </button>
-                )}
+      <Dialog open={abrindoCaixa} onOpenChange={(aberto) => !ocupado && setAbrindoCaixa(aberto)}>
+        <DialogContent largura="curta">
+          <DialogHeader>
+            <DialogTitle>Abrir o caixa</DialogTitle>
+            <DialogDescription>Quanto de troco já está na gaveta? No fim do dia o Tino confere se o dinheiro bate.</DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            <form onSubmit={abrirCaixa} className="grid gap-4">
+              <label className={estilos.campo}>
+                Troco na gaveta (R$)
+                <Input inputMode="decimal" value={trocoInicial} onChange={(evento) => setTrocoInicial(evento.target.value)} placeholder="0,00" autoFocus />
+              </label>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={() => setAbrindoCaixa(false)} disabled={ocupado}>
+                  Cancelar
+                </Button>
+                <Button disabled={ocupado}>{ocupado ? "Abrindo…" : "Abrir o caixa"}</Button>
               </div>
-            ))}
-          </div>
-        )}
-        {notaErro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{notaErro}</p>}
-      </Cartao>
+            </form>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

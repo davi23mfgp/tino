@@ -53,7 +53,23 @@ export interface ResumoDaLoja {
  * receber" transformaria dívida de cliente em previsão de caixa, que é
  * exatamente o erro que quebra loja pequena.
  */
-export function resumirLoja(vendas: VendaDoResumo[]): ResumoDaLoja {
+/**
+ * Se o pagamento já está na mão ou na conta.
+ *
+ * Só o fiado ganha `recebidoEm` quando é pago; nada marca o resto. Sem esta
+ * regra, a venda em dinheiro — que o lojista guardou na gaveta na hora —
+ * aparecia para sempre em "ainda vai cair", e o cartão de dois meses atrás
+ * também (Davi viu "Ainda vai cair R$ 35,00" numa venda em dinheiro,
+ * 28/09/2026). Dinheiro cai na hora; o resto, na data prevista pela regra da
+ * maquininha.
+ */
+export function jaCaiu(pagamento: PagamentoDoResumo, hoje: Date): boolean {
+  if (pagamento.recebidoEm !== null) return true
+  if (pagamento.forma === "FIADO") return false
+  return pagamento.forma === "DINHEIRO" || pagamento.previsaoRecebimentoEm.getTime() <= hoje.getTime()
+}
+
+export function resumirLoja(vendas: VendaDoResumo[], hoje = new Date()): ResumoDaLoja {
   const validas = vendas.filter((venda) => !venda.cancelada)
 
   let bruto = 0
@@ -74,14 +90,9 @@ export function resumirLoja(vendas: VendaDoResumo[]): ResumoDaLoja {
     for (const pagamento of venda.pagamentos) {
       liquido += pagamento.valorLiquidoCentavos
 
-      if (pagamento.forma === "FIADO") {
-        if (pagamento.recebidoEm === null) fiado += pagamento.valorCentavos
-        else recebido += pagamento.valorLiquidoCentavos
-      } else if (pagamento.recebidoEm !== null) {
-        recebido += pagamento.valorLiquidoCentavos
-      } else {
-        aReceber += pagamento.valorLiquidoCentavos
-      }
+      if (jaCaiu(pagamento, hoje)) recebido += pagamento.valorLiquidoCentavos
+      else if (pagamento.forma === "FIADO") fiado += pagamento.valorCentavos
+      else aReceber += pagamento.valorLiquidoCentavos
 
       const atual = formas.get(pagamento.forma) ?? { vendas: 0, bruto: 0, liquido: 0 }
       formas.set(pagamento.forma, {
@@ -130,7 +141,7 @@ export function aCairPorDia(
     for (const pagamento of venda.pagamentos) {
       // Fiado fica fora: não tem data, e prometer data para ele viraria
       // previsão de caixa em cima de dívida de cliente.
-      if (pagamento.forma === "FIADO" || pagamento.recebidoEm !== null) continue
+      if (pagamento.forma === "FIADO" || jaCaiu(pagamento, hoje)) continue
       if (pagamento.previsaoRecebimentoEm > limite) continue
 
       const dia = pagamento.previsaoRecebimentoEm.toISOString().slice(0, 10)
