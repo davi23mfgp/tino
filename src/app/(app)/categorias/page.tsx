@@ -210,7 +210,8 @@ function Editor({ rascunho, categorias, aoSalvar, aoExcluir, aoFechar }: {
   const [nome, setNome] = useState(rascunho.nome)
   // O banco guarda "circle" de versões antigas: não é emoji nem ícone
   // escolhido, então entra vazio.
-  const [icone, setIcone] = useState(rascunho.icone && (ICONES_ESCOLHIVEIS[rascunho.icone] || EH_EMOJI.test(rascunho.icone)) ? rascunho.icone : "")
+  const iconeInicial = rascunho.icone && (ICONES_ESCOLHIVEIS[rascunho.icone] || EH_EMOJI.test(rascunho.icone)) ? rascunho.icone : ""
+  const [icone, setIcone] = useState(iconeInicial)
   const [grupo, setGrupo] = useState(rascunho.grupo)
   const [essencial, setEssencial] = useState(rascunho.essencial)
   const [todosIcones, setTodosIcones] = useState(false)
@@ -221,7 +222,7 @@ function Editor({ rascunho, categorias, aoSalvar, aoExcluir, aoFechar }: {
 
   const nova = !rascunho.id
   const lancamentos = rascunho._count?.transacoes ?? 0
-  const mudou = nova || nome !== rascunho.nome || icone !== (rascunho.icone ?? "") || grupo !== rascunho.grupo || essencial !== rascunho.essencial
+  const mudou = nova || nome !== rascunho.nome || icone !== iconeInicial || grupo !== rascunho.grupo || essencial !== rascunho.essencial
   const chaves = Object.keys(ICONES_ESCOLHIVEIS)
   const emoji = EH_EMOJI.test(icone) ? icone : ""
 
