@@ -114,6 +114,19 @@ const NORMALIZAR = (texto: string) =>
  * Aplica regras do lar e, se nenhuma pegar, o dicionário.
  * `mapaCategorias` traduz nome de categoria do dicionário para o id do lar.
  */
+/**
+ * Só a categoria que o lar tem de fato.
+ *
+ * O dicionário conhece nomes que o lar pode não ter criado ("Padaria e
+ * café"). Sem o id, a prévia da importação mostrava o nome ao lado da compra
+ * e ela era gravada sem categoria: a tela prometia uma coisa e o extrato
+ * ficava com outra. Sem id, fica sem nome, e a compra entra na conta das que
+ * pedem categoria (e vai para a sugestão da IA, que só usa as do lar).
+ */
+export function soCategoriaDoLar<T extends { categoriaId?: string; categoriaNome?: string }>(sugestao: T): T {
+  return sugestao.categoriaNome && !sugestao.categoriaId ? { ...sugestao, categoriaNome: undefined } : sugestao
+}
+
 export function categorizar(
   descricaoBruta: string,
   regras: RegraAplicavel[],

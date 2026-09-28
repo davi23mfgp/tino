@@ -7,7 +7,7 @@ import { createHash } from "crypto"
 
 import { prisma } from "@/lib/prisma"
 import { competenciaDe } from "@/lib/datas"
-import { categoriaPeloRamo, categorizar, type RegraAplicavel } from "@/lib/categorizar"
+import { categoriaPeloRamo, categorizar, soCategoriaDoLar, type RegraAplicavel } from "@/lib/categorizar"
 import { competenciaDoCartao } from "@/lib/competencia-cartao"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { LimiteEstourado, REGRAS, consumirLimite } from "@/lib/limite"
@@ -223,7 +223,7 @@ export async function previaImportacao(params: {
   const normalizar=(t:string)=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")
   const nomePorId = new Map(categorias.map((categoria) => [categoria.id, categoria.nome]))
   const lancamentos: PreviaLancamento[] = brutos.map((bruto, indice) => {
-    const sugestao = categorizar(bruto.descricao, regras as unknown as RegraAplicavel[], mapaCategorias)
+    let sugestao = soCategoriaDoLar(categorizar(bruto.descricao, regras as unknown as RegraAplicavel[], mapaCategorias))
     if (!sugestao.categoriaId && !sugestao.categoriaNome && bruto.categoriaBanco) {
       const nome = categoriaPeloRamo(bruto.categoriaBanco)
       if (nome) {
@@ -231,6 +231,7 @@ export async function previaImportacao(params: {
         sugestao.categoriaId = mapaCategorias.get(nome)
         sugestao.confianca = 60
       }
+      sugestao = soCategoriaDoLar(sugestao)
     }
     // Regra do lar devolve só o id; sem o nome, a prévia mostrava a compra
     // como se estivesse sem categoria.

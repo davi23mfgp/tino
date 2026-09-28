@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { limparDescricao, capitalizar, categorizar, regraAPartirDeCorrecao } from "@/lib/categorizar"
+import { limparDescricao, capitalizar, categorizar, regraAPartirDeCorrecao, soCategoriaDoLar } from "@/lib/categorizar"
 import type { RegraAplicavel } from "@/lib/categorizar"
 
 const regra = (parcial: Partial<RegraAplicavel>): RegraAplicavel => ({
@@ -117,5 +117,23 @@ describe("regraAPartirDeCorrecao", () => {
     assert.ok(nova.padrao.length < "PAG*IFOOD 12/34 SAO PAULO BR".length)
     assert.match(nova.padrao, /IFOOD/)
     assert.ok(nova.prioridade >= 100, "regra do usuário nasce acima do dicionário")
+  })
+})
+
+describe("só a categoria que o lar tem", () => {
+  it("nome do dicionário sem categoria no lar não aparece na prévia", () => {
+    // O defeito: a prévia mostrava "Padaria e café" e a compra era gravada
+    // sem categoria, porque o lar não tinha essa categoria.
+    const sugestao = soCategoriaDoLar(categorizar("PADARIA REAL", [], new Map()))
+    assert.equal(sugestao.categoriaId, undefined)
+    assert.equal(sugestao.categoriaNome, undefined)
+  })
+
+  it("com a categoria no lar, nome e id ficam", () => {
+    const bruta = categorizar("PADARIA REAL", [], new Map())
+    const nome = bruta.categoriaNome as string
+    const sugestao = soCategoriaDoLar(categorizar("PADARIA REAL", [], new Map([[nome, "cat-1"]])))
+    assert.equal(sugestao.categoriaId, "cat-1")
+    assert.equal(sugestao.categoriaNome, nome)
   })
 })
