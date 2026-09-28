@@ -89,11 +89,25 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   const vendidoEm = new Date()
 
-  const cliente = dados.clienteNome
-    ? await prisma.clienteLoja.create({
-        data: { lojaId: loja.id, nome: dados.clienteNome, telefone: dados.clienteTelefone ?? null },
+  // Cliente com o mesmo nome é o mesmo cliente. Antes cada venda fiado criava
+  // um cadastro novo, e a Dona Cida de duas compras aparecia duas vezes em
+  // "quem deve", cada uma com metade da dívida (achado em 28/09/2026).
+  const nomeDoCliente = dados.clienteNome?.trim().replace(/\s+/g, " ")
+  const existente = nomeDoCliente
+    ? await prisma.clienteLoja.findFirst({
+        where: { lojaId: loja.id, nome: { equals: nomeDoCliente, mode: "insensitive" } },
+        orderBy: { criadoEm: "asc" },
       })
     : null
+  const cliente = existente
+    ? dados.clienteTelefone && !existente.telefone
+      ? await prisma.clienteLoja.update({ where: { id: existente.id }, data: { telefone: dados.clienteTelefone } })
+      : existente
+    : nomeDoCliente
+      ? await prisma.clienteLoja.create({
+          data: { lojaId: loja.id, nome: nomeDoCliente, telefone: dados.clienteTelefone ?? null },
+        })
+      : null
 
   // O troco sai antes de gravar: ele volta para a mão do cliente e não é
   // receita da loja.

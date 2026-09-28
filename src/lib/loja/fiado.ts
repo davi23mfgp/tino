@@ -79,7 +79,36 @@ export function montarDevedores(
     })
   }
 
-  return devedores.sort((a, b) => b.diasDaMaisAntiga - a.diasDaMaisAntiga)
+  return juntarRepetidos(devedores, hoje).sort((a, b) => b.diasDaMaisAntiga - a.diasDaMaisAntiga)
+}
+
+const chaveDoNome = (nome: string) =>
+  nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR")
+
+/**
+ * Junta o mesmo cliente cadastrado mais de uma vez.
+ *
+ * Até 28/09/2026 cada venda fiado criava um cadastro novo, e o banco de quem
+ * já usava o fiado tem a mesma pessoa repetida. A venda corrige daqui para a
+ * frente; esta junção corrige o que já estava gravado, sem mexer no banco:
+ * a baixa continua por venda, então juntar só na conta não perde nada.
+ */
+function juntarRepetidos(devedores: ClienteDevedor[], hoje: Date): ClienteDevedor[] {
+  const porNome = new Map<string, ClienteDevedor>()
+  for (const devedor of devedores) {
+    const chave = chaveDoNome(devedor.nome)
+    const atual = porNome.get(chave)
+    if (!atual) {
+      porNome.set(chave, { ...devedor, vendas: [...devedor.vendas] })
+      continue
+    }
+    atual.vendas.push(...devedor.vendas)
+    atual.vendas.sort((a, b) => a.criadoEm.getTime() - b.criadoEm.getTime())
+    atual.devendoCentavos += devedor.devendoCentavos
+    atual.telefone = atual.telefone ?? devedor.telefone
+    atual.diasDaMaisAntiga = Math.floor((hoje.getTime() - atual.vendas[0].criadoEm.getTime()) / 86_400_000)
+  }
+  return [...porNome.values()]
 }
 
 export interface ResumoDoFiado {

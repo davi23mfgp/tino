@@ -29,6 +29,18 @@ const cliente = (
 })
 
 describe("quem deve", () => {
+  it("o mesmo cliente cadastrado duas vezes vira uma pessoa só, com a dívida inteira", () => {
+    // Até 28/09/2026 cada venda fiado criava um cadastro novo: a Dona Cida de
+    // duas compras aparecia duas vezes, cada uma com metade.
+    const repetida = { ...cliente("Dona Cida", [{ numero: 2, valor: 2200, diasAtras: 20 }]), id: "cida-2" }
+    const devedores = montarDevedores([cliente("Dona Cida", [{ numero: 1, valor: 3850, diasAtras: 75 }]), repetida, cliente("dona  cida ", [{ numero: 3, valor: 100, diasAtras: 1 }])], HOJE)
+
+    assert.equal(devedores.length, 1)
+    assert.equal(devedores[0].devendoCentavos, 3850 + 2200 + 100)
+    assert.equal(devedores[0].vendas.length, 3)
+    assert.equal(devedores[0].diasDaMaisAntiga, 75)
+  })
+
   it("soma as compras em aberto do cliente", () => {
     const devedores = montarDevedores(
       [cliente("Ana", [{ numero: 1, valor: 5000, diasAtras: 10 }, { numero: 2, valor: 3000, diasAtras: 5 }])],
