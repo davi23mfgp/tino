@@ -333,23 +333,35 @@
 .coluna { display: grid; gap: 14px; align-content: start; min-width: 0; }
 .coluna > * { min-width: 0; }
 
-/* --- fatura compacta, depois do gráfico (Davi, 25/09: "ficou muito grande") --- */
+/* --- fatura da opção L1 (Davi, 27/09): o valor grande e o ciclo com os
+   quatro marcos nomeados, antes do gráfico --- */
 .fatura {
-  display: grid; gap: 8px; padding: 10px 16px 12px; border-radius: 18px;
+  display: grid; gap: 12px; padding: 16px 18px 12px; border-radius: var(--raio-bloco);
   border: 1px solid var(--vidro-borda, var(--pauta));
-  background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1);
+  background: linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1);
   backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  --ambar: oklch(0.8 0.15 80);
 }
-.linhaFatura { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-.linhaFatura small { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
-.linhaFatura b { font-size: calc(15px * var(--escala-letra)); font-weight: 720; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.vence { flex-shrink: 0; font-size: max(10px, calc(12px * var(--escala-letra))); font-weight: 650; color: oklch(0.8 0.15 80); white-space: nowrap; }
-:global(.light) .vence { color: oklch(0.55 0.13 65); }
-.trilho { position: relative; display: block; height: 3px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
-.trilho i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: var(--acao); }
-/* Fechamento: um corte fino no traço. Hoje: um ponto. */
-.trilho em { position: absolute; top: -3px; width: 2px; height: 9px; margin-left: -1px; border-radius: 2px; background: var(--foreground); opacity: .55; }
-.trilho u { position: absolute; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 99px; background: var(--foreground); box-shadow: 0 0 0 2px var(--papel-1); }
+:global(.light) .fatura { --ambar: oklch(0.55 0.13 65); }
+.fatura > div > small { display: block; font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
+.valorFatura { display: block; font-size: calc(30px * var(--escala-letra)); font-weight: 760; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.valorFatura small { font-size: .5em; font-weight: 650; opacity: .7; }
+/* O ciclo: a linha cheia vai de quando abriu até hoje. Os rótulos ficam
+   embaixo dos pontos; o do fechamento desce uma linha para não bater no de
+   hoje, que quase sempre está perto dele. */
+.ciclo { position: relative; height: 56px; margin: 16px 8px 0; }
+.ciclo > i { position: absolute; left: 0; right: 0; top: 6px; height: 3px; border-radius: 99px; background: color-mix(in oklab, var(--foreground), transparent 86%); }
+.ciclo > i > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: var(--acao); }
+.marco { position: absolute; top: 0; display: grid; justify-items: center; gap: 4px; transform: translateX(-50%); font-size: max(10px, calc(11px * var(--escala-letra))); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.marco::before { content: ""; width: 14px; height: 14px; border-radius: 99px; background: var(--cor-marco, var(--foreground)); box-shadow: 0 0 0 3px var(--papel-1); }
+.marco[data-marco="abriu"] { left: 0; justify-items: start; transform: none; --cor-marco: var(--acao); font-weight: 650; }
+/* "hoje" vai acima da linha: embaixo ele caía em cima de "vence" ou de
+   "fecha" nos dias perto do fim do ciclo. */
+.marco[data-marco="hoje"] { font-weight: 700; }
+.marco[data-marco="hoje"] span { position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); }
+.marco[data-marco="fecha"] { --cor-marco: color-mix(in oklab, var(--foreground), transparent 65%); color: var(--texto-2); }
+.marco[data-marco="fecha"] span { margin-top: 16px; }
+.marco[data-marco="vence"] { left: auto; right: 0; justify-items: end; transform: none; --cor-marco: var(--ambar); color: var(--ambar); font-weight: 650; }
 .pedido { font-size: max(10px, calc(12px * var(--escala-letra))); color: var(--texto-3); }
 .pedido a { font-weight: 650; color: var(--acao); text-decoration: underline; text-underline-offset: 3px; }
 
@@ -407,3 +419,12 @@
   .coluna .abas { flex-wrap: nowrap; overflow: visible; gap: 4px; }
   .coluna .abas > button { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: calc(12.5px * var(--escala-letra)); }
 }
+
+/* Excluir, dentro da edição da compra: a lixeira saiu das linhas (26/09). */
+.excluirCompra { display:inline-flex; align-items:center; justify-content:center; gap:8px; width:calc(100% - 32px); min-height:44px; margin:0 16px 16px; border-radius:999px; border:1px solid color-mix(in oklab, var(--negativo), transparent 60%); color:var(--negativo); font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.excluirCompra svg { width:16px; height:16px; }
+@media (min-width:640px) { .excluirCompra { width:calc(100% - 48px); margin:0 24px 20px; } }
+/* Diálogos opacos: com o vidro do app, a lista de compras atravessava a
+   edição e o "Conferir" e lia como se fosse parte deles. Mesma escolha da
+   folha de filtros do extrato. */
+.modal { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }

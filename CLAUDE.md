@@ -71,6 +71,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   verdade ("control c control v, do nosso jeito") — ver
   `docs/SPEC-CALEN-PRECISO.md` PARTE 5 e `docs/PESQUISA-OPEN-FINANCE.md`.
   Linha antiga mantida aqui por registro, não por valer ainda.
+  **Decisão atual (28/09/2026): sem Open Finance** ("não vamos ter open
+  finance, então tire essa parte"). A tela Entrada automática saiu do menu
+  e dos ajustes, e `/conectar` leva para Anotar. O código do provedor
+  (`src/lib/open-finance/`, `src/app/api/open-finance/`) fica desligado no
+  repositório. Não ofereça conexão com banco em tela nenhuma.
 - Já disse (registro antigo): por enquanto, esqueça Telegram, PDF de fatura
   e integração com modelo de linguagem. **Também superado**: as três coisas
   foram pedidas e construídas depois (Telegram e assistente Tino, ver
@@ -98,6 +103,27 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   estranhas no computador. Testar e mandar captura dos dois, e do tema
   claro no celular.
 - Vidro líquido e gradiente continuam em todos os temas.
+- **O que abre por cima é sólido** (28/09/2026: "toda parte de menu tá
+  basicamente transparente, tem que ser bem visível"). Menu, gaveta, diálogo,
+  lista de opções, dica e aviso usam a classe `superficie-flutuante`
+  (`liquid-glass.css`), nunca `--papel-solido` ou vidro translúcido. O vidro
+  fica no que está na própria página.
+- **Cada passo numa página própria do canvas** (28/09/2026: o Davi não
+  achava o passo 22 — com 274 quadros numa página só, os novos ficavam a
+  95 mil px do topo). O passo novo ganha uma entrada em `pages`, seus
+  quadros começam em y = 0 com `"page"` próprio, e `launch.page` aponta para
+  ele, para o canvas abrir direto no que está em escolha.
+- **O canvas só carrega os primeiros 199 arquivos**, em ordem alfabética; o
+  resto não aparece, sem aviso. O primeiro canvas ("Tino — telas passo a
+  passo", Nh6zs8PsNNNF51HqZq2ycD) passou disso e guarda os passos 1 a 17.
+  Do 18 em diante: "Tino — telas, parte 2"
+  (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK). Chegando perto de 190
+  arquivos, abrir uma parte 3.
+- **Aprovou, sobe** (pedido em 2026-09-26): tela aprovada vai na hora para a
+  branch da sessão e o trabalho segue para a próxima tela sem perguntar. O
+  Davi quer também no Vercel, que publica o `main`; a sessão remota não tem
+  permissão de enviar ao `main`, então isso fica com ele (juntar a branch
+  no `main`) até ele liberar a permissão.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

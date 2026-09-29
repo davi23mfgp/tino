@@ -1,5 +1,7 @@
 "use client"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
+import { CLASSE_DIALOGO_LOJA, EscolherLoja } from "@/components/escolher-loja"
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -22,6 +24,8 @@ interface Transacao {
   id: string
   data: string
   descricao: string
+  descricaoOriginal?: string | null
+  origem?: string
   valorCentavos: number
   tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
   categoriaId: string | null
@@ -51,6 +55,7 @@ export default function Transacoes() {
   const [dia, setDia] = useState(() => new Date().toISOString().slice(0, 10))
   const [dias, setDias] = useState<DiaComMovimento[]>([])
   const [busca, setBusca] = useState("")
+  const [lojaDe, setLojaDe] = useState<Transacao | null>(null)
   const [semCategoria, setSemCategoria] = useState(false)
   const [tipo, setTipo] = useState<TipoDoFiltro>("todos")
   const [categoriaFiltro, setCategoriaFiltro] = useState<string | null>(null)
@@ -387,7 +392,18 @@ export default function Transacoes() {
                   const transferencia = transacao.tipo === "TRANSFERENCIA"
                   return (
                     <li key={transacao.id} className={estilos.linha}>
-                      <span className={estilos.simbolo}><MarcaPersonalizada nome={transacao.descricao}/><SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} /></span>
+                      {/* O ícone é um botão: "Qual loja é esta?" — a pessoa diz a loja
+                          uma vez e as compras iguais saem com o logo. */}
+                      <button
+                        type="button"
+                        className={estilos.simbolo}
+                        aria-label={`Escolher a loja de ${transacao.descricao}`}
+                        disabled={transferencia}
+                        onClick={() => setLojaDe(transacao)}
+                      >
+                        <MarcaPersonalizada nome={transacao.descricao} original={textoDoBanco(transacao)} />
+                        <SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} />
+                      </button>
                       <div className={estilos.texto}>
                         {/* Nome, valor e categoria continuam editáveis no toque,
                             como antes; só a categoria deixou de ser uma coluna
@@ -453,8 +469,28 @@ export default function Transacoes() {
           </div>
         )}
       </section>
+
+      <Dialog open={lojaDe !== null} onOpenChange={(aberto) => !aberto && setLojaDe(null)}>
+        <DialogContent className={`sm:max-w-[560px] ${CLASSE_DIALOGO_LOJA}`}>
+          <DialogHeader>
+            <DialogTitle>Qual loja é esta?</DialogTitle>
+            <DialogDescription>Escolha uma vez: as compras com o mesmo texto passam a sair com o logo.</DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            {lojaDe && <EscolherLoja descricao={lojaDe.descricao} original={textoDoBanco(lojaDe)} aoFechar={() => setLojaDe(null)} />}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
     </div>
   )
+}
+
+/// O texto como o banco escreveu, para achar a loja pelo intermediário
+/// ("EBW*SPOTIFY"). Só de importação: no lançamento à mão o original é o que
+/// a pessoa digitou, e na captura é o aviso inteiro do celular — onde o nome
+/// do app do banco (Mercado Pago, PicPay) poria o logo errado na compra.
+function textoDoBanco(transacao: Transacao) {
+  return transacao.origem && transacao.origem !== "MANUAL" && transacao.origem !== "RECORRENCIA" ? transacao.descricaoOriginal : null
 }
 
 /// "R$ 8.600" e ",00" menor: três valores com centavos não cabem lado a lado

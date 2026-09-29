@@ -156,6 +156,11 @@ alguns dias de uso normal. Há também um dump de antes da troca em
 
 - **Sem Open Finance.** O Davi disse que não vai usar. O adaptador continua em
   `src/lib/open-finance/` (contrato + Pluggy + sandbox), fora do menu.
+  Reafirmado em 28/09/2026, depois de um período (07/09) em que ele tinha
+  pedido de volta: a tela Entrada automática saiu do menu e dos ajustes, as
+  telas `tela-conectar.tsx` e `sem-open-finance.tsx` foram apagadas e
+  `/conectar` redireciona para Anotar. A seção "Conexão com o banco" dos
+  ajustes só aparece para quem já tem conexão viva, para poder revogar.
 - **Sem Open Finance (detalhe achado depois).** O callback em
   `src/app/api/open-finance/callback/route.ts:17` redireciona para `/contas`,
   página que não existe. Como o fluxo nunca é chamado, não quebra nada hoje —

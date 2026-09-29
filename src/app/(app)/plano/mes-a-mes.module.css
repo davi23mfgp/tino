@@ -25,7 +25,7 @@
 .pagamentos small { display:block; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
 .pagamentos b { font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; }
 
-.quitou { display:flex; align-items:center; gap:6px; margin-top:12px; padding-top:12px; border-top:1px solid var(--vidro-borda); font-size:calc(13px * var(--escala-letra)); font-weight:600; color:var(--acao); }
+.quitou { display:flex; align-items:center; gap:6px; margin-top:12px; padding-top:12px; border-top:1px solid var(--vidro-borda); font-size:calc(13px * var(--escala-letra)); font-weight:600; color:var(--bom); }
 .falta { margin-top:12px; font-size:calc(13px * var(--escala-letra)); font-weight:600; color:var(--negativo); }
 
 /* --- gráfico --- */
@@ -63,6 +63,6 @@
 .lista li button > b { font-size:calc(14px * var(--escala-letra)); font-weight:650; }
 .lista li button > span { min-width:0; font-size:calc(13px * var(--escala-letra)); }
 .lista li button > span small { display:flex; align-items:center; gap:4px; margin-top:2px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.lista li button > span small.quitada { color:var(--acao); font-weight:600; }
+.lista li button > span small.quitada { color:var(--bom); font-weight:600; }
 .resta { text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .resta b { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--foreground); font-variant-numeric:tabular-nums; white-space:nowrap; }

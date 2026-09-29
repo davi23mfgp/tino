@@ -1,5 +1,30 @@
 # Logos de instituições — origem e data
 
+## Atualização de 28/09/2026: catálogo completo
+
+Davi pediu "todos os logos de banco para cadastro fácil". Os arquivos de
+`public/bancos/` passaram a vir do pacote npm **`logos-bancos-br` 0.8.0**
+(licença MIT, https://github.com/rzmt/logos-bancos-br). O pacote tira cada
+logo do **diretório de participantes do Open Finance Brasil** (`openfinance`)
+ou do **site oficial** da instituição (`direct-uri`, com curadoria visual), e
+registra URI, SHA-256 e data (17/07/2026) de cada arquivo em
+`data/bancos.json` do pacote.
+
+- 56 instituições com logo (bancos de varejo, digitais, cooperativas,
+  maquininhas e corretoras). Lista e apelidos em `src/lib/bancos-perfil.ts`.
+- Reduzidos para 128 px e 128 cores (PNG): 228 KB no total.
+- Ficaram de fora "Nu Investimentos" (repetia o logo do Nubank) e "Paraná
+  Banco" (logo de `direct-uri` que não deu para confirmar como a marca atual).
+- Rico, Clear, Avenue e Nomad continuam sem logo: não estão no pacote, e a
+  tela mostra ícone neutro com o nome.
+- A cor do cartão (`cor` no catálogo) é a cor da marca: as que já estavam à
+  mão ficaram; as novas saíram da cor dominante do próprio logo.
+
+Os arquivos antigos (`.ico` e `.svg` do Simple Icons) foram substituídos. A
+tabela abaixo é o registro histórico de 13/09.
+
+## Registro de 13/09/2026
+
 Consultado em **13/09/2026**. Todo arquivo listado está em `public/bancos/` e
 é servido pelo nosso próprio domínio.
 
@@ -67,3 +92,18 @@ Instituição desconhecida ganha **ícone neutro + nome por extenso**, e a
 pessoa pode subir o próprio logo em Configurações. Iniciais como "BP", "X" e
 "S" foram removidas de propósito — não identificam nada e foram apontadas
 como defeito nas capturas de 13/09/2026.
+
+## Logos de lojas, mercados e assinaturas (28/09/2026)
+
+Catálogo em `src/lib/marcas.ts` (212 marcas). Dois caminhos:
+
+- **Guardado no app** (`public/marcas/`, 69 marcas): desenho do pacote npm
+  `simple-icons` 16.33.0 (CC0), com a cor oficial que o próprio pacote
+  registra, num quadrado arredondado. Marca de cor clara (Shell,
+  McDonald's) leva o desenho escuro por cima.
+- **Puxado do site da loja pelo servidor** (`/api/logo/<site>`): as outras
+  143, principalmente mercados, farmácias, concessionárias de luz e água e
+  planos de saúde brasileiros, que não estão no Simple Icons. Depende do
+  serviço de ícones; quando falha, a tela volta ao ícone da categoria. Não
+  foi possível testar este caminho na sessão remota (a rede de lá só alcança
+  o registro do npm) — conferir no Vercel.

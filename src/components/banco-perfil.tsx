@@ -39,6 +39,9 @@ export function IdentidadeBanco({
     <span
       className={cn(
         "grid size-9 shrink-0 place-items-center overflow-hidden rounded-[10px] border border-pauta bg-papel-2",
+        // Logo sobre branco: vários chegam transparentes com letra escura
+        // (C6, Digio) e sumiriam no tema escuro.
+        arte && "bg-white",
         className,
       )}
     >
@@ -46,7 +49,7 @@ export function IdentidadeBanco({
         // `img` cru e não `next/image`: o asset é local, já vem em 96px e o
         // otimizador não tem o que melhorar num ícone desse tamanho.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={arte} alt="" aria-hidden className="size-full object-contain p-1" />
+        <img src={arte} alt="" aria-hidden className="size-full object-contain" />
       ) : personalizada?.emoji ? (
         <span aria-hidden className="text-base leading-none">
           {personalizada.emoji}

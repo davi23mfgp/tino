@@ -35,7 +35,7 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "border border-pauta bg-[var(--papel-solido)] fixed inset-y-0 right-0 z-50 h-[100dvh] overflow-y-auto overscroll-contain w-3/4 max-w-sm rounded-l-[28px] border-y-0 border-r-0 p-6 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300",
+        "border border-pauta superficie-flutuante fixed inset-y-0 right-0 z-50 h-[100dvh] overflow-y-auto overscroll-contain w-3/4 max-w-sm rounded-l-[28px] border-y-0 border-r-0 p-6 transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300",
         className
       )}
       {...props}

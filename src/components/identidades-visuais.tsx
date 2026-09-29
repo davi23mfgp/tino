@@ -1,30 +1,44 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { Plus, Store } from "lucide-react"
 
-import { buscar, enviar } from "@/lib/cliente"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Cartao } from "@/components/ui/painel"
-import { SeletorEmoji } from "@/components/ui/seletor-emoji"
+import { buscar } from "@/lib/cliente"
+import { chaveDaDescricao, marcaDaCompra } from "@/lib/marcas"
 
-interface Identidade {
+export interface Identidade {
   id: string
   nome: string
   logoUrl: string | null
   emoji: string | null
 }
 
-const Contexto = createContext<{ lista: Identidade[]; recarregar: () => void }>({ lista: [], recarregar: () => {} })
+/// Loja que a IA identificou numa compra (camada 4, `lib/marcas-ia.ts`).
+export interface Descoberta {
+  chave: string
+  situacao: "IDENTIFICADA" | "SUGERIDA"
+  marcaNome: string | null
+  site: string | null
+  logoUrl: string | null
+}
+
+const Contexto = createContext<{ lista: Identidade[]; descobertas: Descoberta[]; recarregar: () => void }>({
+  lista: [],
+  descobertas: [],
+  recarregar: () => {},
+})
 
 export function IdentidadesProvider({ children }: { children: React.ReactNode }) {
   const [lista, setLista] = useState<Identidade[]>([])
+  const [descobertas, setDescobertas] = useState<Descoberta[]>([])
   function recarregar() {
     buscar<Identidade[]>("/api/identidades").then(setLista).catch(() => {})
   }
   useEffect(recarregar, [])
-  return <Contexto.Provider value={{ lista, recarregar }}>{children}</Contexto.Provider>
+  // Uma leitura por visita: a IA só descobre loja nova uma vez por dia.
+  useEffect(() => {
+    buscar<Descoberta[]>("/api/marcas/descobertas").then(setDescobertas).catch(() => {})
+  }, [])
+  return <Contexto.Provider value={{ lista, descobertas, recarregar }}>{children}</Contexto.Provider>
 }
 
 const SEM_ACENTO = new RegExp("[\\u0300-\\u036f]", "g")
@@ -37,12 +51,50 @@ export function useIdentidadeVisual(nome: string) {
     .find((item) => normalizar(nome).includes(normalizar(item.nome)))
 }
 
-export function MarcaPersonalizada({ nome }: { nome: string }) {
-  const encontrada = useIdentidadeVisual(nome)
+/**
+ * O logo da compra, em quatro camadas (28/09/2026), da mais certa para a
+ * menos:
+ * 1. o que a pessoa associou (inclusive com um toque em "Qual loja é esta?");
+ * 2. a lista de lojas conhecidas (`src/lib/marcas.ts`), que já entende o
+ *    intermediário na frente do nome ("EBW*SPOTIFY") — por isso recebe o
+ *    texto original do banco quando houver;
+ * 3. a loja que a IA identificou com segurança (só as IDENTIFICADAS; as
+ *    SUGERIDAS esperam a pessoa confirmar).
+ * Banco fica de fora — `banco-perfil` tem os logos próprios, locais.
+ */
+export function useMarca(
+  nome: string,
+  original?: string | null,
+): { nome: string; logoUrl: string | null; emoji: string | null; automatica: boolean } | null {
+  const propria = useIdentidadeVisual(nome)
+  const { descobertas } = useContext(Contexto)
+  if (propria) return { ...propria, automatica: false }
+  const conhecida = (original ? marcaDaCompra(original) : null) ?? marcaDaCompra(nome)
+  // Logo guardado no app vem primeiro: não depende do serviço de ícones.
+  if (conhecida) return { nome: conhecida.nome, logoUrl: conhecida.logo ?? `/api/logo/${conhecida.site}`, emoji: null, automatica: true }
+  const chaves = [original, nome].filter(Boolean).map((texto) => chaveDaDescricao(texto as string))
+  const descoberta = descobertas.find((item) => item.situacao === "IDENTIFICADA" && chaves.includes(item.chave))
+  return descoberta?.marcaNome ? { nome: descoberta.marcaNome, logoUrl: descoberta.logoUrl, emoji: null, automatica: true } : null
+}
+
+/** O palpite da IA para uma compra, identificado ou só sugerido. */
+export function useSugestaoDaIA(nome: string, original?: string | null): Descoberta | null {
+  const { descobertas } = useContext(Contexto)
+  const chaves = [original, nome].filter(Boolean).map((texto) => chaveDaDescricao(texto as string))
+  return descobertas.find((item) => chaves.includes(item.chave)) ?? null
+}
+
+export function MarcaPersonalizada({ nome, original }: { nome: string; original?: string | null }) {
+  const encontrada = useMarca(nome, original)
+  // Logo que não carregou (serviço fora do ar, rede bloqueada) some, e o
+  // ícone da categoria volta: quadrado quebrado na lista é pior que ícone.
+  const [falhou, setFalhou] = useState<string | null>(null)
   if (!encontrada) return null
-  if (encontrada.logoUrl)
+  if (encontrada.logoUrl) {
+    if (falhou === encontrada.logoUrl) return null
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={encontrada.logoUrl} alt={encontrada.nome} className="size-9 shrink-0 rounded-[10px] object-contain" />
+    return <img src={encontrada.logoUrl} alt={encontrada.nome} onError={() => setFalhou(encontrada.logoUrl)} className="size-9 shrink-0 rounded-[10px] object-contain" />
+  }
   return (
     <span aria-label={encontrada.nome} className="grid size-9 shrink-0 place-items-center text-xl">
       {encontrada.emoji ?? encontrada.nome.slice(0, 2).toUpperCase()}
@@ -50,212 +102,7 @@ export function MarcaPersonalizada({ nome }: { nome: string }) {
   )
 }
 
-/**
- * Logos e estabelecimentos.
- *
- * Era um FORMULÁRIO sempre aberto no topo do cartão: quatro campos visíveis
- * mesmo para quem só queria conferir o que já tinha associado, um campo de
- * largura inteira para caber um emoji, e o seletor de arquivo nativo em
- * inglês ("Choose File / No file chosen"). A lista do que existe vinha
- * depois, sem destaque.
- *
- * Agora a LISTA é a tela. O formulário aparece ao tocar em "Adicionar" ou
- * "Editar", e some ao salvar.
- */
-export function EditorIdentidades() {
-  const { lista, recarregar } = useContext(Contexto)
-  const [editando, setEditando] = useState<Identidade | "nova" | null>(null)
-  const [nome, setNome] = useState("")
-  const [emoji, setEmoji] = useState("")
-  const [foto, setFoto] = useState<string | null>(null)
-  const [nomeArquivo, setNomeArquivo] = useState("")
-  const [erro, setErro] = useState("")
-  const [ocupado, setOcupado] = useState(false)
-
-  function abrir(identidade: Identidade | "nova") {
-    setEditando(identidade)
-    setErro("")
-    setNomeArquivo("")
-    if (identidade === "nova") {
-      setNome("")
-      setEmoji("")
-      setFoto(null)
-    } else {
-      setNome(identidade.nome)
-      setEmoji(identidade.emoji ?? "")
-      setFoto(identidade.logoUrl)
-    }
-  }
-
-  function fechar() {
-    setEditando(null)
-    setErro("")
-  }
-
-  async function salvar(evento: React.FormEvent) {
-    evento.preventDefault()
-    setOcupado(true)
-    setErro("")
-    try {
-      await enviar("/api/identidades", { nome, emoji, logoUrl: foto }, "PUT")
-      recarregar()
-      fechar()
-    } catch (excecao) {
-      setErro(excecao instanceof Error ? excecao.message : "Não foi possível salvar.")
-    } finally {
-      setOcupado(false)
-    }
-  }
-
-  async function ler(arquivo?: File) {
-    if (!arquivo) return
-    if (!["image/png", "image/jpeg", "image/webp"].includes(arquivo.type) || arquivo.size > 500 * 1024) {
-      setErro("Use PNG, JPG ou WebP de até 500 KB.")
-      return
-    }
-    setNomeArquivo(arquivo.name)
-    const leitor = new FileReader()
-    leitor.onload = () => setFoto(String(leitor.result))
-    leitor.readAsDataURL(arquivo)
-  }
-
-  return (
-    <Cartao
-      titulo="Logos e estabelecimentos"
-      acao={
-        !editando && (
-          <Button size="sm" variant="ghost" onClick={() => abrir("nova")}>
-            <Plus aria-hidden className="size-4" />
-            Adicionar
-          </Button>
-        )
-      }
-    >
-      {editando ? (
-        <form onSubmit={salvar} className="grid gap-3">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <label className="text-sm">
-              Nome encontrado na compra
-              <Input
-                required
-                maxLength={80}
-                value={nome}
-                onChange={(evento) => setNome(evento.target.value)}
-                placeholder="Ex.: Uber, Posto Ipiranga"
-                autoFocus
-                className="mt-1"
-              />
-            </label>
-            <div className="text-sm">
-              Emoji
-              <div className="mt-1">
-                <SeletorEmoji valor={emoji} aoMudar={setEmoji} desabilitado={ocupado} />
-              </div>
-            </div>
-          </div>
-
-          {/* O seletor nativo mostra "Choose File / No file chosen", em inglês
-              e sem controle nosso. O input fica escondido atrás de um botão
-              com texto em português e o nome do arquivo ao lado. */}
-          <div className="text-sm">
-            Logo (até 500 KB)
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              {foto && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={foto} alt="Prévia do logo" className="size-11 rounded-[10px] object-contain" />
-              )}
-              <label className="inline-flex min-h-11 cursor-pointer items-center rounded-[12px] border border-pauta bg-papel-2 px-3 text-sm hover:bg-papel-3">
-                Escolher imagem
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(evento) => void ler(evento.target.files?.[0])}
-                  className="sr-only"
-                />
-              </label>
-              <span className="min-w-0 truncate text-xs text-muted-fg">
-                {nomeArquivo || (foto ? "Imagem salva" : "Nenhuma imagem escolhida")}
-              </span>
-              {foto && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setFoto(null)
-                    setNomeArquivo("")
-                  }}
-                >
-                  Remover
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={ocupado || !nome.trim()}>
-              {ocupado ? "Salvando…" : "Salvar"}
-            </Button>
-            <Button type="button" size="sm" variant="ghost" onClick={fechar} disabled={ocupado}>
-              Cancelar
-            </Button>
-          </div>
-
-          {erro && (
-            <p role="alert" className="text-sm text-negativo">
-              {erro}
-            </p>
-          )}
-        </form>
-      ) : (
-        <>
-          <p className="mb-2 text-sm text-muted-fg">
-            O logo aparece no extrato quando o nome da compra bate com o que você associou aqui.
-          </p>
-
-          {lista.length === 0 ? (
-            <p className="flex items-center gap-2 py-4 text-sm text-muted-fg">
-              <Store aria-hidden className="size-4" />
-              Nenhuma associação ainda.
-            </p>
-          ) : (
-            <div>
-              {lista.map((identidade) => (
-                <div
-                  key={identidade.id}
-                  className="flex min-h-12 items-center gap-3 border-b border-pauta py-1.5 last:border-b-0"
-                >
-                  <MarcaPersonalizada nome={identidade.nome} />
-                  <span className="min-w-0 flex-1 truncate text-sm">{identidade.nome}</span>
-                  <Button size="sm" variant="ghost" onClick={() => abrir(identidade)}>
-                    Editar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={async () => {
-                      try {
-                        await enviar("/api/identidades", { id: identidade.id }, "DELETE")
-                        recarregar()
-                      } catch {
-                        setErro("Não foi possível remover.")
-                      }
-                    }}
-                  >
-                    Remover
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {erro && (
-            <p role="alert" className="mt-2 text-sm text-negativo">
-              {erro}
-            </p>
-          )}
-        </>
-      )}
-    </Cartao>
-  )
+/** A lista de logos associados e o jeito de recarregá-la depois de salvar. */
+export function useIdentidades() {
+  return useContext(Contexto)
 }

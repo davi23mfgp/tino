@@ -1,0 +1,49 @@
+/*
+ * Cores de tema (Davi, 28/09/2026: "quero mais cores de tema").
+ *
+ * A cor escolhida pinta o que é da MARCA: botão principal, link, item ativo
+ * da navegação, anel de foco e o brilho do fundo. O que é SIGNIFICADO fica
+ * de fora: entrada e sobra continuam verdes (`--bom`), gasto e dívida
+ * vermelhos (`--negativo`). Com o tema rosa ou vinho, uma entrada de
+ * dinheiro pintada da cor do tema pareceria gasto.
+ *
+ * Cada cor tem três tons:
+ * - `--lch-acao` no escuro: claro e saturado, com texto preto em cima
+ *   (luminosidade de 0,70 para cima dá mais de 4,5:1 contra o preto do
+ *   botão) e legível sobre o fundo escuro;
+ * - `--lch-acao` no claro: escuro o bastante para link sobre o fundo claro
+ *   (luminosidade até ~0,55);
+ * - `--matiz`: o matiz do brilho e do fundo.
+ * O botão principal é o tom claro nos dois temas, como o verde de sempre.
+ *
+ * A escolha mora em `data-cor` no `<html>`, aplicada pelo `ThemeProvider`.
+ * Sem atributo, é o verde de sempre (os valores do `globals.css`).
+ */
+
+:root[data-cor] {
+  --lch-brilho: var(--tom-claro);
+  --matiz: var(--tom-matiz);
+  --lch-acao: var(--tom-claro);
+  --primary: var(--tom-claro);
+  --accent: 0.26 0.06 var(--tom-matiz);
+  --sidebar-accent: oklch(0.26 0.06 var(--tom-matiz));
+}
+:root.light[data-cor] {
+  --lch-acao: var(--tom-escuro);
+  --primary: var(--tom-claro);
+  --accent: 0.94 0.05 var(--tom-matiz);
+  --sidebar-accent: oklch(0.94 0 0);
+}
+
+:root[data-cor="verde"]     { --tom-claro: 0.85 0.24 145; --tom-escuro: 0.50 0.19 150; --tom-matiz: 145; }
+:root[data-cor="menta"]     { --tom-claro: 0.86 0.15 170; --tom-escuro: 0.52 0.12 172; --tom-matiz: 170; }
+:root[data-cor="turquesa"]  { --tom-claro: 0.84 0.13 200; --tom-escuro: 0.52 0.11 205; --tom-matiz: 200; }
+:root[data-cor="azul"]      { --tom-claro: 0.78 0.14 245; --tom-escuro: 0.50 0.17 255; --tom-matiz: 245; }
+:root[data-cor="indigo"]    { --tom-claro: 0.74 0.15 280; --tom-escuro: 0.48 0.20 280; --tom-matiz: 280; }
+:root[data-cor="lilas"]     { --tom-claro: 0.80 0.13 310; --tom-escuro: 0.50 0.19 312; --tom-matiz: 310; }
+:root[data-cor="rosa"]      { --tom-claro: 0.80 0.15 350; --tom-escuro: 0.52 0.19 355; --tom-matiz: 350; }
+:root[data-cor="coral"]     { --tom-claro: 0.79 0.15 35; --tom-escuro: 0.55 0.17 35; --tom-matiz: 35; }
+:root[data-cor="vinho"]     { --tom-claro: 0.72 0.15 15; --tom-escuro: 0.44 0.15 15; --tom-matiz: 15; }
+:root[data-cor="dourado"]   { --tom-claro: 0.86 0.14 85; --tom-escuro: 0.52 0.11 75; --tom-matiz: 85; }
+:root[data-cor="laranja"]   { --tom-claro: 0.80 0.16 60; --tom-escuro: 0.55 0.15 55; --tom-matiz: 60; }
+:root[data-cor="grafite"]   { --tom-claro: 0.88 0.01 250; --tom-escuro: 0.36 0.01 250; --tom-matiz: 250; }

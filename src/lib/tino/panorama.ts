@@ -13,11 +13,15 @@ import {
   competenciaMaisMeses,
   distanciaEmMeses,
   janelaDoMes,
+  corteDoMesAnterior,
   partesCompetencia,
   ultimasCompetencias,
 } from "@/lib/datas"
 import {
   avaliarMei,
+  limiteProporcionalMei,
+  situacaoDoDas,
+  basesDaProjecao,
   compararEstrategias,
   mesesDeFolga,
   projetarAposentadoria,
@@ -230,9 +234,11 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   // supermercado" em vez de só mostrar o número do mês, que sozinho não diz se
   // a pessoa está melhorando ou piorando.
   const competenciaAnterior = competenciaMaisMeses(competencia, -1)
+  const corteAnterior = corteDoMesAnterior(competencia, new Date(), lar.diaInicioMes)
   const porCategoriaAnterior = new Map<string, number>()
   for (const transacao of transacoesHistorico) {
     if (transacao.competencia !== competenciaAnterior || transacao.tipo !== "DESPESA") continue
+    if (corteAnterior && transacao.data.getTime() > corteAnterior.getTime()) continue
     const chave = transacao.categoriaId ?? "sem-categoria"
     porCategoriaAnterior.set(chave, (porCategoriaAnterior.get(chave) ?? 0) + transacao.valorCentavos)
   }
@@ -398,13 +404,26 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     .filter((r) => r.tipo === "RECEITA" && r.periodicidade === "MENSAL")
     .reduce((soma, r) => soma + r.valorCentavos, 0)
 
+  // Pagamento de dívida já lançado no extrato está dentro da despesa média;
+  // a projeção soma a parcela contratada à parte, então ele sai da média.
+  const pagamentoDividasMedio = Math.round(
+    transacoesHistorico.filter((t) => t.tipo === "DESPESA" && t.dividaId).reduce((soma, t) => soma + t.valorCentavos, 0) / divisor,
+  )
+  const bases = basesDaProjecao({
+    receitasFixasCentavos: receitasFixas,
+    receitaMediaCentavos: medias.receitaCentavos,
+    custoFixoCentavos: medias.custoFixoCentavos,
+    despesaMediaCentavos: medias.despesaCentavos,
+    parcelaDividasCentavos: parcelaMensal,
+    pagamentoDividasMedioCentavos: pagamentoDividasMedio,
+  })
   const projecao = projetarFluxo({
     competenciaInicial: competenciaMaisMeses(competencia, 1),
     meses: 12,
     saldoInicialCentavos: saldoTotalCentavos,
-    receitasFixasCentavos: receitasFixas || medias.receitaCentavos,
-    despesasFixasCentavos: medias.custoFixoCentavos + parcelaMensal,
-    despesasVariaveisMediaCentavos: Math.max(0, medias.despesaCentavos - medias.custoFixoCentavos),
+    receitasFixasCentavos: bases.receitasCentavos,
+    despesasFixasCentavos: bases.despesasFixasCentavos,
+    despesasVariaveisMediaCentavos: bases.despesasVariaveisMediaCentavos,
     eventos: eventosFuturos,
     proximaCompetencia: competenciaMaisMeses,
   })
@@ -436,15 +455,24 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       valorCentavos: linha.receitaComercioCentavos + linha.receitaServicosCentavos,
     }))
 
+    const abertura = lar.meiPerfil.dataAbertura
+    const abriuNesteAno = abertura !== null && abertura.getUTCFullYear() === ano
     const situacao = avaliarMei({
       faturamentoPorCompetencia,
-      limiteAnualCentavos: lar.meiPerfil.limiteAnualCentavos,
+      limiteAnualCentavos: abriuNesteAno
+        ? limiteProporcionalMei(lar.meiPerfil.limiteAnualCentavos, abertura.getUTCMonth() + 1)
+        : lar.meiPerfil.limiteAnualCentavos,
       mesAtual,
       ano,
+      mesInicio: abriuNesteAno ? abertura.getUTCMonth() + 1 : 1,
     })
 
+    // Só o que já passou do vencimento: o DAS do mês passado vence no dia
+    // escolhido deste mês, e antes disso não é atraso.
+    const hoje = new Date().toLocaleDateString("en-CA", { timeZone: lar.fusoHorario })
+    const diaDoDas = lar.meiPerfil.diaVencimentoDas
     const dasEmAberto = meiCompetencias
-      .filter((linha) => !linha.dasPago && linha.competencia < competencia)
+      .filter((linha) => linha.competencia < competencia && situacaoDoDas(linha.competencia, linha.dasPago, hoje, diaDoDas) === "atrasado")
       .map((linha) => linha.competencia)
       .sort()
 

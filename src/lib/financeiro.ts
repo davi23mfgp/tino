@@ -586,6 +586,36 @@ export interface EventoProjetado {
 }
 
 /**
+ * As três bases mensais da projeção, a partir do que foi observado e do que
+ * está cadastrado.
+ *
+ * Entrada e saída seguem a mesma regra: o fixo cadastrado, mais o que a média
+ * do histórico mostra além dele. Antes a entrada era só o fixo — um salário
+ * que cai todo mês mas não foi cadastrado em Contas fixas sumia da projeção,
+ * enquanto a saída usava a média inteira. Na conta demo, isso anunciava
+ * R$ 44 mil no vermelho em doze meses para uma casa que fecha o mês no azul.
+ *
+ * A parcela de dívida entra explícita, pelo valor contratado; o que o
+ * histórico já pagou de dívida sai da parte variável, senão a mesma parcela
+ * contaria duas vezes — uma dentro da média, outra somada por cima.
+ */
+export function basesDaProjecao(params: {
+  receitasFixasCentavos: number
+  receitaMediaCentavos: number
+  custoFixoCentavos: number
+  despesaMediaCentavos: number
+  parcelaDividasCentavos: number
+  pagamentoDividasMedioCentavos: number
+}) {
+  const variavelObservada = params.despesaMediaCentavos - params.custoFixoCentavos - params.pagamentoDividasMedioCentavos
+  return {
+    receitasCentavos: Math.max(params.receitasFixasCentavos, params.receitaMediaCentavos),
+    despesasFixasCentavos: params.custoFixoCentavos + params.parcelaDividasCentavos,
+    despesasVariaveisMediaCentavos: Math.max(0, variavelObservada),
+  }
+}
+
+/**
  * Projeta o caixa mês a mês somando o que já é conhecido do futuro:
  * recorrências ativas, parcelas de dívida e aportes de meta, sobre a média
  * das despesas variáveis observadas.
@@ -654,22 +684,35 @@ export interface SituacaoMei {
 export function avaliarMei(params: {
   faturamentoPorCompetencia: { competencia: string; valorCentavos: number }[]
   limiteAnualCentavos: number
-  /// Mês corrente do ano (1-12). Define quantos meses já correram.
+  /// Mês corrente do ano (1-12).
   mesAtual: number
   ano: number
+  /// Mês em que a atividade começou, quando o MEI abriu neste ano; 1 nos demais.
+  mesInicio?: number
 }): SituacaoMei {
+  const pad = (mes: number) => `${params.ano}-${String(mes).padStart(2, "0")}`
   const doAno = params.faturamentoPorCompetencia.filter((linha) => linha.competencia.startsWith(String(params.ano)))
   const total = doAno.reduce((soma, linha) => soma + linha.valorCentavos, 0)
-  const mesesCorridos = Math.max(1, params.mesAtual)
-  const media = Math.round(total / mesesCorridos)
-  const projecao = media * 12
+  const atual = pad(params.mesAtual)
+  const inicio = Math.min(Math.max(1, params.mesInicio ?? 1), params.mesAtual)
+
+  // A média é dos meses FECHADOS desde o início da atividade. Dividir pelo mês
+  // corrente (pela metade) ou por meses em que o MEI nem existia derrubava a
+  // média — em 29/09/2026, R$ 5.566,67 em vez de R$ 6.262,50 — e com ela a
+  // projeção, que deixava de avisar do risco de estourar.
+  const mesesFechados = params.mesAtual - inicio
+  const fechado = doAno.filter((linha) => linha.competencia < atual && linha.competencia >= pad(inicio)).reduce((soma, linha) => soma + linha.valorCentavos, 0)
+  const doMesAtual = doAno.filter((linha) => linha.competencia === atual).reduce((soma, linha) => soma + linha.valorCentavos, 0)
+  const media = mesesFechados > 0 ? Math.round(fechado / mesesFechados) : 0
+  // O mês corrente ainda está aberto: entra nos meses que faltam.
+  const mesesRestantes = 12 - params.mesAtual + 1
+  const projecao = Math.max(total, fechado + Math.max(media, 0) * (mesesRestantes - 1) + Math.max(media, doMesAtual))
   const disponivel = params.limiteAnualCentavos - total
   const percentual = (total / params.limiteAnualCentavos) * 100
 
   let mesQueEstoura: string | null = null
   let acumulado = 0
-  const ordenado = [...doAno].sort((a, b) => a.competencia.localeCompare(b.competencia))
-  for (const linha of ordenado) {
+  for (const linha of [...doAno].sort((a, b) => a.competencia.localeCompare(b.competencia))) {
     acumulado += linha.valorCentavos
     if (acumulado > params.limiteAnualCentavos) {
       mesQueEstoura = linha.competencia
@@ -677,9 +720,14 @@ export function avaliarMei(params: {
     }
   }
   if (!mesQueEstoura && media > 0) {
-    const mesesAteEstourar = Math.ceil(disponivel / media)
-    const mes = mesesCorridos + mesesAteEstourar
-    if (mes <= 12) mesQueEstoura = `${params.ano}-${String(mes).padStart(2, "0")}`
+    let projetado = fechado
+    for (let mes = params.mesAtual; mes <= 12; mes++) {
+      projetado += mes === params.mesAtual ? Math.max(media, doMesAtual) : media
+      if (projetado > params.limiteAnualCentavos) {
+        mesQueEstoura = pad(mes)
+        break
+      }
+    }
   }
 
   const excedente = total - params.limiteAnualCentavos
@@ -692,7 +740,6 @@ export function avaliarMei(params: {
           ? "ATENCAO"
           : "OK"
 
-  const mesesRestantes = Math.max(1, 12 - mesesCorridos)
   return {
     faturamentoAnoCentavos: total,
     limiteAnualCentavos: params.limiteAnualCentavos,
@@ -702,8 +749,33 @@ export function avaliarMei(params: {
     projecaoAnualCentavos: projecao,
     risco,
     mesQueEstoura,
-    tetoMensalRestanteCentavos: Math.max(0, Math.floor(disponivel / mesesRestantes)),
+    // Quanto cabe por mês do corrente até dezembro, contando o corrente: em
+    // setembro faltam quatro meses, não três.
+    tetoMensalRestanteCentavos: Math.max(0, Math.floor((params.limiteAnualCentavos - fechado) / mesesRestantes)),
   }
+}
+
+/**
+ * Vencimento do DAS de uma competência: o dia escolhido no mês SEGUINTE (o DAS
+ * de agosto vence em setembro), preso ao último dia do mês.
+ */
+export function vencimentoDoDas(competencia: string, diaVencimento: number): string {
+  const [ano, mes] = competencia.split("-").map(Number)
+  const anoV = mes === 12 ? ano + 1 : ano
+  const mesV = mes === 12 ? 1 : mes + 1
+  const ultimo = new Date(Date.UTC(anoV, mesV, 0)).getUTCDate()
+  return `${anoV}-${String(mesV).padStart(2, "0")}-${String(Math.min(Math.max(1, diaVencimento), ultimo)).padStart(2, "0")}`
+}
+
+/**
+ * Situação do DAS de uma competência, pelo dia (`hoje` no fuso do lar).
+ *
+ * Só é "atrasado" depois do vencimento: o DAS de agosto aparecia como em aberto,
+ * com aviso de multa, desde 1º de setembro — três semanas antes de vencer.
+ */
+export function situacaoDoDas(competencia: string, pago: boolean, hoje: string, diaVencimento: number): "pago" | "atrasado" | "a vencer" {
+  if (pago) return "pago"
+  return hoje > vencimentoDoDas(competencia, diaVencimento) ? "atrasado" : "a vencer"
 }
 
 /**

@@ -67,7 +67,7 @@ export function SeletorEmoji({
             className="fixed inset-0 z-40 cursor-default"
           />
           <div
-            className="absolute left-0 top-full z-50 mt-1 max-h-72 w-[min(310px,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-[14px] border border-pauta bg-popover p-2 shadow-[var(--sombra-flutuante)]"
+            className="absolute left-0 top-full z-50 mt-1 max-h-72 w-[min(310px,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-[14px] border border-pauta superficie-flutuante p-2 shadow-[var(--sombra-flutuante)]"
             role="dialog"
             aria-label="Escolher emoji"
           >

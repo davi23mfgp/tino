@@ -92,7 +92,7 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
   if (conectar) {
     const chave = await autenticarChave(conectar[1])
     if (!chave) {
-      await responder(telefone, "Chave inválida. Gere outra em Configurações → Captura rápida.")
+      await responder(telefone, "Chave inválida. Gere outra no app, em Anotar → WhatsApp.")
       return
     }
 
@@ -114,7 +114,7 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
   if (!chave) {
     await responder(
       telefone,
-      "Ainda não sei de quem é esta conversa. No app, vá em Configurações → Captura rápida, gere uma chave e me mande aqui:\n\n`conectar SUA_CHAVE`",
+      "Ainda não sei de quem é esta conversa. No app, abra Anotar → WhatsApp, gere uma chave e me mande aqui:\n\n`conectar SUA_CHAVE`",
     )
     return
   }

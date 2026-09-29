@@ -1,0 +1,91 @@
+/* Prateleira, rodada 3 do canvas (Davi, 28/09: "profissional, nada de
+   colorido, moderno", e depois "no liquid glass igual ao normal"). O vidro é
+   o do app; dentro dele, só cinzas, linhas finas e números alinhados. A cor
+   fica no ponto da situação e no botão principal. */
+.pagina { display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
+.bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.num { font-variant-numeric:tabular-nums; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--texto-3); }
+
+.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.topo p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
+.acoes { display:flex; gap:8px; }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:12px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:550; white-space:nowrap; }
+.botao svg { width:16px; height:16px; }
+.botao[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+@media (max-width:639px) { .botao[data-icone] span { display:none; } .botao[data-icone] { padding:0 12px !important; } }
+
+/* Os quatro números do topo numa faixa só, separados por fio. */
+.kpis { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); overflow:hidden; }
+@media (min-width:1024px) { .kpis { grid-template-columns:repeat(4, minmax(0,1fr)); } }
+.kpi { padding:14px 16px; min-width:0; border-left:1px solid color-mix(in oklab, var(--foreground), transparent 90%); border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
+.kpi:nth-child(-n+2) { border-top:0; }
+.kpi:nth-child(odd) { border-left:0; }
+@media (min-width:1024px) { .kpi { border-top:0; } .kpi:nth-child(odd) { border-left:1px solid color-mix(in oklab, var(--foreground), transparent 90%); } .kpi:first-child { border-left:0; } }
+.kpi strong { display:block; margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(20px * var(--escala-letra)); font-weight:650; letter-spacing:-.02em; }
+.kpi small { display:block; margin-top:2px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+
+.filtros { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.busca { position:relative; flex:1; min-width:200px; max-width:340px; }
+.busca svg { position:absolute; left:12px; top:50%; width:15px; height:15px; transform:translateY(-50%); color:var(--texto-3); pointer-events:none; }
+.busca input { padding-left:36px !important; }
+.segmento { display:inline-flex; gap:2px; padding:3px; border-radius:12px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); }
+.segmento button { min-height:34px !important; padding:0 12px !important; border-radius:9px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.segmento button span { margin-left:4px; color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.segmento button[aria-pressed="true"] { background:color-mix(in oklab, var(--foreground), transparent 90%); color:var(--foreground); font-weight:600; }
+
+/* Tabela no computador, lista de duas linhas no celular: o mesmo botão por
+   produto, com as colunas rearrumadas. */
+.tabela { overflow:hidden; }
+.cabecalho, .linha { display:grid; align-items:center; gap:12px; padding:0 16px; }
+.cabecalho { display:none; min-height:40px; }
+.linha { width:100%; min-height:62px; text-align:left; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 91%); grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"nome preco" "situacao estoque"; row-gap:3px; padding-top:11px; padding-bottom:11px; transition:background .15s var(--curva); }
+.linha:first-of-type { border-top:0; }
+.linha:hover { background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.nome { grid-area:nome; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14.5px * var(--escala-letra)); font-weight:600; }
+.cSituacao { grid-area:situacao; }
+.cEstoque { grid-area:estoque; justify-self:end; display:flex; align-items:center; gap:8px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.cPreco { grid-area:preco; justify-self:end; font-size:calc(14.5px * var(--escala-letra)); font-weight:600; }
+.cCusto, .cSobra, .cVendidos { display:none; }
+@media (min-width:1024px) {
+  .cabecalho, .linha { grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,.6fr); grid-template-areas:none; }
+  .cabecalho { display:grid; }
+  .cabecalho > :nth-child(n+3) { text-align:right; }
+  .linha { min-height:52px; padding-top:0; padding-bottom:0; }
+  .nome, .cSituacao, .cEstoque, .cPreco, .cCusto, .cSobra, .cVendidos { grid-area:auto; }
+  .cEstoque { justify-self:end; font-size:calc(13.5px * var(--escala-letra)); color:var(--foreground); }
+  .cPreco { font-size:calc(13.5px * var(--escala-letra)); font-weight:500; }
+  .cCusto, .cSobra, .cVendidos { display:block; text-align:right; font-size:calc(13.5px * var(--escala-letra)); }
+  .cCusto, .cVendidos { color:var(--texto-2); }
+}
+.apagado { color:var(--texto-3); }
+.vazio { padding:28px 16px; text-align:center; font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-3); }
+
+.situacao { display:inline-flex; align-items:center; gap:6px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.situacao i { width:6px; height:6px; border-radius:9px; background:color-mix(in oklab, var(--foreground), transparent 55%); }
+.situacao[data-tom="alerta"] i { background:var(--negativo); }
+/* Âmbar próprio: o --atencao do app é cinza (tema acromático), e o ponto
+   de "sem custo" ficava igual ao de "em dia". */
+.situacao[data-tom="atencao"] i { background:oklch(0.8 0.14 78); }
+:global(.light) .situacao[data-tom="atencao"] i { background:oklch(0.66 0.15 65); }
+.barra { display:inline-block; width:56px; height:3px; border-radius:9px; background:color-mix(in oklab, var(--foreground), transparent 88%); overflow:hidden; }
+.barra i { display:block; height:100%; border-radius:9px; background:color-mix(in oklab, var(--foreground), transparent 15%); }
+.barraLarga { width:100%; }
+
+/* O produto aberto. */
+.detalhe { display:grid; gap:16px; }
+.saldo { display:flex; align-items:baseline; gap:8px; }
+.saldo strong { font-size:calc(40px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; }
+.saldo span { font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-3); }
+.kv { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:42px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(13.5px * var(--escala-letra)); }
+.kv > span:first-child { color:var(--texto-2); }
+.kv > b { font-weight:600; }
+.movimento { display:flex; gap:12px; align-items:center; min-height:40px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(13.5px * var(--escala-letra)); }
+.movimento > span:first-child { width:44px; color:var(--texto-3); }
+.movimento > span:nth-child(2) { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--texto-2); }
+.movimento > b { font-weight:600; }
+.dois { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.campo { display:grid; gap:6px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.dica { font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.link { justify-self:start; min-height:36px !important; padding:0 !important; font-size:calc(13px * var(--escala-letra)); font-weight:600; color:var(--acao); }

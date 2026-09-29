@@ -1,0 +1,62 @@
+/* Finanças da loja — H2 do canvas (Davi, 29/09): objetivo e fino. Números em
+   peso leve, linhas de 1px, cor só no resultado e na seta de cada
+   comparação. O gráfico é a venda acumulada contra a linha do empate: abaixo
+   da linha, o mês ainda não pagou as contas. */
+.pagina { --ambar:oklch(0.8 0.14 78); display:grid; gap:18px; min-width:0; max-width:1240px; margin:0 auto; }
+:global(.light) .pagina { --ambar:oklch(0.62 0.15 65); }
+.bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.num { font-variant-numeric:tabular-nums; }
+
+.abas { display:flex; gap:22px; border-bottom:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
+.abas button { min-height:40px !important; padding:0 !important; font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-3); }
+.abas button[aria-pressed="true"] { color:var(--foreground); font-weight:600; box-shadow:inset 0 -1.5px 0 var(--foreground); }
+
+.vendas { display:grid; gap:18px; padding:22px; }
+.rotulo { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.grande { display:block; margin-top:8px; font-size:calc(46px * var(--escala-letra)); font-weight:300; letter-spacing:-.04em; line-height:1; font-variant-numeric:tabular-nums; }
+.frase { margin-top:8px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
+.frase b { font-weight:500; color:var(--foreground); }
+.grafico { position:relative; color:var(--foreground); }
+.grafico svg { display:block; width:100%; height:150px; overflow:visible; }
+@media (min-width:1024px) { .grafico svg { height:220px; } }
+.grafico small { position:absolute; right:0; top:-4px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.eixo { display:flex; justify-content:space-between; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+
+/* Os quadros: número grande e fino, rótulo curto, o período anterior embaixo. */
+.quatro { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+@media (min-width:1024px) { .quatro { grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; } }
+.meio { display:grid; gap:12px; }
+@media (min-width:1024px) { .meio { grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:16px; align-items:stretch; } }
+.seis { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+@media (min-width:1024px) { .seis { gap:16px; } }
+.quadro { display:flex; flex-direction:column; gap:6px; padding:16px 18px; }
+.quadro small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.numero { font-size:calc(24px * var(--escala-letra)); font-weight:300; letter-spacing:-.03em; line-height:1.1; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.quadro[data-grande] .numero { font-size:calc(26px * var(--escala-letra)); }
+@media (min-width:1024px) { .quadro[data-grande] { padding:20px 22px; } .quadro[data-grande] .numero { font-size:calc(34px * var(--escala-letra)); } }
+.numero span, .grande span { font-size:.55em; opacity:.6; letter-spacing:-.01em; }
+.numero[data-tom="negativo"] { color:var(--negativo); }
+.numero[data-tom="positivo"] { color:var(--acao); }
+.pagina small i { font-style:normal; }
+.pagina small i[data-tom="bom"] { color:var(--acao); }
+.pagina small i[data-tom="ruim"] { color:var(--negativo); }
+.frase small { display:inline; font-size:inherit; color:inherit; }
+.corte { max-width:100%; }
+.link { color:inherit; text-decoration:underline; text-underline-offset:3px; text-decoration-color:color-mix(in oklab, var(--foreground), transparent 70%); }
+
+.avisos { display:grid; gap:8px; }
+.aviso { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklch, var(--ambar), transparent 70%); background:color-mix(in oklch, var(--ambar), transparent 90%); font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-2); }
+.aviso > i { width:6px; height:6px; margin-top:6px; border-radius:9px; flex-shrink:0; background:var(--ambar); }
+.aviso b { font-weight:600; color:var(--foreground); }
+.aviso button { min-height:0 !important; padding:0 !important; font-weight:600; color:var(--foreground); text-decoration:underline; text-underline-offset:3px; }
+.taxasLink { justify-self:start; min-height:36px !important; padding:0 !important; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); text-decoration:underline; text-underline-offset:3px; }
+
+/* Taxas da maquininha */
+.form { display:grid; gap:14px; }
+.forma { display:grid; grid-template-columns:minmax(0,1fr) 92px 92px; gap:10px; align-items:center; font-size:calc(13.5px * var(--escala-letra)); }
+.forma > span { color:var(--texto-2); }
+.cabecalho { font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.dica { font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px !important; padding:0 16px !important; border-radius:99px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.botao:disabled { opacity:.5; }

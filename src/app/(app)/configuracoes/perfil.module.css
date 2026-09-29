@@ -1,0 +1,70 @@
+/* Perfil (Davi, 28/09: M1 do canvas — cartão de identidade — com a foto no
+   centro, sem os números debaixo dela, e os cartões em miniatura do M2). */
+.pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; }
+.coluna { display:grid; gap:14px; min-width:0; align-content:start; }
+@media (min-width:1024px) { .pagina { grid-template-columns:minmax(0,420px) minmax(0,1fr); gap:22px; align-items:start; } }
+
+.bloco { display:grid; gap:12px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.cabecalho { display:flex; align-items:center; gap:10px; }
+.cabecalho h2 { flex:1; font-size:calc(15.5px * var(--escala-letra)); font-weight:680; }
+
+/* ── Cartão de identidade ─────────────────────────────── */
+/* O gradiente sai da cor de tema: muda junto quando a pessoa troca a cor. */
+.identidade { position:relative; display:grid; justify-items:center; gap:6px; padding:26px 20px 22px; border-radius:28px; border:1px solid color-mix(in oklab, var(--acao), transparent 70%); text-align:center; color:white;
+  background:
+    radial-gradient(120% 140% at 0% 0%, oklch(var(--lch-brilho) / 70%), transparent 60%),
+    radial-gradient(120% 140% at 100% 100%, oklch(0.5 0.12 calc(var(--matiz) + 50) / 80%), transparent 60%),
+    oklch(0.26 0.06 var(--matiz));
+  box-shadow:0 24px 48px -20px oklch(0 0 0 / 45%); }
+.anel { padding:3px; border-radius:999px; background:conic-gradient(from 200deg, oklch(var(--lch-brilho)), oklch(0.75 0.12 calc(var(--matiz) + 50)), oklch(var(--lch-brilho))); }
+.foto { display:grid; place-items:center; width:92px; height:92px; overflow:hidden; border-radius:999px; border:3px solid oklch(0.2 0.03 var(--matiz)); background:linear-gradient(135deg, oklch(var(--lch-brilho)), oklch(0.5 0.12 calc(var(--matiz) + 40))); font-size:38px; font-weight:750; color:white; }
+.foto img { width:100%; height:100%; object-fit:cover; }
+.identidade strong { margin-top:8px; font-size:calc(24px * var(--escala-letra)); font-weight:750; letter-spacing:-.02em; }
+.identidade > span { font-size:calc(13.5px * var(--escala-letra)); opacity:.82; }
+.pilula { display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:6px 13px; border-radius:999px; background:oklch(1 0 0 / 16%); font-size:calc(12.5px * var(--escala-letra)); font-weight:600; }
+.pilula svg { width:14px; height:14px; }
+.editar { position:absolute; top:14px; right:14px; display:grid; place-items:center; width:40px; height:40px; min-height:40px !important; padding:0 !important; border-radius:999px; background:oklch(1 0 0 / 16%); color:white; }
+.editar svg { width:17px; height:17px; }
+
+/* ── Contas em miniatura ──────────────────────────────── */
+.adicionar { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 14px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(13px * var(--escala-letra)); font-weight:680; }
+.adicionar svg { width:15px; height:15px; }
+.trilho { display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 16px; margin-bottom:-8px; scroll-snap-type:x mandatory; scroll-padding-inline:16px; }
+.trilho::-webkit-scrollbar { display:none; }
+.mini { flex-shrink:0; display:flex; flex-direction:column; justify-content:space-between; width:150px; height:94px; padding:11px 12px; box-sizing:border-box; border-radius:16px; color:white; text-align:left; scroll-snap-align:start; background:var(--fundo-cartao); box-shadow:inset 0 1px 0 oklch(1 0 0 / 22%), 0 8px 16px -10px oklch(0 0 0 / 50%); }
+.mini > * { text-shadow:0 1px 2px oklch(0 0 0 / 35%); }
+.mini span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(12px * var(--escala-letra)); font-weight:700; opacity:.95; }
+.mini small { font-size:max(10px, calc(11px * var(--escala-letra))); opacity:.78; }
+.mini b { font-size:calc(14px * var(--escala-letra)); font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.verTodas { justify-self:start; min-height:36px; font-size:calc(13px * var(--escala-letra)); font-weight:650; color:var(--acao); }
+.vazio { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+
+/* ── Controles na mão ─────────────────────────────────── */
+.linha { display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:6px 0; text-align:left; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.linha:first-child { border-top:0; }
+.linha > span:nth-child(2) { flex:1; min-width:0; }
+.linha strong { display:block; font-size:calc(14.5px * var(--escala-letra)); font-weight:620; }
+.linha small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.linha > em { font-style:normal; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.linha > svg:last-child { flex-shrink:0; width:16px; height:16px; color:var(--texto-3); }
+.linha[data-perigo] strong { color:var(--negativo); }
+/* O ícone num quadrado arredondado colorido: cada ajuste tem o seu tom, e se
+   acha o ajuste pela cor antes de ler o nome. */
+.quadro { display:grid; place-items:center; flex-shrink:0; width:36px; height:36px; border-radius:11px; color:white; background:linear-gradient(145deg, var(--q), color-mix(in oklab, var(--q), black 28%)); box-shadow:inset 0 1px 0 oklch(1 0 0 / 30%); }
+.quadro svg { width:17px; height:17px; }
+.segmento { display:flex; gap:2px; padding:3px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.segmento button { display:inline-flex; align-items:center; gap:5px; min-height:34px !important; padding:0 12px !important; border-radius:999px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.segmento button svg { width:14px; height:14px; }
+.segmento button[aria-pressed="true"] { background:color-mix(in oklab, var(--foreground), transparent 86%); color:var(--foreground); font-weight:650; }
+.cores { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:10px; padding:4px 0 10px; }
+.cores button { display:grid; justify-items:center; gap:4px; min-height:0 !important; padding:0 !important; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.cores i { display:block; width:34px; height:34px; border-radius:999px; background:var(--bolinha); box-shadow:inset 0 1px 0 oklch(1 0 0 / 30%); }
+.cores button[aria-pressed="true"] i { outline:2.5px solid var(--foreground); outline-offset:2.5px; }
+.cores button[aria-pressed="true"] { color:var(--foreground); font-weight:650; }
+.interruptor { position:relative; flex-shrink:0; width:44px !important; height:26px !important; min-width:44px !important; min-height:26px !important; padding:0 !important; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 80%); transition:background .2s var(--curva); }
+.interruptor i { position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:99px; background:white; box-shadow:0 1px 3px rgb(0 0 0 / .3); transition:transform .2s var(--curva); }
+.interruptor[aria-checked="true"] { background:var(--acao); }
+.interruptor[aria-checked="true"] i { transform:translateX(18px); }
+
+.sair { justify-self:center; min-height:44px; padding:0 18px; font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--negativo); }
+.dialogo { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }

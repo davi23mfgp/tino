@@ -1,0 +1,87 @@
+/* Contas fixas (Davi, 27/09: opção B do canvas com o resumo da A). O âmbar é
+   local, como em Reserva e Dívidas: o --atencao global é cinza. */
+.pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; --ambar:oklch(0.8 0.15 80); }
+:global(.light) .pagina { --ambar:oklch(0.55 0.13 65); }
+.corpo, .coluna { display:grid; gap:12px; min-width:0; }
+/* No computador, o resumo numa coluna e a lista ao lado: empilhados em
+   1.280px, os três números viravam uma faixa rala de ponta a ponta. */
+@media (min-width:1024px) { .corpo { grid-template-columns:380px minmax(0,1fr); gap:20px; align-items:start; } }
+
+.bloco { display:grid; gap:14px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.bloco[data-lista] { padding:2px 14px; }
+.bloco ul { margin:0; padding:0; list-style:none; }
+.cabecalho { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.cabecalho button { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:0 16px; border-radius:var(--raio-pilula); background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(13.5px * var(--escala-letra)); font-weight:650; white-space:nowrap; }
+.cabecalho button svg { width:15px; height:15px; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.apoio { font-size:calc(13px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.tentar { min-height:44px; margin-top:8px; color:var(--acao); font-weight:600; }
+
+.tres { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+.tres > div { min-width:0; padding:10px 12px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.tres dt { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.tres dd { margin-top:2px; font-size:clamp(13px, 4vw, calc(16px * var(--escala-letra))); font-weight:720; letter-spacing:-.02em; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.tres dd[data-tom="bom"] { color:var(--bom); }
+.tres dd[data-tom="alto"] { color:var(--negativo); }
+
+.peso { --cor:var(--bom); display:grid; gap:8px; }
+.peso[data-faixa="atencao"] { --cor:var(--ambar); }
+.peso[data-faixa="alto"] { --cor:var(--negativo); }
+.peso p { display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.peso p span:last-child { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); white-space:nowrap; }
+.peso b { font-size:calc(15px * var(--escala-letra)); font-weight:700; color:var(--cor); }
+/* A régua marca as duas fronteiras do diagnóstico: até 50% é bom, até 60%
+   atenção. A marca branca é a que importa; a segunda fica mais apagada. */
+.regua { position:relative; display:block; height:8px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 91%); }
+.regua i { position:absolute; left:0; top:0; bottom:0; border-radius:999px; background:var(--cor); }
+.regua em { position:absolute; top:-4px; bottom:-4px; width:2px; margin-left:-1px; border-radius:2px; background:var(--foreground); }
+.regua em[data-atencao] { opacity:.45; }
+
+.segmento { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.segmento button { min-height:40px; border-radius:var(--raio-pilula); font-size:calc(14px * var(--escala-letra)); color:var(--foreground); }
+.segmento button[aria-checked="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+
+.bloco li { display:flex; align-items:center; gap:10px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.bloco li:first-child { border-top:0; }
+.linha { flex:1; min-width:0; display:grid; grid-template-columns:42px minmax(0,1fr) auto; align-items:center; gap:12px; min-height:62px; padding:8px 0; text-align:left; }
+.linha:hover strong { text-decoration:underline; text-underline-offset:3px; }
+.data { display:grid; place-content:center; justify-items:center; width:42px; height:42px; border-radius:12px; border:1px solid color-mix(in oklab, var(--foreground), transparent 89%); background:color-mix(in oklab, var(--foreground), transparent 95%); line-height:1; }
+.data b { font-size:calc(15px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; }
+.data small { margin-top:2px; font-size:max(9px, calc(10px * var(--escala-letra))); text-transform:uppercase; color:var(--texto-3); }
+.data[data-atrasada] { border-color:color-mix(in oklab, var(--ambar), transparent 50%); color:var(--ambar); }
+.texto { min-width:0; }
+.texto strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14.5px * var(--escala-letra)); font-weight:650; }
+.texto small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.texto small[data-atrasada] { color:var(--ambar); font-weight:600; }
+.linha > b { font-size:calc(14.5px * var(--escala-letra)); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.lancar { display:grid; place-items:center; width:40px; height:40px; flex-shrink:0; border-radius:999px; border:1px solid color-mix(in oklab, var(--acao), transparent 55%); color:var(--acao); }
+.lancar:hover { background:color-mix(in oklab, var(--acao), transparent 88%); }
+.lancar:disabled { opacity:.4; }
+.lancar svg { width:17px; height:17px; }
+
+.vazio { display:grid; justify-items:center; gap:10px; padding:26px 16px; text-align:center; border-radius:var(--raio-bloco); border:1px dashed color-mix(in oklab, var(--foreground), transparent 82%); }
+.vazio p { max-width:34ch; font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-2); }
+.vazio button { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 18px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.vazio svg { width:16px; height:16px; }
+
+/* Opaco: com o vidro do app, a lista de trás atravessava o formulário. */
+.dialogo { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+.formulario { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:4px 16px 18px; }
+@media (min-width:640px) { .formulario { padding:4px 24px 22px; } }
+@media (max-width:420px) { .formulario { grid-template-columns:1fr; } }
+.formulario > label { display:flex; flex-direction:column; gap:6px; min-width:0; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.formulario > [data-largo] { grid-column:1 / -1; }
+.formulario p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.formulario p a { color:var(--acao); text-decoration:underline; }
+.formulario p[data-erro] { color:var(--negativo); }
+.formulario > label.interruptor { flex-direction:row; align-items:center; justify-content:space-between; gap:12px; min-height:48px; font-size:calc(14px * var(--escala-letra)); color:var(--foreground); }
+.interruptor small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.interruptor [role="switch"][data-state="unchecked"] { background:color-mix(in oklab, var(--foreground), transparent 80%) !important; }
+.interruptor [role="switch"] > span { background:white !important; }
+.salvar { min-height:48px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(15px * var(--escala-letra)); font-weight:700; }
+.salvar:disabled { opacity:.5; }
+.remover { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border-radius:999px; border:1px solid color-mix(in oklab, var(--negativo), transparent 60%); color:var(--negativo); font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.remover svg { width:16px; height:16px; }
+.nomeComLogo { display:flex; align-items:center; gap:8px; min-width:0; }
+.nomeComLogo strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nomeComLogo > img, .nomeComLogo > span { width:22px !important; height:22px !important; min-width:22px; border-radius:6px !important; font-size:14px !important; }

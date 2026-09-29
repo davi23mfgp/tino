@@ -79,7 +79,36 @@ export function montarDevedores(
     })
   }
 
-  return devedores.sort((a, b) => b.diasDaMaisAntiga - a.diasDaMaisAntiga)
+  return juntarRepetidos(devedores, hoje).sort((a, b) => b.diasDaMaisAntiga - a.diasDaMaisAntiga)
+}
+
+const chaveDoNome = (nome: string) =>
+  nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR")
+
+/**
+ * Junta o mesmo cliente cadastrado mais de uma vez.
+ *
+ * Até 28/09/2026 cada venda fiado criava um cadastro novo, e o banco de quem
+ * já usava o fiado tem a mesma pessoa repetida. A venda corrige daqui para a
+ * frente; esta junção corrige o que já estava gravado, sem mexer no banco:
+ * a baixa continua por venda, então juntar só na conta não perde nada.
+ */
+function juntarRepetidos(devedores: ClienteDevedor[], hoje: Date): ClienteDevedor[] {
+  const porNome = new Map<string, ClienteDevedor>()
+  for (const devedor of devedores) {
+    const chave = chaveDoNome(devedor.nome)
+    const atual = porNome.get(chave)
+    if (!atual) {
+      porNome.set(chave, { ...devedor, vendas: [...devedor.vendas] })
+      continue
+    }
+    atual.vendas.push(...devedor.vendas)
+    atual.vendas.sort((a, b) => a.criadoEm.getTime() - b.criadoEm.getTime())
+    atual.devendoCentavos += devedor.devendoCentavos
+    atual.telefone = atual.telefone ?? devedor.telefone
+    atual.diasDaMaisAntiga = Math.floor((hoje.getTime() - atual.vendas[0].criadoEm.getTime()) / 86_400_000)
+  }
+  return [...porNome.values()]
 }
 
 export interface ResumoDoFiado {
@@ -108,8 +137,60 @@ export function resumirFiado(devedores: ClienteDevedor[]): ResumoDoFiado {
  * relação de bairro — e quem conhece o cliente sabe o tom certo, que nenhum
  * modelo acerta de fora.
  */
+/// Palavras de tratamento que vêm antes do nome e não são o nome.
+const TRATAMENTOS = new Set(["dona", "seu", "sr", "sra", "dr", "dra", "tia", "tio", "vó", "vô", "vo", "dom"])
+
+/**
+ * Como chamar o cliente na mensagem. O primeiro nome, a não ser que ele seja
+ * um tratamento: de "Dona Cida" saía "Oi, Dona!" (visto em 28/09/2026), que é
+ * como chamar ninguém.
+ */
+export function nomeDeTratamento(nome: string): string {
+  const partes = nome.trim().split(/\s+/)
+  const primeira = partes[0]?.replace(/\.$/, "").toLocaleLowerCase("pt-BR") ?? ""
+  return TRATAMENTOS.has(primeira) && partes.length > 1 ? `${partes[0]} ${partes[1]}` : (partes[0] ?? "")
+}
+
+export interface FaixaDeIdade {
+  rotulo: string
+  totalCentavos: number
+  compras: number
+  clientes: string[]
+}
+
+/// As faixas do relatório de idade. Trinta dias é a régua do comércio de rua
+/// (o combinado é pagar no mês seguinte); dali para a frente, cada mês a mais
+/// é uma conversa mais difícil.
+const FAIXAS = [
+  { rotulo: "Até 30 dias", ate: 30 },
+  { rotulo: "31 a 60 dias", ate: 60 },
+  { rotulo: "61 a 90 dias", ate: 90 },
+  { rotulo: "Mais de 90 dias", ate: Infinity },
+]
+
+/**
+ * O fiado por idade de cada compra, como no relatório de contas a receber.
+ * A idade é da compra, não do cliente: a Dona Cida com uma compra de 75 dias
+ * e outra de ontem tem dinheiro em duas faixas, e cobrar a velha primeiro é
+ * o que a faixa mostra.
+ */
+export function idadeDoFiado(devedores: ClienteDevedor[], hoje = new Date()): FaixaDeIdade[] {
+  const faixas = FAIXAS.map((faixa) => ({ rotulo: faixa.rotulo, totalCentavos: 0, compras: 0, clientes: [] as string[] }))
+  for (const devedor of devedores) {
+    for (const venda of devedor.vendas) {
+      const dias = Math.floor((hoje.getTime() - new Date(venda.criadoEm).getTime()) / 86_400_000)
+      const indice = FAIXAS.findIndex((faixa) => dias <= faixa.ate)
+      const faixa = faixas[indice]
+      faixa.totalCentavos += venda.valorCentavos
+      faixa.compras += 1
+      if (!faixa.clientes.includes(devedor.nome)) faixa.clientes.push(devedor.nome)
+    }
+  }
+  return faixas
+}
+
 export function textoDeCobranca(devedor: ClienteDevedor, nomeDaLoja: string, formatar: (centavos: number) => string) {
-  const primeiro = devedor.nome.split(" ")[0]
+  const primeiro = nomeDeTratamento(devedor.nome)
   const quantas = devedor.vendas.length
 
   return [

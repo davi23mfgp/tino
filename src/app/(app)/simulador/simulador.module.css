@@ -85,7 +85,7 @@
 .numeros { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:14px; padding-top:12px; border-top:1px solid var(--vidro-borda); }
 .numeros dt { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
 .numeros dd { margin-top:2px; font-size:calc(14px * var(--escala-letra)); font-weight:650; font-variant-numeric:tabular-nums; }
-.numeros dd[data-tom="positivo"] { color:var(--acao); }
+.numeros dd[data-tom="positivo"] { color:var(--bom); }
 .numeros dd[data-tom="negativo"] { color:var(--negativo); }
 
 .acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }

@@ -8,7 +8,9 @@ export const GET = comSessao(async (sessao) =>
     await prisma.categoria.findMany({
       where: { larId: sessao.larId },
       orderBy: [{ grupo: "asc" }, { ordem: "asc" }, { nome: "asc" }],
-      include: { filhas: true },
+      // Quantos lançamentos cada uma tem: a tela mostra, e é o que a pessoa
+      // precisa saber antes de excluir (vão para onde?).
+      include: { filhas: true, _count: { select: { transacoes: true } } },
     }),
   ),
 )

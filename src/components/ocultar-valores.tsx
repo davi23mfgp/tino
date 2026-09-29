@@ -15,7 +15,8 @@ const CHAVE = "tino:valores-ocultos"
  * A preferência fica no navegador de quem está olhando — é sobre quem está
  * por perto da tela, não sobre a conta.
  */
-export function BotaoOcultarValores() {
+/** Estado de "esconder valores", o mesmo em qualquer lugar que o mostre. */
+export function useValoresOcultos(): [boolean, () => void] {
   const [oculto, setOculto] = useState(false)
 
   useEffect(() => {
@@ -30,11 +31,17 @@ export function BotaoOcultarValores() {
   }, [])
 
   function alternar() {
-    const proximo = !oculto
+    const proximo = document.documentElement.dataset.valores !== "ocultos"
     setOculto(proximo)
     document.documentElement.dataset.valores = proximo ? "ocultos" : "visiveis"
     try { localStorage.setItem(CHAVE, proximo ? "1" : "0") } catch {}
   }
+
+  return [oculto, alternar]
+}
+
+export function BotaoOcultarValores() {
+  const [oculto, alternar] = useValoresOcultos()
 
   return (
     <button

@@ -25,12 +25,15 @@ export function LigarAvisoDoBanco({
   endereco,
   chaveNova,
   aoGerar,
+  semCabecalho = false,
 }: {
   /** Origem pública do app, sem barra no fim. */
   endereco: string
   /** A chave recém-criada. Só existe no momento da criação — depois, nem o banco a devolve. */
   chaveNova: string | null
   aoGerar: () => void
+  /** Dentro de um diálogo que já tem o título: sem a moldura e sem repetir o nome. */
+  semCabecalho?: boolean
 }) {
   const [copiado, setCopiado] = useState(false)
   const [teste, setTeste] = useState<string | null>(null)
@@ -73,10 +76,12 @@ export function LigarAvisoDoBanco({
   }
 
   return (
-    <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-      <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
-        <Smartphone className="size-4" /> Compras pelo aviso do banco
-      </p>
+    <div className={semCabecalho ? undefined : "rounded-[var(--raio-cartao)] border border-pauta p-4"}>
+      {!semCabecalho && (
+        <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
+          <Smartphone className="size-4" /> Compras pelo aviso do banco
+        </p>
+      )}
       <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
         O aviso que o banco já manda vira lançamento sozinho, na hora da compra. É o mais perto do automático — e o
         Tino recusa compra negada, estorno e pré-autorização de posto.

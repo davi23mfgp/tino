@@ -19,6 +19,8 @@ import {
   mesesDeFolga,
   avaliarMei,
   limiteProporcionalMei,
+  situacaoDoDas,
+  vencimentoDoDas,
   anualParaMensalBps,
 } from "@/lib/financeiro"
 
@@ -418,5 +420,46 @@ describe("conversão de taxas", () => {
     const mensal = anualParaMensalBps(1200)
     const anualDeVolta = (Math.pow(1 + mensal / 10_000, 12) - 1) * 10_000
     assert.ok(Math.abs(anualDeVolta - 1200) < 5)
+  })
+})
+
+describe("MEI: média, teto e DAS", () => {
+  const limite = 8_100_000
+  const oitoMeses = [520000, 480000, 610000, 590000, 640000, 720000, 690000, 760000].map((valor, indice) => ({ competencia: `2026-0${indice + 1}`, valorCentavos: valor }))
+
+  it("média só dos meses fechados: em setembro, oito meses", () => {
+    const situacao = avaliarMei({ faturamentoPorCompetencia: oitoMeses, limiteAnualCentavos: limite, mesAtual: 9, ano: 2026 })
+    assert.equal(situacao.mediaMensalCentavos, 626250)
+    assert.equal(situacao.projecaoAnualCentavos, 5_010_000 + 626250 * 4)
+  })
+
+  it("teto por mês conta o mês corrente entre os que faltam", () => {
+    const situacao = avaliarMei({ faturamentoPorCompetencia: oitoMeses, limiteAnualCentavos: limite, mesAtual: 9, ano: 2026 })
+    assert.equal(situacao.tetoMensalRestanteCentavos, Math.floor((limite - 5_010_000) / 4))
+  })
+
+  it("quem abriu em julho tem a média de julho e agosto, não de janeiro a agosto", () => {
+    const situacao = avaliarMei({
+      faturamentoPorCompetencia: [
+        { competencia: "2026-07", valorCentavos: 600000 },
+        { competencia: "2026-08", valorCentavos: 800000 },
+      ],
+      limiteAnualCentavos: limiteProporcionalMei(limite, 7),
+      mesAtual: 9,
+      ano: 2026,
+      mesInicio: 7,
+    })
+    assert.equal(situacao.mediaMensalCentavos, 700000)
+    assert.equal(situacao.risco, "ATENCAO")
+  })
+
+  it("DAS vence no mês seguinte e só atrasa depois do dia", () => {
+    assert.equal(vencimentoDoDas("2026-08", 20), "2026-09-20")
+    assert.equal(vencimentoDoDas("2026-12", 20), "2027-01-20")
+    assert.equal(vencimentoDoDas("2026-01", 31), "2026-02-28")
+    assert.equal(situacaoDoDas("2026-08", false, "2026-09-05", 20), "a vencer")
+    assert.equal(situacaoDoDas("2026-08", false, "2026-09-20", 20), "a vencer")
+    assert.equal(situacaoDoDas("2026-08", false, "2026-09-21", 20), "atrasado")
+    assert.equal(situacaoDoDas("2026-08", true, "2026-12-01", 20), "pago")
   })
 })

@@ -1,0 +1,108 @@
+/* Análise (Davi, 28/09: opção C do canvas — o que pede atenção primeiro).
+   O âmbar é local, como em Contas fixas e Dívidas: o --atencao global é cinza. */
+.pagina { display:grid; gap:14px; min-width:0; max-width:1180px; margin:auto; --ambar:oklch(0.8 0.15 80); }
+:global(.light) .pagina { --ambar:oklch(0.55 0.13 65); }
+.pagina [data-faixa="BOM"] { --cor:var(--bom); }
+.pagina [data-faixa="ATENCAO"] { --cor:var(--ambar); }
+.pagina [data-faixa="CRITICO"] { --cor:var(--negativo); }
+.pagina [data-faixa="SEM_DADO"] { --cor:var(--texto-3); }
+
+/* No computador, o parecer e o que fazer lado a lado: empilhados em 1.280px,
+   cada um virava uma faixa rala de ponta a ponta. */
+.topo { display:grid; gap:14px; min-width:0; }
+@media (min-width:1024px) { .topo { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:stretch; } }
+
+.parecer { display:grid; align-content:center; gap:6px; padding:18px 20px; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.7; }
+.parecer h2 { font-size:calc(clamp(20px, 5.6vw, 24px) * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; line-height:1.2; }
+.parecer p { font-size:calc(13.5px * var(--escala-letra)); }
+
+.bloco { display:grid; gap:12px; min-width:0; padding:16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.cabecalho { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.cabecalho h2, .cabecalho h3 { font-size:calc(15px * var(--escala-letra)); font-weight:650; }
+.cabecalho small { flex-shrink:0; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+
+/* O que fazer: cada passo é um link inteiro até onde se resolve. */
+.passos { display:grid; margin:0; padding:0; list-style:none; }
+.passos li + li { border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.passos a { display:grid; grid-template-columns:28px minmax(0,1fr) 16px; align-items:center; gap:12px; min-height:56px; padding:8px 0; }
+.passos a > i { display:grid; place-items:center; width:28px; height:28px; border-radius:99px; background:var(--acao); color:oklch(var(--primary-foreground)); font-style:normal; font-size:calc(13px * var(--escala-letra)); font-weight:750; }
+.passos strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.passos small { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-2); }
+.passos em { display:block; margin-top:2px; font-style:normal; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:650; color:var(--acao); }
+.passos svg { width:16px; height:16px; color:var(--texto-3); }
+
+/* Indicadores fora da faixa: um cartão cada, com a régua e o destino. */
+.cartoes { display:grid; gap:12px; min-width:0; }
+@media (min-width:720px) { .cartoes { grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); } }
+.cartao { display:grid; gap:8px; align-content:start; min-width:0; padding:14px 16px 16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.cartao header { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.cartao h3 { min-width:0; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.selo { flex-shrink:0; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:750; letter-spacing:.12em; text-transform:uppercase; color:var(--cor); }
+.valor { font-size:calc(26px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; line-height:1.1; color:var(--cor); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cartao footer { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 12px; }
+.cartao footer span { font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
+.cartao footer a { display:inline-flex; align-items:center; min-height:32px; margin-left:auto; font-size:calc(13px * var(--escala-letra)); font-weight:650; color:var(--acao); white-space:nowrap; }
+
+/* A régua pinta as três zonas da referência e marca onde a pessoa caiu. */
+.regua { position:relative; display:block; height:6px; margin:6px 0 4px; }
+.regua i { position:absolute; top:0; bottom:0; }
+.regua i:first-child { border-radius:99px 0 0 99px; }
+.regua i:nth-child(3) { border-radius:0 99px 99px 0; }
+.regua i[data-zona="bom"] { background:color-mix(in oklab, var(--bom), transparent 20%); }
+.regua i[data-zona="atencao"] { background:color-mix(in oklab, var(--ambar), transparent 20%); }
+.regua i[data-zona="alto"] { background:color-mix(in oklab, var(--negativo), transparent 20%); }
+.regua em { position:absolute; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:99px; background:oklch(0.96 0 0); border:2px solid var(--papel-1); box-shadow:0 1px 4px rgb(0 0 0 / .35); }
+
+/* Os demais: na faixa boa e sem faixa, numa linha cada. */
+.demais { display:grid; gap:4px; align-content:start; }
+.demais > p { padding-top:6px; }
+.demais ul { display:grid; margin:0; padding:0; list-style:none; }
+.demais li { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:52px; padding:6px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.demais li strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.demais li small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
+.demais li b { flex-shrink:0; font-size:calc(15px * var(--escala-letra)); font-weight:700; color:var(--cor); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.rotuloBloco { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+
+/* ── Categorias ─────────────────────────────────────────── */
+/* No computador, o que subiu e o calendário numa coluna, a lista na outra:
+   a lista em terço de tela cortava o nome da categoria. */
+.categorias { display:grid; gap:14px; min-width:0; }
+@media (min-width:1024px) { .categorias { grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:20px; align-items:start; } }
+.coluna { display:grid; gap:14px; min-width:0; }
+
+.subiu { display:grid; margin:0; padding:0; list-style:none; }
+.subiu li { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:44px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); font-size:calc(14px * var(--escala-letra)); }
+.subiu li > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.subiu li > b { flex-shrink:0; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.variacao { display:inline-block; min-width:48px; margin-left:8px; text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.variacao[data-sentido="subiu"] { color:var(--negativo); }
+.variacao[data-sentido="caiu"] { color:var(--bom); }
+.variacao[data-sentido="igual"], .variacao[data-sentido="novo"] { font-weight:500; color:var(--texto-3); }
+.vazio { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+
+/* Calendário do mês: sete colunas, uma por dia da semana. Um só matiz, só a
+   opacidade varia — cores diferentes dariam ideia de categoria. */
+.calendario { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:5px; }
+.calendario > abbr { text-align:center; text-decoration:none; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.calendario > span { display:grid; place-items:center; height:30px; border-radius:8px; font-size:max(10px, calc(11px * var(--escala-letra))); font-variant-numeric:tabular-nums; color:var(--texto-3); background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.calendario > span[data-gasto] { color:white; background:oklch(var(--lch-negativo-solido) / var(--forca)); }
+/* Dia que ainda não chegou não é dia sem gasto: fica só o número. */
+.calendario > span[data-futuro] { background:transparent; opacity:.5; }
+.calendario > span[data-hoje] { outline:1.5px solid var(--acao); outline-offset:-1.5px; }
+.legenda { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:6px 12px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.legenda b { color:var(--foreground); font-weight:650; }
+.escala { display:inline-flex; align-items:center; gap:3px; }
+.escala i { width:12px; height:12px; border-radius:3px; background:oklch(var(--lch-negativo-solido) / var(--forca)); }
+
+.lista { display:grid; margin:0; padding:0; list-style:none; }
+.lista li { display:grid; gap:7px; padding:11px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.lista li:first-child { border-top:0; padding-top:2px; }
+.lista li > div { display:flex; align-items:center; gap:8px; font-size:calc(14px * var(--escala-letra)); }
+.lista li > div > i { flex-shrink:0; width:8px; height:8px; border-radius:99px; background:var(--cor); }
+.lista li > div > span:first-of-type { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.lista li > div > b { flex-shrink:0; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.barra { display:block; height:5px; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.barra i { display:block; height:100%; border-radius:99px; background:var(--cor); }
+.mais { justify-self:start; min-height:40px; padding:0 14px; border-radius:var(--raio-pilula); border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+.nota { padding:0 4px; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.5; color:var(--texto-3); }

@@ -132,6 +132,14 @@
        dois precisam passar >=4,5:1, não só o pior caso. Números e script
        completos em docs/REDESIGN-EM-CURSO.md. */
     --lch-acao: 0.85 0.24 145; /* #45f45c — 14,08:1 (bg) / 12,97:1 (card); preto em cima: 13,61:1 */
+    /* "Bom" é significado, não marca: entrada, sobra, dentro da faixa. Fica
+       verde com qualquer cor de tema (`cores-de-tema.css`) — com o tema rosa
+       ou vinho, entrada pintada da cor do tema pareceria gasto. Começa igual
+       ao verde da ação, que era quem fazia esse papel. */
+    --lch-bom: 0.85 0.24 145;
+    /* Brilho e matiz do fundo; a cor de tema troca os dois. */
+    --lch-brilho: 0.85 0.24 145;
+    --matiz: 145;
     --lch-positivo: 0.65 0.17 145; /* #3ba946 — 6,84:1 / 6,10:1 */
     --lch-negativo: 0.65 0.18 25; /* #e85854 — 5,88:1 / 5,25:1 */
     --lch-atencao: 0.7 0 0;
@@ -202,6 +210,7 @@
     --radius: 12px;
     /* CSS modules consomem cores completas; o Tailwind usa os trios --lch. */
     --acao: oklch(var(--lch-acao));
+    --bom: oklch(var(--lch-bom));
     --negativo: oklch(var(--lch-negativo));
     --positivo: oklch(var(--lch-positivo));
     --atencao: oklch(var(--lch-atencao));
@@ -239,6 +248,7 @@
     --sombra-flutuante: 0 24px 60px -30px oklch(0 0 0 / 35%);
 
     --lch-acao: 0.50 0.19 150; /* #007e17 — 4,89:1 sobre o fundo claro */
+    --lch-bom: 0.50 0.19 150;
     --lch-positivo: 0.45 0.17 145; /* #006b00 — 6,29:1 / 6,76:1 */
     --lch-negativo: 0.55 0.18 25; /* #c53637 — 4,95:1 / 5,32:1 */
     --lch-atencao: 0.4 0 0;

@@ -27,7 +27,7 @@ const PASSOS = [
 ]
 const FAQ = [
   ["Como começo a usar o Tino?", "Crie sua conta, cadastre uma conta financeira e informe o saldo inicial. Depois, registre seus gastos ou importe um extrato e confira os lançamentos."],
-  ["Preciso conectar meu banco?", "Não. Você pode registrar seus movimentos e importar extratos. As opções de conexão dependem da disponibilidade da integração dentro do app."],
+  ["Preciso conectar meu banco?", "Não. O Tino não se conecta ao banco: você anota o gasto, encaminha o aviso de compra que o banco manda no celular ou importa o extrato e a fatura."],
   ["Funciona no celular e no computador?", "Sim. O Tino funciona pelo navegador e adapta a interface à sua tela. Use a mesma conta para acessar seus dados nos dois."],
   ["O que aparece nas demonstrações?", "São capturas da interface real do Tino usando a conta de demonstração. Os valores são exemplos; sua conta mostra os seus próprios lançamentos."],
   ["Também posso organizar minha loja?", "Sim. O plano Meu dinheiro e minha loja inclui vendas, estoque, fiado e acompanhamento do MEI, com as contas da loja separadas das de casa."],

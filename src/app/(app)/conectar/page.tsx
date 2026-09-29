@@ -1,20 +1,14 @@
-import { SemOpenFinance } from "@/components/sem-open-finance"
-
-export const dynamic = "force-dynamic"
-
-export const metadata = { title: "Entrada automática · Tino" }
+import { redirect } from "next/navigation"
 
 /**
- * Como o gasto entra sozinho.
+ * Entrada automática saiu (Davi, 28/09/2026: "não vamos ter Open Finance").
  *
- * Esta página era o convite do Open Finance. Em 15/09/2026 o Davi tirou o Open
- * Finance de cena por custo — o agregador é cobrado por conta conectada, e não
- * há assinante suficiente para pagar isso ainda. O código do provedor continua
- * no repositório (`src/lib/open-finance/`), desligado: quando houver dinheiro,
- * é só voltar a apontar esta rota para `TelaConectar`.
- *
- * Enquanto isso, a página mostra os caminhos que existem e custam zero.
+ * A tela, desde 15/09, só listava os caminhos que já moram em Anotar e
+ * Importar. O endereço continua existindo porque pode estar salvo em algum
+ * atalho ou favorito; quem chega por ele cai em Anotar, onde ficam os jeitos
+ * de o gasto entrar sem digitar. O código do provedor de Open Finance
+ * (`src/lib/open-finance/`) fica no repositório, desligado.
  */
 export default function EntradaAutomatica() {
-  return <SemOpenFinance />
+  redirect("/capturas")
 }

@@ -55,6 +55,28 @@ describe("resumo da loja", () => {
     assert.equal(resumo.aReceberCentavos, 19302)
   })
 
+  it("dinheiro está na mão na hora, mesmo sem marca de recebido", () => {
+    // Nada grava `recebidoEm` numa venda em dinheiro: sem a regra, ela ficava
+    // para sempre em "ainda vai cair".
+    const resumo = resumirLoja([venda(3500, [{ forma: "DINHEIRO", valor: 3500, liquido: 3500, cai: 0 }])], HOJE)
+
+    assert.equal(resumo.recebidoCentavos, 3500)
+    assert.equal(resumo.aReceberCentavos, 0)
+  })
+
+  it("cartão com a data prevista já passada saiu do que vai cair", () => {
+    const resumo = resumirLoja(
+      [
+        venda(20000, [{ forma: "DEBITO", valor: 20000, liquido: 19602, cai: -5 }], { diasAtras: 6 }),
+        venda(10000, [{ forma: "CREDITO_VISTA", valor: 10000, liquido: 9651, cai: 20 }], { diasAtras: 10 }),
+      ],
+      HOJE,
+    )
+
+    assert.equal(resumo.recebidoCentavos, 19602)
+    assert.equal(resumo.aReceberCentavos, 9651)
+  })
+
   it("fiado fica fora do que vai cair", () => {
     // Ele não tem data. Somá-lo ao 'a receber' viraria dívida de cliente em
     // previsão de caixa — o erro que quebra loja pequena.
@@ -118,6 +140,18 @@ describe("o que cai na conta", () => {
     const total = serie.reduce((soma, dia) => soma + dia.valorCentavos, 0)
 
     assert.equal(total, 19602 + 9651)
+  })
+
+  it("dinheiro e o que já passou da data não aparecem como a cair", () => {
+    const serie = aCairPorDia(
+      [
+        venda(3500, [{ forma: "DINHEIRO", valor: 3500, liquido: 3500, cai: 0 }]),
+        venda(20000, [{ forma: "DEBITO", valor: 20000, liquido: 19602, cai: -2 }], { diasAtras: 3 }),
+      ],
+      30,
+      HOJE,
+    )
+    assert.deepEqual(serie, [])
   })
 
   it("respeita a janela pedida", () => {

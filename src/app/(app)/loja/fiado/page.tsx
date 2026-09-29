@@ -1,69 +1,105 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-import { Check, Copy } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { Check, MessageCircle, Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
-import { Cartao, Metrica, Vazio } from "@/components/ui/painel"
-import { Abertura } from "@/components/abertura"
-import { TrilhaLoja } from "@/components/trilha-loja"
-import { textoDeCobranca } from "@/lib/loja/fiado"
+import { idadeDoFiado, textoDeCobranca } from "@/lib/loja/fiado"
 import type { ClienteDevedor } from "@/lib/loja/fiado"
+import { TrilhaLoja } from "@/components/trilha-loja"
+import { showToast } from "@/components/ui/toast"
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
+import estilos from "./fiado.module.css"
 
 /**
- * Fiado.
+ * Fiado — F3 do canvas com o bloco de idade da F2 (Davi, 28/09/2026).
  *
- * A lista é ordenada pelo mais antigo, não pelo maior valor: quem deve pouco há
- * muito tempo costuma ser quem não vai pagar, e é essa cobrança que precisa
- * sair antes.
+ * Abre pelo que cobrar hoje (quem passou de 30 dias), não pela lista inteira:
+ * é a única parte do fiado que pede ação. A idade de cada compra fica ao lado,
+ * como no relatório de contas a receber.
  *
- * O texto de cobrança é copiado, não enviado. Quem conhece o cliente sabe o tom
- * certo, e mensagem automática em nome da loja azeda relação de bairro.
+ * O texto de cobrança é do dono: copiado, ou aberto no WhatsApp dele para
+ * ele mandar. Nunca enviado sozinho — mensagem automática em nome da loja
+ * azeda relação de bairro, e quem conhece o cliente sabe o tom certo.
  */
+
+type Devedor = Omit<ClienteDevedor, "vendas"> & {
+  vendas: { vendaId: string; numero: number; valorCentavos: number; criadoEm: string }[]
+}
 
 interface Resposta {
   loja: { nome: string }
-  devedores: (Omit<ClienteDevedor, "vendas"> & {
-    vendas: { vendaId: string; numero: number; valorCentavos: number; criadoEm: string }[]
-  })[]
+  devedores: Devedor[]
   resumo: { totalCentavos: number; clientes: number; atrasadoCentavos: number }
+}
+
+/// Trinta dias: a régua do comércio de rua, a mesma de `resumirFiado`.
+const PRAZO = 30
+/// Tons das faixas de idade: do mais claro (mais novo) ao mais escuro.
+const TONS = ["color-mix(in oklab, var(--foreground), transparent 10%)", "color-mix(in oklab, var(--foreground), transparent 38%)", "color-mix(in oklab, var(--foreground), transparent 60%)", "color-mix(in oklab, var(--foreground), transparent 78%)"]
+
+const paraLib = (devedor: Devedor): ClienteDevedor => ({
+  ...devedor,
+  vendas: devedor.vendas.map((venda) => ({ ...venda, criadoEm: new Date(venda.criadoEm), recebidoEm: null })),
+})
+const diasDesde = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+const textoDias = (dias: number) => (dias === 0 ? "hoje" : dias === 1 ? "1 dia" : `${dias} dias`)
+
+/** Telefone para o link do WhatsApp: só dígitos, com o 55 do Brasil quando faltar. */
+function linkDoWhatsApp(telefone: string, texto: string) {
+  const digitos = telefone.replace(/\D/g, "")
+  const numero = digitos.length <= 11 ? `55${digitos}` : digitos
+  return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`
+}
+
+function Situacao({ dias }: { dias: number }) {
+  const atrasado = dias > PRAZO
+  return (
+    <span className={estilos.situacao} data-atrasado={atrasado || undefined}>
+      <i aria-hidden />
+      {atrasado ? `Atrasado · ${textoDias(dias)}` : `Em dia · ${textoDias(dias)}`}
+    </span>
+  )
 }
 
 export default function Fiado() {
   const [dados, setDados] = useState<Resposta | null>(null)
-  const [copiado, setCopiado] = useState<string | null>(null)
+  const [erro, setErro] = useState<string | null>(null)
+  const [aberto, setAberto] = useState<string | null>(null)
   const [ocupado, setOcupado] = useState(false)
 
   const carregar = useCallback(async () => {
-    setDados(await buscar<Resposta>("/api/loja/fiado"))
+    try {
+      setDados(await buscar<Resposta>("/api/loja/fiado"))
+    } catch (falha) {
+      setErro(falha instanceof Error ? falha.message : "Não consegui carregar o fiado.")
+    }
   }, [])
 
   useEffect(() => {
     carregar()
   }, [carregar])
 
-  async function receber(vendaId: string) {
-    setOcupado(true)
-    try {
-      await enviar("/api/loja/fiado", { vendaId })
-      await carregar()
-    } finally {
-      setOcupado(false)
+  const devedores = dados?.devedores ?? []
+  const atrasados = devedores.filter((devedor) => devedor.diasDaMaisAntiga > PRAZO)
+  const emDia = devedores.filter((devedor) => devedor.diasDaMaisAntiga <= PRAZO)
+  const faixas = useMemo(() => idadeDoFiado(devedores.map(paraLib)), [devedores])
+  const total = dados?.resumo.totalCentavos ?? 0
+  const devedor = devedores.find((linha) => linha.id === aberto)
+  const mensagem = (alvo: Devedor) => textoDeCobranca(paraLib(alvo), dados?.loja.nome ?? "loja", formatarMoeda)
+
+  async function cobrar(alvo: Devedor) {
+    const texto = mensagem(alvo)
+    if (alvo.telefone) {
+      window.open(linkDoWhatsApp(alvo.telefone, texto), "_blank", "noopener")
+      return
     }
-  }
-
-  async function copiarCobranca(devedor: Resposta["devedores"][number]) {
-    const texto = textoDeCobranca(
-      { ...devedor, vendas: devedor.vendas.map((v) => ({ ...v, criadoEm: new Date(v.criadoEm), recebidoEm: null })) },
-      dados?.loja.nome ?? "loja",
-      formatarMoeda,
-    )
-
     try {
       await navigator.clipboard.writeText(texto)
-      setCopiado(devedor.id)
-      setTimeout(() => setCopiado(null), 2500)
+      showToast(`Mensagem para ${alvo.nome} copiada`, { description: "Cole no WhatsApp ou onde vocês conversam." })
     } catch {
       // Navegador sem permissão de área de transferência: mostrar o texto é
       // melhor que falhar em silêncio.
@@ -71,110 +107,221 @@ export default function Fiado() {
     }
   }
 
-  const devedores = dados?.devedores ?? []
+  async function receber(vendaIds: string[]) {
+    if (ocupado || vendaIds.length === 0) return
+    setOcupado(true)
+    try {
+      // Uma baixa por venda, como a rota pede: pagamento sem dizer de qual
+      // compra deixaria o app adivinhando qual quitar.
+      for (const vendaId of vendaIds) await enviar("/api/loja/fiado", { vendaId })
+      showToast(vendaIds.length === 1 ? "Compra recebida" : `${vendaIds.length} compras recebidas`)
+      await carregar()
+    } catch (falha) {
+      showToast(falha instanceof Error ? falha.message : "Não consegui dar baixa.", { variant: "error" })
+      await carregar()
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  // Recebeu tudo de quem estava aberto: a ficha fecha sozinha.
+  useEffect(() => {
+    if (aberto && dados && !devedor) setAberto(null)
+  }, [aberto, dados, devedor])
+
+  const linhaDeCliente = (alvo: Devedor) => (
+    <button key={alvo.id} type="button" className={estilos.linha} onClick={() => setAberto(alvo.id)}>
+      <span>
+        <b className={estilos.nome}>{alvo.nome}</b>
+        <Situacao dias={alvo.diasDaMaisAntiga} />
+      </span>
+      <span className={estilos.direita}>
+        <b className={estilos.valor}>{formatarMoeda(alvo.devendoCentavos)}</b>
+        <small>
+          {alvo.vendas.length} {alvo.vendas.length === 1 ? "compra" : "compras"}
+        </small>
+      </span>
+    </button>
+  )
+
+  const blocoIdade = (
+    <section className={`${estilos.bloco} ${estilos.idade}`} aria-labelledby="titulo-idade">
+      <header>
+        <div>
+          <span className={estilos.rotulo} id="titulo-idade">
+            Na rua
+          </span>
+          <strong className={estilos.num}>{formatarMoeda(total)}</strong>
+        </div>
+        <span>por idade da compra</span>
+      </header>
+      {total > 0 && (
+        <div className={estilos.faixas} aria-hidden>
+          {faixas.map((faixa, indice) =>
+            faixa.totalCentavos > 0 ? <i key={faixa.rotulo} style={{ width: `${(faixa.totalCentavos / total) * 100}%`, background: TONS[indice] }} /> : null,
+          )}
+        </div>
+      )}
+      <div>
+        {faixas.map((faixa, indice) => (
+          <div key={faixa.rotulo} className={estilos.faixa}>
+            <i style={{ background: TONS[indice] }} aria-hidden />
+            <span>
+              {faixa.rotulo}
+              <small>
+                {faixa.compras === 0
+                  ? "nenhuma compra"
+                  : `${faixa.compras} ${faixa.compras === 1 ? "compra" : "compras"} · ${faixa.clientes.join(", ")}`}
+              </small>
+            </span>
+            <b className={estilos.num}>{formatarMoeda(faixa.totalCentavos)}</b>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
 
   return (
-    <div className="space-y-4">
+    <div className={estilos.pagina}>
       <TrilhaLoja pagina="Fiado" />
-      {/* O que importa do fiado é quanto está na rua e quanto já passou do
-          combinado — não a contagem de tiles. */}
-      <Abertura
-        rotulo="Fiado"
-        titulo={
-          (dados?.resumo.totalCentavos ?? 0) > 0 ? (
-            <>Você tem <em>{formatarMoeda(dados?.resumo.totalCentavos ?? 0)}</em> na rua.</>
+
+      <div className={estilos.topo}>
+        <div className={estilos.destaque}>
+          {dados && total === 0 ? (
+            <>
+              <strong>Ninguém devendo</strong>
+              <span>Quando vender fiado no Balcão, a conta de cada cliente aparece aqui.</span>
+            </>
           ) : (
-            <>Ninguém está devendo hoje.</>
-          )
-        }
-        apoio={
-          (dados?.resumo.totalCentavos ?? 0) > 0 ? (
-            <>{dados?.resumo.clientes} {dados?.resumo.clientes === 1 ? "pessoa devendo" : "pessoas devendo"}{(dados?.resumo.atrasadoCentavos ?? 0) > 0 ? <> · <b>{formatarMoeda(dados?.resumo.atrasadoCentavos ?? 0)}</b> passou de 30 dias</> : null}.</>
-          ) : undefined
-        }
-      />
-
-      <Cartao titulo="Fiado">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Metrica
-            rotulo="Na rua"
-            valor={formatarMoeda(dados?.resumo.totalCentavos ?? 0)}
-            tom={dados?.resumo.totalCentavos ? "atencao" : "neutro"}
-          />
-          <Metrica rotulo="Pessoas devendo" valor={String(dados?.resumo.clientes ?? 0)} />
-          <Metrica
-            rotulo="Há mais de 30 dias"
-            valor={formatarMoeda(dados?.resumo.atrasadoCentavos ?? 0)}
-            tom={dados?.resumo.atrasadoCentavos ? "negativo" : "neutro"}
-            detalhe="passou do combinado do mês seguinte"
-          />
+            <>
+              <strong className={estilos.num}>{formatarMoeda(dados?.resumo.atrasadoCentavos ?? 0)}</strong>
+              <span>
+                para cobrar hoje · {formatarMoeda(total)} na rua, {dados?.resumo.clientes ?? 0}{" "}
+                {dados?.resumo.clientes === 1 ? "pessoa" : "pessoas"}
+              </span>
+            </>
+          )}
         </div>
-      </Cartao>
+        <Link href="/loja?forma=FIADO" className={estilos.botao} data-principal>
+          <Plus aria-hidden />
+          Vender fiado
+        </Link>
+      </div>
 
-      <Cartao titulo="Quem deve">
-        {devedores.length === 0 ? (
-          <Vazio
-            titulo="Ninguém devendo"
-            texto="Quando você fechar uma venda no fiado, quem levou aparece aqui com o valor e a data."
-          />
-        ) : (
-          <div className="divide-y divide-pauta">
-            {devedores.map((devedor) => (
-              <div key={devedor.id} className="py-4 first:pt-0">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <div>
-                    <p className="text-[calc(15px*var(--escala-letra))] font-medium">{devedor.nome}</p>
-                    <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                      {devedor.telefone ? `${devedor.telefone} · ` : ""}
-                      há {devedor.diasDaMaisAntiga} {devedor.diasDaMaisAntiga === 1 ? "dia" : "dias"}
-                    </p>
-                  </div>
+      {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
 
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`numero text-[calc(17px*var(--escala-letra))] font-semibold ${
-                        devedor.diasDaMaisAntiga > 30 ? "text-negativo" : "text-atencao"
-                      }`}
-                    >
-                      {formatarMoeda(devedor.devendoCentavos)}
+      <div className={estilos.grade}>
+        <div className={estilos.coluna}>
+          <div className={estilos.titulo}>
+            <h2>Para cobrar</h2>
+            <span>mais de {PRAZO} dias</span>
+          </div>
+          {atrasados.length === 0 ? (
+            <p className={`${estilos.bloco} ${estilos.vazio}`}>Nada atrasado. Todo fiado está dentro dos {PRAZO} dias.</p>
+          ) : (
+            <div className={estilos.cartoes}>
+              {atrasados.map((alvo) => (
+                <div key={alvo.id} className={`${estilos.bloco} ${estilos.cartao}`}>
+                  <button type="button" onClick={() => setAberto(alvo.id)} aria-label={`Abrir a conta de ${alvo.nome}`}>
+                    <span>
+                      <b className={estilos.nome}>{alvo.nome}</b>
+                      <Situacao dias={alvo.diasDaMaisAntiga} />
                     </span>
-                    <button
-                      onClick={() => copiarCobranca(devedor)}
-                      className="flex items-center gap-1.5 rounded-full border border-pauta px-3 py-1.5 text-[calc(12px*var(--escala-letra))] text-muted-fg hover:text-foreground"
-                    >
-                      {copiado === devedor.id ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                      {copiado === devedor.id ? "copiado" : "cobrar"}
+                    <b className={estilos.valor}>{formatarMoeda(alvo.devendoCentavos)}</b>
+                  </button>
+                  <div className={estilos.dois}>
+                    <button type="button" className={estilos.botao} data-principal onClick={() => void cobrar(alvo)}>
+                      <MessageCircle aria-hidden />
+                      Cobrar
+                    </button>
+                    <button type="button" className={estilos.botao} onClick={() => setAberto(alvo.id)}>
+                      <Check aria-hidden />
+                      Recebi
                     </button>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                <div className="mt-2.5 space-y-1">
-                  {devedor.vendas.map((venda) => (
-                    <div key={venda.vendaId} className="flex items-center justify-between gap-3 text-[calc(13px*var(--escala-letra))]">
-                      <span className="text-muted-fg">
-                        #{venda.numero} · {new Date(venda.criadoEm).toLocaleDateString("pt-BR")}
-                      </span>
-                      <span className="numero">{formatarMoeda(venda.valorCentavos)}</span>
-                      <button
-                        onClick={() => receber(venda.vendaId)}
-                        disabled={ocupado}
-                        className="rounded-full border border-positivo/40 px-3 py-1 text-[calc(12px*var(--escala-letra))] text-positivo disabled:opacity-50"
-                      >
-                        recebi
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <div className={estilos.titulo}>
+            <h2>Em dia</h2>
+            <span>{emDia.length}</span>
           </div>
-        )}
+          {emDia.length === 0 ? (
+            <p className={`${estilos.bloco} ${estilos.vazio}`}>Ninguém com fiado recente.</p>
+          ) : (
+            <div className={`${estilos.bloco} ${estilos.lista}`}>{emDia.map(linhaDeCliente)}</div>
+          )}
+        </div>
 
-        <p className="mt-4 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-          O texto de cobrança é copiado para você mandar — não é enviado sozinho. Quem conhece o cliente sabe o tom
-          certo, e mensagem automática em nome da loja azeda relação de bairro.
-        </p>
-      </Cartao>
+        {blocoIdade}
+      </div>
+
+      <Dialog open={Boolean(devedor)} onOpenChange={(abrir) => !abrir && setAberto(null)}>
+        <DialogContent className="sm:max-w-[520px]">
+          {devedor && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{devedor.nome}</DialogTitle>
+                <DialogDescription asChild>
+                  <span>
+                    <Situacao dias={devedor.diasDaMaisAntiga} />
+                    {devedor.telefone ? ` · ${devedor.telefone}` : ""}
+                  </span>
+                </DialogDescription>
+              </DialogHeader>
+              <DialogBody>
+                <div className={estilos.ficha}>
+                  <div className={estilos.total}>
+                    <strong className={estilos.num}>{formatarMoeda(devedor.devendoCentavos)}</strong>
+                    <span>
+                      em {devedor.vendas.length} {devedor.vendas.length === 1 ? "compra" : "compras"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className={estilos.rotulo}>Compras em aberto</span>
+                    {devedor.vendas.map((venda) => (
+                      <div key={venda.vendaId} className={estilos.compra}>
+                        <span className={estilos.num}>{new Date(venda.criadoEm).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</span>
+                        <span>
+                          Venda nº {venda.numero} · {textoDias(diasDesde(venda.criadoEm))}
+                        </span>
+                        <b className={estilos.num}>{formatarMoeda(venda.valorCentavos)}</b>
+                        <button type="button" onClick={() => void receber([venda.vendaId])} disabled={ocupado}>
+                          Recebi
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid gap-2">
+                    <span className={estilos.rotulo}>Mensagem de cobrança</span>
+                    <p className={estilos.mensagem}>{mensagem(devedor)}</p>
+                  </div>
+
+                  <div className={estilos.dois}>
+                    <button type="button" className={estilos.botao} data-principal onClick={() => void cobrar(devedor)}>
+                      <MessageCircle aria-hidden />
+                      {devedor.telefone ? "Abrir no WhatsApp" : "Copiar mensagem"}
+                    </button>
+                    <button type="button" className={estilos.botao} onClick={() => void receber(devedor.vendas.map((venda) => venda.vendaId))} disabled={ocupado}>
+                      <Check aria-hidden />
+                      Receber tudo
+                    </button>
+                  </div>
+                  <p className={estilos.dica}>
+                    {devedor.telefone
+                      ? "Abre a conversa no seu WhatsApp com a mensagem escrita. Quem manda é você."
+                      : "Sem telefone cadastrado: a mensagem é copiada para você mandar."}
+                  </p>
+                </div>
+              </DialogBody>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

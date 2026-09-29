@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, ok } from "@/lib/api"
+import { comSessao, corpo, ErroDeUso, ok } from "@/lib/api"
 import { caixaAberto, lojaDoLar, regrasDeRecebimento } from "@/lib/loja/dados"
 import { resumoDoCaixa } from "@/lib/loja/venda"
 import type { FormaPagamento } from "@/lib/loja/venda"
@@ -99,6 +99,15 @@ export const PUT = comSessao(async (sessao, requisicao) => {
         ...(dados.inscricaoEstadual !== undefined ? { inscricaoEstadual: dados.inscricaoEstadual || null } : {}),
       },
     })
+  }
+
+  // Taxa fora de 0–99,99% ou prazo quebrado viraria líquido negativo ou data
+  // de recebimento impossível em toda venda seguinte.
+  const FORMAS = new Set(["DINHEIRO", "PIX", "DEBITO", "CREDITO_VISTA", "CREDITO_PARCELADO", "FIADO"])
+  for (const regra of dados.regras ?? []) {
+    if (!FORMAS.has(regra.forma)) throw new ErroDeUso("Forma de pagamento desconhecida.")
+    if (!Number.isInteger(regra.taxaBps) || regra.taxaBps < 0 || regra.taxaBps >= 10_000) throw new ErroDeUso("Taxa precisa estar entre 0% e 99,99%.")
+    if (!Number.isInteger(regra.prazoDias) || regra.prazoDias < 0 || regra.prazoDias > 365) throw new ErroDeUso("Prazo precisa estar entre 0 e 365 dias.")
   }
 
   for (const regra of dados.regras ?? []) {

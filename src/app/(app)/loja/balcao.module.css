@@ -1,0 +1,77 @@
+/* Balcão, opção A do canvas (Davi, 28/09): teclado de balcão. O valor grande,
+   o teclado como o da maquininha e o "Cobrar" embaixo — o concorrente aqui é
+   o caderno, que abre na hora e não pede cadastro. */
+.pagina { display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
+@media (min-width:1024px) { .pagina { grid-template-columns:minmax(0,1fr) 380px; gap:22px; align-items:start; } }
+.coluna { display:grid; gap:16px; min-width:0; align-content:start; }
+
+.bloco { display:grid; gap:14px; min-width:0; padding:18px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.topo > span { font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-2); }
+
+/* Pílula do caixa: o estado da gaveta sempre à vista, sem ocupar a tela. */
+.caixa { display:inline-flex; align-items:center; gap:8px; min-height:40px !important; padding:4px 4px 4px 14px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 94%); font-size:calc(13px * var(--escala-letra)); white-space:nowrap; }
+.caixa i { width:8px; height:8px; border-radius:99px; background:var(--atencao); }
+.caixa[data-aberto] i { background:var(--bom); }
+.caixa b { padding:6px 12px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
+
+.visor { display:grid; justify-items:center; gap:2px; padding:8px 0 2px; text-align:center; }
+.visor small { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:650; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.visor strong { font-size:calc(52px * var(--escala-letra)); font-weight:750; letter-spacing:-.03em; line-height:1.05; font-variant-numeric:tabular-nums; }
+.visor > span { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+
+/* O que já está na venda: uma linha por item, com o X para tirar. */
+.itens { display:grid; gap:2px; }
+.item { display:flex; align-items:center; gap:10px; min-height:40px; padding:0 4px 0 12px; border-radius:12px; background:color-mix(in oklab, var(--foreground), transparent 95%); font-size:calc(13.5px * var(--escala-letra)); }
+.item span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.item b { font-variant-numeric:tabular-nums; }
+.item button { display:grid; place-items:center; width:36px; height:36px; min-height:36px !important; padding:0 !important; border-radius:99px; color:var(--texto-3); }
+.item button svg { width:16px; height:16px; }
+
+.digitado { display:flex; gap:8px; align-items:center; }
+.digitado input { flex:1; min-width:0; }
+.digitado button { flex-shrink:0; min-height:44px !important; padding:0 16px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 82%); font-size:calc(13px * var(--escala-letra)); font-weight:650; }
+
+.produtos { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -18px; padding:2px 18px; }
+.produtos::-webkit-scrollbar { display:none; }
+.produtos button { flex-shrink:0; display:grid; gap:2px; min-height:52px !important; padding:8px 14px !important; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 95%); text-align:left; font-size:calc(13px * var(--escala-letra)); }
+.produtos button span { color:var(--texto-3); font-size:calc(12px * var(--escala-letra)); font-variant-numeric:tabular-nums; }
+.semProdutos { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:16px; border:1px dashed color-mix(in oklab, var(--foreground), transparent 80%); font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.semProdutos svg { flex-shrink:0; width:17px; height:17px; }
+.semProdutos span { flex:1; }
+.semProdutos a { color:var(--acao); font-weight:650; white-space:nowrap; }
+
+.corpo { display:grid; gap:14px; }
+@media (min-width:1024px) { .corpo { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; align-items:start; } }
+.teclado { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+.teclado button { display:grid; place-items:center; height:58px !important; min-height:58px !important; padding:0 !important; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 92%); background:color-mix(in oklab, var(--foreground), transparent 94%); font-size:calc(24px * var(--escala-letra)); font-weight:600; font-variant-numeric:tabular-nums; transition:transform .1s var(--curva), background .15s var(--curva); }
+.teclado button:active { transform:scale(.96); background:color-mix(in oklab, var(--foreground), transparent 86%); }
+.teclado button:last-child { background:color-mix(in oklab, var(--foreground), transparent 90%); }
+.teclado svg { width:22px; height:22px; }
+
+.pagar { display:grid; gap:12px; align-content:start; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:650; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.formas { display:flex; flex-wrap:wrap; gap:8px; }
+.formas button { min-height:40px !important; padding:0 14px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%) !important; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.formas button[aria-pressed="true"] { border-color:transparent !important; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
+.campo { display:grid; gap:6px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.troco { font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--bom); }
+.cobrar { display:flex; align-items:center; justify-content:center; min-height:56px !important; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(16px * var(--escala-letra)); font-weight:750; font-variant-numeric:tabular-nums; }
+.cobrar:disabled { opacity:.45; }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+.aviso { font-size:calc(13.5px * var(--escala-letra)); font-weight:600; color:var(--bom); }
+
+/* O dia: o que o lojista confere no fim do expediente. */
+.dia h2 { font-size:calc(16px * var(--escala-letra)); font-weight:680; }
+.linha { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:calc(13.5px * var(--escala-letra)); }
+.linha > span { color:var(--texto-2); }
+.linha > b { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.linha small { display:block; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.separa { border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); padding-top:12px; display:grid; gap:10px; }
+.vazio { padding:10px 0; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); text-align:center; }
+.venda { display:flex; align-items:center; gap:10px; min-height:44px; font-size:calc(13.5px * var(--escala-letra)); }
+.venda > span:first-child { color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.venda > span:nth-child(2) { flex:1; color:var(--texto-2); }
+.venda > b { font-variant-numeric:tabular-nums; }
+.nota { min-height:32px !important; padding:0 10px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-2); white-space:nowrap; }
+.nota[data-status="EMITIDA"] { border-color:transparent; background:color-mix(in oklab, var(--bom), transparent 88%); color:var(--bom); }
