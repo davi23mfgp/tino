@@ -1,7 +1,7 @@
 /**
  * O leão da vitrine.
  *
- * Mesma arte da marca de dentro do app (`/mascote/tino-leao-traco.png`),
+ * Mesma arte da marca de dentro do app (`/mascote/tino-leao-traco.webp`),
  * aplicada como máscara: o desenho é tinta preta e sumiria sobre o fundo
  * escuro da página. Como máscara, a cor vem do `currentColor` de quem o usa,
  * então o mesmo arquivo serve ao cabeçalho, ao rodapé e ao mascote grande.
@@ -17,8 +17,8 @@
  * ainda não chegou" que justificava o desenho vetorial de reserva.
  */
 
-const ARTE_MIUDA = "/mascote/tino-leao-marca.png"
-const ARTE_GRANDE = "/mascote/tino-leao-traco.png"
+const ARTE_MIUDA = "/mascote/tino-leao-marca-160.webp"
+const ARTE_GRANDE = "/mascote/tino-leao-traco.webp"
 export function Leao({
   tamanho,
   className,

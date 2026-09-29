@@ -95,7 +95,7 @@ export default async function Painel() {
         a barra continua e os atalhos entram no cartão, onde sobrava espaço. */}
     <section className={estilos.cartaoTopo} aria-labelledby="ola">
       {/* eslint-disable-next-line @next/next/no-img-element -- desenho decorativo, sem ganho do otimizador */}
-      <img src="/mascote/tino-leao-marca.png" alt="" aria-hidden className={estilos.leao} />
+      <img src="/mascote/tino-leao-marca.webp" alt="" aria-hidden className={estilos.leao} />
       <div className={estilos.cartaoCabeca}>
         <span className={estilos.marca}>tino.</span>
         <div className={estilos.acoesCartao}>

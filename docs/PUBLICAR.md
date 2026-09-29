@@ -13,6 +13,13 @@ ou token em formulário — se algum passo pedir isso, é passo seu.
 ## 1. Banco no Neon
 
 1. Crie o projeto em https://neon.tech, região `aws-sa-east-1` (São Paulo) —
+
+   **O servidor da Vercel tem de ficar na mesma região** (29/09/2026). O
+   `vercel.json` fixa `"regions": ["gru1"]`, São Paulo. Sem isso a Vercel roda
+   em Washington, e cada consulta ao banco atravessa as Américas: medido com
+   140 ms de ida e volta, Cartões levava 3 s e o Início 3,2 s, porque fazem 15
+   e 40 consultas. Se o banco do Neon estiver em outra região, troque o `gru1`
+   pela região mais perto dele.
    latência menor para quem acessa do Brasil.
 2. Na tela de conexão, copie **duas** strings:
    - a **pooled** (tem `-pooler` no host) → vai virar `DATABASE_URL`;
