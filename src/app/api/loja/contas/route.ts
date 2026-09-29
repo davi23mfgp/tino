@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { diaNoFuso, resumoDasContas, situacaoDaConta } from "@/lib/loja/contas"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
 
@@ -19,24 +20,16 @@ export const GET = comSessao(async (sessao) => {
     take: 200,
   })
 
-  const hoje = new Date()
-  const emSeteDias = new Date(hoje.getTime() + 7 * 86_400_000)
-
-  const abertas = contas.filter((conta) => !conta.paga)
+  // Por dia, no fuso do lar: comparar com o instante fazia a conta do dia
+  // aparecer como vencida (ver lib/loja/contas.ts).
+  const lar = await prisma.lar.findUnique({ where: { id: sessao.larId }, select: { fusoHorario: true } })
+  const fuso = lar?.fusoHorario ?? "America/Sao_Paulo"
+  const hoje = diaNoFuso(new Date(), fuso)
 
   return ok({
-    contas,
-    resumo: {
-      abertoCentavos: abertas.reduce((soma, conta) => soma + conta.valorCentavos, 0),
-      // Vencida é diferente de "vence esta semana": uma já é problema, a outra
-      // ainda é aviso, e juntar as duas faz a pessoa parar de olhar.
-      vencidoCentavos: abertas
-        .filter((conta) => conta.vencimento < hoje)
-        .reduce((soma, conta) => soma + conta.valorCentavos, 0),
-      daSemanaCentavos: abertas
-        .filter((conta) => conta.vencimento >= hoje && conta.vencimento <= emSeteDias)
-        .reduce((soma, conta) => soma + conta.valorCentavos, 0),
-    },
+    hoje,
+    contas: contas.map((conta) => ({ ...conta, situacao: situacaoDaConta(conta, hoje) })),
+    resumo: resumoDasContas(contas, hoje, fuso),
   })
 })
 
