@@ -8,7 +8,6 @@ import e from "./inicio.module.css"
 import { AbasDoInicio } from "./abas-do-inicio"
 import { ConferirNoInicio, type CapturaNoInicio } from "./conferir-no-inicio"
 import { LogoDaCompra } from "./logo-da-compra"
-import { IdentidadeBanco } from "@/components/banco-perfil"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
@@ -23,7 +22,9 @@ import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { AcoesDaConta } from "@/components/barra-topo"
-import { finalDoCartao } from "@/lib/bandeiras"
+import { ROTULO_BANDEIRA, finalDoCartao } from "@/lib/bandeiras"
+import { corDoBanco } from "@/lib/bancos-perfil"
+import { CarteiraCartoes } from "@/components/carteira-cartoes"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início · Tino", robots: { index: false, follow: false } }
@@ -110,23 +111,6 @@ export default async function Painel() {
   const proximoMes = mesesFluxo.find((mes) => mes.futuro)
   const indicadores = diagnostico.indicadores.filter((linha) => linha.faixa !== "SEM_DADO").slice(0, 4)
 
-  const faturas = cartoes.map((cartao) => {
-    const proximaCompetencia = mesesFuturos[1]
-    const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
-    return {
-      id: cartao.id,
-      nome: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, ""),
-      instituicao: cartao.instituicao,
-      tipo: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, "").replace(/^Cart[ãa]o\s+/i, ""),
-      final: finalDoCartao(cartao.nome),
-      faturaCentavos: Math.max(0, valorDoMes(cartao.transacoes, competencia)),
-      dias: diasAteVencer(cartao.diaVencimento),
-      fecha: cartao.diaFechamento,
-      vence: cartao.diaVencimento,
-      proximaRotulo: rotuloCompetencia(proximaCompetencia, true),
-      proximaCentavos: Math.max(0, valorDoMes(cartao.transacoes, proximaCompetencia) + previstoProximo),
-    }
-  })
   // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
   const quantidadePendente = totaisPendentes._count._all
     const primeiroNome = sessao.nome.trim().split(" ")[0] || "você"
@@ -180,31 +164,43 @@ export default async function Painel() {
 
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
-    {/* Daqui para baixo é a opção C do canvas (passo 30, Davi, 29/09/2026):
-        o topo fica como estava, e o resto se divide em Hoje, Mês e Futuro no
-        celular; no computador, uma coluna larga e um trilho à direita. */}
+    {/* O topo, os atalhos e a carteira de cartões ficam exatamente como
+        estavam (Davi, 29/09/2026: "já disse que quero manter isso, o resto
+        pode mudar"). Daqui para baixo é a opção C do canvas (passo 30):
+        Hoje, Mês e Futuro no celular; no computador, coluna larga e trilho. */}
+    <section className={estilos.painel} aria-labelledby="cartoes-titulo">
+      <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
+      {/* Cartões numa carteira (Davi, 23/09): um atrás do outro, o tocado
+          levanta. Os números saem daqui, do servidor; a pilha só anima. */}
+      {cartoes.length ? <CarteiraCartoes cartoes={cartoes.map((cartao) => {
+        const atual = valorDoMes(cartao.transacoes, competencia)
+        // Fecha, vence e a proxima fatura: as tres perguntas de quem olha um
+        // cartao. Lancado e parcela ainda nao lancada somam, e o rotulo avisa
+        // quando ha previsao no meio — antes um escondia o outro.
+        const proximaCompetencia = mesesFuturos[1]
+        const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
+        const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
+        const dias = diasAteVencer(cartao.diaVencimento)
+        return {
+          id: cartao.id,
+          nome: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, ""),
+          instituicao: cartao.instituicao,
+          cor: corDoBanco(cartao.instituicao),
+          final: finalDoCartao(cartao.nome),
+          bandeira: cartao.bandeira ? ROTULO_BANDEIRA[cartao.bandeira] ?? "" : "",
+          faturaAtualCentavos: Math.max(0, atual),
+          vencimento: dias === null ? "vencimento não informado" : `vence em ${dias} ${dias === 1 ? "dia" : "dias"}`,
+          proximaRotulo: rotuloCompetencia(proximaCompetencia, true),
+          proximaCentavos: Math.max(0, confirmadoProximo + previstoProximo),
+          previstoProximoCentavos: previstoProximo,
+        }
+      })} /> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
+    </section>
+
     <AbasDoInicio>
       <div className={e.grupo} data-grupo="hoje">
         {capturasNoInicio.length > 0 && <ConferirNoInicio capturas={capturasNoInicio} total={quantidadePendente} contaPadraoId={contaPadrao?.id ?? null} />}
 
-        <section className={e.bloco} data-area="faturas" aria-labelledby="faturas-titulo">
-          <Cabeca id="faturas-titulo" titulo="Faturas" href="/cartoes" acao="Ver cartões" apoio={faturas.length ? `${formatarMoeda(faturas.reduce((soma, linha) => soma + linha.faturaCentavos, 0))} nas faturas abertas` : undefined} />
-          {faturas.length ? <div className={e.faturas}>{faturas.map((fatura) => (
-            <Link href="/cartoes" key={fatura.id} className={e.fatura}>
-              <div className={e.faturaTopo}>
-                <IdentidadeBanco instituicao={fatura.instituicao} nome={fatura.nome} className={e.logoBanco} />
-                <div className="min-w-0"><strong>{fatura.instituicao ?? fatura.nome}</strong><small>{fatura.tipo}{fatura.final ? ` · final ${fatura.final}` : ""}</small></div>
-                {fatura.dias !== null && <span className={e.chip} data-tom={fatura.dias <= 7 ? "atencao" : "acao"}>vence em {fatura.dias} {fatura.dias === 1 ? "dia" : "dias"}</span>}
-              </div>
-              <div className={e.faturaValor}>
-                <div><small>Fatura atual</small><Reais centavos={fatura.faturaCentavos} tamanho="medio" /></div>
-                <p>{fatura.fecha ? <>fecha dia {fatura.fecha}<br /></> : null}{fatura.vence ? `vence dia ${fatura.vence}` : "vencimento não informado"}</p>
-              </div>
-              {fatura.dias !== null && <div className={e.trilho} data-tom={fatura.dias <= 7 ? "atencao" : "acao"}><i style={{ width: `${Math.max(8, Math.min(100, (1 - fatura.dias / 30) * 100))}%` }} /></div>}
-              {fatura.proximaCentavos > 0 && <small className={e.apoio}>{fatura.proximaRotulo} já tem {formatarMoeda(fatura.proximaCentavos)}</small>}
-            </Link>
-          ))}</div> : <Link href="/configuracoes" className={e.vazio}>Cadastrar o primeiro cartão <ArrowRight /></Link>}
-        </section>
 
         <section className={e.bloco} data-area="recentes" aria-labelledby="recentes-titulo">
           <Cabeca id="recentes-titulo" titulo="Compras recentes" href="/transacoes" acao="Ver todas" />

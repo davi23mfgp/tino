@@ -22,7 +22,7 @@
     grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.95fr);
     grid-template-areas:
       "fluxo fluxo conferir"
-      "onde recentes faturas"
+      "onde recentes dividas"
       "indicadores indicadores dividas";
   }
   .abas { display:none; }
@@ -33,7 +33,6 @@
   .grade [data-area=conferir] { grid-area:conferir; }
   .grade [data-area=onde] { grid-area:onde; }
   .grade [data-area=recentes] { grid-area:recentes; }
-  .grade [data-area=faturas] { grid-area:faturas; }
   .grade [data-area=indicadores] { grid-area:indicadores; }
   .grade [data-area=dividas] { grid-area:dividas; }
 }
@@ -131,10 +130,13 @@
 
 /* ---- saúde e indicadores */
 .saudeTopo { display:grid; grid-template-columns:64px minmax(0,1fr) auto; align-items:center; gap:14px; }
-.anelNota { --nota:0deg; position:relative; display:grid; place-items:center; width:64px; height:64px; border-radius:50%; background:conic-gradient(var(--amarelo) var(--nota), color-mix(in oklab, var(--foreground), transparent 90%) 0); }
-.anelNota[data-situacao=SAUDAVEL] { background:conic-gradient(var(--acao) var(--nota), color-mix(in oklab, var(--foreground), transparent 90%) 0); }
-.anelNota::after { content:""; position:absolute; inset:7px; border-radius:50%; background:var(--papel-1); }
-.anelNota span { position:relative; z-index:1; font-size:calc(18px * var(--escala-letra)); font-weight:300; }
+.anelNota { --nota:0deg; --cor-nota:var(--amarelo); position:relative; width:64px; height:64px; }
+.anelNota[data-situacao=SAUDAVEL] { --cor-nota:var(--acao); }
+/* O anel é recortado, não pintado por cima: o fundo do bloco é translúcido,
+   e um círculo da cor do fundo deixava o anel parecer uma pizza. */
+.anelNota::before { content:""; position:absolute; inset:0; border-radius:50%; background:conic-gradient(var(--cor-nota) var(--nota), color-mix(in oklab, var(--foreground), transparent 88%) 0); -webkit-mask:radial-gradient(circle, transparent 24px, #000 25px); mask:radial-gradient(circle, transparent 24px, #000 25px); }
+.anelNota span { position:absolute; inset:0; display:grid; place-items:center; }
+.anelNota span { font-size:calc(18px * var(--escala-letra)); font-weight:300; }
 .indicadores { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
 .indicadores > div { display:flex; flex-direction:column; gap:6px; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--amarelo), transparent 72%); background:linear-gradient(160deg, color-mix(in oklab, var(--amarelo), transparent 88%), transparent 70%), var(--papel-2); }
 .indicadores > div[data-faixa=BOM] { border-color:color-mix(in oklab, var(--positivo), transparent 70%); background:linear-gradient(160deg, color-mix(in oklab, var(--positivo), transparent 88%), transparent 70%), var(--papel-2); }
