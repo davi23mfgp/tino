@@ -29,7 +29,7 @@ export function ConfigAtalhoLancar() {
       <p className="text-[calc(13px*var(--escala-letra))] text-[color:var(--texto-2)]">
         Um atalho parado na barra de notificações. Toque em <b>Anotar</b> para escrever ou em <b>Ditar</b> para falar — a
         tela abre com o campo pronto. Escrever dentro da própria notificação só existe em aplicativo instalado; pelo
-        WhatsApp, o Tino já aceita.
+        Telegram, o Tino já aceita.
       </p>
 
       <button

@@ -79,7 +79,7 @@ const SECOES = [
   {
     titulo: "Integrações com outros serviços",
     conteudo: [
-      "WhatsApp, Telegram, o aviso de compra do seu banco e o envio de faturas por e-mail são opcionais. Ao ligar uma integração, você também usa o serviço de outra empresa, sujeito aos termos dela.",
+      "Telegram, o aviso de compra do seu banco e o envio de faturas por e-mail são opcionais. Ao ligar uma integração, você também usa o serviço de outra empresa, sujeito aos termos dela.",
       "Nota fiscal do MEI: o Tino envia os dados ao emissor, mas a obrigação fiscal é do contribuinte. Confira a nota emitida.",
     ],
   },

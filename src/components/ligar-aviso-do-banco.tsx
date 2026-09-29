@@ -146,7 +146,7 @@ export function LigarAvisoDoBanco({
 
       <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-[color:var(--texto-3)]">
         Isto é Android. No iPhone o sistema não deixa nenhum app ler a notificação de outro — ali o caminho é
-        compartilhar o aviso com o Tino, ou falar pelo WhatsApp.
+        compartilhar o aviso com o Tino, ou falar pelo Telegram.
       </p>
     </div>
   )

@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { confirmarCaptura, descartarCaptura, gerarChave } from "@/lib/captura"
-import { whatsappDisponivel } from "@/lib/captura/whatsapp"
 import { regraAPartirDeCorrecao } from "@/lib/categorizar"
 import { campo, doLar, validar, z } from "@/lib/validar"
 
@@ -44,10 +43,13 @@ export const GET = comSessao(async (sessao, requisicao) => {
     pendentes,
     maisUsadas: maisUsadas.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)),
     chaves: chaves.map(({ chatId, ...chave }) => ({ ...chave, conectada: Boolean(chatId) })),
-    // Sem as chaves da Meta configuradas no servidor, gerar chave de WhatsApp
-    // seria entregar um caminho que não leva a lugar nenhum. A tela precisa
-    // dizer isso em vez de fingir que o canal existe.
-    canais: { whatsapp: whatsappDisponivel(), telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN) },
+    // Sem o token do bot no servidor, gerar chave de Telegram não levaria a
+    // lugar nenhum. O nome do bot (opcional) vira o link de um toque. O
+    // WhatsApp saiu em 29/09/2026 ("deixe só Telegram").
+    canais: {
+      telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN),
+      telegramUsuario: process.env.TELEGRAM_BOT_USUARIO?.replace(/^@/, "").trim() || null,
+    },
   })
 })
 

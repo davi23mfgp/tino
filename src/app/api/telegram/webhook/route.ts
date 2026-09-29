@@ -53,7 +53,9 @@ export async function POST(requisicao: Request) {
   let texto = (mensagem.text ?? mensagem.caption ?? "").trim()
 
   // ── Ligar a conversa ao lar ─────────────────────────────
-  const conectar = /^\/conectar\s+(\S+)/i.exec(texto)
+  // "/start CHAVE" é o que o Telegram manda quando a pessoa toca no link
+  // t.me/<bot>?start=CHAVE da tela Anotar; "/conectar CHAVE" é o caminho manual.
+  const conectar = /^\/(?:conectar|start)\s+(\S+)/i.exec(texto)
   if (conectar) {
     const chave = await autenticarChave(conectar[1])
     if (!chave) {
@@ -79,7 +81,7 @@ export async function POST(requisicao: Request) {
   if (!chave) {
     await responder(
       chatId,
-      "Ainda não sei de quem é esta conversa. No app, vá em Configurações → Captura rápida, gere uma chave e me mande aqui:\n\n<code>/conectar SUA_CHAVE</code>",
+      "Ainda não sei de quem é esta conversa. No app, vá em Anotar → Telegram, gere uma chave e toque em Abrir no Telegram — ou me mande aqui:\n\n<code>/conectar SUA_CHAVE</code>",
     )
     return NextResponse.json({ ok: true })
   }

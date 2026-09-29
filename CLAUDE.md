@@ -76,6 +76,12 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   e dos ajustes, e `/conectar` leva para Anotar. O código do provedor
   (`src/lib/open-finance/`, `src/app/api/open-finance/`) fica desligado no
   repositório. Não ofereça conexão com banco em tela nenhuma.
+- **Sem WhatsApp** (29/09/2026: "não temos wpp por enquanto, então pode
+  tirar. Deixe só telegram"). A rota `/api/whatsapp` saiu, Anotar mostra só
+  Telegram, e a política de privacidade não cita mais a Meta. A biblioteca
+  `src/lib/captura/whatsapp.ts` fica no repositório, desligada, como o Open
+  Finance. O botão "Abrir no WhatsApp" do Fiado continua: é o WhatsApp do
+  próprio dono, um link `wa.me`, não integração do Tino.
 - Já disse (registro antigo): por enquanto, esqueça Telegram, PDF de fatura
   e integração com modelo de linguagem. **Também superado**: as três coisas
   foram pedidas e construídas depois (Telegram e assistente Tino, ver
