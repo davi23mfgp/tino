@@ -38,3 +38,13 @@ describe("o mesmo defeito vira uma linha só", () => {
     assert.equal(impressaoDoErro("SERVIDOR", "x", pilha), impressaoDoErro("SERVIDOR", "x", pilha.replace(":120:15", ":121:9")))
   })
 })
+
+import { precisaVerTermos, VERSAO_TERMOS } from "@/lib/termos"
+
+describe("aviso de mudança da política", () => {
+  it("aparece para quem viu uma versão anterior ou nenhuma, e some depois do Entendi", () => {
+    assert.equal(precisaVerTermos("2026-09-23"), true)
+    assert.equal(precisaVerTermos(null), true)
+    assert.equal(precisaVerTermos(VERSAO_TERMOS), false)
+  })
+})
