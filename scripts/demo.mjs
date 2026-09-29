@@ -470,7 +470,7 @@ async function main() {
     data: {
       larId: lar.id,
       contaId: corrente.id,
-      credor: "Conta corrente — cheque especial",
+      credor: "Conta corrente, cheque especial",
       tipo: "CHEQUE_ESPECIAL",
       saldoDevedorCentavos: reais(1850),
       jurosMensalBps: 780,
@@ -482,7 +482,7 @@ async function main() {
   await prisma.divida.create({
     data: {
       larId: lar.id,
-      credor: "Empréstimo pessoal — Banco do Brasil",
+      credor: "Empréstimo pessoal, Banco do Brasil",
       tipo: "EMPRESTIMO_PESSOAL",
       saldoDevedorCentavos: reais(8400),
       jurosMensalBps: 289,
@@ -653,9 +653,9 @@ async function main() {
 
   // ── Capturas esperando conferência ───────────────────────
   const pendentes = [
-    { texto: "Nubank — Compra aprovada: R$ 74,90 em ASSAI ATACADISTA", valor: 7490, nome: "Assai Atacadista", categoria: "Supermercado", confianca: 90 },
-    { texto: "Banco do Brasil — Compra aprovada de R$ 32,00 em PADARIA REAL", valor: 3200, nome: "Padaria Real", categoria: null, confianca: 80 },
-    { texto: "Nubank — Compra aprovada: R$ 219,90 em CENTAURO", valor: 21990, nome: "Centauro", categoria: null, confianca: 80 },
+    { texto: "Nubank: Compra aprovada: R$ 74,90 em ASSAI ATACADISTA", valor: 7490, nome: "Assai Atacadista", categoria: "Supermercado", confianca: 90 },
+    { texto: "Banco do Brasil: Compra aprovada de R$ 32,00 em PADARIA REAL", valor: 3200, nome: "Padaria Real", categoria: null, confianca: 80 },
+    { texto: "Nubank: Compra aprovada: R$ 219,90 em CENTAURO", valor: 21990, nome: "Centauro", categoria: null, confianca: 80 },
   ]
 
   for (const captura of pendentes) {
@@ -679,7 +679,7 @@ async function main() {
   await prisma.simulacaoEmprestimo.create({
     data: {
       larId: lar.id,
-      titulo: "Proposta do gerente — 15 mil em 24x",
+      titulo: "Proposta do gerente: 15 mil em 24x",
       valorCentavos: reais(15000),
       parcelas: 24,
       jurosMensalBps: 349,
