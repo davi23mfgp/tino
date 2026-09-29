@@ -76,6 +76,10 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   e dos ajustes, e `/conectar` leva para Anotar. O código do provedor
   (`src/lib/open-finance/`, `src/app/api/open-finance/`) fica desligado no
   repositório. Não ofereça conexão com banco em tela nenhuma.
+- **Conta de admin: `admin.tino@gmail.com`** (29/09/2026). Criada ou promovida
+  no build por `scripts/garantir-admin.mjs`, com `ADMIN_EMAIL` e `ADMIN_SENHA`
+  na Vercel. A senha que o Davi mandou no chat **nunca** vai para o
+  repositório, nem em teste, nem em comentário.
 - **Sem WhatsApp** (29/09/2026: "não temos wpp por enquanto, então pode
   tirar. Deixe só telegram"). A rota `/api/whatsapp` saiu, Anotar mostra só
   Telegram, e a política de privacidade não cita mais a Meta. A biblioteca
