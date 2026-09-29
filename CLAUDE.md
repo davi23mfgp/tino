@@ -119,11 +119,17 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   Do 18 em diante: "Tino — telas, parte 2"
   (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK). Chegando perto de 190
   arquivos, abrir uma parte 3.
+- **Estilo das telas da loja** (29/09/2026, "pode deixar estilo última
+  tela"): quadros finos como Finanças da loja (H2) e MEI (N1) — número
+  grande em peso leve com os centavos menores, rótulo curto, a referência
+  embaixo, cor só no que pede ação. Balcão, Prateleira e Fiado já seguem.
 - **Aprovou, sobe** (pedido em 2026-09-26): tela aprovada vai na hora para a
   branch da sessão e o trabalho segue para a próxima tela sem perguntar. O
   Davi quer também no Vercel, que publica o `main`; a sessão remota não tem
   permissão de enviar ao `main`, então isso fica com ele (juntar a branch
-  no `main`) até ele liberar a permissão.
+  no `main`) até ele liberar a permissão. Em 29/09/2026 ele autorizou juntar
+  o PR #2 pelo GitHub ("pode colocar no main"); para cada junção nova,
+  confirme de novo.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -1,5 +1,6 @@
 /* Fiado — F3 com o bloco de idade da F2 (Davi, 28/09). Mesmo estilo da
-   Prateleira: vidro do app, cinzas, cor só no ponto da situação. */
+   Prateleira: vidro do app, cinzas, cor só no ponto da situação; números nos
+   quadros finos de Finanças e MEI desde 29/09. */
 .pagina { display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
 @media (min-width:1024px) { .grade { display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:22px; align-items:start; } }
 .coluna { display:grid; gap:14px; min-width:0; align-content:start; }
@@ -8,10 +9,20 @@
 .num { font-variant-numeric:tabular-nums; }
 .rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--texto-3); }
 
-.topo { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.destaque strong { display:block; font-size:calc(32px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; line-height:1.1; }
-.destaque span { font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-2); }
-.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:12px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:550; white-space:nowrap; }
+.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.topo p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
+/* Quadros finos (29/09): o desenho de Finanças da loja e MEI. */
+.quadros { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+@media (min-width:1024px) { .quadros { gap:16px; } }
+.quadro { display:flex; flex-direction:column; gap:6px; padding:16px 18px; }
+@media (min-width:1024px) { .quadro { padding:20px 22px; } }
+.quadro > span { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.quadro strong { font-size:calc(24px * var(--escala-letra)); font-weight:300; letter-spacing:-.03em; line-height:1.1; white-space:nowrap; }
+@media (min-width:1024px) { .quadro strong { font-size:calc(34px * var(--escala-letra)); } }
+.quadro strong span, .total strong span { font-size:.55em; opacity:.6; }
+.quadro strong[data-tom="negativo"] { color:var(--negativo); }
+.quadro small { font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:550; white-space:nowrap; }
 .botao svg { width:16px; height:16px; }
 .botao[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 .titulo { display:flex; justify-content:space-between; align-items:baseline; padding-top:4px; }
@@ -23,8 +34,8 @@
 @media (min-width:640px) { .cartoes { grid-template-columns:repeat(2, minmax(0,1fr)); } }
 .cartao { display:grid; gap:12px; padding:16px; }
 .cartao > button:first-child { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; min-height:0 !important; padding:0 !important; text-align:left; }
-.nome { display:block; font-size:calc(15px * var(--escala-letra)); font-weight:600; }
-.valor { font-size:calc(18px * var(--escala-letra)); font-weight:650; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.nome { display:block; font-size:calc(15px * var(--escala-letra)); font-weight:500; }
+.valor { font-size:calc(22px * var(--escala-letra)); font-weight:300; letter-spacing:-.02em; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .dois { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 
 .lista { overflow:hidden; }
@@ -41,8 +52,11 @@
 
 /* Idade da dívida: o relatório de contas a receber, em cinzas. */
 .idade { display:grid; gap:14px; padding:18px; }
+/* Sem min-width:0 o item da grade cresce até o tamanho da lista de nomes
+   (que não quebra linha) e a tela passa da largura do celular. */
+.idade > * { min-width:0; }
 .idade header { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
-.idade header strong { display:block; font-size:calc(28px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; }
+.idade header strong { display:block; font-size:calc(30px * var(--escala-letra)); font-weight:300; letter-spacing:-.04em; }
 .idade header span { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
 .faixas { display:flex; height:10px; gap:2px; border-radius:99px; overflow:hidden; background:color-mix(in oklab, var(--foreground), transparent 92%); }
 .faixas i { display:block; height:100%; }
@@ -55,7 +69,7 @@
 /* A ficha do cliente. */
 .ficha { display:grid; gap:16px; }
 .total { display:flex; align-items:baseline; gap:8px; }
-.total strong { font-size:calc(34px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; }
+.total strong { font-size:calc(40px * var(--escala-letra)); font-weight:300; letter-spacing:-.04em; }
 .total span { font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-3); }
 .compra { display:flex; align-items:center; gap:12px; min-height:48px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(13.5px * var(--escala-letra)); }
 .compra > span:first-child { width:44px; color:var(--texto-3); }

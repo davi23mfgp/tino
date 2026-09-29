@@ -65,6 +65,18 @@ function Situacao({ dias }: { dias: number }) {
   )
 }
 
+/** Valor com os centavos menores, como nos quadros de Finanças e MEI. */
+function Reais({ centavos, tom }: { centavos: number; tom?: "negativo" }) {
+  const texto = formatarMoeda(centavos)
+  const virgula = texto.lastIndexOf(",")
+  return (
+    <strong className={estilos.num} data-tom={tom}>
+      {texto.slice(0, virgula)}
+      <span>{texto.slice(virgula)}</span>
+    </strong>
+  )
+}
+
 export default function Fiado() {
   const [dados, setDados] = useState<Resposta | null>(null)
   const [erro, setErro] = useState<string | null>(null)
@@ -149,7 +161,7 @@ export default function Fiado() {
       <header>
         <div>
           <span className={estilos.rotulo} id="titulo-idade">
-            Na rua
+            Idade do fiado
           </span>
           <strong className={estilos.num}>{formatarMoeda(total)}</strong>
         </div>
@@ -186,27 +198,30 @@ export default function Fiado() {
       <TrilhaLoja pagina="Fiado" />
 
       <div className={estilos.topo}>
-        <div className={estilos.destaque}>
-          {dados && total === 0 ? (
-            <>
-              <strong>Ninguém devendo</strong>
-              <span>Quando vender fiado no Balcão, a conta de cada cliente aparece aqui.</span>
-            </>
-          ) : (
-            <>
-              <strong className={estilos.num}>{formatarMoeda(dados?.resumo.atrasadoCentavos ?? 0)}</strong>
-              <span>
-                para cobrar hoje · {formatarMoeda(total)} na rua, {dados?.resumo.clientes ?? 0}{" "}
-                {dados?.resumo.clientes === 1 ? "pessoa" : "pessoas"}
-              </span>
-            </>
-          )}
-        </div>
+        <p>{dados && total === 0 ? "Ninguém devendo. Quando vender fiado no Balcão, a conta de cada cliente aparece aqui." : "Quem levou e ainda não pagou"}</p>
         <Link href="/loja?forma=FIADO" className={estilos.botao} data-principal>
           <Plus aria-hidden />
           Vender fiado
         </Link>
       </div>
+
+      {/* Quadros finos (29/09), como Finanças da loja e MEI. */}
+      {dados && total > 0 && (
+        <div className={estilos.quadros}>
+          <div className={`${estilos.bloco} ${estilos.quadro}`}>
+            <span>Para cobrar hoje</span>
+            <Reais centavos={dados.resumo.atrasadoCentavos} tom={dados.resumo.atrasadoCentavos > 0 ? "negativo" : undefined} />
+            <small>mais de {PRAZO} dias</small>
+          </div>
+          <div className={`${estilos.bloco} ${estilos.quadro}`}>
+            <span>Na rua</span>
+            <Reais centavos={total} />
+            <small>
+              {dados.resumo.clientes} {dados.resumo.clientes === 1 ? "pessoa" : "pessoas"}
+            </small>
+          </div>
+        </div>
+      )}
 
       {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
 
