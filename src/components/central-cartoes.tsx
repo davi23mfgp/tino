@@ -63,6 +63,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
   const mesesVisiveis = meses.slice(inicio, inicio + porJanela)
   const barras = mesesVisiveis.map((competencia) => ({ competencia, ...resumoDoMes(cartao, competencia) }))
   const maximo = Math.max(1, ...barras.map((barra) => Math.max(barra.gastos, barra.previsto)))
+  const barraAberta = barras.find((barra) => barra.competencia === mes)
   const compras = resumo.compras
     .filter((compra) => (!categoria || (compra.categoriaId ?? "sem") === categoria) && compra.descricao.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")))
     .sort((a, b) => b.data.localeCompare(a.data))
@@ -168,44 +169,38 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
               extenso — dia, mês e ano do vencimento (Davi, 25/09). Setas
               soltas não diziam em que fatura a pessoa estava. */}
           <div className={estilos.navegaFatura}><button aria-label="Fatura anterior" disabled={indiceMes === 0} onClick={() => { setMes(meses[Math.max(0, indiceMes - 1)]); setCategoria("") }}><ChevronLeft /></button><span aria-live="polite">{ciclo ? dataPorExtenso(ciclo.venceEm) : rotuloCompetencia(mes)}</span><button aria-label="Próxima fatura" disabled={indiceMes >= meses.length - 1} onClick={() => { setMes(meses[Math.min(meses.length - 1, indiceMes + 1)]); setCategoria("") }}><ChevronRight /></button></div></header>
-          {/* A linha liga os topos do que já foi confirmado, com um ponto no
-              mês aberto: a barra diz o tamanho de cada fatura, a linha diz para
-              onde a fatura está indo. Sem ela é preciso comparar seis alturas
-              de olho. O traço não escala junto com o viewBox achatado. */}
-          <div className={estilos.areaBarras}>
-            <svg className={estilos.tendencia} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden focusable="false">
-              <polyline
-                points={barras.map((barra, indice) => `${((indice + 0.5) / barras.length) * 100},${100 - Math.max(4, (barra.gastos / maximo) * 100)}`).join(" ")}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.25}
-                strokeDasharray="4 5"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            {/* O ponto do mês fica fora do SVG: com o viewBox achatado para
-                acompanhar a largura, um <circle> vira elipse. Aqui ele é um
-                elemento posicionado em porcentagem, então continua redondo em
-                qualquer largura. */}
-            <div className={estilos.marcaTendencia} aria-hidden>
-              {barras.map((barra, indice) => mes === barra.competencia ? (
-                <span
+          {/* Uma barra por mês, como o "Falta pagar" das parcelas (Davi, 29/09:
+              "a linha pontilhada não está legal"; as duas barrinhas finas lado
+              a lado também saíram). A parte cheia é a fatura; a listrada, o que
+              as parcelas já compradas somam além dela, o que ainda vai entrar.
+              Não se soma parcela com fatura: a fatura importada às vezes já traz
+              a parcela dentro, e somar duplicaria o mês (ver `resumoDoMes`). */}
+          <div className={estilos.mesesFatura} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>
+            {barras.map((barra) => {
+              const alem = Math.max(0, barra.previsto - barra.gastos)
+              const topo = barra.gastos + alem
+              return (
+                <button
                   key={barra.competencia}
-                  style={{
-                    left: `${((indice + 0.5) / barras.length) * 100}%`,
-                    bottom: `${Math.max(4, (barra.gastos / maximo) * 100)}%`,
-                  }}
-                />
-              ) : null)}
-            </div>
-            <div className={estilos.barras} style={{ gridTemplateColumns: `repeat(${porJanela}, minmax(0, 1fr))` }}>{barras.map((barra) => <button key={barra.competencia} aria-pressed={mes === barra.competencia} aria-label={`Fatura de ${rotuloCompetencia(barra.competencia)}: ${formatarMoeda(barra.saldo)}`} onClick={() => { setMes(barra.competencia); setCategoria("") }}>
-              <span className={estilos.colunas}><i style={{ height: `${Math.max(4, barra.gastos / maximo * 100)}%` }} /><i style={{ height: `${Math.max(4, barra.previsto / maximo * 100)}%` }} /></span>
-              <small>{rotuloCompetencia(barra.competencia, true)}</small>
-            </button>)}</div>
+                  aria-pressed={mes === barra.competencia}
+                  aria-label={`Fatura de ${rotuloCompetencia(barra.competencia)}: ${formatarMoeda(barra.saldo)}${alem ? `, mais ${formatarMoeda(alem)} de parcelas já compradas` : ""}`}
+                  onClick={() => { setMes(barra.competencia); setCategoria("") }}
+                >
+                  <span>
+                    <i style={{ height: `${topo ? Math.max(6, (topo / maximo) * 100) : 0}%` }}>
+                      {alem > 0 && <em style={{ flexGrow: alem }} />}
+                      {barra.gastos > 0 && <u style={{ flexGrow: barra.gastos }} />}
+                    </i>
+                  </span>
+                  <small>{rotuloCompetencia(barra.competencia, true)}</small>
+                </button>
+              )
+            })}
           </div>
-          <p className={estilos.legenda}><span />Fatura <span />Parcelas já compradas</p>
+          <p className={estilos.legendaFatura}>
+            <span data-tipo="fatura" />Fatura <span data-tipo="parcelas" />Parcelas já compradas
+            {barraAberta && <b>{textoDaBarra(barraAberta)}</b>}
+          </p>
         </div>
 
         <div className={estilos.acoes}><Button onClick={() => setForm({})}><Plus />Nova compra</Button><Button variant="outline" onClick={() => setAba("importar")}><Upload />Importar fatura</Button></div>
@@ -331,4 +326,13 @@ function FaturaDoMes({ mes, hoje, ciclo, valorCentavos }: {
       <p className={estilos.pedido}>Sem dia de fechamento e vencimento. <Link href="/configuracoes">Cadastrar</Link></p>
     )}
   </section>
+}
+
+/** A frase embaixo do gráfico: o que tem no mês aberto, sem somar parcela com fatura. */
+function textoDaBarra(barra: { competencia: string; gastos: number; previsto: number }) {
+  const mes = rotuloCompetencia(barra.competencia, true)
+  const alem = barra.previsto - barra.gastos
+  if (alem <= 0) return `${formatarMoeda(barra.gastos)} em ${mes}`
+  if (barra.gastos === 0) return `${formatarMoeda(alem)} já comprados em parcelas para ${mes}`
+  return `${formatarMoeda(barra.gastos)} em ${mes}, mais ${formatarMoeda(alem)} em parcelas`
 }

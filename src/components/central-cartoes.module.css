@@ -38,19 +38,7 @@
 /* Linha de tendência sobre as barras de fatura. O SVG cobre só a faixa das
    colunas (as duas linhas de rótulo abaixo ficam de fora, senão a linha
    desceria junto com elas). */
-.areaBarras { position:relative; }
-.tendencia {
-  position:absolute; inset:0 0 32px 0; width:100%; height:calc(100% - 32px);
-  /* Traço discreto: a leitura principal é a altura das barras, a linha só
-     mostra a direção. Grosso, ele cortava as colunas. */
-  color:color-mix(in oklab,var(--acao),transparent 68%); pointer-events:none; z-index:3; overflow:visible;
-}
-.marcaTendencia { position:absolute; inset:0 0 32px 0; pointer-events:none; z-index:4; }
-.marcaTendencia span {
-  position:absolute; width:7px; height:7px; margin:0 0 -3.5px -3.5px;
-  border-radius:50%; background:var(--acao); box-shadow:0 0 0 2px var(--papel-1);
-}
-.areaBarras .barras { position:relative; z-index:2; }
+
 
 /* Orçamento do cartão remodelado: a tela pergunta quanto a pessoa quer gastar,
    responde com uma frase e uma barra, e só então oferece o detalhe por
@@ -371,7 +359,6 @@
    o bloco da fatura logo abaixo. */
 .barras { height: 124px; }
 .barras button { grid-template-rows: 1fr 16px; }
-.tendencia, .marcaTendencia { inset: 0 0 18px 0; height: calc(100% - 18px); }
 
 /* Abas em chips que deslizam: sete abas numa faixa fixa não cabiam no
    celular, e as últimas ficavam cortadas no meio da palavra. */
@@ -428,3 +415,24 @@
    edição e o "Conferir" e lia como se fosse parte deles. Mesma escolha da
    folha de filtros do extrato. */
 .modal { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+
+/* Faturas por mês no desenho do "Falta pagar" das parcelas (29/09/2026): uma
+   barra por mês, retângulo de cantos arredondados, cinza, e o mês aberto em
+   verde. A parte listrada é o que as parcelas já compradas somam além da
+   fatura. Substitui a linha pontilhada e as duas barras finas. */
+.mesesFatura { display:grid; gap:6px; margin-top:16px; }
+.mesesFatura button { display:grid; justify-items:center; gap:6px; min-width:0; padding:0; border-radius:12px; }
+.mesesFatura button > span { display:flex; align-items:flex-end; justify-content:center; width:100%; height:120px; }
+.mesesFatura i { display:flex; flex-direction:column; width:70%; max-width:34px; border-radius:8px; overflow:hidden; }
+.mesesFatura u { display:block; min-height:4px; background:color-mix(in oklab, var(--foreground), transparent 80%); transition:background var(--tempo) var(--curva); }
+.mesesFatura em { display:block; min-height:4px; width:100%; background:repeating-linear-gradient(135deg, color-mix(in oklab, var(--foreground), transparent 70%) 0 3px, color-mix(in oklab, var(--foreground), transparent 90%) 3px 7px); }
+.mesesFatura button:hover u { background:color-mix(in oklab, var(--foreground), transparent 70%); }
+.mesesFatura button[aria-pressed=true] u { background:var(--acao); }
+.mesesFatura button[aria-pressed=true] em { background:repeating-linear-gradient(135deg, color-mix(in oklab, var(--acao), transparent 20%) 0 3px, color-mix(in oklab, var(--acao), transparent 72%) 3px 7px); }
+.mesesFatura small { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); white-space:nowrap; }
+.mesesFatura button[aria-pressed=true] small { font-weight:700; color:var(--foreground); }
+.legendaFatura { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.legendaFatura span { width:10px; height:10px; border-radius:3px; background:var(--acao); }
+.legendaFatura span[data-tipo=parcelas] { margin-left:8px; background:repeating-linear-gradient(135deg, var(--acao) 0 2px, transparent 2px 4px); border:1px solid color-mix(in oklab, var(--acao), transparent 50%); }
+.legendaFatura b { margin-left:auto; font-weight:600; color:var(--foreground); font-variant-numeric:tabular-nums; }
+@media (max-width:520px) { .mesesFatura button > span { height:100px; } .legendaFatura b { margin-left:0; width:100%; } }
