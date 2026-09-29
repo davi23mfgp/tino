@@ -119,6 +119,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   estranhas no computador. Testar e mandar captura dos dois, e do tema
   claro no celular.
 - Vidro líquido e gradiente continuam em todos os temas.
+- **Mudança de desenho só depois do canvas** (29/09/2026: "nas coisas que
+  pedir pra mexer que é design não mexa sem antes ver no Claude Design").
+  Mesmo quando o Davi descreve o jeito exato, a mudança visual vai primeiro
+  para o canvas; código só depois da escolha. Correção de defeito,
+  velocidade e texto podem ir direto.
 - **O que abre por cima é sólido** (28/09/2026: "toda parte de menu tá
   basicamente transparente, tem que ser bem visível"). Menu, gaveta, diálogo,
   lista de opções, dica e aviso usam a classe `superficie-flutuante`

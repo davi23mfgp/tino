@@ -69,6 +69,16 @@ Esperando escolha (já desenhados, hoje e três caminhos):
 A desenhar depois:
 7. Assinatura
 8. Notificações
+9. Faturas por mês (Cartões): foi mudado direto em 29/09 antes da regra
+   "design só depois do canvas"; entra no canvas para o Davi aprovar ou
+   voltar ao que era.
+10. Recuperar senha (pedir o link e criar a senha nova): a tela de Entrar
+    já mostra "Esqueci a senha", mas o fluxo não existe.
+
+Na volta das escolhas: juntar o PR #4 no main, guardar as 6 branches
+antigas como tag e apagar, e cadastrar na Vercel ADMIN_EMAIL, ADMIN_SENHA,
+TELEGRAM_BOT_USUARIO, TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SEGREDO e
+CRON_SECRET.
 
 ## O que falta
 
