@@ -133,8 +133,10 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   resto não aparece, sem aviso. O primeiro canvas ("Tino — telas passo a
   passo", Nh6zs8PsNNNF51HqZq2ycD) passou disso e guarda os passos 1 a 17.
   Do 18 em diante: "Tino — telas, parte 2"
-  (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK). Chegando perto de 190
-  arquivos, abrir uma parte 3.
+  (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK), passos 18 a 29. Do 30
+  em diante: "Tino · telas, parte 3"
+  (https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi). Chegando perto de 190
+  arquivos, abrir uma parte 4.
 - **Estilo das telas da loja** (29/09/2026, "pode deixar estilo última
   tela"): quadros finos como Finanças da loja (H2) e MEI (N1) — número
   grande em peso leve com os centavos menores, rótulo curto, a referência
