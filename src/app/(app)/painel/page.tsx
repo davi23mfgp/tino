@@ -1,28 +1,29 @@
 import type { Metadata } from "next"
 import type { CSSProperties } from "react"
 import Link from "next/link"
-import { ArrowRight, CheckCircle2, CreditCard, Plus, ReceiptText, TrendingUp } from "lucide-react"
+import { ArrowRight, CreditCard, Plus, ReceiptText, TrendingUp } from "lucide-react"
 
 import estilos from "./painel.module.css"
+import e from "./inicio.module.css"
+import { AbasDoInicio } from "./abas-do-inicio"
+import { ConferirNoInicio, type CapturaNoInicio } from "./conferir-no-inicio"
+import { LogoDaCompra } from "./logo-da-compra"
+import { IdentidadeBanco } from "@/components/banco-perfil"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
-import { corDoBanco } from "@/lib/bancos-perfil"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
 import { BotaoOcultarValores } from "@/components/ocultar-valores"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib/datas"
-import { formatarMoeda } from "@/lib/dinheiro"
+import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { FluxoDeCaixaNoTempo } from "@/components/graficos"
 import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
-import { Barra } from "@/components/ui/painel"
 import { AcoesDaConta } from "@/components/barra-topo"
-import { ROTULO_BANDEIRA, finalDoCartao } from "@/lib/bandeiras"
-import { CarteiraCartoes } from "@/components/carteira-cartoes"
+import { finalDoCartao } from "@/lib/bandeiras"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início · Tino", robots: { index: false, follow: false } }
@@ -39,9 +40,9 @@ export default async function Painel() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
   const mesesFuturos = [competencia, competenciaMaisMeses(competencia, 1), competenciaMaisMeses(competencia, 2)]
-  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos, usuario] = await Promise.all([
+  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos, usuario, contaPadrao] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
-    prisma.captura.findMany({ where: { larId: sessao.larId, status: "PENDENTE" }, orderBy: { criadoEm: "desc" }, take: 4 }),
+    prisma.captura.findMany({ where: { larId: sessao.larId, status: "PENDENTE" }, orderBy: { criadoEm: "desc" }, take: 10 }),
     prisma.captura.aggregate({ where: { larId: sessao.larId, status: "PENDENTE" }, _count: { _all: true }, _sum: { valorCentavos: true } }),
     prisma.conta.findMany({
       where: { larId: sessao.larId, tipo: "CARTAO_CREDITO", arquivada: false }, orderBy: { criadoEm: "asc" },
@@ -57,24 +58,81 @@ export default async function Painel() {
     compromissosFuturos(sessao.larId, 36), resumoParcelamentos(sessao.larId),
     // Para o sino e a conta dentro do cartão do topo, no celular.
     prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true } }),
+    // Conta para lançar a compra confirmada quando a captura não disse qual: a
+    // mesma escolha da tela Anotar, a primeira conta que não é cartão.
+    prisma.conta.findFirst({ where: { larId: sessao.larId, arquivada: false, tipo: { not: "CARTAO_CREDITO" } }, orderBy: { criadoEm: "asc" }, select: { id: true } }),
   ])
 
   // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
   // passar pelo mesmo numero que aparece no topo da tela.
   const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos))
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
-  const categorias = panorama.mes.despesasPorCategoria.slice(0, 5)
-  const maiorCategoria = Math.max(1, ...categorias.map((linha) => linha.totalCentavos))
-  const totalCategorias = categorias.reduce((soma, linha) => soma + linha.totalCentavos, 0)
+  const nomesDeCategoria = new Map((await prisma.categoria.findMany({
+    where: { id: { in: pendentes.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)) } },
+    select: { id: true, nome: true },
+  })).map((linha) => [linha.id, linha.nome]))
+  const capturasNoInicio: CapturaNoInicio[] = pendentes.map((linha) => ({
+    id: linha.id,
+    estabelecimento: linha.estabelecimento,
+    valorCentavos: linha.valorCentavos,
+    quando: new Date(linha.data ?? linha.criadoEm).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" }),
+    via: linha.origem === "TELEGRAM" ? "pelo Telegram" : linha.origem === "NOTIFICACAO" ? `aviso ${linha.instituicao ? "do " + linha.instituicao : "do banco"}` : "anotado",
+    contaId: linha.contaId,
+    categoriaId: linha.categoriaId,
+    categoriaNome: linha.categoriaId ? nomesDeCategoria.get(linha.categoriaId) ?? null : null,
+  }))
+
+  // Para onde foi: as cinco maiores categorias e o resto junto, numa rosca
+  // (Davi: "o para onde foi dá para fazer aquele circulozinho").
+  const porCategoria = panorama.mes.despesasPorCategoria
+  const fatias = [
+    ...porCategoria.slice(0, 5).map((linha, indice) => ({ nome: linha.nome, centavos: linha.totalCentavos, cor: CORES[indice] })),
+    ...(porCategoria.length > 5 ? [{ nome: "Outras", centavos: porCategoria.slice(5).reduce((soma, linha) => soma + linha.totalCentavos, 0), cor: CORES[5] }] : []),
+  ]
+  const totalFatias = fatias.reduce((soma, fatia) => soma + fatia.centavos, 0)
+  let angulo = 0
+  const gradienteDaRosca = fatias.map((fatia) => {
+    const fim = angulo + (fatia.centavos / Math.max(1, totalFatias)) * 360
+    const trecho = `${fatia.cor} ${(angulo + 1).toFixed(1)}deg ${(fim - 1).toFixed(1)}deg, transparent ${(fim - 1).toFixed(1)}deg ${(fim + 1).toFixed(1)}deg`
+    angulo = fim
+    return trecho
+  }).join(", ")
+  const estouros = panorama.orcamento.linhas.filter((linha) => linha.estourou).sort((a, b) => b.percentual - a.percentual).slice(0, 4)
+
+  // Fluxo: seis meses que aconteceram e seis de projeção, uma barra por mês
+  // com o valor escrito (Davi: "está muito escalonado, espaçado").
+  const mesesFluxo = fluxo.mes.map((ponto) => ({ chave: ponto.chave, rotulo: ponto.rotulo.split("/")[0].split(" ")[0].toLowerCase().slice(0, 3), sobra: ponto.entrouCentavos - ponto.saiuCentavos, futuro: ponto.futuro }))
+  // Uma régua só para o que sobrou e o que faltou: 120 px dão a distância do
+  // maior mês positivo ao maior negativo, e cada lado ocupa só o que precisa.
+  const maiorSobra = Math.max(0, ...mesesFluxo.map((mes) => mes.sobra))
+  const maiorFalta = Math.max(0, ...mesesFluxo.map((mes) => -mes.sobra))
+  const pxPorCentavo = 120 / Math.max(1, maiorSobra + maiorFalta)
+  const proximoMes = mesesFluxo.find((mes) => mes.futuro)
+  const indicadores = diagnostico.indicadores.filter((linha) => linha.faixa !== "SEM_DADO").slice(0, 4)
+
+  const faturas = cartoes.map((cartao) => {
+    const proximaCompetencia = mesesFuturos[1]
+    const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
+    return {
+      id: cartao.id,
+      nome: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, ""),
+      instituicao: cartao.instituicao,
+      tipo: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, "").replace(/^Cart[ãa]o\s+/i, ""),
+      final: finalDoCartao(cartao.nome),
+      faturaCentavos: Math.max(0, valorDoMes(cartao.transacoes, competencia)),
+      dias: diasAteVencer(cartao.diaVencimento),
+      fecha: cartao.diaFechamento,
+      vence: cartao.diaVencimento,
+      proximaRotulo: rotuloCompetencia(proximaCompetencia, true),
+      proximaCentavos: Math.max(0, valorDoMes(cartao.transacoes, proximaCompetencia) + previstoProximo),
+    }
+  })
   // Quantidade e total vêm da fila inteira; a lista abaixo mostra só as quatro mais recentes.
   const quantidadePendente = totaisPendentes._count._all
-  const totalPendente = totaisPendentes._sum.valorCentavos ?? 0
-  const primeiroNome = sessao.nome.trim().split(" ")[0] || "você"
+    const primeiroNome = sessao.nome.trim().split(" ")[0] || "você"
   // Data no fuso de quem usa o app: o servidor roda em UTC, e às 22h de
   // Brasília ele já diria que é amanhã.
   const hoje = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Sao_Paulo" }).format(new Date())
-  const comprasCredito = recentes.filter((linha) => linha.conta.tipo === "CARTAO_CREDITO").slice(0, 6)
-  const despesasConta = recentes.filter((linha) => linha.conta.tipo !== "CARTAO_CREDITO").slice(0, 6)
 
   const atalhos = <>
     <Link href="/lancar"><span><Plus aria-hidden /></span>Anotar</Link>
@@ -122,116 +180,113 @@ export default async function Painel() {
 
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
-    <section className={estilos.painel} aria-labelledby="cartoes-titulo">
-      <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
-      {/* Cartões numa carteira (Davi, 23/09): um atrás do outro, o tocado
-          levanta. Os números saem daqui, do servidor; a pilha só anima. */}
-      {cartoes.length ? <CarteiraCartoes cartoes={cartoes.map((cartao) => {
-        const atual = valorDoMes(cartao.transacoes, competencia)
-        // Fecha, vence e a proxima fatura: as tres perguntas de quem olha um
-        // cartao. Lancado e parcela ainda nao lancada somam, e o rotulo avisa
-        // quando ha previsao no meio — antes um escondia o outro.
-        const proximaCompetencia = mesesFuturos[1]
-        const confirmadoProximo = valorDoMes(cartao.transacoes, proximaCompetencia)
-        const previstoProximo = cartao.parcelamentos.flatMap((p) => p.parcelas).filter((p) => p.competencia === proximaCompetencia).reduce((soma, p) => soma + p.valorCentavos, 0)
-        const dias = diasAteVencer(cartao.diaVencimento)
-        return {
-          id: cartao.id,
-          nome: cartao.nome.replace(/\s*\(?final\s*\d{4}\)?/i, ""),
-          instituicao: cartao.instituicao,
-          cor: corDoBanco(cartao.instituicao),
-          final: finalDoCartao(cartao.nome),
-          bandeira: cartao.bandeira ? ROTULO_BANDEIRA[cartao.bandeira] ?? "" : "",
-          faturaAtualCentavos: Math.max(0, atual),
-          vencimento: dias === null ? "vencimento não informado" : `vence em ${dias} ${dias === 1 ? "dia" : "dias"}`,
-          proximaRotulo: rotuloCompetencia(proximaCompetencia, true),
-          proximaCentavos: Math.max(0, confirmadoProximo + previstoProximo),
-          previstoProximoCentavos: previstoProximo,
-        }
-      })} /> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
-    </section>
+    {/* Daqui para baixo é a opção C do canvas (passo 30, Davi, 29/09/2026):
+        o topo fica como estava, e o resto se divide em Hoje, Mês e Futuro no
+        celular; no computador, uma coluna larga e um trilho à direita. */}
+    <AbasDoInicio>
+      <div className={e.grupo} data-grupo="hoje">
+        {capturasNoInicio.length > 0 && <ConferirNoInicio capturas={capturasNoInicio} total={quantidadePendente} contaPadraoId={contaPadrao?.id ?? null} />}
 
-    {pendentes.length > 0 && <section className={estilos.painel} aria-labelledby="conferir-titulo">
-      <header className={estilos.cabecalhoSecao}><div><h2 id="conferir-titulo">{quantidadePendente} {quantidadePendente === 1 ? "compra para conferir" : "compras para conferir"}</h2><p className={estilos.apoioSecao}>Antes de entrar no saldo</p></div><div className={estilos.totalPendente}><small>Total</small><strong>{formatarMoeda(totalPendente)}</strong></div></header>
-      <div className={estilos.listaCompacta}>{pendentes.map((linha) => <Link href="/capturas" key={linha.id}><span className={estilos.iconeLinha}><ReceiptText /></span><span className={estilos.dadosLinha}><strong>{linha.estabelecimento ?? "Sem descrição"}</strong><small>{new Date(linha.criadoEm).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · notificação do banco</small></span><b>{formatarMoeda(linha.valorCentavos ?? 0)}</b><ArrowRight /></Link>)}</div>
-      <Link href="/capturas" className={estilos.acaoSecundaria}>{quantidadePendente > pendentes.length ? `Conferir as ${quantidadePendente}` : "Conferir agora"} <ArrowRight /></Link>
-    </section>}
+        <section className={e.bloco} data-area="faturas" aria-labelledby="faturas-titulo">
+          <Cabeca id="faturas-titulo" titulo="Faturas" href="/cartoes" acao="Ver cartões" apoio={faturas.length ? `${formatarMoeda(faturas.reduce((soma, linha) => soma + linha.faturaCentavos, 0))} nas faturas abertas` : undefined} />
+          {faturas.length ? <div className={e.faturas}>{faturas.map((fatura) => (
+            <Link href="/cartoes" key={fatura.id} className={e.fatura}>
+              <div className={e.faturaTopo}>
+                <IdentidadeBanco instituicao={fatura.instituicao} nome={fatura.nome} className={e.logoBanco} />
+                <div className="min-w-0"><strong>{fatura.instituicao ?? fatura.nome}</strong><small>{fatura.tipo}{fatura.final ? ` · final ${fatura.final}` : ""}</small></div>
+                {fatura.dias !== null && <span className={e.chip} data-tom={fatura.dias <= 7 ? "atencao" : "acao"}>vence em {fatura.dias} {fatura.dias === 1 ? "dia" : "dias"}</span>}
+              </div>
+              <div className={e.faturaValor}>
+                <div><small>Fatura atual</small><Reais centavos={fatura.faturaCentavos} tamanho="medio" /></div>
+                <p>{fatura.fecha ? <>fecha dia {fatura.fecha}<br /></> : null}{fatura.vence ? `vence dia ${fatura.vence}` : "vencimento não informado"}</p>
+              </div>
+              {fatura.dias !== null && <div className={e.trilho} data-tom={fatura.dias <= 7 ? "atencao" : "acao"}><i style={{ width: `${Math.max(8, Math.min(100, (1 - fatura.dias / 30) * 100))}%` }} /></div>}
+              {fatura.proximaCentavos > 0 && <small className={e.apoio}>{fatura.proximaRotulo} já tem {formatarMoeda(fatura.proximaCentavos)}</small>}
+            </Link>
+          ))}</div> : <Link href="/configuracoes" className={e.vazio}>Cadastrar o primeiro cartão <ArrowRight /></Link>}
+        </section>
 
-    <div className={estilos.duasColunas}>
-      <section className={estilos.painel}><Cabecalho titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
-        {categorias.length ? <div className={estilos.categorias}>
-          {/* Sem rosca. O gráfico do Recharts nascia com largura zero no
-              celular: sobrava meia tela preta e um valor perdido no meio. A
-              mesma pergunta — "o mês repartido" — cabe numa faixa empilhada,
-              que não depende de medir o container para existir. */}
-          <div className={estilos.topoCategorias}>
-            <strong className="numero valor-sensivel">{formatarMoeda(totalCategorias)}</strong>
-            <small>gasto até hoje</small>
-          </div>
-          <div className={estilos.faixaCategorias} aria-hidden>
-            {categorias.map((linha, indice) => (
-              <i
-                key={linha.categoriaId ?? linha.nome}
-                style={{ background: CORES[indice % CORES.length], width: `${(linha.totalCentavos / Math.max(1, totalCategorias)) * 100}%` }}
-              />
-            ))}
-          </div>
-          <ul>{categorias.map((linha, indice) => {
-          const orcamento = panorama.orcamento.linhas.find((item) => item.categoriaId === linha.categoriaId)
-          const percentual = orcamento ? Math.round(linha.totalCentavos / Math.max(1, orcamento.limiteCentavos) * 100) : Math.round(linha.totalCentavos / maiorCategoria * 100)
-          return <li key={linha.categoriaId ?? linha.nome}><Link href={`/transacoes?categoriaId=${linha.categoriaId ?? "sem"}`}><span className={estilos.cor} style={{ background: CORES[indice % CORES.length] }} /><span className={estilos.dadosLinha}><strong>{linha.nome}</strong><small>{orcamento ? `${percentual}% do orçamento` : "Definir orçamento"}</small></span><b>{formatarMoeda(linha.totalCentavos)}</b></Link><Barra percentual={percentual} /></li>
-        })}</ul></div> : <p className={estilos.vazio}>Os gastos do mês aparecem aqui.</p>}
-      </section>
-      <section className={estilos.painel}><Cabecalho titulo="Compras recentes" href="/transacoes" acao="Ver todas" />
-        <div className={estilos.movimentos}>{[{ titulo: "No crédito", linhas: comprasCredito }, { titulo: "Em conta", linhas: despesasConta }].map((grupo) => <div key={grupo.titulo}><h3>{grupo.titulo}</h3>{grupo.linhas.length ? grupo.linhas.map((linha) => { const Icone = iconeDaCategoria(linha.categoria, "DESPESA"); return <Link href="/transacoes" key={linha.id}><span className={estilos.iconeLinha}><Icone /></span><span className={estilos.dadosLinha}><strong>{linha.descricao}</strong><small>{new Date(linha.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })} · {linha.conta.nome}</small></span><b>{formatarMoeda(linha.valorCentavos)}</b></Link> }) : <p>Nenhuma compra no período.</p>}</div>)}</div>
-      </section>
-    </div>
+        <section className={e.bloco} data-area="recentes" aria-labelledby="recentes-titulo">
+          <Cabeca id="recentes-titulo" titulo="Compras recentes" href="/transacoes" acao="Ver todas" />
+          {recentes.length ? <ul className={e.lista}>{recentes.slice(0, 6).map((linha) => {
+            const Icone = iconeDaCategoria(linha.categoria, "DESPESA")
+            return <li key={linha.id}><Link href="/transacoes">
+              <LogoDaCompra nome={linha.descricao}><span className={e.icone}><Icone aria-hidden /></span></LogoDaCompra>
+              <span className="min-w-0"><strong>{linha.descricao}</strong><small>{linha.categoria?.nome ?? "Sem categoria"} · {new Date(linha.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", timeZone: "UTC" })}</small></span>
+              <b className="valor-sensivel">{formatarMoeda(-linha.valorCentavos)}</b>
+            </Link></li>
+          })}</ul> : <p className={e.vazio}>As compras do mês aparecem aqui.</p>}
+        </section>
+      </div>
 
-    <>
-      <section className={estilos.painel}><Cabecalho rotulo="O que entra, o que sai e o que sobra" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" /><FluxoDeCaixaNoTempo series={fluxo} altura={230} /></section>
-      <section className={estilos.painel}><Cabecalho rotulo="O que você tem e deve" titulo="Balanço" href="/analise" acao="Ver análise" />
-        <dl className={estilos.balanco}><div><dt>Ativos</dt><dd>{formatarMoeda(diagnostico.balanco.ativoTotalCentavos)}</dd></div><div><dt>Dívidas</dt><dd>{formatarMoeda(diagnostico.balanco.passivoTotalCentavos)}</dd></div><div><dt>Patrimônio</dt><dd className={diagnostico.balanco.patrimonioLiquidoCentavos < 0 ? "text-negativo" : "text-positivo"}>{formatarMoeda(diagnostico.balanco.patrimonioLiquidoCentavos)}</dd></div></dl>
-        <div className={estilos.saude}><div className={estilos.anel} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties}><span>{diagnostico.nota}<small>saúde</small></span></div><div><strong>{diagnostico.situacao === "SAUDAVEL" ? "Seu dinheiro está saudável" : "Seu dinheiro pede atenção"}</strong><p>{diagnostico.parecer}</p><Link href="/analise">Ver próxima ação <ArrowRight /></Link></div></div>
-
-      </section>
-    </>
-
-    <section className={estilos.painel}>
-      <Cabecalho rotulo="Por que a nota é essa" titulo="O que está bom e o que precisa melhorar" href="/analise" acao="Ver análise" />
-        {/* Os indicadores que sustentam a nota: o que já está bom e o que
-            puxa para baixo, cada um com a régua da referência que o
-            classifica. */}
-        <div className={estilos.indicadores}>
-          {diagnostico.indicadores.filter((linha) => linha.faixa !== "SEM_DADO").slice(0, 4).map((linha) => (
-            <div key={linha.chave} data-faixa={linha.faixa}>
-              <span className={estilos.pilulaFaixa}>{linha.faixa === "BOM" ? "está bom" : linha.faixa === "CRITICO" ? "precisa melhorar" : "dá para melhorar"}</span>
-              <dt>{linha.nome}</dt>
-              <dd>{linha.valor}</dd>
-              {/* A frase de leitura e a referência saíram, como na análise: a
-                  régua mostra a distância até a próxima faixa, que é o que as
-                  duas linhas de texto tentavam dizer em palavras. */}
-              {linha.escala && <ReguaDoIndicador numero={linha.numero} escala={linha.escala} cor={CORES_FAIXA[linha.faixa]} />}
+      <div className={e.grupo} data-grupo="mes">
+        <section className={e.bloco} data-area="onde" aria-labelledby="onde-titulo">
+          <Cabeca id="onde-titulo" titulo="Para onde foi" href="/transacoes" acao="Ver extrato" />
+          {fatias.length ? <>
+            <div className={e.rosca}>
+              <div className={e.circulo} style={{ background: `conic-gradient(${gradienteDaRosca})` }} aria-hidden />
+              <div className={e.centro}><small>gasto em {rotuloCompetencia(competencia).split(" ")[0].toLowerCase()}</small><Reais centavos={panorama.mes.despesasCentavos} tamanho="medio" />{panorama.mes.receitasCentavos > 0 && <small>{Math.round((panorama.mes.despesasCentavos / panorama.mes.receitasCentavos) * 100)}% do que entrou</small>}</div>
             </div>
-          ))}
-        </div>
+            <ul className={e.legenda}>{fatias.map((fatia) => (
+              <li key={fatia.nome}><i style={{ background: fatia.cor }} /><span>{fatia.nome}</span><small>{Math.round((fatia.centavos / Math.max(1, totalFatias)) * 100)}%</small><b className="valor-sensivel">{formatarMoeda(fatia.centavos)}</b></li>
+            ))}</ul>
+            {estouros.length > 0 && <p className={e.estouros}><span>passaram do orçamento:</span>{estouros.map((linha) => <Link key={linha.categoriaId} href="/orcamento" className={e.chip} data-tom="negativo">{linha.nome} {linha.percentual}%</Link>)}</p>}
+          </> : <p className={e.vazio}>Os gastos do mês aparecem aqui.</p>}
+        </section>
 
-        {diagnostico.prioridades.length > 0 && (
-          <ol className={estilos.proximosPassos}>
-            {diagnostico.prioridades.slice(0, 3).map((passo) => (
-              <li key={passo.ordem}>
-                <span className={estilos.numeroEtapa}>{passo.ordem}</span>
-                <span>
-                  <strong>{passo.titulo}</strong>
-                  <small>{passo.porque}</small>
-                </span>
-                {passo.impactoMensalCentavos ? <b>{formatarMoeda(passo.impactoMensalCentavos)}<small>por mês</small></b> : null}
-              </li>
+        <section className={e.bloco} data-area="indicadores" aria-labelledby="saude-titulo">
+          <div className={e.saudeTopo}>
+            <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}><span>{diagnostico.nota}</span></div>
+            <div><h2 id="saude-titulo">Saúde {diagnostico.nota} de 100</h2><p>{diagnostico.situacao === "SAUDAVEL" ? "saudável" : "pede atenção"} · abaixo de 50 é crítico, acima de 75 é saudável</p></div>
+            <Link href="/analise" className={e.linkCabeca}>Ver análise →</Link>
+          </div>
+          <div className={e.indicadores}>{indicadores.map((linha) => (
+            <div key={linha.chave} data-faixa={linha.faixa}>
+              <div className={e.indicadorTopo}><span>{linha.nome}</span><b>{linha.valor}</b></div>
+              {linha.escala && <ReguaDoIndicador numero={linha.numero} escala={linha.escala} cor={CORES_FAIXA[linha.faixa]} />}
+              <small>{linha.referencia}</small>
+            </div>
+          ))}</div>
+          {diagnostico.prioridades[0] && <Link href="/analise" className={e.proximaAcao}>
+            <span>1</span>
+            <span className="min-w-0"><strong>{diagnostico.prioridades[0].titulo}</strong><small>{diagnostico.prioridades[0].porque}</small></span>
+            {diagnostico.prioridades[0].impactoMensalCentavos ? <b>{formatarMoeda(diagnostico.prioridades[0].impactoMensalCentavos)}<small>por mês</small></b> : null}
+          </Link>}
+        </section>
+      </div>
+
+      <div className={e.grupo} data-grupo="futuro">
+        <section className={e.bloco} data-area="fluxo" aria-labelledby="fluxo-titulo">
+          <Cabeca id="fluxo-titulo" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" apoio="o que sobra ou falta em cada mês" />
+          <div className={e.numerosFluxo}>
+            <div><small>Sobra média, 6 meses</small><Reais centavos={panorama.medias.sobraCentavos} tamanho="grande" sinal tom={panorama.medias.sobraCentavos >= 0 ? "positivo" : "negativo"} /></div>
+            {proximoMes && <div><small>Se nada mudar, em {proximoMes.rotulo}</small><Reais centavos={proximoMes.sobra} tamanho="medio" sinal tom={proximoMes.sobra >= 0 ? "positivo" : "negativo"} /></div>}
+          </div>
+          <div className={e.barrasFluxo} role="img" aria-label={mesesFluxo.map((mes) => `${mes.rotulo}: ${formatarMoeda(mes.sobra)}${mes.futuro ? " previsto" : ""}`).join("; ")}>
+            {mesesFluxo.map((mes) => (
+              <div key={mes.chave} data-futuro={mes.futuro || undefined} data-sinal={mes.sobra >= 0 ? "mais" : "menos"}>
+                <span className={e.metade} data-lado="cima" style={{ height: maiorSobra ? maiorSobra * pxPorCentavo + 18 : 0 }}>{mes.sobra >= 0 && <><em>{abreviar(mes.sobra)}</em><i style={{ height: Math.max(3, mes.sobra * pxPorCentavo) }} /></>}</span>
+                <span className={e.metade} data-lado="baixo" style={{ height: maiorFalta ? maiorFalta * pxPorCentavo + 18 : 0 }}>{mes.sobra < 0 && <><i style={{ height: Math.max(3, -mes.sobra * pxPorCentavo) }} /><em>{abreviar(mes.sobra)}</em></>}</span>
+                <small>{mes.rotulo}</small>
+              </div>
             ))}
-          </ol>
-        )}
-    </section>
+          </div>
+          <p className={e.legendaFluxo}><span data-tipo="real" />já aconteceu <span data-tipo="previsto" />projeção</p>
+        </section>
 
-    {panorama.dividas.lista.length > 0 && <section className={estilos.painel}><Cabecalho titulo="Dívidas" href="/dividas" acao="Organizar dívidas" /><div className={estilos.dividas}>{panorama.dividas.lista.slice(0, 3).map((divida, indice) => <Link href="/dividas" key={divida.id}><span className={estilos.numeroEtapa}>{indice + 1}</span><span className={estilos.dadosLinha}><strong>{divida.credor}</strong><small>Parcela {formatarMoeda(divida.parcelaCentavos)}</small></span><b>{formatarMoeda(divida.saldoDevedorCentavos)}</b>{indice === 0 ? <span className={estilos.proxima}><CheckCircle2 /> Próxima ação</span> : <ArrowRight />}</Link>)}</div></section>}
+        {panorama.dividas.lista.length > 0 && <section className={e.bloco} data-area="dividas" aria-labelledby="dividas-titulo">
+          <Cabeca id="dividas-titulo" titulo="Dívidas" href="/dividas" acao="Plano" />
+          <div><small className={e.rotulo}>Você deve</small><Reais centavos={panorama.dividas.totalCentavos} tamanho="grande" /></div>
+          <ul className={e.lista}>{panorama.dividas.lista.slice(0, 4).map((divida) => (
+            <li key={divida.id}><Link href="/dividas">
+              <i className={e.corDivida} data-peso={pesoDoJuro(divida.jurosMensalBps)} />
+              <span className="min-w-0"><strong>{divida.credor}</strong><small>{formatarPercentual(divida.jurosMensalBps, 2)} ao mês · {pesoDoJuro(divida.jurosMensalBps)}</small></span>
+              <b className="valor-sensivel">{formatarMoeda(divida.saldoDevedorCentavos)}</b>
+            </Link></li>
+          ))}</ul>
+        </section>}
+      </div>
+    </AbasDoInicio>
   </div>
 }
 
@@ -263,4 +318,27 @@ function diasAteVencer(dia: number | null) {
 
 function Cabecalho({ rotulo, titulo, id, href, acao }: { rotulo?: string; titulo: string; id?: string; href: string; acao: string }) {
   return <header className={estilos.cabecalhoSecao}><div><h2 id={id}>{titulo}</h2>{rotulo && <p className={estilos.apoioSecao}>{rotulo}</p>}</div><Link href={href}>{acao} <ArrowRight /></Link></header>
+}
+
+/** Número grande e fino, centavos menores: o padrão das telas novas. */
+function Reais({ centavos, tamanho, sinal, tom }: { centavos: number; tamanho: "medio" | "grande"; sinal?: boolean; tom?: "positivo" | "negativo" }) {
+  const texto = (sinal && centavos > 0 ? "+ " : "") + formatarMoeda(centavos)
+  const virgula = texto.lastIndexOf(",")
+  return <span className={cn(e.reais, "valor-sensivel")} data-tamanho={tamanho} data-tom={tom}>{texto.slice(0, virgula)}<small>{texto.slice(virgula)}</small></span>
+}
+
+function Cabeca({ id, titulo, href, acao, apoio }: { id: string; titulo: string; href: string; acao: string; apoio?: string }) {
+  return <header className={e.cabeca}><div><h2 id={id}>{titulo}</h2>{apoio && <p>{apoio}</p>}</div><Link href={href}>{acao} →</Link></header>
+}
+
+/** "+2,2 mil", "−334": o rótulo em cima da barra, curto para caber. */
+function abreviar(centavos: number) {
+  const sinal = centavos < 0 ? "−" : "+"
+  const reais = Math.abs(centavos) / 100
+  return sinal + (reais >= 1000 ? `${(reais / 1000).toFixed(1).replace(".", ",")} mil` : Math.round(reais).toString())
+}
+
+/** Faixas de custo da dívida, as mesmas da tela Dívidas: acima de 5% ao mês é caro. */
+function pesoDoJuro(bps: number) {
+  return bps > 500 ? "caro" : bps >= 200 ? "médio" : "leve"
 }
