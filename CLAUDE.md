@@ -42,7 +42,7 @@ ajude a organizar dívidas, juntar para metas, projetar e decidir empréstimo.
 ## Antes de mexer em cálculo
 
 ```bash
-npm test          # 251 testes, cerca de um segundo e meio
+npm test          # 585 testes, cerca de oito segundos; a CI roda os mesmos a cada push
 ```
 
 Se mudar regra de cálculo, o teste correspondente tem de mudar junto — e
