@@ -79,7 +79,7 @@ export function FilaDeChamados({ chamados }: { chamados: ChamadoNaFila[] }) {
               </p>
               <p className="mt-2 whitespace-pre-wrap text-[calc(13px*var(--escala-letra))] leading-relaxed">{chamado.mensagem}</p>
               <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                {new Date(chamado.criadoEm).toLocaleString("pt-BR")}
+                {new Date(chamado.criadoEm).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
                 {chamado.rota && ` · na tela ${chamado.rota}`}
               </p>
             </div>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 
-import { enviar } from "@/lib/cliente"
+import { buscar, enviar } from "@/lib/cliente"
 import { Cartao } from "@/components/ui/painel"
 
 /**
@@ -34,6 +34,15 @@ function Moldura({ titulo, semMoldura, children }: { titulo: string; semMoldura?
   return <Cartao titulo={titulo} estatico>{children}</Cartao>
 }
 
+interface MeuChamado {
+  id: string
+  tipo: (typeof TIPOS)[number]["valor"]
+  status: "ABERTO" | "RESOLVIDO"
+  mensagem: string
+  resposta: string | null
+  criadoEm: string
+}
+
 export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
   const rota = usePathname()
   const [tipo, setTipo] = useState<(typeof TIPOS)[number]["valor"]>("BUG")
@@ -41,6 +50,19 @@ export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
   const [enviando, setEnviando] = useState(false)
   const [retorno, setRetorno] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
+  // Os chamados que a pessoa já abriu, com a resposta do suporte. Antes a
+  // resposta ficava só no painel do admin: quem perguntava nunca a via.
+  const [meus, setMeus] = useState<MeuChamado[]>([])
+  const carregarMeus = useCallback(async () => {
+    try {
+      setMeus(await buscar<MeuChamado[]>("/api/suporte"))
+    } catch {
+      // A lista é complemento: sem ela, o formulário continua funcionando.
+    }
+  }, [])
+  useEffect(() => {
+    void carregarMeus()
+  }, [carregarMeus])
 
   async function mandar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -49,7 +71,8 @@ export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
     try {
       await enviar("/api/suporte", { tipo, mensagem, rota })
       setMensagem("")
-      setRetorno("Recebido. O chamado ficou registrado com a sua conta e a tela em que você estava.")
+      setRetorno("Recebido. O chamado ficou registrado com a sua conta e a tela em que você estava. A resposta aparece aqui embaixo e nos avisos do app.")
+      void carregarMeus()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui enviar agora.")
     } finally {
@@ -97,6 +120,27 @@ export function RelatarProblema({ semMoldura }: { semMoldura?: boolean } = {}) {
 
       {retorno && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-positivo">{retorno}</p>}
       {erro && <p className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
+
+      {meus.length > 0 && (
+        <div id="meus-chamados" className="mt-4 grid gap-2 border-t border-pauta pt-4">
+          <p className="text-[calc(13px*var(--escala-letra))] font-medium">Seus chamados</p>
+          {meus.slice(0, 5).map((chamado) => (
+            <div key={chamado.id} className="grid gap-1.5 rounded-2xl border border-pauta p-3 text-[calc(13px*var(--escala-letra))]">
+              <p className="flex justify-between gap-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">
+                <span>
+                  {TIPOS.find((opcao) => opcao.valor === chamado.tipo)?.rotulo ?? "Dúvida"} ·{" "}
+                  {new Date(chamado.criadoEm).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                </span>
+                <span className={chamado.resposta ? "text-positivo" : undefined}>
+                  {chamado.resposta ? "respondido" : chamado.status === "RESOLVIDO" ? "resolvido" : "aguardando resposta"}
+                </span>
+              </p>
+              <p className="line-clamp-2 text-muted-fg">{chamado.mensagem}</p>
+              {chamado.resposta && <p className="whitespace-pre-wrap rounded-xl bg-papel-2 p-2.5 leading-relaxed">{chamado.resposta}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </Moldura>
   )
 }

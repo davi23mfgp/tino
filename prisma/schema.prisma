@@ -245,14 +245,14 @@ enum StatusCaptura {
 // ============================================================
 
 model Lar {
-  identidades IdentidadeVisual[]
+  identidades      IdentidadeVisual[]
   faturasRecebidas FaturaRecebida[]
   retratosCarteira RetratoCarteira[]
-  id          String  @id @default(cuid())
-  nome        String
-  tipo        TipoLar @default(SOLO)
-  moeda       String  @default("BRL")
-  fusoHorario String  @default("America/Sao_Paulo")
+  id               String             @id @default(cuid())
+  nome             String
+  tipo             TipoLar            @default(SOLO)
+  moeda            String             @default("BRL")
+  fusoHorario      String             @default("America/Sao_Paulo")
 
   // Dia em que o "mês financeiro" vira. Quem recebe dia 5 não pensa em
   // 1º a 31 — o orçamento dele começa no dia do salário.
@@ -281,33 +281,33 @@ model Lar {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  membros         Membro[]
-  usuarios        Usuario[]
-  contas          Conta[]
-  categorias      Categoria[]
-  transacoes      Transacao[]
-  regras          RegraCategorizacao[]
-  recorrencias    Recorrencia[]
-  orcamentos      Orcamento[]
+  membros          Membro[]
+  usuarios         Usuario[]
+  contas           Conta[]
+  categorias       Categoria[]
+  transacoes       Transacao[]
+  regras           RegraCategorizacao[]
+  recorrencias     Recorrencia[]
+  orcamentos       Orcamento[]
   orcamentosCartao OrcamentoCartao[]
-  metas           Meta[]
-  casal           Casal?
+  metas            Meta[]
+  casal            Casal?
   objetivoDeAporte ObjetivoDeAporte?
-  dividas         Divida[]
-  simulacoes      SimulacaoEmprestimo[]
-  faturas         Fatura[]
-  importacoes     Importacao[]
-  conexoes        ConexaoOpenFinance[]
-  alertas         Alerta[]
-  vigiaConfigs    VigiaConfig[]
-  avisoProativo   AvisoProativo?
-  conversas       Conversa[]
-  meiPerfil       MeiPerfil?
-  meiCompetencias MeiCompetencia[]
-  parcelamentos   Parcelamento[]
-  capturas        Captura[]
-  chavesCaptura   ChaveCaptura[]
-  lojas           Loja[]
+  dividas          Divida[]
+  simulacoes       SimulacaoEmprestimo[]
+  faturas          Fatura[]
+  importacoes      Importacao[]
+  conexoes         ConexaoOpenFinance[]
+  alertas          Alerta[]
+  vigiaConfigs     VigiaConfig[]
+  avisoProativo    AvisoProativo?
+  conversas        Conversa[]
+  meiPerfil        MeiPerfil?
+  meiCompetencias  MeiCompetencia[]
+  parcelamentos    Parcelamento[]
+  capturas         Captura[]
+  chavesCaptura    ChaveCaptura[]
+  lojas            Loja[]
 }
 
 /// O retrato mensal da carteira de investimentos.
@@ -326,9 +326,9 @@ model Lar {
 /// ser recalculada com as classes de hoje, porque a pessoa pode ter mudado a
 /// classificação no meio do caminho.
 model RetratoCarteira {
-  id        String @id @default(cuid())
-  larId     String
-  lar       Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+  id    String @id @default(cuid())
+  larId String
+  lar   Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
 
   /// AAAA-MM.
   competencia String
@@ -360,10 +360,10 @@ model RetratoCarteira {
 /// "transcrever:<usuarioId>". Guardar o alvo dentro da própria chave evita uma
 /// tabela por tipo de limite.
 model LimiteAcesso {
-  chave         String   @id
-  tentativas    Int      @default(0)
-  janelaInicio  DateTime @default(now())
-  bloqueadoAte  DateTime?
+  chave        String    @id
+  tentativas   Int       @default(0)
+  janelaInicio DateTime  @default(now())
+  bloqueadoAte DateTime?
 
   @@index([bloqueadoAte])
 }
@@ -382,18 +382,18 @@ model LimiteAcesso {
 /// acorda quem marcou aquela hora — sem isso, ou todo mundo recebe no mesmo
 /// instante em UTC, ou o servidor precisa de um agendamento por pessoa.
 model InscricaoPush {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   usuarioId String
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
+  endpoint String @unique
+  p256dh   String
+  auth     String
 
   /// Hora local do lembrete diário, 0 a 23.
-  hora      Int      @default(20)
+  hora Int @default(20)
 
-  criadoEm  DateTime @default(now())
+  criadoEm    DateTime  @default(now())
   /// Último envio aceito. Serve para não repetir no mesmo dia.
   ultimoEnvio DateTime?
 
@@ -402,16 +402,16 @@ model InscricaoPush {
 }
 
 model Usuario {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  senhaHash    String
-  nome         String
-  avatarUrl    String?
-  larId        String
-  lar          Lar       @relation(fields: [larId], references: [id], onDelete: Cascade)
-  membroId     String?   @unique
-  membro       Membro?   @relation(fields: [membroId], references: [id])
-  ultimoLogin  DateTime?
+  id             String          @id @default(cuid())
+  email          String          @unique
+  senhaHash      String
+  nome           String
+  avatarUrl      String?
+  larId          String
+  lar            Lar             @relation(fields: [larId], references: [id], onDelete: Cascade)
+  membroId       String?         @unique
+  membro         Membro?         @relation(fields: [membroId], references: [id])
+  ultimoLogin    DateTime?
   inscricoesPush InscricaoPush[]
 
   /// Token emitido antes desta data não vale mais. Trocar a senha, apagar a
@@ -421,8 +421,8 @@ model Usuario {
 
   /// Prova do consentimento (LGPD, art. 8º, §2º: o ônus da prova é do
   /// controlador). Guarda qual versão do texto a pessoa aceitou e quando.
-  termosVersao     String?
-  termosAceitosEm  DateTime?
+  termosVersao    String?
+  termosAceitosEm DateTime?
 
   /// Acesso ao painel de administração do produto.
   ///
@@ -464,13 +464,13 @@ model Membro {
   rendaMensalCentavos Int         @default(0)
   criadoEm            DateTime    @default(now())
 
-  usuario    Usuario?
-  contas     Conta[]
-  transacoes Transacao[]
-  regras     RegraCategorizacao[]
+  usuario       Usuario?
+  contas        Conta[]
+  transacoes    Transacao[]
+  regras        RegraCategorizacao[]
+  pessoaDoCasal PessoaDoCasal[]
 
   @@index([larId])
-  pessoaDoCasal       PessoaDoCasal[]
 }
 
 // ============================================================
@@ -479,17 +479,17 @@ model Membro {
 
 model Conta {
   orcamentoMensalCentavos Int?
-  id                   String    @id @default(cuid())
-  larId                String
-  lar                  Lar       @relation(fields: [larId], references: [id], onDelete: Cascade)
-  membroId             String?
-  membro               Membro?   @relation(fields: [membroId], references: [id])
-  nome                 String
-  instituicao          String?
-  tipo                 TipoConta @default(CORRENTE)
-  saldoInicialCentavos Int       @default(0)
-  cor                  String    @default("blue")
-  arquivada            Boolean   @default(false)
+  id                      String    @id @default(cuid())
+  larId                   String
+  lar                     Lar       @relation(fields: [larId], references: [id], onDelete: Cascade)
+  membroId                String?
+  membro                  Membro?   @relation(fields: [membroId], references: [id])
+  nome                    String
+  instituicao             String?
+  tipo                    TipoConta @default(CORRENTE)
+  saldoInicialCentavos    Int       @default(0)
+  cor                     String    @default("blue")
+  arquivada               Boolean   @default(false)
 
   // Cartão de crédito
   limiteCentavos Int?
@@ -497,20 +497,20 @@ model Conta {
   /// Bandeira do cartão (Visa, Mastercard, Elo...). Só aparece no cartão de
   /// crédito, e só quando a pessoa informou: cartão com bandeira errada na
   /// tela é pior do que cartão sem bandeira nenhuma.
-  bandeira BandeiraCartao?
-  diaFechamento  Int?
-  diaVencimento  Int?
+  bandeira      BandeiraCartao?
+  diaFechamento Int?
+  diaVencimento Int?
 
   // Investimento em ativo negociado: guarda o que a corretora chama de posição.
   // O saldo da conta continua vindo das transferências; estes dois campos
   // servem para calcular o valor DE MERCADO, que é exibido ao lado e nunca
   // sobrescreve o saldo sozinho — marcação a mercado é lançamento, não efeito
   // colateral de uma tela abrir.
-  ticker            String?
+  ticker              String?
   quantidadeMilesimos Int? // 1000 = uma unidade; permite fração de cota
   /// Em que classe esta conta entra na carteira. Só faz sentido em conta de
   /// investimento; `null` significa "ainda não classificada", e a tela pede.
-  classeDeAtivo     ClasseDeAtivo?
+  classeDeAtivo       ClasseDeAtivo?
 
   conexaoId      String?
   conexao        ConexaoOpenFinance? @relation(fields: [conexaoId], references: [id])
@@ -519,12 +519,12 @@ model Conta {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  transacoes    Transacao[]
-  faturas       Fatura[]
-  metas         Meta[]
-  recorrencias  Recorrencia[]
-  parcelamentos Parcelamento[]
-  dividas       Divida[]
+  transacoes       Transacao[]
+  faturas          Fatura[]
+  metas            Meta[]
+  recorrencias     Recorrencia[]
+  parcelamentos    Parcelamento[]
+  dividas          Divida[]
   orcamentosCartao OrcamentoCartao[]
 
   @@index([larId])
@@ -550,17 +550,17 @@ model Categoria {
   filhas  Categoria[] @relation("Subcategoria")
   ordem   Int         @default(0)
 
-  transacoes    Transacao[]
-  regras        RegraCategorizacao[]
-  orcamentos    Orcamento[]
-  recorrencias  Recorrencia[]
-  parcelamentos Parcelamento[]
+  transacoes       Transacao[]
+  regras           RegraCategorizacao[]
+  orcamentos       Orcamento[]
+  recorrencias     Recorrencia[]
+  parcelamentos    Parcelamento[]
   orcamentosCartao OrcamentoCartaoCategoria[]
+  /// Como esta categoria se divide entre o casal. `null` usa a do casal.
+  modalidadeCasal  ModalidadeCasal?
 
   @@unique([larId, nome, paiId])
   @@index([larId])
-  /// Como esta categoria se divide entre o casal. `null` usa a do casal.
-  modalidadeCasal ModalidadeCasal?
 }
 
 model Transacao {
@@ -590,7 +590,7 @@ model Transacao {
   tags          String[]        @default([])
 
   /// Competência (YYYY-MM) — separa quando gastou de quando pagou.
-  competencia String
+  competencia       String
   /// Competência da FATURA (YYYY-MM), só para compra em cartão de crédito.
   /// Não é a mesma coisa que `competencia`: uma compra no dia 29 num cartão
   /// que fecha dia 28 aconteceu em setembro e é paga em novembro. `null`
@@ -725,27 +725,27 @@ model Orcamento {
 
 /// Plano mensal de gastos de um cartão. Separado do limite concedido pelo banco.
 model OrcamentoCartao {
-  id             String @id @default(cuid())
-  larId          String
-  lar            Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
-  contaId        String
-  conta          Conta  @relation(fields: [contaId], references: [id], onDelete: Cascade)
-  competencia    String
-  totalCentavos  Int
-  categorias     OrcamentoCartaoCategoria[]
-  criadoEm       DateTime @default(now())
-  atualizadoEm   DateTime @updatedAt
+  id            String                     @id @default(cuid())
+  larId         String
+  lar           Lar                        @relation(fields: [larId], references: [id], onDelete: Cascade)
+  contaId       String
+  conta         Conta                      @relation(fields: [contaId], references: [id], onDelete: Cascade)
+  competencia   String
+  totalCentavos Int
+  categorias    OrcamentoCartaoCategoria[]
+  criadoEm      DateTime                   @default(now())
+  atualizadoEm  DateTime                   @updatedAt
 
   @@unique([contaId, competencia])
   @@index([larId, competencia])
 }
 
 model OrcamentoCartaoCategoria {
-  id                String           @id @default(cuid())
+  id                String          @id @default(cuid())
   orcamentoCartaoId String
-  orcamentoCartao   OrcamentoCartao  @relation(fields: [orcamentoCartaoId], references: [id], onDelete: Cascade)
+  orcamentoCartao   OrcamentoCartao @relation(fields: [orcamentoCartaoId], references: [id], onDelete: Cascade)
   categoriaId       String
-  categoria         Categoria        @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  categoria         Categoria       @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
   limiteCentavos    Int
 
   @@unique([orcamentoCartaoId, categoriaId])
@@ -1063,13 +1063,13 @@ enum CanalAviso {
 }
 
 model VigiaConfig {
-  id     String @id @default(cuid())
-  larId  String
-  lar    Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+  id    String  @id @default(cuid())
+  larId String
+  lar   Lar     @relation(fields: [larId], references: [id], onDelete: Cascade)
   /// Mesmo valor de Alerta.tipo — não é enum porque um vigia novo não pode
   /// pedir migration pra existir, só uma linha na lista do motor.
-  tipo   String
-  ativo  Boolean @default(true)
+  tipo  String
+  ativo Boolean @default(true)
 
   @@unique([larId, tipo])
 }
@@ -1210,8 +1210,8 @@ model Loja {
 
   /// Dados fiscais, preenchidos só quando o lojista liga a emissão de nota.
   /// Sem eles a nota não sai — a tela de emissão pede antes de deixar tentar.
-  cnpj              String?
-  inscricaoEstadual String?
+  cnpj                     String?
+  inscricaoEstadual        String?
   /// Não é o certificado em si — isso não é guardado no nosso banco. Marca
   /// que o provedor de emissão confirmou o certificado configurado do lado
   /// dele, para a tela saber se já dá para tentar emitir.
@@ -1616,11 +1616,11 @@ model Cobranca {
 /// Sem esta trava, uma reentrega criaria a mesma cobrança duas vezes e o
 /// faturamento do painel passaria a mentir.
 model EventoWebhook {
-  id        String            @id @default(cuid())
-  provedor  ProvedorPagamento
-  idEvento  String
-  tipo      String
-  recebidoEm DateTime         @default(now())
+  id         String            @id @default(cuid())
+  provedor   ProvedorPagamento
+  idEvento   String
+  tipo       String
+  recebidoEm DateTime          @default(now())
 
   @@unique([provedor, idEvento])
   @@index([recebidoEm])
@@ -1664,36 +1664,38 @@ model Chamado {
 /// centavos, pontos-base ou palavra, e um campo por tipo daria três colunas
 /// nulas em toda linha.
 model ParametroSistema {
-  chave     String @id
+  chave     String  @id
   valor     String
   descricao String?
 
-  atualizadoEm DateTime @updatedAt
+  atualizadoEm  DateTime @updatedAt
   atualizadoPor String?
 }
 
 model IdentidadeVisual {
- id String @id @default(cuid())
- larId String
- lar Lar @relation(fields:[larId],references:[id],onDelete:Cascade)
- nome String
- logoUrl String?
- emoji String?
- @@unique([larId,nome])
+  id      String  @id @default(cuid())
+  larId   String
+  lar     Lar     @relation(fields: [larId], references: [id], onDelete: Cascade)
+  nome    String
+  logoUrl String?
+  emoji   String?
+
+  @@unique([larId, nome])
 }
 
 model FaturaRecebida {
- id String @id @default(cuid())
- larId String
- lar Lar @relation(fields:[larId],references:[id],onDelete:Cascade)
- contaId String
- eventoId String
- arquivoNome String
- conteudo Bytes
- status String @default("PENDENTE")
- criadoEm DateTime @default(now())
- @@unique([eventoId,contaId,arquivoNome])
- @@index([larId,status])
+  id          String   @id @default(cuid())
+  larId       String
+  lar         Lar      @relation(fields: [larId], references: [id], onDelete: Cascade)
+  contaId     String
+  eventoId    String
+  arquivoNome String
+  conteudo    Bytes
+  status      String   @default("PENDENTE")
+  criadoEm    DateTime @default(now())
+
+  @@unique([eventoId, contaId, arquivoNome])
+  @@index([larId, status])
 }
 
 /// Quanto o lar decidiu separar por mês para investir.
@@ -1753,11 +1755,11 @@ model PessoaDoCasal {
 
   nome           String
   /// Renda mensal, usada só na divisão proporcional.
-  rendaCentavos  Int @default(0)
+  rendaCentavos  Int    @default(0)
   /// Teto imaginário de gasto individual. Não move dinheiro de conta nenhuma.
-  mesadaCentavos Int @default(0)
+  mesadaCentavos Int    @default(0)
   /// Quota combinada à mão, em pontos-base. Só na modalidade personalizada.
-  quotaBps       Int @default(0)
+  quotaBps       Int    @default(0)
 
   @@index([casalId])
 }
@@ -1804,4 +1806,60 @@ model MarcaDescoberta {
 
   @@index([site])
   @@index([criadoEm])
+}
+
+/// Erro que aconteceu no servidor ou na tela de alguém (29/09/2026).
+///
+/// Agrupado pela `impressao` (tipo de erro + primeira linha da pilha): o mesmo
+/// defeito acontecendo mil vezes é uma linha com `ocorrencias = 1000`, não mil
+/// linhas. Não guarda corpo de requisição nem valor digitado — só a mensagem, a
+/// pilha e a tela —, porque o registro existe para achar o defeito, e dado
+/// financeiro de cliente aqui seria dado pessoal sem finalidade.
+model ErroRegistrado {
+  id          String     @id @default(cuid())
+  impressao   String     @unique
+  origem      OrigemErro
+  mensagem    String
+  pilha       String?
+  rota        String?
+  metodo      String?
+  /// Última pessoa em que aconteceu, para o admin poder abrir a ficha e
+  /// reproduzir. Sem relação com Usuario: apagar a conta não pode travar
+  /// nem apagar o histórico do defeito.
+  usuarioId   String?
+  ocorrencias Int        @default(1)
+  status      StatusErro @default(NOVO)
+  primeiroEm  DateTime   @default(now())
+  ultimoEm    DateTime   @default(now())
+
+  @@index([status, ultimoEm])
+}
+
+enum OrigemErro {
+  SERVIDOR
+  NAVEGADOR
+}
+
+enum StatusErro {
+  NOVO
+  RESOLVIDO
+}
+
+/// O que o admin fez e em que conta (29/09/2026).
+///
+/// Prestação de contas da LGPD (art. 6º, X): quem administra o produto vê
+/// dados de cliente, e cada olhada fica registrada — quem, o quê, quando. É
+/// também o que permite responder a um titular que pergunte quem acessou os
+/// dados dele.
+model RegistroAdmin {
+  id       String   @id @default(cuid())
+  adminId  String
+  acao     String
+  /// Conta afetada ou vista, quando houver.
+  alvoId   String?
+  detalhe  String?
+  criadoEm DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([alvoId])
 }

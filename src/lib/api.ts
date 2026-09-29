@@ -94,6 +94,18 @@ export function comSessao<T>(handler: (sessao: Sessao, requisicao: Request, cont
       // Só o caminho: a query pode trazer chave, token ou dado pessoal, e log
       // vive mais e é visto por mais gente do que o banco.
       console.error("[tino] falha na rota", requisicao.method, caminhoDaRota, excecao)
+      // E no registro de erros do admin, agrupado e sem dado pessoal
+      // (`@/lib/erros`). Import tardio: este arquivo é importado por tudo, e o
+      // registro puxa o Prisma.
+      const { registrarErro } = await import("@/lib/erros")
+      await registrarErro({
+        origem: "SERVIDOR",
+        mensagem: excecao instanceof Error ? `${excecao.name}: ${excecao.message}` : String(excecao),
+        pilha: excecao instanceof Error ? excecao.stack : null,
+        rota: caminhoDaRota,
+        metodo: requisicao.method,
+        usuarioId: sessao.usuarioId,
+      })
       return erro("Algo deu errado. Tente de novo em instantes.", 500)
     }
   }

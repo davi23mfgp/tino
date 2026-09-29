@@ -17,6 +17,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 import { RenovarAtalhoDeLancar } from "@/components/atalho-de-lancar"
 import { AlertasProvider } from "@/components/alertas-provider"
+import { OuvidoDeErros } from "@/components/ouvido-de-erros"
 import { ParedeDeAssinatura } from "@/components/parede-de-assinatura"
 import { estadoDoAcesso } from "@/lib/acesso-assinatura"
 
@@ -60,6 +61,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
     // duplicado que existia antes dele.
     <BuscaPaginasProvider mei={false} apenasLoja={apenasLoja}>
+      <OuvidoDeErros />
       {/* Uma busca de alertas para a tela inteira: barra do topo, faixa
           crítica, recado do Tino e dock liam a mesma lista separados. */}
       <AlertasProvider><IdentidadesProvider><div className="area-do-app min-h-screen">

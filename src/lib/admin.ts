@@ -52,6 +52,15 @@ export function comAdmin<T>(handler: (sessao: Sessao, requisicao: Request, conte
       return await handler(sessao, requisicao, contexto)
     } catch (excecao) {
       console.error("[tino] falha na rota do admin", requisicao.method, new URL(requisicao.url).pathname, excecao)
+      const { registrarErro } = await import("@/lib/erros")
+      await registrarErro({
+        origem: "SERVIDOR",
+        mensagem: excecao instanceof Error ? `${excecao.name}: ${excecao.message}` : String(excecao),
+        pilha: excecao instanceof Error ? excecao.stack : null,
+        rota: new URL(requisicao.url).pathname,
+        metodo: requisicao.method,
+        usuarioId: sessao.usuarioId,
+      })
       return NextResponse.json({ erro: "Algo deu errado." }, { status: 500 })
     }
   }

@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { sessaoDeAdmin } from "@/lib/admin"
 import { prisma } from "@/lib/prisma"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -81,7 +82,9 @@ export default async function ContasAdmin({ searchParams }: { searchParams: Prom
                   <tr key={usuario.id}>
                     <td className="py-2.5 pr-3">
                       <p>
-                        {usuario.nome}
+                        <Link href={`/admin/contas/${usuario.id}`} className="underline-offset-2 hover:underline">
+                          {usuario.nome}
+                        </Link>
                         {usuario.admin && (
                           <span className="ml-2 rounded-full border border-acao/40 px-2 py-0.5 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-wide text-acao">
                             admin
@@ -118,7 +121,7 @@ export default async function ContasAdmin({ searchParams }: { searchParams: Prom
                     </td>
                     <td className="py-2.5 text-right text-muted-fg">
                       {usuario.assinatura?.proximaCobrancaEm
-                        ? usuario.assinatura.proximaCobrancaEm.toLocaleDateString("pt-BR")
+                        ? usuario.assinatura.proximaCobrancaEm.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
                         : "—"}
                     </td>
                   </tr>

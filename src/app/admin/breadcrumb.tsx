@@ -13,11 +13,18 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
+/** A aba de uma rota, contando as de dentro dela: a ficha /admin/contas/xyz é da aba Contas. */
+export function abaDe(caminho: string) {
+  return ABAS.find((aba) => aba.rota === caminho) ?? ABAS.find((aba) => aba.rota !== "/admin" && caminho.startsWith(`${aba.rota}/`)) ?? ABAS[0]
+}
+
 export const ABAS = [
   { rota: "/admin", rotulo: "Visão geral" },
   { rota: "/admin/contas", rotulo: "Contas" },
   { rota: "/admin/pagamentos", rotulo: "Pagamentos" },
   { rota: "/admin/suporte", rotulo: "Suporte" },
+  { rota: "/admin/erros", rotulo: "Erros" },
+  { rota: "/admin/logs", rotulo: "Logs" },
   { rota: "/admin/configuracoes", rotulo: "Configurações" },
 ]
 
@@ -30,7 +37,7 @@ export const ABAS = [
  */
 export function TrilhaAdmin() {
   const caminho = usePathname()
-  const atual = ABAS.find((aba) => aba.rota === caminho) ?? ABAS[0]
+  const atual = abaDe(caminho)
 
   return (
     <Breadcrumb className="mb-3">
@@ -65,7 +72,7 @@ export function AbasAdmin() {
   return (
     <nav className="mb-5 flex flex-wrap gap-1.5 border-b border-pauta pb-3">
       {ABAS.map((aba) => {
-        const ativa = aba.rota === caminho
+        const ativa = aba.rota === abaDe(caminho).rota
         return (
           <Link
             key={aba.rota}
