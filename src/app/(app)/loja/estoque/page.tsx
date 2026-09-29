@@ -338,6 +338,18 @@ function NovoProduto({ aoTerminar }: { aoTerminar: (criado: boolean) => void }) 
   )
 }
 
+/** Valor com os centavos menores, como nos quadros de Finanças e MEI. */
+function Reais({ centavos }: { centavos: number }) {
+  const texto = formatarMoeda(centavos)
+  const virgula = texto.lastIndexOf(",")
+  return (
+    <strong className={estilos.num}>
+      {texto.slice(0, virgula)}
+      <span>{texto.slice(virgula)}</span>
+    </strong>
+  )
+}
+
 export default function Prateleira() {
   const [dados, setDados] = useState<Resposta | null>(null)
   const [erro, setErro] = useState<string | null>(null)
@@ -439,31 +451,37 @@ export default function Prateleira() {
         </div>
       </div>
 
-      <section className={`${estilos.bloco} ${estilos.kpis}`} aria-label="Resumo da prateleira">
-        <div className={estilos.kpi}>
-          <span className={estilos.rotulo}>Valor na venda</span>
-          <strong className={estilos.num}>{formatarMoeda(resumo.valorNaVendaCentavos)}</strong>
-          <small>{resumo.pecas} {resumo.pecas === 1 ? "peça" : "peças"} na prateleira</small>
+      {/* Quadros finos (29/09), como Finanças da loja e MEI: número grande em
+          peso leve, rótulo curto, a referência embaixo. */}
+      <section className={estilos.kpis} aria-label="Resumo da prateleira">
+        <div className={`${estilos.bloco} ${estilos.kpi}`}>
+          <span>Valor na venda</span>
+          <Reais centavos={resumo.valorNaVendaCentavos} />
+          <small>
+            {resumo.pecas} {resumo.pecas === 1 ? "peça" : "peças"} na prateleira
+          </small>
         </div>
         {comCusto && (
-          <div className={estilos.kpi}>
-            <span className={estilos.rotulo}>Custo parado</span>
-            <strong className={estilos.num}>{formatarMoeda(resumo.custoParadoCentavos)}</strong>
+          <div className={`${estilos.bloco} ${estilos.kpi}`}>
+            <span>Custo parado</span>
+            <Reais centavos={resumo.custoParadoCentavos} />
             <small>
               {resumo.semCustoComSaldo > 0
-                ? `fora ${resumo.semCustoComSaldo} ${resumo.semCustoComSaldo === 1 ? "produto" : "produtos"} sem custo lançado`
+                ? `fora ${resumo.semCustoComSaldo} ${resumo.semCustoComSaldo === 1 ? "produto" : "produtos"} sem custo`
                 : "o que a prateleira custou"}
             </small>
           </div>
         )}
-        <div className={estilos.kpi}>
-          <span className={estilos.rotulo}>Pedem atenção</span>
+        <div className={`${estilos.bloco} ${estilos.kpi}`}>
+          <span>Pedem atenção</span>
           <strong className={estilos.num}>{atencao.length}</strong>
-          <small>de {linhas.length} {linhas.length === 1 ? "produto" : "produtos"}</small>
+          <small>
+            de {linhas.length} {linhas.length === 1 ? "produto" : "produtos"}
+          </small>
         </div>
-        <div className={estilos.kpi}>
-          <span className={estilos.rotulo}>Mais vendido</span>
-          <strong>{maisVendido?.nome ?? "—"}</strong>
+        <div className={`${estilos.bloco} ${estilos.kpi}`}>
+          <span>Mais vendido</span>
+          <strong data-texto>{maisVendido?.nome ?? "—"}</strong>
           <small>{maisVendido ? `${maisVendido.quantidadeVendida} vendidos · ${maisVendido.saldo} em estoque` : "nenhuma venda ainda"}</small>
         </div>
       </section>

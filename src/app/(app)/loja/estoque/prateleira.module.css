@@ -1,7 +1,8 @@
 /* Prateleira, rodada 3 do canvas (Davi, 28/09: "profissional, nada de
    colorido, moderno", e depois "no liquid glass igual ao normal"). O vidro é
    o do app; dentro dele, só cinzas, linhas finas e números alinhados. A cor
-   fica no ponto da situação e no botão principal. */
+   fica no ponto da situação e no botão principal. Desde 29/09 os números do
+   topo seguem os quadros finos de Finanças e MEI ("estilo da última tela"). */
 .pagina { display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
 .bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
 .num { font-variant-numeric:tabular-nums; }
@@ -10,29 +11,33 @@
 .topo { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .topo p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
 .acoes { display:flex; gap:8px; }
-.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:12px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:550; white-space:nowrap; }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:550; white-space:nowrap; }
 .botao svg { width:16px; height:16px; }
 .botao[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 @media (max-width:639px) { .botao[data-icone] span { display:none; } .botao[data-icone] { padding:0 12px !important; } }
 
-/* Os quatro números do topo numa faixa só, separados por fio. */
-.kpis { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); overflow:hidden; }
-@media (min-width:1024px) { .kpis { grid-template-columns:repeat(4, minmax(0,1fr)); } }
-.kpi { padding:14px 16px; min-width:0; border-left:1px solid color-mix(in oklab, var(--foreground), transparent 90%); border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
-.kpi:nth-child(-n+2) { border-top:0; }
-.kpi:nth-child(odd) { border-left:0; }
-@media (min-width:1024px) { .kpi { border-top:0; } .kpi:nth-child(odd) { border-left:1px solid color-mix(in oklab, var(--foreground), transparent 90%); } .kpi:first-child { border-left:0; } }
-.kpi strong { display:block; margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(20px * var(--escala-letra)); font-weight:650; letter-spacing:-.02em; }
-.kpi small { display:block; margin-top:2px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+/* Quatro quadros finos (29/09): o desenho de Finanças da loja e MEI. */
+.kpis { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+@media (min-width:1024px) { .kpis { grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; } }
+.kpi { display:flex; flex-direction:column; gap:6px; padding:16px 18px; }
+@media (min-width:1024px) { .kpi { padding:20px 22px; } }
+.kpi > span { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.kpi strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(24px * var(--escala-letra)); font-weight:300; letter-spacing:-.03em; line-height:1.1; }
+@media (min-width:1024px) { .kpi strong { font-size:calc(32px * var(--escala-letra)); } }
+.kpi strong span { font-size:.55em; opacity:.6; letter-spacing:-.01em; }
+.kpi strong[data-texto] { font-size:calc(20px * var(--escala-letra)); font-weight:400; letter-spacing:-.02em; }
+@media (min-width:1024px) { .kpi strong[data-texto] { font-size:calc(24px * var(--escala-letra)); } }
+.kpi small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
 
 .filtros { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 .busca { position:relative; flex:1; min-width:200px; max-width:340px; }
 .busca svg { position:absolute; left:12px; top:50%; width:15px; height:15px; transform:translateY(-50%); color:var(--texto-3); pointer-events:none; }
 .busca input { padding-left:36px !important; }
-.segmento { display:inline-flex; gap:2px; padding:3px; border-radius:12px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); }
-.segmento button { min-height:34px !important; padding:0 12px !important; border-radius:9px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.segmento { display:inline-flex; gap:4px; padding:4px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 94%); border:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.segmento button { min-height:34px !important; padding:0 14px !important; border-radius:999px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
 .segmento button span { margin-left:4px; color:var(--texto-3); font-variant-numeric:tabular-nums; }
-.segmento button[aria-pressed="true"] { background:color-mix(in oklab, var(--foreground), transparent 90%); color:var(--foreground); font-weight:600; }
+.segmento button[aria-pressed="true"] { background:var(--foreground); color:var(--background); font-weight:650; }
+.segmento button[aria-pressed="true"] span { color:inherit; opacity:.6; }
 
 /* Tabela no computador, lista de duas linhas no celular: o mesmo botão por
    produto, com as colunas rearrumadas. */
@@ -42,10 +47,10 @@
 .linha { width:100%; min-height:62px; text-align:left; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 91%); grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"nome preco" "situacao estoque"; row-gap:3px; padding-top:11px; padding-bottom:11px; transition:background .15s var(--curva); }
 .linha:first-of-type { border-top:0; }
 .linha:hover { background:color-mix(in oklab, var(--foreground), transparent 95%); }
-.nome { grid-area:nome; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14.5px * var(--escala-letra)); font-weight:600; }
+.nome { grid-area:nome; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:calc(14.5px * var(--escala-letra)); font-weight:500; }
 .cSituacao { grid-area:situacao; }
 .cEstoque { grid-area:estoque; justify-self:end; display:flex; align-items:center; gap:8px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
-.cPreco { grid-area:preco; justify-self:end; font-size:calc(14.5px * var(--escala-letra)); font-weight:600; }
+.cPreco { grid-area:preco; justify-self:end; font-size:calc(14.5px * var(--escala-letra)); font-weight:450; }
 .cCusto, .cSobra, .cVendidos { display:none; }
 @media (min-width:1024px) {
   .cabecalho, .linha { grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,.6fr); grid-template-areas:none; }
@@ -75,7 +80,7 @@
 /* O produto aberto. */
 .detalhe { display:grid; gap:16px; }
 .saldo { display:flex; align-items:baseline; gap:8px; }
-.saldo strong { font-size:calc(40px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; }
+.saldo strong { font-size:calc(44px * var(--escala-letra)); font-weight:300; letter-spacing:-.04em; }
 .saldo span { font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-3); }
 .kv { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:42px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(13.5px * var(--escala-letra)); }
 .kv > span:first-child { color:var(--texto-2); }
