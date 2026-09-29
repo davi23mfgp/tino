@@ -15,6 +15,12 @@ export function diaNoFuso(data: Date, fuso = "America/Sao_Paulo"): string {
   return data.toLocaleDateString("en-CA", { timeZone: fuso })
 }
 
+/**
+ * Competência YYYY-MM de uma venda, no fuso do lar. Pelo relógio do servidor
+ * (UTC), a venda das 21h do dia 31 caía no mês seguinte do MEI.
+ */
+export const competenciaDaVenda = (data: Date, fuso = "America/Sao_Paulo") => diaNoFuso(data, fuso).slice(0, 7)
+
 /** Dia do vencimento como foi gravado (meia-noite UTC do dia escolhido). */
 export const diaDoVencimento = (vencimento: Date | string) => new Date(vencimento).toISOString().slice(0, 10)
 

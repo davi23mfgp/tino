@@ -19,6 +19,8 @@ import {
 } from "@/lib/datas"
 import {
   avaliarMei,
+  limiteProporcionalMei,
+  situacaoDoDas,
   basesDaProjecao,
   compararEstrategias,
   mesesDeFolga,
@@ -453,15 +455,24 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       valorCentavos: linha.receitaComercioCentavos + linha.receitaServicosCentavos,
     }))
 
+    const abertura = lar.meiPerfil.dataAbertura
+    const abriuNesteAno = abertura !== null && abertura.getUTCFullYear() === ano
     const situacao = avaliarMei({
       faturamentoPorCompetencia,
-      limiteAnualCentavos: lar.meiPerfil.limiteAnualCentavos,
+      limiteAnualCentavos: abriuNesteAno
+        ? limiteProporcionalMei(lar.meiPerfil.limiteAnualCentavos, abertura.getUTCMonth() + 1)
+        : lar.meiPerfil.limiteAnualCentavos,
       mesAtual,
       ano,
+      mesInicio: abriuNesteAno ? abertura.getUTCMonth() + 1 : 1,
     })
 
+    // Só o que já passou do vencimento: o DAS do mês passado vence no dia
+    // escolhido deste mês, e antes disso não é atraso.
+    const hoje = new Date().toLocaleDateString("en-CA", { timeZone: lar.fusoHorario })
+    const diaDoDas = lar.meiPerfil.diaVencimentoDas
     const dasEmAberto = meiCompetencias
-      .filter((linha) => !linha.dasPago && linha.competencia < competencia)
+      .filter((linha) => linha.competencia < competencia && situacaoDoDas(linha.competencia, linha.dasPago, hoje, diaDoDas) === "atrasado")
       .map((linha) => linha.competencia)
       .sort()
 

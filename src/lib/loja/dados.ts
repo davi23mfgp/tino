@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma"
 import { ErroDeUso } from "@/lib/api"
 
 import type { FormaPagamento, RegraDeRecebimento } from "./venda"
+import { competenciaDaVenda } from "@/lib/loja/contas"
 
 /**
  * A loja do lar, criada na primeira visita.
@@ -60,11 +61,6 @@ export async function proximoNumero(lojaId: string): Promise<number> {
   return (ultima?.numero ?? 0) + 1
 }
 
-/** Competência YYYY-MM de uma data, no fuso de quem opera a loja. */
-export function competenciaDaVenda(data: Date): string {
-  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`
-}
-
 /**
  * Joga o faturamento da venda na competência do MEI.
  *
@@ -76,7 +72,8 @@ export async function somarNoFaturamentoMei(larId: string, data: Date, valorCent
   const perfil = await prisma.meiPerfil.findUnique({ where: { larId } })
   if (!perfil) return
 
-  const competencia = competenciaDaVenda(data)
+  const lar = await prisma.lar.findUnique({ where: { id: larId }, select: { fusoHorario: true } })
+  const competencia = competenciaDaVenda(data, lar?.fusoHorario)
 
   await prisma.meiCompetencia.upsert({
     where: { larId_competencia: { larId, competencia } },
