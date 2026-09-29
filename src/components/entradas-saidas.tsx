@@ -135,12 +135,12 @@ export function EntradasESaidas({
         <p className={estilos.leitura}>
           {!temRenda ? (
             <>
-              Nenhuma entrada lançada em {mes} — a barra mostra só os gastos, e sem a renda não dá para dizer quanto
+              Nenhuma entrada lançada em {mes}: a barra mostra só os gastos, e sem a renda não dá para dizer quanto
               sobrou. Lance o que entrou para a conta fechar.
             </>
           ) : resultado >= 0 ? (
             <>
-              A renda inteira numa barra: cada cor é para onde foi, o listrado é o que sobrou —{" "}
+              A renda inteira numa barra: cada cor é para onde foi, o listrado é o que sobrou:{" "}
               <b data-tom={tomDaSobra}>{formatarPercentual(sobraBps, 1)}</b>. Abaixo de{" "}
               {formatarPercentual(REFERENCIA_TAXA_POUPANCA.atencao, 0)} não se forma reserva;{" "}
               {formatarPercentual(REFERENCIA_TAXA_POUPANCA.bom, 0)} ou mais constrói patrimônio.

@@ -52,13 +52,13 @@ export async function POST(requisicao: Request) {
     }
     // Notificação tem título ("Nubank") e corpo ("Compra de R$ 30..."), e o
     // banco só aparece no título — juntar os dois melhora a identificação.
-    texto = [corpo.titulo ?? corpo.title, corpo.texto ?? corpo.text ?? corpo.mensagem].filter(Boolean).join(" — ")
+    texto = [corpo.titulo ?? corpo.title, corpo.texto ?? corpo.text ?? corpo.mensagem].filter(Boolean).join(": ")
     textoLivre = Boolean(corpo.livre)
   } else if (tipo.includes("form")) {
     const formulario = await requisicao.formData()
     texto = [formulario.get("titulo"), formulario.get("texto") ?? formulario.get("text")]
       .filter(Boolean)
-      .join(" — ")
+      .join(": ")
   } else {
     texto = await requisicao.text()
   }

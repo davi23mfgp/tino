@@ -120,7 +120,7 @@ export function PainelDaCarteira({ posicoes, topo, depoisDoResumo }: { posicoes:
         <div className={estilos.recolhidoCorpo}>
           {noMetodo > 0 && <OndePorODinheiro carteira={carteira} letras={letras} />}
           <p className={estilos.nota}>
-            O traço na régua é o alvo de 25% de cada parte, do método ARCA (Grupo Primo). Parâmetro escolhido; cálculo, não recomendação — o app não diz qual ativo comprar.
+            O traço na régua é o alvo de 25% de cada parte, do método ARCA (Grupo Primo). Parâmetro escolhido; cálculo, não recomendação: o app não diz qual ativo comprar.
             {foraDoMetodoCentavos > 0 && <> {formatarMoeda(foraDoMetodoCentavos)} fica fora do método (cripto e outros).</>}
             {semClasse > 0 && <> {semClasse} {semClasse === 1 ? "investimento está" : "investimentos estão"} sem classe.</>}
           </p>
@@ -270,7 +270,7 @@ function OndePorODinheiro({
       <footer className={estilos.rodapeAporte}>
         <span>
           {futuro
-            ? <>Combinado: {curto(objetivo!.valorMensalCentavos)} por mês. Em {prazo} anos, {formatarMoeda(futuro.patrimonioCentavos)} — a {RENDIMENTO_REAL_ANUAL_BPS / 100}% ao ano acima da inflação.</>
+            ? <>Combinado: {curto(objetivo!.valorMensalCentavos)} por mês. Em {prazo} anos, {formatarMoeda(futuro.patrimonioCentavos)}, a {RENDIMENTO_REAL_ANUAL_BPS / 100}% ao ano acima da inflação.</>
             : "Nenhum valor mensal combinado ainda."}
         </span>
         {aporte > 0 && aporte !== objetivo?.valorMensalCentavos && (
@@ -354,7 +354,7 @@ function EvolucaoDaCarteira({ serie }: { serie: RetratoMensal[] }) {
       </div>
 
       <p className="text-[calc(11.5px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
-        A série começa no primeiro mês em que esta tela foi aberta — nenhum mês é calculado para trás. Cada visita
+        A série começa no primeiro mês em que esta tela foi aberta. Nenhum mês é calculado para trás. Cada visita
         atualiza o retrato do mês corrente; meses fechados ficam como estavam.
       </p>
     </section>
@@ -408,21 +408,21 @@ function Desempenho({
   const linhas: { rotulo: string; valor: string; tom?: "positivo" | "negativo" }[] = [
     {
       rotulo: "Rentabilidade no mês",
-      valor: rendimento === null ? "—" : `${rendimento >= 0 ? "+" : "−"}${Math.abs(rendimento).toFixed(2).replace(".", ",")}%`,
+      valor: rendimento === null ? "sem dado" : `${rendimento >= 0 ? "+" : "−"}${Math.abs(rendimento).toFixed(2).replace(".", ",")}%`,
       tom: rendimento === null ? undefined : rendimento >= 0 ? "positivo" : "negativo",
     },
     {
       rotulo: "CDI no mês",
-      valor: cdi ? `${cdi.percentual.toFixed(2).replace(".", ",")}%` : "—",
+      valor: cdi ? `${cdi.percentual.toFixed(2).replace(".", ",")}%` : "sem dado",
     },
     {
       rotulo: "Carteira sobre o CDI",
-      valor: sobreCdi === null ? "—" : `${sobreCdi.toFixed(0)}%`,
+      valor: sobreCdi === null ? "sem dado" : `${sobreCdi.toFixed(0)}%`,
       tom: sobreCdi === null ? undefined : sobreCdi >= 100 ? "positivo" : "negativo",
     },
     {
       rotulo: "Ganho sobre o aportado",
-      valor: ganho === 0 ? "—" : `${ganho > 0 ? "+" : "−"}${formatarMoeda(Math.abs(ganho))}`,
+      valor: ganho === 0 ? "sem dado" : `${ganho > 0 ? "+" : "−"}${formatarMoeda(Math.abs(ganho))}`,
       tom: ganho === 0 ? undefined : ganho > 0 ? "positivo" : "negativo",
     },
   ]
@@ -449,7 +449,7 @@ function Desempenho({
 
       {rendimento === null && (
         <p className="mt-3 text-[calc(11.5px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
-          A rentabilidade do mês aparece quando houver dois retratos da carteira — o deste mês e o do mês passado. O
+          A rentabilidade do mês aparece quando houver dois retratos da carteira: o deste mês e o do mês passado. O
           cálculo desconta o que você aportou: dinheiro guardado não é rendimento.
         </p>
       )}

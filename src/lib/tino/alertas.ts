@@ -181,7 +181,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       tipo: "meta_atrasada",
       severidade: "INFO",
       titulo: `${meta.nome}: revise o aporte`,
-      texto: `Com ${formatarMoeda(meta.aporteAtualCentavos)} por mês a meta não fecha no prazo. Seriam necessários ${formatarMoeda(meta.aporteNecessarioCentavos)} — ${formatarMoeda(diferenca)} a mais.`,
+      texto: `Com ${formatarMoeda(meta.aporteAtualCentavos)} por mês a meta não fecha no prazo. Seriam necessários ${formatarMoeda(meta.aporteNecessarioCentavos)}, ${formatarMoeda(diferenca)} a mais.`,
       acaoRota: "/metas",
       chave: `meta_atrasada:${mes}:${meta.id}`,
     })
@@ -199,7 +199,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       tipo: "fatura_acima_limite",
       severidade: "CRITICO",
       titulo: `Fatura do ${conta.nome} passou do limite`,
-      texto: `Limite de ${formatarMoeda(conta.limiteCentavos)}, fatura em ${formatarMoeda(usado)} — ${formatarMoeda(usado - conta.limiteCentavos)} acima. O excedente costuma virar rotativo, o juro mais caro depois do cheque especial.`,
+      texto: `Limite de ${formatarMoeda(conta.limiteCentavos)}, fatura em ${formatarMoeda(usado)}, ${formatarMoeda(usado - conta.limiteCentavos)} acima. O excedente costuma virar rotativo, o juro mais caro depois do cheque especial.`,
       acaoRota: "/cartoes",
       chave: `fatura_acima_limite:${mes}:${conta.id}`,
     })

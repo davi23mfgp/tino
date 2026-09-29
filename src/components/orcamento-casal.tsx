@@ -156,7 +156,7 @@ export function OrcamentoCasal({ gastoComumCentavos = 0 }: { gastoComumCentavos?
 
               {modalidade === "MESADA" && (
                 <label className="mt-2 block text-xs text-muted-fg">
-                  Mesada — teto do gasto individual
+                  Mesada: teto do gasto individual
                   <Input inputMode="decimal" defaultValue={(pessoa.mesadaCentavos / 100).toFixed(2)} onBlur={(evento) => mudarPessoa(indice, "mesadaCentavos", evento.target.value)} />
                 </label>
               )}

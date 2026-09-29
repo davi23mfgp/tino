@@ -81,7 +81,7 @@ export async function POST(requisicao: Request) {
   if (!chave) {
     await responder(
       chatId,
-      "Ainda não sei de quem é esta conversa. No app, vá em Anotar → Telegram, gere uma chave e toque em Abrir no Telegram — ou me mande aqui:\n\n<code>/conectar SUA_CHAVE</code>",
+      "Ainda não sei de quem é esta conversa. No app, vá em Anotar → Telegram, gere uma chave e toque em Abrir no Telegram, ou me mande aqui:\n\n<code>/conectar SUA_CHAVE</code>",
     )
     return NextResponse.json({ ok: true })
   }
@@ -166,7 +166,7 @@ export async function POST(requisicao: Request) {
           `Importei <b>${importacao.importadas}</b> lançamento(s) em ${conta.nome}.`,
           `Total de gastos: <b>${formatarMoeda(total)}</b>.`,
           previa.duplicadas > 0 ? `${previa.duplicadas} já existiam e foram ignorados.` : "",
-          previa.semCategoria > 0 ? `${previa.semCategoria} ficaram sem categoria — vale conferir no app.` : "",
+          previa.semCategoria > 0 ? `${previa.semCategoria} ficaram sem categoria, vale conferir no app.` : "",
         ]
           .filter(Boolean)
           .join("\n"),
@@ -176,7 +176,7 @@ export async function POST(requisicao: Request) {
       // histórico do aparelho e do servidor do mensageiro.
       const recado =
         excecao instanceof PdfProtegido
-          ? "Esse PDF tem senha. Por segurança não recebo senha por aqui — mande o arquivo pelo app, em Importar, que lá eu pergunto."
+          ? "Esse PDF tem senha. Por segurança não recebo senha por aqui. Mande o arquivo pelo app, em Importar, que lá eu pergunto."
           : "Não consegui ler esse arquivo. Tente mandar o OFX ou o CSV do banco."
       await responder(chatId, recado)
     }

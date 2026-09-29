@@ -16,9 +16,9 @@ import { VitrineRecursos } from "@/components/landing/vitrine-recursos"
 // para ver a primeira dobra.
 export const revalidate = 300
 export const metadata: Metadata = {
-  title: "Tino — Seu dinheiro, mais simples.",
+  title: "Tino · Seu dinheiro, mais simples.",
   description: "Contas, cartões, orçamento e planos em um só lugar. Entenda seu dinheiro e encontre seu próximo passo com o Tino.",
-  openGraph: { title: "Tino — Seu dinheiro, mais simples.", description: "Clareza para hoje. Um plano para o que vem depois.", type: "website", locale: "pt_BR", siteName: "Tino" },
+  openGraph: { title: "Tino · Seu dinheiro, mais simples.", description: "Clareza para hoje. Um plano para o que vem depois.", type: "website", locale: "pt_BR", siteName: "Tino" },
 }
 const PASSOS = [
   { Icone: Wallet, titulo: "Cadastre sua conta", texto: "Comece pelo saldo que você tem hoje." },
@@ -41,7 +41,7 @@ export default async function Vitrine() {
   return <div className="lp">
     <a href="#conteudo" className="lp-pular">Pular para o conteúdo</a>
     <header className="lp-menu">
-      <Link href="/" className="lp-marca" aria-label="Tino — início"><Leao tamanho={38} /><span>tino.</span></Link>
+      <Link href="/" className="lp-marca" aria-label="Início do Tino"><Leao tamanho={38} /><span>tino.</span></Link>
       <nav aria-label="Navegação da página"><a href="#recursos">Recursos</a><a href="#vantagens">Vantagens</a><a href="#planos">Preços</a><a href="#duvidas">Dúvidas</a></nav>
       <Link href="/login" className="lp-botao lp-entrar">Entrar</Link>
     </header>

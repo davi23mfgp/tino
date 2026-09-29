@@ -4,7 +4,7 @@ import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual } from "@/lib/datas"
 import { CentralCartoes } from "@/components/central-cartoes"
 export const dynamic = "force-dynamic"
-export const metadata: Metadata = { title: "Cartões — Tino" }
+export const metadata: Metadata = { title: "Cartões · Tino" }
 export default async function Cartoes() {
   const sessao = await sessaoDaPagina()
   const [contas, categorias] = await Promise.all([

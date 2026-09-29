@@ -50,7 +50,7 @@ export default async function FichaDaConta({ params }: { params: Promise<{ id: s
   await registrarAcaoDoAdmin(sessao.usuarioId, "abriu a ficha", id)
 
   const assinatura = usuario.assinatura
-  const data = (valor: Date | null | undefined) => (valor ? valor.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—")
+  const data = (valor: Date | null | undefined) => (valor ? valor.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "sem data")
 
   return (
     <div className="space-y-4">
@@ -66,7 +66,7 @@ export default async function FichaDaConta({ params }: { params: Promise<{ id: s
             <dt className="text-muted-fg">Conta criada</dt>
             <dd>{data(usuario.criadoEm)}</dd>
             <dt className="text-muted-fg">Último acesso</dt>
-            <dd>{usuario.ultimoLogin ? usuario.ultimoLogin.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—"}</dd>
+            <dd>{usuario.ultimoLogin ? usuario.ultimoLogin.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "nunca"}</dd>
             <dt className="text-muted-fg">Perfil</dt>
             <dd>
               {usuario.lar.meiPerfil ? "MEI com loja" : "Pessoal"} · {usuario.lar._count.membros} {usuario.lar._count.membros === 1 ? "pessoa" : "pessoas"} no lar
@@ -171,7 +171,7 @@ export default async function FichaDaConta({ params }: { params: Promise<{ id: s
                 <div key={erro.id} className="py-2">
                   <p className="break-words font-mono text-[calc(12px*var(--escala-letra))]">{erro.mensagem}</p>
                   <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                    {erro.rota ?? "—"} · {erro.ocorrencias}× · {erro.ultimoEm.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} · {erro.status === "NOVO" ? "em aberto" : "resolvido"}
+                    {erro.rota ?? "sem rota"} · {erro.ocorrencias}× · {erro.ultimoEm.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} · {erro.status === "NOVO" ? "em aberto" : "resolvido"}
                   </p>
                 </div>
               ))}

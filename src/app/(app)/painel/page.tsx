@@ -25,7 +25,7 @@ import { ROTULO_BANDEIRA, finalDoCartao } from "@/lib/bandeiras"
 import { CarteiraCartoes } from "@/components/carteira-cartoes"
 
 export const dynamic = "force-dynamic"
-export const metadata: Metadata = { title: "Início — Tino", robots: { index: false, follow: false } }
+export const metadata: Metadata = { title: "Início · Tino", robots: { index: false, follow: false } }
 
 const CORES_FAIXA: Record<string, string> = { BOM: "text-positivo", ATENCAO: "text-atencao", CRITICO: "text-negativo", SEM_DADO: "text-muted-fg" }
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]

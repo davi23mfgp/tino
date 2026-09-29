@@ -97,7 +97,7 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
   return <>
     {!apenasLoja && <div className="fixed bottom-[104px] right-3 z-40 lg:hidden"><TinoDock /></div>}
     <aside className="app-sidebar">
-      <Link href={apenasLoja ? "/loja" : "/painel"} className="app-brand" aria-label="Tino — início"><TinoMarca className="size-9" /><span>tino.</span></Link>
+      <Link href={apenasLoja ? "/loja" : "/painel"} className="app-brand" aria-label="Início do Tino"><TinoMarca className="size-9" /><span>tino.</span></Link>
       <p className="app-sidebar-caption">{apenasLoja ? "Sua loja" : "Seu dia a dia"}</p>
       <nav aria-label="Navegação principal" className="space-y-1">
         {trilhoLateral.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}

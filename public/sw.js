@@ -9,7 +9,7 @@
  * Limite honesto da web: notificação de site **não aceita responder com texto
  * dentro dela** (a Notification API tem botão, não campo). Então o atalho abre
  * a tela `/lancar`, que é campo, microfone e nada mais. Responder de dentro da
- * notificação só existe em aplicativo nativo — ou pelo WhatsApp, que o Tino já
+ * notificação só existe em aplicativo nativo — ou pelo Telegram, que o Tino já
  * atende.
  */
 

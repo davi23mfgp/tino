@@ -10,7 +10,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import type { BetaMessageParam, BetaTextBlock } from "@anthropic-ai/sdk/resources/beta/messages"
 
 import type { Panorama } from "@/lib/tino/panorama"
-import { PERSONA, contextoParaModelo, type RespostaAssistente } from "@/lib/tino/chat"
+import { PERSONA, contextoParaModelo, semTravessao, type RespostaAssistente } from "@/lib/tino/chat"
 
 const MODELO = process.env.ANTHROPIC_MODEL || "claude-opus-5"
 
@@ -71,7 +71,7 @@ async function responderGroq(params:{pergunta:string;panorama:Panorama;historico
  const dados=await resposta.json() as {choices?:{message?:{content?:string}}[]}
  const texto=dados.choices?.[0]?.message?.content?.trim()
  if(!texto)throw new Error("O assistente não retornou uma resposta.")
- return {texto,fonte:"modelo"}
+ return {texto:semTravessao(texto),fonte:"modelo"}
 }
 
 /** Resposta completa de uma vez. Usada quando a tela não precisa de streaming. */
@@ -94,11 +94,13 @@ export async function responderComModelo(params: {
     }
   }
 
-  const texto = resposta.content
-    .filter((bloco): bloco is BetaTextBlock => bloco.type === "text")
-    .map((bloco) => bloco.text)
-    .join("\n")
-    .trim()
+  const texto = semTravessao(
+    resposta.content
+      .filter((bloco): bloco is BetaTextBlock => bloco.type === "text")
+      .map((bloco) => bloco.text)
+      .join("\n")
+      .trim(),
+  )
 
   return { texto: texto || "Não consegui formular uma resposta agora. Tente perguntar de outro jeito.", fonte: "modelo" }
 }
@@ -126,12 +128,20 @@ export function responderComModeloStream(params: {
           parametros(params.historico ?? [], params.pergunta, params.panorama),
         )
 
+        // O espaço do fim de cada pedaço espera o próximo: se o próximo começar
+        // com travessão, " —" vira ", " inteiro, sem sobrar " ," na tela.
+        let espera = ""
         fluxo.on("text", (pedaco) => {
-          completo += pedaco
-          controlador.enqueue(codificador.encode(pedaco))
+          const junto = semTravessao(espera + pedaco)
+          const corte = junto.search(/\s*$/)
+          espera = junto.slice(corte)
+          completo += junto.slice(0, corte)
+          controlador.enqueue(codificador.encode(junto.slice(0, corte)))
         })
 
         await fluxo.finalMessage()
+        completo += espera
+        if (espera) controlador.enqueue(codificador.encode(espera))
         await params.aoConcluir?.(completo)
       } catch (erro) {
         // O fluxo já foi aberto: lançar aqui deixaria a tela com meia resposta e

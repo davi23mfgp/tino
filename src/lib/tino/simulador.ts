@@ -206,7 +206,7 @@ export function simular(base: CenarioBase, ajustes: Ajuste[] = [], meses = 24): 
       if (ajuste.tipo === "NOVO_EMPRESTIMO" && ajuste.competencia === competencia) {
         // O dinheiro entra líquido dos custos (IOF, tarifa): é o que cai na conta.
         receitas += ajuste.valorCentavos - (ajuste.custosExtrasCentavos ?? 0)
-        eventos.push(`${ajuste.rotulo} — dinheiro na conta`)
+        eventos.push(`${ajuste.rotulo}: dinheiro na conta`)
       }
     }
 
@@ -266,7 +266,7 @@ export function simular(base: CenarioBase, ajustes: Ajuste[] = [], meses = 24): 
       const divida = dividas.find((linha) => linha.id === ajuste.dividaId)
       if (!divida || divida.saldoCentavos <= 0) continue
       quitacoes += divida.saldoCentavos
-      eventos.push(`${ajuste.rotulo} — quitação de ${divida.nome}`)
+      eventos.push(`${ajuste.rotulo}: quitação de ${divida.nome}`)
       divida.saldoCentavos = 0
     }
 
@@ -427,7 +427,7 @@ function lerComparacao(
 
   if (cenario.menorSaldoCentavos < 0) {
     frases.push(
-      `O momento mais apertado chega a ${emReais(cenario.menorSaldoCentavos)} — é aí que a conta entra no cheque especial.`,
+      `O momento mais apertado chega a ${emReais(cenario.menorSaldoCentavos)}: é aí que a conta entra no cheque especial.`,
     )
   }
 

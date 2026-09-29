@@ -65,7 +65,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   if (!modeloDisponivel()) {
     const texto =
-      "Essa eu não sei responder sozinho. Posso te ajudar com saldo, gastos por categoria, dívidas, metas, reserva, projeção, empréstimo e MEI — é só perguntar de um desses jeitos."
+      "Essa eu não sei responder sozinho. Posso te ajudar com saldo, gastos por categoria, dívidas, metas, reserva, projeção, empréstimo e MEI. É só perguntar de um desses jeitos."
     await prisma.mensagem.create({ data: { conversaId: conversa.id, papel: "ASSISTENTE", texto } })
     return ok({ texto, fonte: "regras", conversaId: conversa.id })
   }

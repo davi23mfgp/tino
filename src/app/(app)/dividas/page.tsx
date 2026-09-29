@@ -345,7 +345,7 @@ export default function Dividas() {
             </p>
           ) : (
             <p className={topo.prazo} data-fecha="nao">
-              <b>As parcelas de hoje não quitam em 50 anos</b> — o juro cresce mais que o pagamento
+              <b>As parcelas de hoje não quitam em 50 anos</b>: o juro cresce mais que o pagamento
             </p>
           )}
 
@@ -399,7 +399,7 @@ export default function Dividas() {
               {primeira.jurosMensalBps > 0 && <> · {formatarPercentual(primeira.jurosMensalBps)} a.m.</>}
             </p>
             <p className={topo.regua}>
-              {primeira.jurosMensalBps > 0 ? referenciaDoJuro(pesoDoJuro(primeira.jurosMensalBps)) : "sem juros informados — cadastre a taxa"}
+              {primeira.jurosMensalBps > 0 ? referenciaDoJuro(pesoDoJuro(primeira.jurosMensalBps)) : "sem juros informados, cadastre a taxa"}
             </p>
           </div>
           <Link href="/plano" className={topo.botaoPlano}>Plano</Link>

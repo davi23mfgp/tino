@@ -178,7 +178,7 @@ export default function Assinatura() {
 
             {assinatura.status === "PENDENTE" && (
               <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg">
-                O provedor ainda não confirmou. Isso costuma levar alguns minutos — a tela atualiza sozinha quando você
+                O provedor ainda não confirmou. Isso costuma levar alguns minutos, e a tela atualiza sozinha quando você
                 voltar aqui.
               </p>
             )}
@@ -187,7 +187,7 @@ export default function Assinatura() {
               <div className="mt-3">
                 <Aviso tom="critico">
                   {assinatura.motivoFalha ?? "A última cobrança foi recusada."} Atualize o cartão no provedor ou
-                  contrate de novo abaixo — seus dados continuam aqui.
+                  contrate de novo abaixo. Seus dados continuam aqui.
                 </Aviso>
               </div>
             )}
@@ -231,7 +231,7 @@ export default function Assinatura() {
           {disponiveis.length === 0 && (
             <div className="mb-4">
               <Aviso tom="atencao">
-                Nenhum meio de pagamento está configurado ainda. Enquanto isso, o app continua funcionando inteiro — só
+                Nenhum meio de pagamento está configurado ainda. Enquanto isso, o app continua funcionando inteiro, só
                 a contratação está fora do ar.
               </Aviso>
             </div>

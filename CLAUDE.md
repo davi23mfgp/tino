@@ -39,6 +39,12 @@ ajude a organizar dívidas, juntar para metas, projetar e decidir empréstimo.
 7. **Português do Brasil em tudo**: código, comentários, commits, interface.
    Nomes de variáveis e funções em português.
 
+8. **Nenhum texto com travessão** (Davi, 29/09/2026). Vale para tela,
+   Telegram, e-mail, termos e respostas do assistente: use vírgula,
+   dois-pontos, parênteses ou ponto. O teste `testes/sem-travessao.test.ts`
+   varre as strings de `src/` e falha se aparecer um, e `semTravessao` limpa
+   a resposta do modelo. Vale também para commits e mensagens ao Davi.
+
 ## Antes de mexer em cálculo
 
 ```bash

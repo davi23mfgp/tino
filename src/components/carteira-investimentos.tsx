@@ -106,7 +106,7 @@ export function CarteiraInvestimentos() {
           contaDestinoId: retirada ? dados.get("conta") : movimento.id,
           tipo: "TRANSFERENCIA",
           valorCentavos: paraCentavos(String(dados.get("valor"))),
-          descricao: `${retirada ? "Resgate" : "Aporte"} — ${movimento.nome}`,
+          descricao: `${retirada ? "Resgate" : "Aporte"}: ${movimento.nome}`,
           data: new Date().toISOString().slice(0, 10),
         })
       } else {
@@ -241,7 +241,7 @@ export function CarteiraInvestimentos() {
                   <label className="block text-sm">Código na bolsa<Input name="ticker" placeholder="Ex.: PETR4" autoCapitalize="characters" /></label>
                   <label className="block text-sm">Quantidade<Input name="quantidade" inputMode="decimal" placeholder="Ex.: 100" /></label>
                 </div>
-                <label className="block text-sm">Classe na carteira<SelectNative name="classeDeAtivo"><option value="">Escolher depois</option>{CLASSES.map((linha) => <option key={linha.classe} value={linha.classe}>{linha.rotulo} — {linha.explicacao}</option>)}</SelectNative></label>
+                <label className="block text-sm">Classe na carteira<SelectNative name="classeDeAtivo"><option value="">Escolher depois</option>{CLASSES.map((linha) => <option key={linha.classe} value={linha.classe}>{linha.rotulo}: {linha.explicacao}</option>)}</SelectNative></label>
                 <p className="text-xs text-muted-fg">Com código e quantidade, o preço do dia entra sozinho e a carteira mostra o valor de mercado. Sem eles, vale o valor que você informar.</p>
               </>
             )}

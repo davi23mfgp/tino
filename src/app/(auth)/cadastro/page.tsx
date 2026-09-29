@@ -91,7 +91,7 @@ export default function Cadastro() {
               <span>
                 <span className="font-display block text-[calc(16px*var(--escala-letra))] font-semibold">Meu dinheiro e minha loja</span>
                 <span className="mt-1 block text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                  Tudo o que está acima, mais venda no balcão, estoque, limite do MEI e DAS — com o dinheiro do CNPJ
+                  Tudo o que está acima, mais venda no balcão, estoque, limite do MEI e DAS, com o dinheiro do CNPJ
                   separado do seu.
                 </span>
               </span>

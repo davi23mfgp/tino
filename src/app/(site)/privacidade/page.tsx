@@ -33,7 +33,7 @@ const SECOES = [
   {
     titulo: "O que o Tino guarda",
     conteudo: [
-      "Cadastro: seu nome, e-mail e a senha guardada como hash — o Tino não tem como ler sua senha, nem para te ajudar.",
+      "Cadastro: seu nome, e-mail e a senha guardada como hash. O Tino não tem como ler sua senha, nem para te ajudar.",
       "Dinheiro: contas, cartões, lançamentos, categorias, orçamentos, metas, dívidas e as simulações que você fez.",
       "Entrada automática: o texto dos avisos de compra que você escolher encaminhar, e o que você escreve ou fala para anotar um gasto.",
       "Uso: data do último acesso e os avisos que o Tino gerou para você.",
@@ -46,21 +46,21 @@ const SECOES = [
   {
     titulo: "Para que cada dado serve",
     conteudo: [
-      "Executar o que você contratou: mostrar seu saldo, projetar seu mês, avisar antes de a conta vencer. É a base legal do art. 7º, V — execução de contrato.",
+      "Executar o que você contratou: mostrar seu saldo, projetar seu mês, avisar antes de a conta vencer. É a base legal do art. 7º, V: execução de contrato.",
       "Cobrar a assinatura, quando houver.",
-      "Segurança: contar tentativas de login e de uso para barrar ataque e abuso — base legal do art. 7º, IX (legítimo interesse), limitada ao necessário.",
-      "Corrigir defeitos e responder o suporte: o registro de erros e os chamados — também legítimo interesse (art. 7º, IX).",
-      "Cumprir a lei: registro de acesso (Marco Civil) e o que a obrigação fiscal exigir — art. 7º, II.",
+      "Segurança: contar tentativas de login e de uso para barrar ataque e abuso. Base legal do art. 7º, IX (legítimo interesse), limitada ao necessário.",
+      "Corrigir defeitos e responder o suporte: o registro de erros e os chamados. Também é legítimo interesse (art. 7º, IX).",
+      "Cumprir a lei: registro de acesso (Marco Civil) e o que a obrigação fiscal exigir (art. 7º, II).",
       "O Tino não vende seus dados, não os usa para anúncio e não os cruza com terceiros para traçar perfil comercial.",
     ],
   },
   {
     titulo: "Quem mais vê alguma coisa",
     conteudo: [
-      "Hospedagem e banco: Vercel e Neon, onde o aplicativo roda e os dados ficam guardados — fora do Brasil.",
-      "Transcrição de áudio e o assessor: Groq e Anthropic, nos Estados Unidos. Quando você manda um áudio ou pergunta ao assessor, esse conteúdo — e os números da sua conta necessários para a resposta — é enviado para lá para virar texto ou resposta.",
-      "Identificar a loja de cada compra (para mostrar o logo): uma vez por dia, textos de compra no cartão que o Tino não reconheceu vão para Groq ou Anthropic, nos Estados Unidos — só o texto como o banco escreve, misturado com o de outras contas, sem valor, sem data e sem dizer de quem é. O logo em si é buscado pelo servidor no serviço de ícones do Google ou do DuckDuckGo, que recebem só o endereço do site da loja.",
-      "Importação de fatura: Groq, nos Estados Unidos. Os nomes das lojas que o Tino não soube categorizar sozinho vão para lá, para sugerir a categoria — transferências e Pix para pessoas não vão. Se a leitura automática de uma fatura em PDF não fechar com o total do banco, as linhas da fatura com data ou valor vão para uma releitura, com CPF e CEP apagados antes do envio. Sem a chave do Groq configurada, nada disso é enviado.",
+      "Hospedagem e banco: Vercel e Neon, onde o aplicativo roda e os dados ficam guardados, fora do Brasil.",
+      "Transcrição de áudio e o assessor: Groq e Anthropic, nos Estados Unidos. Quando você manda um áudio ou pergunta ao assessor, esse conteúdo, com os números da sua conta necessários para a resposta, é enviado para lá para virar texto ou resposta.",
+      "Identificar a loja de cada compra (para mostrar o logo): uma vez por dia, textos de compra no cartão que o Tino não reconheceu vão para Groq ou Anthropic, nos Estados Unidos. Vai só o texto como o banco escreve, misturado com o de outras contas, sem valor, sem data e sem dizer de quem é. O logo em si é buscado pelo servidor no serviço de ícones do Google ou do DuckDuckGo, que recebem só o endereço do site da loja.",
+      "Importação de fatura: Groq, nos Estados Unidos. Os nomes das lojas que o Tino não soube categorizar sozinho vão para lá, para sugerir a categoria. Transferências e Pix para pessoas não vão. Se a leitura automática de uma fatura em PDF não fechar com o total do banco, as linhas da fatura com data ou valor vão para uma releitura, com CPF e CEP apagados antes do envio. Sem a chave do Groq configurada, nada disso é enviado.",
       "Se você ligar: Telegram recebe as mensagens trocadas com o Tino por esse canal; Resend recebe as faturas que você encaminhar por e-mail; Focus NFe recebe os dados da venda para emitir a nota do MEI.",
       "Notificações no celular passam pelo serviço de push do navegador (Google, Apple ou Mozilla), que recebe só o aviso, não seus lançamentos.",
       "Pagamento: Stripe e Mercado Pago recebem o necessário para cobrar. O Tino nunca guarda o número do seu cartão.",
@@ -74,9 +74,9 @@ const SECOES = [
     conteudo: [
       "Saber o que existe e levar embora: em Configurações → Meus dados, você baixa tudo em JSON, num arquivo que serve para importar em outro lugar.",
       "Corrigir: qualquer lançamento, categoria ou dado de cadastro se edita dentro do próprio app.",
-      "Apagar: em Configurações → Apagar minha conta. Apaga de verdade — lançamentos, contas, conversas e o restante vão junto, e não há botão de desfazer.",
+      "Apagar: em Configurações → Apagar minha conta. Apaga de verdade: lançamentos, contas, conversas e o restante vão junto, e não há botão de desfazer.",
       "Cobranças já emitidas ficam com o gateway de pagamento, que tem obrigação fiscal própria (LGPD, art. 16, I). Para apagar lá, é preciso falar com eles.",
-      "Qualquer outro pedido — confirmar se tratamos seus dados, saber com quem compartilhamos, revogar consentimento, saber quem acessou sua conta — vai para o e-mail do encarregado, e a resposta sai em até 15 dias (LGPD, art. 19).",
+      "Qualquer outro pedido (confirmar se tratamos seus dados, saber com quem compartilhamos, revogar consentimento, saber quem acessou sua conta) vai para o e-mail do encarregado, e a resposta sai em até 15 dias (LGPD, art. 19).",
       "Se algo não for resolvido, você pode reclamar à ANPD, a autoridade nacional.",
     ],
   },
@@ -88,7 +88,7 @@ const SECOES = [
       "Limite de tentativas de login e de uso, para que ninguém fique testando senha ou varrendo a API em laço.",
       "Cada pedido é conferido no servidor: uma conta nunca lê nem grava dado de outra.",
       "O único cookie é o da sessão, essencial para você continuar conectado. O Tino não usa cookie de anúncio nem de rastreamento.",
-      "Nenhum sistema é inviolável. Se houver incidente com risco relevante, a LGPD manda avisar você e a ANPD — e é o que será feito.",
+      "Nenhum sistema é inviolável. Se houver incidente com risco relevante, a LGPD manda avisar você e a ANPD, e é o que será feito.",
     ],
   },
   {

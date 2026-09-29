@@ -114,15 +114,15 @@ export default async function ContasAdmin({ searchParams }: { searchParams: Prom
                       )}
                     </td>
                     <td className="py-2.5 pr-3 text-muted-fg">
-                      {usuario.assinatura ? ROTULO_PROVEDOR[usuario.assinatura.provedor] : "—"}
+                      {usuario.assinatura ? ROTULO_PROVEDOR[usuario.assinatura.provedor] : "sem assinatura"}
                     </td>
                     <td className="numero py-2.5 pr-3 text-right">
-                      {usuario.assinatura ? formatarMoeda(usuario.assinatura.valorCentavos) : "—"}
+                      {usuario.assinatura ? formatarMoeda(usuario.assinatura.valorCentavos) : "nada"}
                     </td>
                     <td className="py-2.5 text-right text-muted-fg">
                       {usuario.assinatura?.proximaCobrancaEm
                         ? usuario.assinatura.proximaCobrancaEm.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
-                        : "—"}
+                        : "nenhuma"}
                     </td>
                   </tr>
                 ))}

@@ -52,7 +52,7 @@ export function VigiasConfig({ semMoldura }: { semMoldura?: boolean } = {}) {
   return (
     <Moldura titulo="Vigias" semMoldura={semMoldura}>
       <p className="mb-4 text-[calc(13px*var(--escala-letra))] text-muted-fg">
-        O que o Tino observa sozinho e avisa sem você perguntar. Desligue o que não interessa — os outros continuam
+        O que o Tino observa sozinho e avisa sem você perguntar. Desligue o que não interessa, os outros continuam
         de olho.
       </p>
 

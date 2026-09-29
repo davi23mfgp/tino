@@ -92,7 +92,7 @@ async function main() {
   // ── Lar e usuário ────────────────────────────────────────
   const lar = await prisma.lar.create({
     data: {
-      nome: "Casa da Marina",
+      nome: "Casa da Nicole",
       tipo: "CASAL",
       diaInicioMes: 1,
       mesesReserva: 6,
@@ -103,7 +103,7 @@ async function main() {
   })
 
   const marina = await prisma.membro.create({
-    data: { larId: lar.id, nome: "Marina", papel: "TITULAR", rendaMensalCentavos: reais(5200), cor: "purple" },
+    data: { larId: lar.id, nome: "Nicole", papel: "TITULAR", rendaMensalCentavos: reais(5200), cor: "purple" },
   })
 
   const rafael = await prisma.membro.create({
@@ -113,7 +113,7 @@ async function main() {
   await prisma.usuario.create({
     data: {
       email: EMAIL,
-      nome: "Marina",
+      nome: "Nicole",
       senhaHash: await bcrypt.hash(SENHA, 12),
       larId: lar.id,
       membroId: marina.id,
@@ -282,7 +282,7 @@ async function main() {
       membroId: marina.id,
       categoriaId: cat("Salário"),
       data: dia(ano, mes, Math.min(5, limiteDoDia)),
-      descricao: "Salário Marina",
+      descricao: "Salário Nicole",
       valorCentavos: reais(5200),
       tipo: "RECEITA",
       competencia,
@@ -538,7 +538,7 @@ async function main() {
   await prisma.recorrencia.create({
     data: {
       larId: lar.id,
-      descricao: "Salário Marina",
+      descricao: "Salário Nicole",
       valorCentavos: reais(5200),
       tipo: "RECEITA",
       periodicidade: "MENSAL",

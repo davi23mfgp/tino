@@ -49,7 +49,7 @@ export default async function VisaoGeralAdmin() {
         <Aviso tom="atencao">
           {semGateway.length === 2
             ? "Nenhum meio de pagamento está configurado: ninguém consegue assinar. Falta colar as chaves do Mercado Pago e da Stripe nas variáveis de ambiente."
-            : `${semGateway[0].rotulo} sem chave configurada — o botão dele aparece desabilitado para o cliente.`}
+            : `${semGateway[0].rotulo} sem chave configurada: o botão dele aparece desabilitado para o cliente.`}
         </Aviso>
       )}
 

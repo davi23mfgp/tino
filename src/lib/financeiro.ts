@@ -201,7 +201,7 @@ export function analisarEmprestimo(params: {
     )
   } else {
     motivos.push(
-      `Comprometimento de renda em ${(comprometimentoBps / 100).toFixed(0)}% — dentro do limite de 30%.`,
+      `Comprometimento de renda em ${(comprometimentoBps / 100).toFixed(0)}%, dentro do limite de 30%.`,
     )
   }
 
@@ -215,7 +215,7 @@ export function analisarEmprestimo(params: {
   if (resultado.cetMensalBps > 500) {
     pontos += 2
     motivos.push(
-      `CET de ${formatarDecimal(resultado.cetMensalBps / 100, 2)}% ao mês (${formatarDecimal(resultado.cetAnualBps / 100, 1)}% ao ano) — caro para crédito pessoal.`,
+      `CET de ${formatarDecimal(resultado.cetMensalBps / 100, 2)}% ao mês (${formatarDecimal(resultado.cetAnualBps / 100, 1)}% ao ano), caro para crédito pessoal.`,
     )
   } else if (resultado.cetMensalBps > 250) {
     pontos += 1
@@ -237,7 +237,7 @@ export function analisarEmprestimo(params: {
 
   if (reserva >= params.valorCentavos && resultado.cetMensalBps > 100) {
     alternativas.push(
-      "Usar parte da reserva sai mais barato que este juro — e a reserva pode ser recomposta com o valor da parcela.",
+      "Usar parte da reserva sai mais barato que este juro, e a reserva pode ser recomposta com o valor da parcela.",
     )
   }
 

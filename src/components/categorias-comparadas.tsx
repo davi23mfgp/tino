@@ -87,7 +87,7 @@ export function CategoriasComparadas({ linhas, limite = 8 }: { linhas: Linha[]; 
       })}
 
       <p className="pt-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
-        A barra fina é o mês passado. Em despesa, cair é bom — por isso a queda aparece em verde.
+        A barra fina é o mês passado. Em despesa, cair é bom, por isso a queda aparece em verde.
       </p>
     </div>
   )

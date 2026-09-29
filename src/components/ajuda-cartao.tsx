@@ -197,7 +197,7 @@ export function AjudaCartao({ cartao, mes, aoAbrir, objetivos = ["economia", "po
           </div>
           <div className={estilos.meta}>
             <small>Estimativa · {programa}</small>
-            <strong>{pontos === null ? "—" : pontos.toLocaleString("pt-BR")}</strong>
+            <strong>{pontos === null ? "sem dado" : pontos.toLocaleString("pt-BR")}</strong>
             <p>{pontos === null ? "Informe quantos pontos seu cartão dá." : "pontos com as compras deste mês"}</p>
             <small>Base: {formatarMoeda(Math.max(0, resumo.gastos - resumo.creditos))}, já sem os créditos.</small>
             <details>

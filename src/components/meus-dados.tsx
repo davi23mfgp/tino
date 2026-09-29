@@ -49,7 +49,7 @@ export function MeusDados() {
       <div>
         <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
           Baixe tudo o que o Tino guarda sobre você, em um arquivo que serve para importar em outro lugar. Não inclui
-          senha nem chaves de acesso — credencial não é dado seu, é chave de casa.
+          senha nem chaves de acesso: credencial não é dado seu, é chave de casa.
         </p>
         <a
           href="/api/usuario/dados"

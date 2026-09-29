@@ -35,13 +35,13 @@ const SECOES = [
     ],
   },
   {
-    titulo: "O que o Tino é — e o que não é",
+    titulo: "O que o Tino é, e o que não é",
     conteudo: [
       "O Tino é uma ferramenta para organizar o próprio dinheiro: anotar gastos, acompanhar contas, projetar o mês, planejar o pagamento de dívidas e juntar para metas.",
       "Não é consultoria de investimentos. Nada no Tino é recomendação para comprar, vender ou manter um ativo. As telas de longo prazo mostram contas e referências gerais; a decisão é sua. Para recomendação personalizada, procure um consultor registrado na CVM.",
       "Não é serviço de contabilidade. O assessor explica números e conceitos, mas não substitui um contador registrado no CRC, nem faz escrituração ou declaração de imposto por você.",
       "Não é banco nem instituição de pagamento. O Tino não guarda, não movimenta e não empresta dinheiro.",
-      "Os cálculos usam os dados que você cadastrou. Se um dado estiver faltando ou errado, o resultado também estará — por isso o Tino avisa quando falta informação em vez de inventar um número.",
+      "Os cálculos usam os dados que você cadastrou. Se um dado estiver faltando ou errado, o resultado também estará. Por isso o Tino avisa quando falta informação em vez de inventar um número.",
     ],
   },
   {
@@ -56,7 +56,7 @@ const SECOES = [
     titulo: "Dados de outras pessoas que você cadastra",
     conteudo: [
       "Clientes do fiado, funcionários da loja e membros do lar são dados de terceiros. Sobre eles, quem decide o uso é você: para a LGPD, você é o controlador e o Tino é o operador, que trata esses dados só para executar o serviço, seguindo suas instruções.",
-      "Cadastre apenas o necessário e tenha uma base legal para isso — por exemplo, a própria venda a prazo, no caso do fiado.",
+      "Cadastre apenas o necessário e tenha uma base legal para isso, por exemplo a própria venda a prazo, no caso do fiado.",
     ],
   },
   {
@@ -71,7 +71,7 @@ const SECOES = [
     conteudo: [
       "O período de teste, os preços e o que cada plano inclui aparecem na tela Assinatura antes de você contratar. A cobrança é recorrente até você cancelar e é processada pelo Stripe ou pelo Mercado Pago.",
       "Arrependimento: em até 7 dias da primeira contratação paga, você pode desistir e receber de volta tudo o que pagou (Código de Defesa do Consumidor, art. 49).",
-      "Cancelamento: a qualquer momento, na tela Assinatura, sem multa. O acesso continua até o fim do período já pago. [A DEFINIR: reembolso proporcional depois dos 7 dias — sim ou não.]",
+      "Cancelamento: a qualquer momento, na tela Assinatura, sem multa. O acesso continua até o fim do período já pago. [A DEFINIR: reembolso proporcional depois dos 7 dias, sim ou não.]",
       "Mudança de preço é avisada com pelo menos 30 dias de antecedência e só vale a partir da cobrança seguinte.",
       "Com a assinatura vencida, você continua vendo e exportando seus dados; só a criação de lançamentos novos fica pausada.",
     ],

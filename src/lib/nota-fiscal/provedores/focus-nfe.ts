@@ -49,7 +49,7 @@ async function chamar(caminho: string, opcoes: { metodo: "GET" | "POST" | "DELET
 
   const dados = await resposta.json()
   if (!resposta.ok) {
-    throw new Error(`Focus NFe: falha na chamada (${resposta.status}) — ${dados?.mensagem ?? "sem detalhe"}.`)
+    throw new Error(`Focus NFe: falha na chamada (${resposta.status}): ${dados?.mensagem ?? "sem detalhe"}.`)
   }
   return dados
 }
@@ -145,6 +145,6 @@ export const emissorFocusNfe: EmissorDeNotaFiscal = {
     // — por isso `emitirNotaDaVenda` precisa guardar a `ref` se quiser cancelar
     // por aqui depois. Ainda não guardada (ver NotaFiscalVenda no schema);
     // fica para quando a Fase 6 sair do esqueleto de verdade.
-    throw new Error("Cancelamento pelo Focus NFe ainda não ligado — falta guardar a ref da emissão.")
+    throw new Error("Cancelamento pelo Focus NFe ainda não ligado: falta guardar a ref da emissão.")
   },
 }

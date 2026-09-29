@@ -244,7 +244,7 @@ function Lancamento({
       </div>
       <p className={estilos.dica}>
         {tipo === "ENTRADA"
-          ? "Sem o custo, a margem desta peça fica em branco — não é chutada."
+          ? "Sem o custo, a margem desta peça fica em branco. Não é chutada."
           : "A contagem manda: o saldo passa a ser o número contado, e a diferença fica registrada."}
       </p>
       {erro && (
@@ -322,7 +322,7 @@ function NovoProduto({ aoTerminar }: { aoTerminar: (criado: boolean) => void }) 
         Código de barras (opcional)
         <Input value={dados.codigo} onChange={(evento) => setDados({ ...dados, codigo: evento.target.value })} inputMode="numeric" maxLength={40} />
       </label>
-      <p className={estilos.dica}>Com preço e custo, o Tino mostra quanto sobra em cada venda. Sem o custo, a margem fica em branco — não é chutada.</p>
+      <p className={estilos.dica}>Com preço e custo, o Tino mostra quanto sobra em cada venda. Sem o custo, a margem fica em branco. Não é chutada.</p>
       {erro && (
         <p role="alert" className={estilos.erro}>
           {erro}
@@ -481,7 +481,7 @@ export default function Prateleira() {
         </div>
         <div className={`${estilos.bloco} ${estilos.kpi}`}>
           <span>Mais vendido</span>
-          <strong data-texto>{maisVendido?.nome ?? "—"}</strong>
+          <strong data-texto>{maisVendido?.nome ?? "nenhum"}</strong>
           <small>{maisVendido ? `${maisVendido.quantidadeVendida} vendidos · ${maisVendido.saldo} em estoque` : "nenhuma venda ainda"}</small>
         </div>
       </section>
@@ -534,10 +534,10 @@ export default function Prateleira() {
               <Barra saldo={linha.saldo} referencia={linha.referencia} />
             </span>
             <span className={`${estilos.cPreco} ${estilos.num}`}>{formatarMoeda(linha.precoCentavos)}</span>
-            <span className={`${estilos.cCusto} ${estilos.num}`}>{linha.custoMedioCentavos === null ? "—" : formatarMoeda(linha.custoMedioCentavos)}</span>
+            <span className={`${estilos.cCusto} ${estilos.num}`}>{linha.custoMedioCentavos === null ? "sem custo" : formatarMoeda(linha.custoMedioCentavos)}</span>
             <span className={`${estilos.cSobra} ${estilos.num}`}>
               {linha.margem.lucroCentavos === null || linha.margem.margemBps === null ? (
-                <span className={estilos.apagado}>—</span>
+                <span className={estilos.apagado}>sem custo</span>
               ) : (
                 <>
                   <span className={linha.margem.lucroCentavos < 0 ? "text-negativo" : undefined}>{formatarMoeda(linha.margem.lucroCentavos)}</span>{" "}
@@ -656,7 +656,7 @@ export default function Prateleira() {
                             <span>Sobra por venda</span>
                             <b className={estilos.num}>
                               {aberto.margem.lucroCentavos === null || aberto.margem.margemBps === null
-                                ? "—"
+                                ? "sem custo"
                                 : `${formatarMoeda(aberto.margem.lucroCentavos)} · ${formatarPercentual(aberto.margem.margemBps, 0)}`}
                             </b>
                           </div>

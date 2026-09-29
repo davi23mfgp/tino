@@ -72,20 +72,20 @@ export function redigirResposta(termo: string | null, achados: Achado[]): string
     return [
       `Não achei nada sobre ${alvo}.`,
       "",
-      "Vale lembrar que eu ainda não guardo comprovante avulso — o que tenho são as faturas que chegam por e-mail, os arquivos que você importou e os lançamentos.",
+      "Vale lembrar que eu ainda não guardo comprovante avulso: o que tenho são as faturas que chegam por e-mail, os arquivos que você importou e os lançamentos.",
     ].join("\n")
   }
 
   const arquivos = achados.filter((achado) => achado.tipo === "FATURA")
   const lancamentos = achados.filter((achado) => achado.tipo === "LANCAMENTO")
 
-  const linhas = achados.map((achado) => `• ${achado.titulo} — ${achado.detalhe}`)
+  const linhas = achados.map((achado) => `• ${achado.titulo}: ${achado.detalhe}`)
 
   const remate =
     arquivos.length > 0
       ? "O arquivo da fatura está guardado: abra em Cartões para ver."
       : lancamentos.length > 0
-        ? "O comprovante em si eu não guardo — isto é o lançamento, que é o registro de que foi pago."
+        ? "O comprovante em si eu não guardo. Isto é o lançamento, que é o registro de que foi pago."
         : "Isto é o que consta do arquivo importado; o arquivo em si não fica guardado."
 
   return [`Sobre ${alvo}, achei:`, "", ...linhas, "", remate].join("\n")

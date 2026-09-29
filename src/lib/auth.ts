@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma"
 // Curto demais é adivinhável por força bruta offline a partir de um token
 // qualquer; 32 caracteres é o piso para HS256.
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-  throw new Error("JWT_SECRET ausente ou curto (mínimo 32 caracteres) — defina antes de iniciar.")
+  throw new Error("JWT_SECRET ausente ou curto (mínimo 32 caracteres). Defina antes de iniciar.")
 }
 const SEGREDO = new TextEncoder().encode(process.env.JWT_SECRET)
 

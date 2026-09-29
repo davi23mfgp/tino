@@ -39,7 +39,7 @@ export const PARAMETROS: DefinicaoParametro[] = [
     chave: "juros.chequeEspecialBps",
     rotulo: "Teto do cheque especial",
     descricao:
-      "Juros ao mês usado quando o usuário não informa a taxa do contrato dele. É o teto legal de 8% a.m. — se o Banco Central mudar, muda aqui.",
+      "Juros ao mês usado quando o usuário não informa a taxa do contrato dele. É o teto legal de 8% a.m. Se o Banco Central mudar, muda aqui.",
     unidade: "bps",
     padrao: 800,
   },
@@ -60,14 +60,14 @@ export const PARAMETROS: DefinicaoParametro[] = [
   ...PLANOS.flatMap((linha): DefinicaoParametro[] => [
     {
       chave: `plano.${linha.codigo}.mensalCentavos`,
-      rotulo: `Preço mensal — ${linha.nome}`,
+      rotulo: `Preço mensal: ${linha.nome}`,
       descricao: "Cobrado todo mês. Quem já assinou continua no valor que contratou.",
       unidade: "centavos",
       padrao: linha.mensalCentavos,
     },
     {
       chave: `plano.${linha.codigo}.anualCentavos`,
-      rotulo: `Preço anual — ${linha.nome}`,
+      rotulo: `Preço anual: ${linha.nome}`,
       descricao: "Cobrado de uma vez, por doze meses.",
       unidade: "centavos",
       padrao: linha.anualCentavos,

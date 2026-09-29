@@ -52,7 +52,7 @@ export const GET = comSessao(async (sessao) => {
   const pacote = {
     geradoEm: new Date().toISOString(),
     aviso:
-      "Exportação completa dos seus dados no Tino, em JSON. Não inclui senha, chaves de acesso nem tokens de conexão — credencial não é dado do titular, é chave de casa.",
+      "Exportação completa dos seus dados no Tino, em JSON. Não inclui senha, chaves de acesso nem tokens de conexão: credencial não é dado do titular, é chave de casa.",
     usuario,
     lar,
     contas,

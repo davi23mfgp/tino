@@ -295,26 +295,26 @@ export default function Transacoes() {
           {tipo !== "DESPESA" && (
             <div>
               <dt>Entrou</dt>
-              <dd className="numero valor-sensivel text-positivo">{totais ? <ValorComCentavos centavos={totais.receitasCentavos} /> : "—"}</dd>
+              <dd className="numero valor-sensivel text-positivo">{totais ? <ValorComCentavos centavos={totais.receitasCentavos} /> : "…"}</dd>
             </div>
           )}
           {tipo !== "RECEITA" && (
             <div>
               <dt>Saiu</dt>
-              <dd className="numero valor-sensivel">{totais ? <ValorComCentavos centavos={totais.despesasCentavos} /> : "—"}</dd>
+              <dd className="numero valor-sensivel">{totais ? <ValorComCentavos centavos={totais.despesasCentavos} /> : "…"}</dd>
             </div>
           )}
           {ladosInteiros ? (
             <div>
               <dt>{saldo !== null && saldo < 0 ? "Faltou" : "Sobrou"}</dt>
               <dd className={cn("numero valor-sensivel", saldo !== null && saldo < 0 ? "text-negativo" : "text-positivo")}>
-                {saldo === null ? "—" : <ValorComCentavos centavos={Math.abs(saldo)} />}
+                {saldo === null ? "…" : <ValorComCentavos centavos={Math.abs(saldo)} />}
               </dd>
             </div>
           ) : (
             <div>
               <dt>Lançamentos</dt>
-              <dd className="numero">{contagem && totais ? (tipo === "RECEITA" ? contagem.entradas : tipo === "DESPESA" ? contagem.saidas : contagem.entradas + contagem.saidas) : "—"}</dd>
+              <dd className="numero">{contagem && totais ? (tipo === "RECEITA" ? contagem.entradas : tipo === "DESPESA" ? contagem.saidas : contagem.entradas + contagem.saidas) : "…"}</dd>
             </div>
           )}
         </dl>

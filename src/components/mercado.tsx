@@ -64,7 +64,7 @@ export function FitaDoMercado({ indices, atualizadoEm, carregando }: { indices: 
           {hora && <li className={estilos.hora}>{hora}</li>}
         </ul>
       ) : (
-        <p>{carregando ? "Buscando o mercado…" : "Mercado indisponível agora — os valores abaixo são os cadastrados."}</p>
+        <p>{carregando ? "Buscando o mercado…" : "Mercado indisponível agora. Os valores abaixo são os cadastrados."}</p>
       )}
     </div>
   )
@@ -274,7 +274,7 @@ export function CartoesDeAtivos({
                     ) : (
                       <>
                         <small>{ativo.ticker ? "Resultado" : "Rende pelo contrato"}</small>
-                        <strong>—</strong>
+                        <strong>sem dado</strong>
                       </>
                     )}
                   </span>

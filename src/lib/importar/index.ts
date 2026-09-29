@@ -163,7 +163,7 @@ export async function previaImportacao(params: {
         naoReconhecidas = 0
         lidoPelaIa = true
         avisos.push(
-          "A leitura automática não fechou com o total da fatura, e a IA releu o PDF. Cada lançamento dela foi conferido contra o texto e a soma fecha com o total — confira mesmo assim.",
+          "A leitura automática não fechou com o total da fatura, e a IA releu o PDF. Cada lançamento dela foi conferido contra o texto e a soma fecha com o total. Confira mesmo assim.",
         )
       }
     }

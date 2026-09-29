@@ -59,7 +59,7 @@ const JANELAS = [
 const ddmm = (dia: string) => `${dia.slice(8, 10)}/${dia.slice(5, 7)}`
 const comSinal = (centavos: number) => `${centavos < 0 ? "−" : centavos > 0 ? "+" : ""}${formatarMoeda(Math.abs(centavos))}`
 const menos = (centavos: number) => (centavos === 0 ? formatarMoeda(0) : `−${formatarMoeda(centavos)}`)
-const pct = (bps: number | null) => (bps === null ? "—" : formatarPercentual(bps, bps % 100 === 0 ? 0 : 1))
+const pct = (bps: number | null) => (bps === null ? "sem dado" : formatarPercentual(bps, bps % 100 === 0 ? 0 : 1))
 
 /** Seta da comparação: verde quando melhorou, vermelha quando piorou. */
 function Antes({ atual, anterior, texto, maiorEhMelhor = true }: { atual: number | null; anterior: number | null; texto: string; maiorEhMelhor?: boolean }) {
@@ -235,10 +235,10 @@ export default function FinancasDaLoja() {
               <Quadro
                 rotulo="Ticket médio"
                 apoio={
-                  <Antes atual={atual.ticketMedioCentavos} anterior={anterior?.ticketMedioCentavos ?? null} texto={anterior?.ticketMedioCentavos ? formatarMoeda(anterior.ticketMedioCentavos) : "—"} />
+                  <Antes atual={atual.ticketMedioCentavos} anterior={anterior?.ticketMedioCentavos ?? null} texto={anterior?.ticketMedioCentavos ? formatarMoeda(anterior.ticketMedioCentavos) : "sem dado"} />
                 }
               >
-                {atual.ticketMedioCentavos === null ? "—" : <Reais centavos={atual.ticketMedioCentavos} />}
+                {atual.ticketMedioCentavos === null ? "sem venda" : <Reais centavos={atual.ticketMedioCentavos} />}
               </Quadro>
               <Quadro rotulo="Vendas feitas" apoio={<Antes atual={atual.vendas} anterior={anterior?.vendas ?? null} texto={String(anterior?.vendas ?? 0)} />}>
                 {atual.vendas}
@@ -265,7 +265,7 @@ export default function FinancasDaLoja() {
                 <Reais centavos={atual.fiadoCentavos} />
               </Quadro>
               <Quadro rotulo="Maior conta" apoio={<small className={estilos.corte}>{atual.maiorConta?.descricao ?? "nenhuma conta paga"}</small>}>
-                {atual.maiorConta && atual.despesasCentavos > 0 ? formatarPercentual(Math.round((atual.maiorConta.valorCentavos / atual.despesasCentavos) * 10_000), 0) : "—"}
+                {atual.maiorConta && atual.despesasCentavos > 0 ? formatarPercentual(Math.round((atual.maiorConta.valorCentavos / atual.despesasCentavos) * 10_000), 0) : "nenhuma"}
               </Quadro>
             </div>
           </div>
