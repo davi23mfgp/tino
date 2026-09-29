@@ -91,6 +91,22 @@ export async function consumirLimite(chave: string, regra: Regra) {
 }
 
 /**
+ * Mesma conta de `consumirLimite`, para quem não pode lançar erro: nos
+ * webhooks do WhatsApp e do Telegram a resposta vai por mensagem, e um 429
+ * faria o canal reentregar a mesma mensagem em laço. Devolve os segundos de
+ * espera quando estourou, ou null quando ainda cabe.
+ */
+export async function cabeNoLimite(chave: string, regra: Regra): Promise<number | null> {
+  try {
+    await consumirLimite(chave, regra)
+    return null
+  } catch (excecao) {
+    if (excecao instanceof LimiteEstourado) return excecao.segundos
+    throw excecao
+  }
+}
+
+/**
  * Zera o contador depois de um acerto.
  *
  * Sem isto, quem erra a senha cinco vezes, acerta na sexta e volta a errar mais

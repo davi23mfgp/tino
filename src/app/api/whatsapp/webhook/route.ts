@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { prisma } from "@/lib/prisma"
+import { cabeNoLimite, REGRAS } from "@/lib/limite"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { autenticarChave, registrarCaptura } from "@/lib/captura"
 import { baixarMidia, primeiraMensagem, responder, type EventoWhatsApp } from "@/lib/captura/whatsapp"
@@ -123,6 +124,14 @@ async function tratar(telefone: string, texto: string, mensagem: NonNullable<Ret
     where: { id: chave.id },
     data: { ultimoUso: new Date(), usos: { increment: 1 } },
   })
+
+  // Arquivo e áudio passam pela IA paga (leitura da fatura, transcrição): o
+  // mesmo teto das rotas caras do app, por lar, para um número vinculado em
+  // laço não virar conta para o dono pagar.
+  if ((mensagem.document || mensagem.audio) && (await cabeNoLimite(`caro:canal:${chave.larId}`, REGRAS.caro)) !== null) {
+    await responder(telefone, "Muita coisa de uma vez por aqui. Espera uns minutos e manda de novo.")
+    return
+  }
 
   // ── Arquivo: extrato ou fatura ──────────────────────────
   if (mensagem.document) {

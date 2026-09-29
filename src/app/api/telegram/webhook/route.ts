@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { prisma } from "@/lib/prisma"
+import { cabeNoLimite, REGRAS } from "@/lib/limite"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { autenticarChave, hashDeChave, registrarCaptura } from "@/lib/captura"
 import { baixarArquivo, responder, type AtualizacaoTelegram } from "@/lib/captura/telegram"
@@ -87,6 +88,14 @@ export async function POST(requisicao: Request) {
     where: { id: chave.id },
     data: { ultimoUso: new Date(), usos: { increment: 1 } },
   })
+
+  // Arquivo e áudio passam pela IA paga (leitura da fatura, transcrição): o
+  // mesmo teto das rotas caras do app, por lar, para uma conversa vinculada em
+  // laço não virar conta para o dono pagar.
+  if ((mensagem.document || mensagem.voice || mensagem.audio) && (await cabeNoLimite(`caro:canal:${chave.larId}`, REGRAS.caro)) !== null) {
+    await responder(chatId, "Muita coisa de uma vez por aqui. Espera uns minutos e manda de novo.")
+    return NextResponse.json({ ok: true })
+  }
 
   // ── Arquivo: extrato ou fatura ──────────────────────────
   const documento = mensagem.document
