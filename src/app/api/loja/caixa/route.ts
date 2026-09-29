@@ -50,6 +50,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     // Dois caixas abertos ao mesmo tempo tornariam o fechamento indecidível:
     // não dá para saber em qual gaveta o dinheiro da venda entrou.
     if (aberto) throw new ErroDeUso("Já existe um caixa aberto. Feche antes de abrir outro.")
+    if (dados.aberturaCentavos !== undefined && (!Number.isInteger(dados.aberturaCentavos) || dados.aberturaCentavos < 0)) throw new ErroDeUso("Confira o troco inicial.")
 
     const caixa = await prisma.caixa.create({
       data: { lojaId: loja.id, aberturaCentavos: dados.aberturaCentavos ?? 0 },
@@ -60,7 +61,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   if (!aberto) throw new ErroDeUso("Não há caixa aberto para lançar a sangria.")
   const valorCentavos = dados.valorCentavos ?? 0
-  if (valorCentavos <= 0) throw new ErroDeUso("Informe o valor retirado da gaveta.")
+  if (!Number.isInteger(valorCentavos) || valorCentavos <= 0) throw new ErroDeUso("Informe o valor retirado da gaveta.")
 
   const sangria = await prisma.sangriaCaixa.create({
     data: { caixaId: aberto.id, valorCentavos, motivo: dados.motivo ?? null },
@@ -78,6 +79,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
  */
 export const PUT = comSessao(async (sessao, requisicao) => {
   const dados = await corpo<{ fechamentoInformadoCentavos: number }>(requisicao)
+
+  // Contado negativo ou quebrado não é contagem de gaveta: seria uma
+  // diferença inventada gravada para sempre no fechamento.
+  if (!Number.isInteger(dados.fechamentoInformadoCentavos) || dados.fechamentoInformadoCentavos < 0) throw new ErroDeUso("Informe quanto tem na gaveta.")
 
   const loja = await lojaDoLar(sessao.larId)
   const aberto = await caixaAberto(loja.id)
