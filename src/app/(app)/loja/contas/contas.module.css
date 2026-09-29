@@ -1,0 +1,120 @@
+/* Contas a pagar — M1 do canvas (Davi, 29/09): a L1 mais moderna, com a
+   grade do mês limpa. Vidro com degradê como o lado pessoal; o dia do
+   calendário só leva marca, nunca valor (o valor dentro do quadradinho foi o
+   que deixou o calendário da rodada anterior ilegível). */
+.pagina { --ambar:oklch(0.8 0.14 78); display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
+:global(.light) .pagina { --ambar:oklch(0.62 0.15 65); }
+.grade { display:grid; gap:16px; }
+@media (min-width:1024px) { .grade { grid-template-columns:400px minmax(0,1fr); gap:22px; align-items:start; } }
+.coluna { display:grid; gap:14px; min-width:0; align-content:start; }
+.bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.num { font-variant-numeric:tabular-nums; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--texto-3); }
+
+.barra { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:99px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:600; white-space:nowrap; }
+.botao svg { width:16px; height:16px; }
+.botao[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.botao[data-perigo] { color:var(--negativo); }
+.soComputador { display:none !important; }
+@media (min-width:1024px) { .soComputador { display:inline-flex !important; } .soCelular { display:none !important; } }
+
+/* O total em aberto, com o brilho da cor do tema. */
+.hero { display:grid; gap:16px; padding:20px; background:radial-gradient(130% 110% at 0% 0%, oklch(var(--primary) / .30), transparent 58%), radial-gradient(90% 80% at 100% 100%, oklch(0.55 0.12 190 / .18), transparent 60%), linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 88%), transparent 45%), var(--papel-1); }
+:global(.light) .hero { background:radial-gradient(130% 110% at 0% 0%, oklch(var(--primary) / .22), transparent 58%), radial-gradient(90% 80% at 100% 100%, oklch(0.7 0.1 190 / .14), transparent 60%), var(--papel-1); }
+.hero header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.hero header p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.hero header small { display:block; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.total { display:block; font-size:calc(40px * var(--escala-letra)); font-weight:750; letter-spacing:-.035em; line-height:1.1; font-variant-numeric:tabular-nums; }
+.total span { font-size:.55em; opacity:.7; letter-spacing:-.01em; }
+.mais { width:44px; height:44px; min-height:44px !important; padding:0 !important; flex-shrink:0; border-radius:99px; display:inline-flex; align-items:center; justify-content:center; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); box-shadow:0 8px 24px -8px oklch(var(--primary) / .7); }
+.mais svg { width:20px; height:20px; }
+.tres { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); }
+.tres > div { min-width:0; padding:0 12px; border-left:1px solid color-mix(in oklab, var(--foreground), transparent 88%); }
+.tres > div:first-child { padding-left:0; border-left:0; }
+.tres span { display:flex; align-items:center; gap:6px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); white-space:nowrap; }
+.tres span i { width:6px; height:6px; border-radius:9px; flex-shrink:0; }
+.tres b { display:block; margin-top:3px; font-size:calc(15px * var(--escala-letra)); font-weight:650; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.tres small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:max(10px, calc(10.5px * var(--escala-letra))); color:var(--texto-3); }
+
+/* A grade do mês. */
+.calendario { display:grid; gap:14px; padding:18px; }
+.calendario header { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.calendario header h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.setas { display:flex; gap:6px; }
+.setas button { width:32px; height:32px; min-height:32px !important; padding:0 !important; border-radius:99px; display:inline-flex; align-items:center; justify-content:center; background:color-mix(in oklab, var(--foreground), transparent 92%); }
+.setas button:disabled { opacity:.35; }
+.setas svg { width:16px; height:16px; }
+.dias { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); row-gap:4px; }
+.dias > span { text-align:center; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600; color:var(--texto-3); padding-bottom:4px; }
+.dia { display:flex; flex-direction:column; align-items:center; gap:3px; min-height:0 !important; padding:2px 0 !important; }
+.dia > span { width:36px; height:36px; border-radius:99px; display:flex; align-items:center; justify-content:center; font-size:calc(14px * var(--escala-letra)); font-variant-numeric:tabular-nums; color:var(--texto-2); transition:background .15s; }
+.dia > i { width:5px; height:5px; border-radius:9px; background:transparent; }
+.dia[data-passado] > span { opacity:.38; }
+.dia[data-tem] > span { background:color-mix(in oklab, var(--foreground), transparent 90%); color:var(--foreground); font-weight:700; opacity:1; }
+.dia[data-situacao="vencida"] > span { background:transparent; box-shadow:inset 0 0 0 1.5px var(--negativo); color:var(--negativo); }
+.dia[data-situacao="vencida"] > i { background:var(--negativo); }
+.dia[data-situacao="semana"] > i { background:var(--ambar); }
+.dia[data-situacao="depois"] > i { background:color-mix(in oklab, var(--foreground), transparent 30%); }
+.dia[data-escolhido] > span { background:var(--foreground); color:var(--background); font-weight:750; box-shadow:none; }
+.dia[data-hoje] > span { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:750; box-shadow:none; opacity:1; }
+.dia[data-hoje][data-escolhido] > span { box-shadow:0 0 0 2px var(--background), 0 0 0 4px oklch(var(--primary)); }
+.dia:hover > span { background:color-mix(in oklab, var(--foreground), transparent 84%); }
+.legenda { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.legenda span { display:inline-flex; align-items:center; gap:5px; }
+.legenda i { width:6px; height:6px; border-radius:9px; }
+.doDia { display:grid; gap:2px; padding:10px 14px; border-radius:16px; background:color-mix(in oklab, var(--foreground), transparent 94%); }
+.doDia > p { padding:4px 0; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.doDia button { display:flex; align-items:center; gap:12px; width:100%; min-height:48px !important; padding:4px 0 !important; text-align:left; }
+.doDia button > span:nth-child(2) { flex:1; min-width:0; font-size:calc(14.5px * var(--escala-letra)); font-weight:600; }
+.doDia small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:400; color:var(--texto-3); }
+.doDia b { font-size:calc(15px * var(--escala-letra)); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tipo { width:36px; height:36px; flex-shrink:0; border-radius:12px; display:flex; align-items:center; justify-content:center; background:color-mix(in oklch, var(--cor), transparent 82%); color:var(--cor); }
+:global(.light) .tipo { color:color-mix(in oklch, var(--cor), black 30%); }
+.tipo svg { width:16px; height:16px; }
+
+/* Em aberto · Vencidas · Pagas */
+.filtro { display:inline-flex; gap:4px; padding:4px; border-radius:99px; background:color-mix(in oklab, var(--foreground), transparent 94%); border:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.filtro button { min-height:34px !important; padding:0 14px !important; border-radius:99px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); white-space:nowrap; }
+.filtro button[aria-pressed="true"] { background:var(--foreground); color:var(--background); font-weight:650; }
+.filtro button span { opacity:.6; margin-left:4px; }
+
+/* A lista: nome e valor em cima; prazo e "Paguei" embaixo. */
+.lista { padding:4px 16px; }
+.linha { position:relative; display:flex; align-items:center; gap:14px; padding:13px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.linha:first-child { border-top:0; }
+.linha[data-situacao="vencida"]::before { content:""; position:absolute; left:-14px; top:14px; bottom:14px; width:3px; border-radius:3px; background:var(--negativo); }
+.data { width:38px; flex-shrink:0; text-align:center; line-height:1; }
+.data b { display:block; font-size:calc(20px * var(--escala-letra)); font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.data small { font-size:max(10px, calc(10px * var(--escala-letra))); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+.linha[data-situacao="vencida"] .data b { color:var(--negativo); }
+.info { flex:1; min-width:0; display:grid; gap:6px; }
+.info > div { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.info > div:last-child { align-items:center; }
+.nome { min-height:0 !important; padding:0 !important; text-align:left; font-size:calc(15px * var(--escala-letra)); font-weight:600; line-height:1.25; }
+/* O nome abre a ficha; o ::after estende o clique para a linha inteira sem
+   pôr um botão dentro do outro (o "Paguei" fica por cima). */
+.nome::after { content:""; position:absolute; inset:0; }
+.valor { font-size:calc(15px * var(--escala-letra)); font-weight:650; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.prazo { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:max(10px, calc(12.5px * var(--escala-letra))); color:var(--texto-3); }
+.prazo[data-situacao="vencida"] { color:var(--negativo); font-weight:600; }
+.prazo[data-situacao="semana"] { color:var(--ambar); font-weight:600; }
+.paguei { position:relative; z-index:1; display:inline-flex; align-items:center; gap:5px; min-height:30px !important; padding:0 12px !important; border-radius:99px; border:1px solid oklch(var(--primary) / .45); color:var(--acao); font-size:calc(12.5px * var(--escala-letra)); font-weight:650; white-space:nowrap; }
+.paguei svg { width:13px; height:13px; }
+.paguei:disabled { opacity:.5; }
+.linha[data-paga] .valor { color:var(--texto-3); }
+.vazio { padding:28px 16px; text-align:center; font-size:calc(13.5px * var(--escala-letra)); line-height:1.5; color:var(--texto-3); }
+
+/* Ficha e formulário. */
+.ficha { display:grid; gap:16px; }
+.grande { font-size:calc(34px * var(--escala-letra)); font-weight:700; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.kv { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:42px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(13.5px * var(--escala-letra)); }
+.kv > span:first-child { color:var(--texto-2); }
+.dois { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.campo { display:grid; gap:6px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chips button { min-height:34px !important; padding:0 12px !important; border-radius:99px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.chips button[aria-pressed="true"] { border-color:transparent; background:color-mix(in oklab, var(--foreground), transparent 86%); color:var(--foreground); font-weight:650; }
+.repete { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:calc(14px * var(--escala-letra)); }
+.dica { font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }

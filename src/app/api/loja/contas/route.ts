@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { diaNoFuso, resumoDasContas, situacaoDaConta } from "@/lib/loja/contas"
+import { diaDoVencimento, diaNoFuso, resumoDasContas, situacaoDaConta } from "@/lib/loja/contas"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
 
@@ -28,7 +28,14 @@ export const GET = comSessao(async (sessao) => {
 
   return ok({
     hoje,
-    contas: contas.map((conta) => ({ ...conta, situacao: situacaoDaConta(conta, hoje) })),
+    // `dia` e `pagaNoDia` já vão como texto de dia: o navegador não sabe o fuso
+    // do lar, e converter o instante lá recria o erro do "vencida às 21h".
+    contas: contas.map((conta) => ({
+      ...conta,
+      dia: diaDoVencimento(conta.vencimento),
+      pagaNoDia: conta.pagaEm ? diaNoFuso(conta.pagaEm, fuso) : null,
+      situacao: situacaoDaConta(conta, hoje),
+    })),
     resumo: resumoDasContas(contas, hoje, fuso),
   })
 })

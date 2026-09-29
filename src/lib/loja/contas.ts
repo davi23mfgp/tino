@@ -62,3 +62,53 @@ export function resumoDasContas(
   }
   return resumo
 }
+
+export { somarDias }
+
+/** Dias de `de` até `ate`, os dois no formato "2026-09-28". Negativo se `ate` vem antes. */
+export function diasEntre(de: string, ate: string): number {
+  return Math.round((Date.parse(`${ate}T00:00:00Z`) - Date.parse(`${de}T00:00:00Z`)) / 86_400_000)
+}
+
+const DIA_DA_SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
+export const diaDaSemana = (dia: string) => DIA_DA_SEMANA[new Date(`${dia}T00:00:00Z`).getUTCDay()]
+
+/**
+ * O prazo em palavras: "venceu há 3 dias", "amanhã", "sexta, em 4 dias".
+ *
+ * Dentro da semana vai o nome do dia, porque é assim que o dono se organiza
+ * ("pago na sexta"); depois disso o nome do dia só atrapalha e fica a conta.
+ */
+export function textoDoPrazo(dia: string, hoje: string): string {
+  const faltam = diasEntre(hoje, dia)
+  if (faltam < -1) return `venceu há ${-faltam} dias`
+  if (faltam === -1) return "venceu ontem"
+  if (faltam === 0) return "vence hoje"
+  if (faltam === 1) return "amanhã"
+  if (faltam <= 6) return `${diaDaSemana(dia)}, em ${faltam} dias`
+  return `em ${faltam} dias`
+}
+
+/**
+ * Os dias da grade do calendário: cinco semanas de segunda a domingo, a
+ * começar pela semana ANTERIOR à de `referencia` — é nela que costuma estar o
+ * que venceu, e um calendário que abre em hoje esconde justamente a conta
+ * atrasada.
+ */
+export function diasDoCalendario(referencia: string, semanas = 5): string[] {
+  const diaDaSemanaDaRef = new Date(`${referencia}T00:00:00Z`).getUTCDay()
+  const segunda = somarDias(referencia, -((diaDaSemanaDaRef + 6) % 7) - 7)
+  return Array.from({ length: semanas * 7 }, (_, indice) => somarDias(segunda, indice))
+}
+
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+
+/** "Setembro e outubro", ou "Dezembro de 2026 e janeiro de 2027" na virada do ano. */
+export function tituloDoCalendario(dias: string[]): string {
+  const [primeiro, ultimo] = [dias[0], dias[dias.length - 1]]
+  const mes = (dia: string) => MESES[Number(dia.slice(5, 7)) - 1]
+  const maiuscula = (texto: string) => texto[0].toUpperCase() + texto.slice(1)
+  if (primeiro.slice(0, 7) === ultimo.slice(0, 7)) return maiuscula(mes(primeiro))
+  if (primeiro.slice(0, 4) !== ultimo.slice(0, 4)) return maiuscula(`${mes(primeiro)} de ${primeiro.slice(0, 4)} e ${mes(ultimo)} de ${ultimo.slice(0, 4)}`)
+  return maiuscula(`${mes(primeiro)} e ${mes(ultimo)}`)
+}

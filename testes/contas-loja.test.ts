@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { diaNoFuso, resumoDasContas, situacaoDaConta } from "@/lib/loja/contas"
+import { diaNoFuso, diasDoCalendario, resumoDasContas, situacaoDaConta, textoDoPrazo, tituloDoCalendario } from "@/lib/loja/contas"
 
 // Vencimentos gravados como a API grava: meia-noite UTC do dia escolhido.
 const venc = (dia: string) => new Date(`${dia}T00:00:00.000Z`)
@@ -45,5 +45,36 @@ describe("resumo das contas", () => {
     assert.equal(resumo.daSemanaCentavos, 32040)
     assert.equal(resumo.abertoCentavos, 64000 + 32040 + 180000 + 7690)
     assert.equal(resumo.pagoNoMesCentavos, 25000)
+  })
+})
+
+describe("prazo em palavras", () => {
+  const hoje = "2026-09-28" // segunda
+  it("conta os dias pelo calendário, com o nome do dia só dentro da semana", () => {
+    assert.equal(textoDoPrazo("2026-09-25", hoje), "venceu há 3 dias")
+    assert.equal(textoDoPrazo("2026-09-27", hoje), "venceu ontem")
+    assert.equal(textoDoPrazo("2026-09-28", hoje), "vence hoje")
+    assert.equal(textoDoPrazo("2026-09-29", hoje), "amanhã")
+    assert.equal(textoDoPrazo("2026-10-02", hoje), "sexta, em 4 dias")
+    assert.equal(textoDoPrazo("2026-10-04", hoje), "domingo, em 6 dias")
+    assert.equal(textoDoPrazo("2026-10-05", hoje), "em 7 dias")
+  })
+  it("atravessa a virada do horário de verão e do mês sem perder um dia", () => {
+    assert.equal(textoDoPrazo("2026-11-02", "2026-10-31"), "segunda, em 2 dias")
+  })
+})
+
+describe("grade do calendário", () => {
+  it("começa na segunda da semana anterior, para a conta atrasada aparecer", () => {
+    const dias = diasDoCalendario("2026-09-28")
+    assert.equal(dias.length, 35)
+    assert.equal(dias[0], "2026-09-21")
+    assert.equal(dias[34], "2026-10-25")
+    // num domingo, a semana dele é a que começou na segunda anterior
+    assert.equal(diasDoCalendario("2026-10-04")[0], "2026-09-21")
+  })
+  it("dá nome aos meses que a grade cobre", () => {
+    assert.equal(tituloDoCalendario(diasDoCalendario("2026-09-28")), "Setembro e outubro")
+    assert.equal(tituloDoCalendario(diasDoCalendario("2026-12-28")), "Dezembro de 2026 e janeiro de 2027")
   })
 })
