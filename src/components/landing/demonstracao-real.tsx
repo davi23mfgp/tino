@@ -7,6 +7,7 @@ const TELAS = [
   { arquivo: "inicio", nome: "Início", descricao: "Resultado do mês, saldo, entradas, saídas e cartões." },
   { arquivo: "cartoes", nome: "Cartões", descricao: "Seus cartões, faturas e compromissos futuros." },
   { arquivo: "extrato", nome: "Extrato", descricao: "Lançamentos, categorias e filtros do extrato." },
+  { arquivo: "dividas", nome: "Dívidas", descricao: "Quanto deve, qual atacar primeiro e quando fica livre." },
 ]
 
 /**
@@ -41,7 +42,7 @@ export function DemonstracaoReal() {
     return () => clearInterval(intervalo)
   }, [pausada, reduzido, visivel])
   return <div className="lp-demonstracao" ref={palco} data-pausada={pausada || reduzido}>
-    <div className="lp-flutuante lp-flutuante-um"><span className="lp-ponto" /> Escola do Téo<small>Educação · 10 de setembro</small><strong>R$ 780,00</strong></div>
+    <div className="lp-flutuante lp-flutuante-um"><span className="lp-ponto" /> Escola do Téo<small>Educação · 10 de setembro</small><strong>R$ 795,00</strong></div>
     <div className="lp-flutuante lp-flutuante-dois"><span>Fatura atual · Platinum</span><strong>R$ 579,00</strong><div className="lp-mini-bancos"><img src="/bancos/bb.png" alt="Banco do Brasil" /><small>Fecha dia 28 · vence dia 6</small></div></div>
     <div className="lp-janela" role="group" aria-label="Telas reais do aplicativo Tino com dados de demonstração">
       <div className="lp-janela-barra" aria-hidden="true">
@@ -49,7 +50,7 @@ export function DemonstracaoReal() {
         <span>tino.app</span>
       </div>
       <div className="lp-visor">
-        {TELAS.map((tela, indice) => <img key={tela.arquivo} className="lp-tela-real" data-ativa={indice === ativa} src={`/demonstracao/${tela.arquivo}-desktop.png`} alt={`${tela.nome}: ${tela.descricao}`} aria-hidden={indice !== ativa} width={1265} height={712} loading={indice === 0 ? "eager" : "lazy"} />)}
+        {TELAS.map((tela, indice) => <img key={tela.arquivo} className="lp-tela-real" data-ativa={indice === ativa} src={`/demonstracao/${tela.arquivo}-desktop.webp`} alt={`${tela.nome}: ${tela.descricao}`} aria-hidden={indice !== ativa} width={1265} height={712} loading={indice === 0 ? "eager" : "lazy"} />)}
       </div>
     </div>
     <div className="lp-flutuante lp-flutuante-tres"><span>Antes de entrar no saldo</span><strong>3 compras para conferir</strong><small>Total de R$ 326,80</small></div>
