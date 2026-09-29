@@ -13,9 +13,10 @@ import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, Dia
 import estilos from "./financas.module.css"
 
 /**
- * Finanças da loja — G2 do canvas (Davi, 29/09/2026), com os indicadores que
- * ele pediu a mais: sobra de cada venda, ticket médio, taxa da maquininha, o
- * que ainda vai cair e o fiado na rua. Cada número vem com o do período
+ * Finanças da loja — H2 do canvas (Davi, 29/09/2026): a conta do período em
+ * quatro quadros grandes, o gráfico das vendas contra o empate e seis
+ * indicadores menores (ticket médio, vendas feitas, maquininha, o que ainda vai
+ * cair, fiado na rua e a maior conta). Cada número vem com o do período
  * anterior do mesmo tamanho: sozinho, nenhum deles diz se o mês foi bom.
  *
  * DRE só da empresa — nunca lê conta nem transação pessoal do dono (ver
@@ -62,7 +63,7 @@ const pct = (bps: number | null) => (bps === null ? "—" : formatarPercentual(b
 
 /** Seta da comparação: verde quando melhorou, vermelha quando piorou. */
 function Antes({ atual, anterior, texto, maiorEhMelhor = true }: { atual: number | null; anterior: number | null; texto: string; maiorEhMelhor?: boolean }) {
-  if (anterior === null || atual === null) return <small>antes: sem dado</small>
+  if (anterior === null || atual === null) return <small>sem período anterior para comparar</small>
   const diferenca = atual - anterior
   const tom = diferenca === 0 ? undefined : diferenca > 0 === maiorEhMelhor ? "bom" : "ruim"
   return (
@@ -100,6 +101,31 @@ function Grafico({ serie, empate }: { serie: number[]; empate: number | null }) 
   )
 }
 
+/** Valor em reais com os centavos menores, como no desenho. */
+function Reais({ centavos, sinal = "" }: { centavos: number; sinal?: string }) {
+  const texto = formatarMoeda(Math.abs(centavos))
+  const virgula = texto.lastIndexOf(",")
+  return (
+    <>
+      {sinal}
+      {texto.slice(0, virgula)}
+      <span>{texto.slice(virgula)}</span>
+    </>
+  )
+}
+
+function Quadro({ rotulo, children, apoio, tom, grande }: { rotulo: string; children: React.ReactNode; apoio?: React.ReactNode; tom?: "negativo" | "positivo"; grande?: boolean }) {
+  return (
+    <section className={`${estilos.bloco} ${estilos.quadro}`} data-grande={grande ? "" : undefined}>
+      <span className={estilos.rotulo}>{rotulo}</span>
+      <strong className={estilos.numero} data-tom={tom}>
+        {children}
+      </strong>
+      {apoio}
+    </section>
+  )
+}
+
 export default function FinancasDaLoja() {
   const [dias, setDias] = useState(30)
   const [dados, setDados] = useState<Resposta | null>(null)
@@ -119,17 +145,15 @@ export default function FinancasDaLoja() {
   }, [carregar])
 
   const atual = dados?.atual
-  const anterior = dados?.anterior
-  const [inteiro, centavos] = (() => {
-    const texto = formatarMoeda(atual?.brutoCentavos ?? 0)
-    const virgula = texto.lastIndexOf(",")
-    return [texto.slice(0, virgula), texto.slice(virgula)]
-  })()
+  // Loja que começou agora não tem "antes": comparar com zero mostraria seta de
+  // melhora em tudo, o que é número inventado com outra cara.
+  const anterior = dados && (dados.anterior.vendas > 0 || dados.anterior.despesasCentavos > 0) ? dados.anterior : null
+  const taxaBps = (item?: Indicadores) => (item && item.brutoCentavos > 0 ? Math.round((item.taxasCentavos / item.brutoCentavos) * 10_000) : null)
 
   let frase: React.ReactNode = null
   if (atual) {
-    if (atual.despesasCentavos === 0) frase = "Nenhuma conta da loja paga no período."
-    else if (atual.empateCentavos === null) frase = "Com o que sobra de cada venda hoje, nenhuma venda cobre as contas."
+    if (atual.despesasCentavos === 0) frase = "nenhuma conta da loja paga no período"
+    else if (atual.empateCentavos === null) frase = "com a sobra de hoje, nenhuma venda cobre as contas"
     else if (atual.brutoCentavos < atual.empateCentavos)
       frase = (
         <>
@@ -144,8 +168,7 @@ export default function FinancasDaLoja() {
       )
   }
 
-  const periodoAnterior = dados ? `${ddmm(dados.deAnterior)} a ${ddmm(dados.ateAnterior)}` : ""
-  const taxaBps = (item?: Indicadores) => (item && item.brutoCentavos > 0 ? Math.round((item.taxasCentavos / item.brutoCentavos) * 10_000) : null)
+  const pedacoDasVendas = (centavos: number) => (atual && atual.brutoCentavos > 0 ? `${pct(Math.round((centavos / atual.brutoCentavos) * 10_000))} das vendas` : "sem vendas")
 
   return (
     <div className={estilos.pagina}>
@@ -161,27 +184,93 @@ export default function FinancasDaLoja() {
 
       {erro && <p className={estilos.erro}>{erro}</p>}
 
-      <div className={estilos.grade}>
-        <div className={estilos.coluna}>
-          <section className={`${estilos.bloco} ${estilos.vendas}`} aria-label="Vendas do período">
-            <div>
-              <span className={estilos.rotulo}>Vendas{dados ? ` · ${ddmm(dados.de)} a ${ddmm(dados.hoje)}` : ""}</span>
-              <strong className={estilos.grande}>
-                {inteiro}
-                <span>{centavos}</span>
-              </strong>
-              {frase && <p className={estilos.frase}>{frase}</p>}
-            </div>
-            {dados && <Grafico serie={dados.serie} empate={atual?.empateCentavos ?? null} />}
-            {dados && (
+      {atual && dados && (
+        <>
+          {/* A conta do período em quatro quadros: o resultado e o que o explica. */}
+          <div className={estilos.quatro}>
+            <Quadro
+              grande
+              rotulo={atual.lucroCentavos < 0 ? "Prejuízo" : "Lucro"}
+              tom={atual.lucroCentavos < 0 ? "negativo" : "positivo"}
+              apoio={<Antes atual={atual.lucroCentavos} anterior={anterior?.lucroCentavos ?? null} texto={anterior ? comSinal(anterior.lucroCentavos) : ""} />}
+            >
+              <Reais centavos={atual.lucroCentavos} sinal={atual.lucroCentavos < 0 ? "−" : ""} />
+            </Quadro>
+            <Quadro grande rotulo="Sobra de cada venda" apoio={<Antes atual={atual.sobraBps} anterior={anterior?.sobraBps ?? null} texto={pct(anterior?.sobraBps ?? null)} />}>
+              {pct(atual.sobraBps)}
+            </Quadro>
+            <Quadro
+              grande
+              rotulo="Contas da loja"
+              apoio={<Antes atual={atual.despesasCentavos} anterior={anterior?.despesasCentavos ?? null} texto={formatarMoeda(anterior?.despesasCentavos ?? 0)} maiorEhMelhor={false} />}
+            >
+              <Reais centavos={atual.despesasCentavos} />
+            </Quadro>
+            <Quadro grande rotulo="Custo das peças" apoio={<small>{pedacoDasVendas(atual.cmvCentavos)}</small>}>
+              <Reais centavos={atual.cmvCentavos} />
+            </Quadro>
+          </div>
+
+          <div className={estilos.meio}>
+            <section className={`${estilos.bloco} ${estilos.vendas}`} aria-label="Vendas do período">
+              <div>
+                <span className={estilos.rotulo}>
+                  Vendas · {ddmm(dados.de)} a {ddmm(dados.hoje)}
+                </span>
+                <strong className={estilos.grande}>
+                  <Reais centavos={atual.brutoCentavos} />
+                </strong>
+                <p className={estilos.frase}>
+                  {frase} · <Antes atual={atual.brutoCentavos} anterior={anterior?.brutoCentavos ?? null} texto={formatarMoeda(anterior?.brutoCentavos ?? 0)} />
+                </p>
+              </div>
+              <Grafico serie={dados.serie} empate={atual.empateCentavos} />
               <div className={estilos.eixo}>
                 <span>{ddmm(dados.de)}</span>
                 <span>hoje</span>
               </div>
-            )}
-          </section>
+            </section>
 
-          {atual && (atual.pecasSemCusto > 0 || atual.cartaoSemTaxa > 0) && (
+            <div className={estilos.seis}>
+              <Quadro
+                rotulo="Ticket médio"
+                apoio={
+                  <Antes atual={atual.ticketMedioCentavos} anterior={anterior?.ticketMedioCentavos ?? null} texto={anterior?.ticketMedioCentavos ? formatarMoeda(anterior.ticketMedioCentavos) : "—"} />
+                }
+              >
+                {atual.ticketMedioCentavos === null ? "—" : <Reais centavos={atual.ticketMedioCentavos} />}
+              </Quadro>
+              <Quadro rotulo="Vendas feitas" apoio={<Antes atual={atual.vendas} anterior={anterior?.vendas ?? null} texto={String(anterior?.vendas ?? 0)} />}>
+                {atual.vendas}
+              </Quadro>
+              <Quadro
+                rotulo="Maquininha"
+                apoio={<Antes atual={taxaBps(atual)} anterior={taxaBps(anterior ?? undefined)} texto={`${pct(taxaBps(anterior ?? undefined))} · ${formatarMoeda(atual.taxasCentavos)}`} maiorEhMelhor={false} />}
+              >
+                {pct(taxaBps(atual))}
+              </Quadro>
+              <Quadro rotulo="Ainda vai cair" apoio={<small>cartão já vendido</small>}>
+                <Reais centavos={atual.aReceberCentavos} />
+              </Quadro>
+              <Quadro
+                rotulo="Fiado na rua"
+                apoio={
+                  <small>
+                    <Link href="/loja/fiado" className={estilos.link}>
+                      ver quem deve
+                    </Link>
+                  </small>
+                }
+              >
+                <Reais centavos={atual.fiadoCentavos} />
+              </Quadro>
+              <Quadro rotulo="Maior conta" apoio={<small className={estilos.corte}>{atual.maiorConta?.descricao ?? "nenhuma conta paga"}</small>}>
+                {atual.maiorConta && atual.despesasCentavos > 0 ? formatarPercentual(Math.round((atual.maiorConta.valorCentavos / atual.despesasCentavos) * 10_000), 0) : "—"}
+              </Quadro>
+            </div>
+          </div>
+
+          {(atual.pecasSemCusto > 0 || atual.cartaoSemTaxa > 0) && (
             <div className={estilos.avisos}>
               {atual.cartaoSemTaxa > 0 && (
                 <p className={estilos.aviso}>
@@ -213,108 +302,12 @@ export default function FinancasDaLoja() {
               )}
             </div>
           )}
-        </div>
+        </>
+      )}
 
-        <div className={estilos.coluna}>
-          {atual && anterior && (
-            <section className={`${estilos.bloco} ${estilos.secao}`} aria-labelledby="titulo-resultado">
-              <h2 id="titulo-resultado">Resultado</h2>
-              <div className={estilos.linha}>
-                <span>Vendas</span>
-                <span className={estilos.valor}>{formatarMoeda(atual.brutoCentavos)}</span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Maquininha</span>
-                <span className={estilos.valor}>{menos(atual.taxasCentavos)}</span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Custo das peças</span>
-                <span className={estilos.valor}>{menos(atual.cmvCentavos)}</span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Contas da loja</span>
-                <span className={estilos.valor}>{menos(atual.despesasCentavos)}</span>
-              </div>
-              <div className={estilos.linha} data-forte>
-                <span>{atual.lucroCentavos < 0 ? "Prejuízo" : "Lucro"}</span>
-                <span className={estilos.valor}>
-                  <span className={atual.lucroCentavos < 0 ? estilos.negativo : estilos.positivo}>{comSinal(atual.lucroCentavos)}</span>
-                  <Antes atual={atual.lucroCentavos} anterior={anterior.lucroCentavos} texto={`${comSinal(anterior.lucroCentavos)} (${periodoAnterior})`} />
-                </span>
-              </div>
-            </section>
-          )}
-
-          {atual && anterior && (
-            <section className={`${estilos.bloco} ${estilos.secao}`} aria-labelledby="titulo-indicadores">
-              <h2 id="titulo-indicadores">Indicadores</h2>
-              <div className={estilos.linha}>
-                <span>Sobra de cada venda</span>
-                <span className={estilos.valor}>
-                  {pct(atual.sobraBps)}
-                  <Antes atual={atual.sobraBps} anterior={anterior.sobraBps} texto={pct(anterior.sobraBps)} />
-                </span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Ticket médio</span>
-                <span className={estilos.valor}>
-                  {atual.ticketMedioCentavos === null ? "—" : formatarMoeda(atual.ticketMedioCentavos)}
-                  <Antes
-                    atual={atual.ticketMedioCentavos}
-                    anterior={anterior.ticketMedioCentavos}
-                    texto={anterior.ticketMedioCentavos === null ? "—" : formatarMoeda(anterior.ticketMedioCentavos)}
-                  />
-                </span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Número de vendas</span>
-                <span className={estilos.valor}>
-                  {atual.vendas}
-                  <Antes atual={atual.vendas} anterior={anterior.vendas} texto={String(anterior.vendas)} />
-                </span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Maquininha</span>
-                <span className={estilos.valor}>
-                  {pct(taxaBps(atual))} das vendas
-                  <Antes atual={taxaBps(atual)} anterior={taxaBps(anterior)} texto={pct(taxaBps(anterior))} maiorEhMelhor={false} />
-                </span>
-              </div>
-              {atual.maiorConta && atual.despesasCentavos > 0 && (
-                <div className={estilos.linha}>
-                  <span>Maior conta</span>
-                  <span className={estilos.valor}>
-                    {atual.maiorConta.descricao}
-                    <small>{formatarPercentual(Math.round((atual.maiorConta.valorCentavos / atual.despesasCentavos) * 10_000), 0)} das contas</small>
-                  </span>
-                </div>
-              )}
-              <div className={estilos.linha}>
-                <span>Ainda vai cair</span>
-                <span className={estilos.valor}>
-                  {formatarMoeda(atual.aReceberCentavos)}
-                  <small>cartão já vendido</small>
-                </span>
-              </div>
-              <div className={estilos.linha}>
-                <span>Fiado na rua</span>
-                <span className={estilos.valor}>
-                  {formatarMoeda(atual.fiadoCentavos)}
-                  <small>
-                    <Link href="/loja/fiado" className={estilos.link}>
-                      ver quem deve
-                    </Link>
-                  </small>
-                </span>
-              </div>
-            </section>
-          )}
-
-          <button type="button" className={estilos.taxasLink} onClick={() => setTaxas(true)}>
-            Taxas da maquininha
-          </button>
-        </div>
-      </div>
+      <button type="button" className={estilos.taxasLink} onClick={() => setTaxas(true)}>
+        Taxas da maquininha
+      </button>
 
       <TaxasDaMaquininha aberta={taxas} aoFechar={() => setTaxas(false)} />
     </div>
