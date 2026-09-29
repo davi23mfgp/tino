@@ -101,7 +101,7 @@ export function FitaDoTempo() {
       </div>
 
       <figcaption id="fita-legenda" className="fita-legenda">
-        <span className="fita-marca" aria-hidden />O caixa vira em <strong>fevereiro</strong> —{" "}
+        <span className="fita-marca" aria-hidden />O caixa vira em <strong>fevereiro</strong>:{" "}
         <span className="fita-valor">{formatar(MESES[VIRADA].saldo)}</span>. Dá para evitar cortando{" "}
         <span className="fita-valor">R$ 532,00</span> por mês até lá.
       </figcaption>

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { Metadata } from "next"
+import { VERSAO_TERMOS } from "@/lib/termos"
 
 export const metadata: Metadata = {
   title: "Privacidade · Tino",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
  * O que NÃO é chute e está escrito aqui porque é verdade verificável no código:
  * quais dados o app guarda, quem são os terceiros que recebem alguma coisa
  * e como exercer cada direito. A lista de terceiros foi conferida contra os
- * endereços que o código chama em 23/09/2026 — ao ligar integração nova,
+ * endereços que o código chama em 29/09/2026 — ao ligar integração nova,
  * atualize a seção "Quem mais vê alguma coisa" e suba `VERSAO_TERMOS`.
  */
 
@@ -32,33 +33,38 @@ const SECOES = [
   {
     titulo: "O que o Tino guarda",
     conteudo: [
-      "Cadastro: seu nome, e-mail e a senha guardada como hash — o Tino não tem como ler sua senha, nem para te ajudar.",
+      "Cadastro: seu nome, e-mail e a senha guardada como hash. O Tino não tem como ler sua senha, nem para te ajudar.",
       "Dinheiro: contas, cartões, lançamentos, categorias, orçamentos, metas, dívidas e as simulações que você fez.",
       "Entrada automática: o texto dos avisos de compra que você escolher encaminhar, e o que você escreve ou fala para anotar um gasto.",
       "Uso: data do último acesso e os avisos que o Tino gerou para você.",
       "Registro de acesso: data, hora e endereço IP de cada entrada na conta, guardados por 6 meses porque o Marco Civil da Internet (Lei 12.965/2014, art. 15) obriga. Ficam em sigilo e só saem por ordem judicial.",
       "Se você usa a parte de loja/MEI: produtos, vendas, clientes de fiado e notas emitidas.",
+      "Suporte: as mensagens que você manda pelo app e as respostas, com a tela em que você estava.",
+      "Erros: quando algo quebra, a mensagem do erro, a tela e a conta em que aconteceu. Não entra o que você digitou nem seus valores, e e-mail, CPF, CNPJ e telefone são apagados da mensagem antes de gravar.",
     ],
   },
   {
     titulo: "Para que cada dado serve",
     conteudo: [
-      "Executar o que você contratou: mostrar seu saldo, projetar seu mês, avisar antes de a conta vencer. É a base legal do art. 7º, V — execução de contrato.",
+      "Executar o que você contratou: mostrar seu saldo, projetar seu mês, avisar antes de a conta vencer. É a base legal do art. 7º, V: execução de contrato.",
       "Cobrar a assinatura, quando houver.",
-      "Segurança: contar tentativas de login e de uso para barrar ataque e abuso — base legal do art. 7º, IX (legítimo interesse), limitada ao necessário.",
-      "Cumprir a lei: registro de acesso (Marco Civil) e o que a obrigação fiscal exigir — art. 7º, II.",
+      "Segurança: contar tentativas de login e de uso para barrar ataque e abuso. Base legal do art. 7º, IX (legítimo interesse), limitada ao necessário.",
+      "Corrigir defeitos e responder o suporte: o registro de erros e os chamados. Também é legítimo interesse (art. 7º, IX).",
+      "Cumprir a lei: registro de acesso (Marco Civil) e o que a obrigação fiscal exigir (art. 7º, II).",
       "O Tino não vende seus dados, não os usa para anúncio e não os cruza com terceiros para traçar perfil comercial.",
     ],
   },
   {
     titulo: "Quem mais vê alguma coisa",
     conteudo: [
-      "Hospedagem e banco: Vercel e Neon, onde o aplicativo roda e os dados ficam guardados — fora do Brasil.",
-      "Transcrição de áudio e o assessor: Groq e Anthropic, nos Estados Unidos. Quando você manda um áudio ou pergunta ao assessor, esse conteúdo — e os números da sua conta necessários para a resposta — é enviado para lá para virar texto ou resposta.",
-      "Importação de fatura: Groq, nos Estados Unidos. Os nomes das lojas que o Tino não soube categorizar sozinho vão para lá, para sugerir a categoria — transferências e Pix para pessoas não vão. Se a leitura automática de uma fatura em PDF não fechar com o total do banco, as linhas da fatura com data ou valor vão para uma releitura, com CPF e CEP apagados antes do envio. Sem a chave do Groq configurada, nada disso é enviado.",
-      "Se você ligar: WhatsApp (Meta) e Telegram recebem as mensagens trocadas com o Tino por esses canais; Resend recebe as faturas que você encaminhar por e-mail; Focus NFe recebe os dados da venda para emitir a nota do MEI.",
+      "Hospedagem e banco: Vercel e Neon, onde o aplicativo roda e os dados ficam guardados, fora do Brasil.",
+      "Transcrição de áudio e o assessor: Groq e Anthropic, nos Estados Unidos. Quando você manda um áudio ou pergunta ao assessor, esse conteúdo, com os números da sua conta necessários para a resposta, é enviado para lá para virar texto ou resposta.",
+      "Identificar a loja de cada compra (para mostrar o logo): uma vez por dia, textos de compra no cartão que o Tino não reconheceu vão para Groq ou Anthropic, nos Estados Unidos. Vai só o texto como o banco escreve, misturado com o de outras contas, sem valor, sem data e sem dizer de quem é. O logo em si é buscado pelo servidor no serviço de ícones do Google ou do DuckDuckGo, que recebem só o endereço do site da loja.",
+      "Importação de fatura: Groq, nos Estados Unidos. Os nomes das lojas que o Tino não soube categorizar sozinho vão para lá, para sugerir a categoria. Transferências e Pix para pessoas não vão. Se a leitura automática de uma fatura em PDF não fechar com o total do banco, as linhas da fatura com data ou valor vão para uma releitura, com CPF e CEP apagados antes do envio. Sem a chave do Groq configurada, nada disso é enviado.",
+      "Se você ligar: Telegram recebe as mensagens trocadas com o Tino por esse canal; Resend recebe as faturas que você encaminhar por e-mail; Focus NFe recebe os dados da venda para emitir a nota do MEI.",
       "Notificações no celular passam pelo serviço de push do navegador (Google, Apple ou Mozilla), que recebe só o aviso, não seus lançamentos.",
       "Pagamento: Stripe e Mercado Pago recebem o necessário para cobrar. O Tino nunca guarda o número do seu cartão.",
+      "Quem administra o Tino vê, para dar suporte e cuidar da segurança, o cadastro, a assinatura, as cobranças, os chamados, os erros e os acessos de uma conta. Lançamentos, saldos, contas e dívidas não aparecem no painel de administração. Cada ficha aberta fica registrada, e você pode pedir a lista de quem acessou seus dados pelo e-mail do encarregado.",
       "Isso é transferência internacional de dados, e a LGPD exige que você saiba: é por isso que está escrito aqui, com nome.",
       "Prazo de guarda: seus dados ficam enquanto a conta existir. Ao apagar a conta, eles são removidos na hora; ficam só o registro de acesso até completar 6 meses (Marco Civil) e o que o gateway de pagamento guarda por obrigação fiscal própria. [A DEFINIR: se houver cópia de segurança do banco, por quantos dias ela guarda o dado já apagado.]",
     ],
@@ -68,8 +74,9 @@ const SECOES = [
     conteudo: [
       "Saber o que existe e levar embora: em Configurações → Meus dados, você baixa tudo em JSON, num arquivo que serve para importar em outro lugar.",
       "Corrigir: qualquer lançamento, categoria ou dado de cadastro se edita dentro do próprio app.",
-      "Apagar: em Configurações → Apagar minha conta. Apaga de verdade — lançamentos, contas, conversas e o restante vão junto, e não há botão de desfazer.",
+      "Apagar: em Configurações → Apagar minha conta. Apaga de verdade: lançamentos, contas, conversas e o restante vão junto, e não há botão de desfazer.",
       "Cobranças já emitidas ficam com o gateway de pagamento, que tem obrigação fiscal própria (LGPD, art. 16, I). Para apagar lá, é preciso falar com eles.",
+      "Qualquer outro pedido (confirmar se tratamos seus dados, saber com quem compartilhamos, revogar consentimento, saber quem acessou sua conta) vai para o e-mail do encarregado, e a resposta sai em até 15 dias (LGPD, art. 19).",
       "Se algo não for resolvido, você pode reclamar à ANPD, a autoridade nacional.",
     ],
   },
@@ -81,7 +88,7 @@ const SECOES = [
       "Limite de tentativas de login e de uso, para que ninguém fique testando senha ou varrendo a API em laço.",
       "Cada pedido é conferido no servidor: uma conta nunca lê nem grava dado de outra.",
       "O único cookie é o da sessão, essencial para você continuar conectado. O Tino não usa cookie de anúncio nem de rastreamento.",
-      "Nenhum sistema é inviolável. Se houver incidente com risco relevante, a LGPD manda avisar você e a ANPD — e é o que será feito.",
+      "Nenhum sistema é inviolável. Se houver incidente com risco relevante, a LGPD manda avisar você e a ANPD, e é o que será feito.",
     ],
   },
   {
@@ -104,7 +111,10 @@ export default function Privacidade() {
           O que o Tino guarda, por quê, quem mais vê e como você leva embora ou apaga. Escrito para ser lido, não para
           ser aceito sem ler.
         </p>
-        <small>Atualizada em 23 de setembro de 2026.</small>
+        <small>
+          Atualizada em{" "}
+          {new Date(`${VERSAO_TERMOS}T12:00:00Z`).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}.
+        </small>
       </header>
 
       {SECOES.map((secao) => (

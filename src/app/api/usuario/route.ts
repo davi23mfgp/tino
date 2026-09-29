@@ -1,13 +1,19 @@
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
+import { criarToken, gravarCookieSessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+
+const TIPOS_DE_CASA = ["SOLO", "CASAL", "FAMILIA"] as const
+/// Quem pode renomear a casa: quem é dono dela. Dependente, convidado e
+/// funcionário da loja veem o nome, mas não mudam para todo mundo.
+const MUDAM_A_CASA = ["TITULAR", "CONJUGE"]
 
 export const GET = comSessao(async (sessao) => {
   const [usuario, lar] = await Promise.all([
     prisma.usuario.findUniqueOrThrow({ where: { id: sessao.usuarioId }, select: { nome: true, avatarUrl: true, email: true } }),
-    // O perfil mostra de que casa a pessoa é ("Casa da Marina · casal").
+    // O perfil mostra de que casa a pessoa é ("Casa da Nicole · casal").
     prisma.lar.findUnique({ where: { id: sessao.larId }, select: { nome: true, tipo: true } }),
   ])
-  return ok({ ...usuario, lar })
+  return ok({ ...usuario, lar, podeMudarCasa: MUDAM_A_CASA.includes(sessao.papel) })
 })
 
 /**
@@ -22,12 +28,30 @@ export const GET = comSessao(async (sessao) => {
  */
 const TAMANHO_MAXIMO = 300 * 1024
 
+/**
+ * Perfil num lugar só (Davi, 29/09/2026: "tem que ter um jeito de poder mudar
+ * nome, foto e etc tudo junto"). Cada campo é opcional: a foto continua
+ * salvando sozinha ao escolher, e o formulário manda nome e casa juntos.
+ */
 export const PATCH = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ avatarUrl?: unknown } | null>(requisicao, { bytes: TAMANHO_MAXIMO + 1024, texto: TAMANHO_MAXIMO })
+  const dados = await corpo<{ avatarUrl?: unknown; nome?: unknown; casaNome?: unknown; casaTipo?: unknown } | null>(requisicao, { bytes: TAMANHO_MAXIMO + 1024, texto: TAMANHO_MAXIMO })
 
-  if (!dados || typeof dados !== "object" || !("avatarUrl" in dados)) throw new ErroDeUso("Informe uma foto ou remova a atual.")
+  if (!dados || typeof dados !== "object" || !["avatarUrl", "nome", "casaNome", "casaTipo"].some((campo) => campo in dados)) {
+    throw new ErroDeUso("Nada para salvar.")
+  }
 
-  if (dados.avatarUrl !== null) {
+  const nome = "nome" in dados ? texto(dados.nome, "Seu nome") : undefined
+  const casaNome = "casaNome" in dados ? texto(dados.casaNome, "O nome da casa") : undefined
+  let casaTipo: (typeof TIPOS_DE_CASA)[number] | undefined
+  if ("casaTipo" in dados) {
+    if (!TIPOS_DE_CASA.includes(dados.casaTipo as (typeof TIPOS_DE_CASA)[number])) throw new ErroDeUso("Escolha quem mora na casa.")
+    casaTipo = dados.casaTipo as (typeof TIPOS_DE_CASA)[number]
+  }
+  if ((casaNome !== undefined || casaTipo !== undefined) && !MUDAM_A_CASA.includes(sessao.papel)) {
+    throw new ErroDeUso("Só quem é dono da casa muda o nome dela.", 403)
+  }
+
+  if ("avatarUrl" in dados && dados.avatarUrl !== null) {
     if (typeof dados.avatarUrl !== "string" || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(dados.avatarUrl)) {
       throw new ErroDeUso("A foto precisa ser uma imagem.")
     }
@@ -43,10 +67,24 @@ export const PATCH = comSessao(async (sessao, requisicao) => {
     if (!formatoValido || bytes.toString("base64") !== base64) throw new ErroDeUso("Arquivo de imagem inválido.")
   }
 
-  await prisma.usuario.update({
-    where: { id: sessao.usuarioId },
-    data: { avatarUrl: dados.avatarUrl },
-  })
+  const avatarUrl = "avatarUrl" in dados ? (dados.avatarUrl as string | null) : undefined
+  await prisma.$transaction([
+    prisma.usuario.update({ where: { id: sessao.usuarioId }, data: { avatarUrl, nome } }),
+    // O nome também mora no membro: é ele que aparece na divisão do casal.
+    ...(nome !== undefined && sessao.membroId ? [prisma.membro.update({ where: { id: sessao.membroId }, data: { nome } })] : []),
+    ...(casaNome !== undefined || casaTipo !== undefined ? [prisma.lar.update({ where: { id: sessao.larId }, data: { nome: casaNome, tipo: casaTipo } })] : []),
+  ])
 
-  return ok({ avatarUrl: dados.avatarUrl })
+  // O nome vai no token ("Olá, Nicole" vem dele): sem regravar, o nome novo só
+  // apareceria no próximo login.
+  if (nome !== undefined && nome !== sessao.nome) await gravarCookieSessao(await criarToken({ usuarioId: sessao.usuarioId, email: sessao.email, nome, larId: sessao.larId, membroId: sessao.membroId, papel: sessao.papel }))
+
+  return ok({ avatarUrl, nome, casaNome, casaTipo })
 })
+
+function texto(valor: unknown, rotulo: string): string {
+  if (typeof valor !== "string" || !valor.trim()) throw new ErroDeUso(`${rotulo} não pode ficar em branco.`)
+  const limpo = valor.trim().replace(/\s+/g, " ")
+  if (limpo.length > 80) throw new ErroDeUso(`${rotulo} pode ter até 80 letras.`)
+  return limpo
+}

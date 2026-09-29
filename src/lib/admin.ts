@@ -7,9 +7,10 @@
  * indistinguível de uma que nunca existiu.
  *
  * O papel é um campo na conta do próprio usuário — não há login separado. Não
- * existe tela que promova ninguém a admin: a promoção é um UPDATE no banco,
- * feito pelo dono, e está documentada em `docs/PAGAMENTO-E-ADMIN.md`. Uma tela
- * que concede privilégio é uma tela a mais para dar errado.
+ * existe tela que promova ninguém a admin: a conta de `ADMIN_EMAIL` é
+ * garantida no build (`scripts/garantir-admin.mjs`), e qualquer outra é um
+ * comando no banco (`docs/PAGAMENTO-E-ADMIN.md`). Uma tela que concede
+ * privilégio é uma tela a mais para dar errado.
  */
 
 import { notFound } from "next/navigation"
@@ -52,6 +53,15 @@ export function comAdmin<T>(handler: (sessao: Sessao, requisicao: Request, conte
       return await handler(sessao, requisicao, contexto)
     } catch (excecao) {
       console.error("[tino] falha na rota do admin", requisicao.method, new URL(requisicao.url).pathname, excecao)
+      const { registrarErro } = await import("@/lib/erros")
+      await registrarErro({
+        origem: "SERVIDOR",
+        mensagem: excecao instanceof Error ? `${excecao.name}: ${excecao.message}` : String(excecao),
+        pilha: excecao instanceof Error ? excecao.stack : null,
+        rota: new URL(requisicao.url).pathname,
+        metodo: requisicao.method,
+        usuarioId: sessao.usuarioId,
+      })
       return NextResponse.json({ erro: "Algo deu errado." }, { status: 500 })
     }
   }

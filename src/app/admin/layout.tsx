@@ -11,6 +11,10 @@ import { AbasAdmin, TrilhaAdmin } from "@/app/admin/breadcrumb"
  * onboarding — e não deve herdar nada disso por engano quando o layout do app
  * mudar.
  *
+ * Datas e horas do admin vão sempre com `timeZone: "America/Sao_Paulo"`: a
+ * página é montada no servidor (UTC na Vercel), e sem o fuso a hora saía 3 h
+ * adiantada e diferente da do navegador.
+ *
  * A guarda fica aqui **e** em cada página. O Next renderiza layout e página em
  * paralelo: só o layout redirecionando não impede a página de consultar o banco
  * antes. É a mesma razão pela qual `sessaoDaPagina` existe ao lado do layout do

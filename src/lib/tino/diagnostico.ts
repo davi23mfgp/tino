@@ -323,7 +323,7 @@ export function montarDiagnostico(
       escala: { bom: REFERENCIA.taxaPoupanca.bom, atencao: REFERENCIA.taxaPoupanca.atencao, maximo: 4000, menorMelhor: false },
       leitura:
         rendaObservada === 0
-          ? "Nenhuma receita foi lançada no mês, então esta conta usa a renda que você informou — não o que entrou de fato. Lance suas entradas para o número virar real."
+          ? "Nenhuma receita foi lançada no mês, então esta conta usa a renda que você informou, não o que entrou de fato. Lance suas entradas para o número virar real."
           : taxaPoupanca <= 0
             ? "Você gasta tudo o que ganha, ou mais. Nesse ritmo o patrimônio não cresce."
             : `De cada R$ 100 que entram, sobram R$ ${(taxaPoupanca / 100).toFixed(0)}.`,
@@ -370,7 +370,7 @@ export function montarDiagnostico(
       valor: pct(bps(dre.essenciaisCentavos, despesa)),
       numero: bps(dre.essenciaisCentavos, despesa),
       faixa: "SEM_DADO",
-      referencia: "sem faixa certa — depende do momento de vida",
+      referencia: "sem faixa certa, depende do momento de vida",
       leitura:
         dre.supefluasCentavos > 0
           ? `${formatarMoeda(dre.supefluasCentavos)} do mês foram para categorias não essenciais. É onde o corte dói menos.`
@@ -412,7 +412,7 @@ export function montarDiagnostico(
 
   if (negativoEmConta > 0) {
     riscos.unshift(
-      `Conta no negativo em ${formatarMoeda(negativoEmConta)}. Cheque especial cobra até 8% ao mês — mais que qualquer outra dívida comum.`,
+      `Conta no negativo em ${formatarMoeda(negativoEmConta)}. Cheque especial cobra até 8% ao mês, mais que qualquer outra dívida comum.`,
     )
   }
 
@@ -542,7 +542,7 @@ function montarParecer(params: {
 
   const linhas = [
     `${abertura} Em ${rotuloCompetencia(dre.competencia)} entraram ${formatarMoeda(dre.receitasCentavos)} e saíram ${formatarMoeda(dre.despesasCentavos)}, resultado de ${formatarMoeda(dre.resultadoCentavos)}.`,
-    `Seu patrimônio líquido — o que você tem menos o que deve — é ${formatarMoeda(balanco.patrimonioLiquidoCentavos)}.`,
+    `Seu patrimônio líquido (o que você tem menos o que deve) é ${formatarMoeda(balanco.patrimonioLiquidoCentavos)}.`,
   ]
 
   if (negativoEmConta > 0) {

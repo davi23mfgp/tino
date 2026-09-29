@@ -115,7 +115,7 @@ export async function registrarCaptura(params: {
           id: mesmoEvento.id,
           status: mesmoEvento.status as ResultadoCaptura["status"],
           leitura,
-          resposta: "Esse aviso já tinha chegado — não dupliquei.",
+          resposta: "Esse aviso já tinha chegado, não dupliquei.",
         }
       }
       eventoParaGravar = null
@@ -241,7 +241,7 @@ export async function registrarCaptura(params: {
     status: "PENDENTE",
     leitura,
     resposta: `Anotei ${valorFormatado}${captura.estabelecimento ? ` em ${captura.estabelecimento}` : ""}${
-      sugestao?.categoriaNome || sugestao?.categoriaId ? "" : " — falta a categoria"
+      sugestao?.categoriaNome || sugestao?.categoriaId ? "" : ", falta a categoria"
     }.${parecida ? " Chegou uma igual a essa agora há pouco: confira se não são a mesma." : ""}`,
   }
 }

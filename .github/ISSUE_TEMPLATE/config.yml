@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Falha de segurança
+    url: https://github.com/davi23mfgp/tino/blob/main/SECURITY.md
+    about: Não abra issue pública. Veja como avisar em particular.

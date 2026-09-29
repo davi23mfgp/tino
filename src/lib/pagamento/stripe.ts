@@ -180,7 +180,7 @@ export const gatewayStripe: Gateway = {
             price_data: {
               currency: "brl",
               unit_amount: pedido.valorCentavos,
-              product_data: { name: `Tino — ${pedido.nomeDoPlano}` },
+              product_data: { name: `Tino · ${pedido.nomeDoPlano}` },
               recurring: { interval: pedido.ciclo === "ANUAL" ? "year" : "month" },
             },
           },

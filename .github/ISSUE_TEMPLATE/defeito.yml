@@ -1,0 +1,25 @@
+name: Defeito
+description: Algo quebrou, mostrou número errado ou não fez o que devia.
+labels: [defeito]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu
+      description: E o que devia ter acontecido.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como chegar lá
+      placeholder: "1. Abra Loja → Balcão\n2. …"
+  - type: dropdown
+    id: onde
+    attributes:
+      label: Onde
+      multiple: true
+      options: [Celular, Computador, Tema claro, Tema escuro, Telegram]
+  - type: markdown
+    attributes:
+      value: "Não cole aqui saldo, extrato, CPF nem senha: o repositório guarda tudo para sempre."

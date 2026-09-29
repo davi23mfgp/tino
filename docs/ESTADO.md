@@ -52,6 +52,34 @@ Só abrem para usuário com `admin = true`. Para qualquer outra sessão devolvem
 | Suporte | `/admin/suporte` | fila de chamados abertos, mais antigo primeiro, com marcar resolvido |
 | Configurações | `/admin/configuracoes` | preço dos planos, teto do cheque especial e dias de teste, editáveis sem deploy |
 
+## Fila do Claude Design (29/09/2026)
+
+Canvas parte 3: https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi. Uma tela por
+vez: o Davi escolhe, a escolha é implementada, testada e enviada, e só então
+vem a próxima.
+
+Esperando escolha (já desenhados, hoje e três caminhos):
+1. Passo 30 · Início (A, B, C)
+2. Passo 31 · Dívidas (D1, D2, D3)
+3. Passo 32 · Análise (A, B, C)
+4. Passo 33 · Extrato no computador (E1, E2, E3)
+5. Passo 34 · Investir como corretora simulada, com agentes (I1, I2, I3)
+6. Passo 35 · Entrar (L1, L2, L3), com "Esqueci a senha", que ainda não existe
+
+A desenhar depois:
+7. Assinatura
+8. Notificações
+9. Faturas por mês (Cartões): foi mudado direto em 29/09 antes da regra
+   "design só depois do canvas"; entra no canvas para o Davi aprovar ou
+   voltar ao que era.
+10. Recuperar senha (pedir o link e criar a senha nova): a tela de Entrar
+    já mostra "Esqueci a senha", mas o fluxo não existe.
+
+Na volta das escolhas: juntar o PR #4 no main, guardar as 6 branches
+antigas como tag e apagar, e cadastrar na Vercel ADMIN_EMAIL, ADMIN_SENHA,
+TELEGRAM_BOT_USUARIO, TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SEGREDO e
+CRON_SECRET.
+
 ## O que falta
 
 Em ordem de valor, na minha leitura:

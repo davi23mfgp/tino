@@ -6,7 +6,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 
 import { cn } from "@/lib/utils"
 import { buscar } from "@/lib/cliente"
-import { FRASE, TinoMarca, TinoMascote, estadoPorAlertas } from "@/components/tino-mascote"
+import { FRASE, TinoMarca, estadoPorAlertas } from "@/components/tino-mascote"
 import type { EstadoTino } from "@/components/tino-mascote"
 import { usarAlertas } from "@/components/alertas-provider"
 import { DitarGasto } from "@/components/ditar-gasto"
@@ -114,8 +114,11 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
           // ícones de traço lia como adesivo colado na lista.
           <button className="app-nav-item"><TinoMarca className="size-5 shrink-0" /><span>Seu assistente Tino</span></button>
         ) : (
-          <button aria-label="Falar com o Tino" className="grid size-11 place-items-center rounded-full border border-pauta">
-            <TinoMascote estado={estado} className="size-8" />
+          // O leão da marca, não o porquinho (Davi, 29/09/2026: "a imagem do
+          // porquinho tem que sair e entrar o leão"). O porquinho era o mascote
+          // de antes da troca de marca e destoava do topo, que já é o leão.
+          <button aria-label="Falar com o Tino" className="superficie-flutuante grid size-12 place-items-center rounded-full border border-pauta text-foreground">
+            <TinoMarca className="size-7" />
           </button>
         )}
       </DialogTrigger>

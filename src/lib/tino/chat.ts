@@ -75,7 +75,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
         `Você tem ${formatarMoeda(panorama.saldoTotalCentavos)} disponíveis hoje.`,
         linhas,
         "",
-        `Neste mês entraram ${formatarMoeda(panorama.mes.receitasCentavos)} e saíram ${formatarMoeda(panorama.mes.despesasCentavos)} — sobra de ${formatarMoeda(panorama.mes.sobraCentavos)}.`,
+        `Neste mês entraram ${formatarMoeda(panorama.mes.receitasCentavos)} e saíram ${formatarMoeda(panorama.mes.despesasCentavos)}, sobra de ${formatarMoeda(panorama.mes.sobraCentavos)}.`,
         "Cartão de crédito não entra nesse total: o limite é dívida futura, não dinheiro seu.",
       ].join("\n"),
       contexto: { saldoTotalCentavos: panorama.saldoTotalCentavos, contas: panorama.saldoPorConta },
@@ -90,7 +90,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
     if (categoria) {
       const media = panorama.medias.despesaCentavos
       return {
-        texto: `Em ${rotuloCompetencia(panorama.competencia)} você gastou ${formatarMoeda(categoria.totalCentavos)} com ${categoria.nome} — ${((categoria.totalCentavos / Math.max(1, panorama.mes.despesasCentavos)) * 100).toFixed(0)}% do total do mês (${formatarMoeda(panorama.mes.despesasCentavos)}). Sua despesa média mensal é ${formatarMoeda(media)}.`,
+        texto: `Em ${rotuloCompetencia(panorama.competencia)} você gastou ${formatarMoeda(categoria.totalCentavos)} com ${categoria.nome}, ${((categoria.totalCentavos / Math.max(1, panorama.mes.despesasCentavos)) * 100).toFixed(0)}% do total do mês (${formatarMoeda(panorama.mes.despesasCentavos)}). Sua despesa média mensal é ${formatarMoeda(media)}.`,
         contexto: { categoria: categoria.nome, totalCentavos: categoria.totalCentavos },
         acao: { rotulo: "Ver lançamentos", rota: "/transacoes" },
         fonte: "regras",
@@ -103,12 +103,12 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
         `Em ${rotuloCompetencia(panorama.competencia)} saíram ${formatarMoeda(panorama.mes.despesasCentavos)}. Os maiores blocos:`,
         ...top.map(
           (linha, indice) =>
-            `${indice + 1}. ${linha.nome} — ${formatarMoeda(linha.totalCentavos)}${linha.essencial ? " (essencial)" : ""}`,
+            `${indice + 1}. ${linha.nome}: ${formatarMoeda(linha.totalCentavos)}${linha.essencial ? " (essencial)" : ""}`,
         ),
         "",
         top.some((linha) => !linha.essencial)
           ? "As categorias não essenciais são as que dão para mexer sem mudar seu padrão de vida."
-          : "Quase tudo aqui é essencial — cortar exige mudança maior, não ajuste fino.",
+          : "Quase tudo aqui é essencial: cortar exige mudança maior, não ajuste fino.",
       ].join("\n"),
       contexto: { despesasPorCategoria: top },
       acao: { rotulo: "Ver análise completa", rota: "/analise" },
@@ -145,9 +145,9 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
           `• Total pago: ${formatarMoeda(analise.totalPagoCentavos)} (${formatarMoeda(analise.totalJurosCentavos)} só de juros)`,
           `• CET: ${formatarPercentual(analise.cetMensalBps)} ao mês / ${formatarPercentual(analise.cetAnualBps)} ao ano`,
           "",
-          ...analise.motivos.map((motivo) => `— ${motivo}`),
+          ...analise.motivos.map((motivo) => `• ${motivo}`),
           ...(analise.alternativas.length > 0
-            ? ["", "Antes de assinar, considere:", ...analise.alternativas.map((alternativa) => `— ${alternativa}`)]
+            ? ["", "Antes de assinar, considere:", ...analise.alternativas.map((alternativa) => `• ${alternativa}`)]
             : []),
         ].join("\n"),
         contexto: {
@@ -182,7 +182,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
 
     return {
       texto: [
-        `Você deve ${formatarMoeda(panorama.dividas.totalCentavos)} em ${panorama.dividas.lista.length} dívida(s), pagando ${formatarMoeda(panorama.dividas.parcelaMensalCentavos)} por mês — ${(panorama.dividas.comprometimentoBps / 100).toFixed(0)}% da sua renda média.`,
+        `Você deve ${formatarMoeda(panorama.dividas.totalCentavos)} em ${panorama.dividas.lista.length} dívida(s), pagando ${formatarMoeda(panorama.dividas.parcelaMensalCentavos)} por mês, ${(panorama.dividas.comprometimentoBps / 100).toFixed(0)}% da sua renda média.`,
         "",
         escolhido
           ? `Contando só as dívidas cadastradas, com a sobra atual (${formatarMoeda(Math.max(0, panorama.medias.sobraCentavos))} por mês) você quita em ${escolhido.meses} meses, pagando ${formatarMoeda(escolhido.totalJurosCentavos)} de juros no caminho.`
@@ -225,10 +225,10 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
           "Suas metas ativas:",
           ...panorama.metas.map(
             (linha) =>
-              `• ${linha.nome} — ${formatarMoeda(linha.saldoCentavos)} de ${formatarMoeda(linha.alvoCentavos)} (${linha.percentual.toFixed(0)}%)${linha.mesesRestantes !== null ? `, faltam ${linha.mesesRestantes} meses` : ", sem aporte suficiente"}`,
+              `• ${linha.nome}: ${formatarMoeda(linha.saldoCentavos)} de ${formatarMoeda(linha.alvoCentavos)} (${linha.percentual.toFixed(0)}%)${linha.mesesRestantes !== null ? `, faltam ${linha.mesesRestantes} meses` : ", sem aporte suficiente"}`,
           ),
           "",
-          `Sua sobra média é ${formatarMoeda(panorama.medias.sobraCentavos)} por mês — é dela que saem os aportes.`,
+          `Sua sobra média é ${formatarMoeda(panorama.medias.sobraCentavos)} por mês, e é dela que saem os aportes.`,
         ].join("\n"),
         acao: { rotulo: "Ver metas", rota: "/metas" },
         fonte: "regras",
@@ -240,7 +240,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
   if (contem(p, "reserva", "emergencia", "colchao", "se eu perder o emprego")) {
     return {
       texto: [
-        `Sua reserva está em ${formatarMoeda(panorama.reserva.atualCentavos)} — ${panorama.reserva.percentual}% do alvo de ${formatarMoeda(panorama.reserva.idealCentavos)} (${panorama.lar.mesesReserva} meses de custo essencial).`,
+        `Sua reserva está em ${formatarMoeda(panorama.reserva.atualCentavos)}, ${panorama.reserva.percentual}% do alvo de ${formatarMoeda(panorama.reserva.idealCentavos)} (${panorama.lar.mesesReserva} meses de custo essencial).`,
         `Sem nenhuma receita, esse dinheiro sustenta ${panorama.reserva.mesesDeFolga} mês(es) do seu padrão atual.`,
         panorama.reserva.percentual < 100
           ? "Reserva vem antes de investir em prazo longo: sem ela, qualquer imprevisto vira dívida cara."
@@ -255,7 +255,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
   if (contem(p, "aposentar", "aposentadoria", "parar de trabalhar", "independencia financeira")) {
     if (!panorama.aposentadoria) {
       return {
-        texto: "Ainda não há uma meta de aposentadoria cadastrada. Crie uma em Metas com o valor que você já tem guardado e o quanto consegue aportar por mês — eu projeto quando dá para parar.",
+        texto: "Ainda não há uma meta de aposentadoria cadastrada. Crie uma em Metas com o valor que você já tem guardado e o quanto consegue aportar por mês, e eu projeto quando dá para parar.",
         acao: { rotulo: "Criar meta", rota: "/metas" },
         fonte: "regras",
       }
@@ -293,7 +293,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
     return {
       texto: [
         `Faturamento do ano: ${formatarMoeda(mei.faturamentoAnoCentavos)} de ${formatarMoeda(mei.limiteAnualCentavos)} (${mei.percentualUsado}%).`,
-        `Média mensal de ${formatarMoeda(mei.mediaMensalCentavos)} — projeção de fechar o ano em ${formatarMoeda(mei.projecaoAnualCentavos)}.`,
+        `Média mensal de ${formatarMoeda(mei.mediaMensalCentavos)}, projeção de fechar o ano em ${formatarMoeda(mei.projecaoAnualCentavos)}.`,
         mei.mesQueEstoura
           ? `No ritmo atual o limite estoura em ${rotuloCompetencia(mei.mesQueEstoura)}. Teto seguro por mês daqui para frente: ${formatarMoeda(mei.tetoMensalRestanteCentavos)}.`
           : `Ainda cabem ${formatarMoeda(mei.disponivelCentavos)} de faturamento neste ano.`,
@@ -316,7 +316,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
           ? `Atenção: no ritmo atual, o saldo fica negativo em ${rotuloCompetencia(negativo.competencia)} (${formatarMoeda(negativo.saldoAcumuladoCentavos)}).`
           : `No ritmo atual, você fecha os próximos 12 meses com ${formatarMoeda(ultimo?.saldoAcumuladoCentavos ?? 0)}.`,
         `A conta usa sua média: ${formatarMoeda(panorama.medias.receitaCentavos)} de receita e ${formatarMoeda(panorama.medias.despesaCentavos)} de despesa por mês.`,
-        "Ela não prevê imprevisto — é o cenário de as coisas seguirem como estão.",
+        "Ela não prevê imprevisto: é o cenário de as coisas seguirem como estão.",
       ].join("\n"),
       acao: { rotulo: "Ver projeção", rota: "/projecao" },
       fonte: "regras",
@@ -357,8 +357,8 @@ export function contextoParaModelo(panorama: Panorama): string {
   const linhas = [
     `Lar: ${panorama.lar.nome} (${panorama.lar.tipo.toLowerCase()}). Mês de referência: ${rotuloCompetencia(panorama.competencia)}.`,
     `Saldo disponível: ${formatarMoeda(panorama.saldoTotalCentavos)}.`,
-    `Mês atual — receitas ${formatarMoeda(panorama.mes.receitasCentavos)}, despesas ${formatarMoeda(panorama.mes.despesasCentavos)}, sobra ${formatarMoeda(panorama.mes.sobraCentavos)}.`,
-    `Médias dos últimos meses — receita ${formatarMoeda(panorama.medias.receitaCentavos)}, despesa ${formatarMoeda(panorama.medias.despesaCentavos)}, sobra ${formatarMoeda(panorama.medias.sobraCentavos)}, custo fixo ${formatarMoeda(panorama.medias.custoFixoCentavos)}, custo essencial ${formatarMoeda(panorama.medias.custoEssencialCentavos)}.`,
+    `Mês atual: receitas ${formatarMoeda(panorama.mes.receitasCentavos)}, despesas ${formatarMoeda(panorama.mes.despesasCentavos)}, sobra ${formatarMoeda(panorama.mes.sobraCentavos)}.`,
+    `Médias dos últimos meses: receita ${formatarMoeda(panorama.medias.receitaCentavos)}, despesa ${formatarMoeda(panorama.medias.despesaCentavos)}, sobra ${formatarMoeda(panorama.medias.sobraCentavos)}, custo fixo ${formatarMoeda(panorama.medias.custoFixoCentavos)}, custo essencial ${formatarMoeda(panorama.medias.custoEssencialCentavos)}.`,
     "",
     "Maiores despesas do mês:",
     ...panorama.mes.despesasPorCategoria
@@ -418,19 +418,33 @@ export function contextoParaModelo(panorama: Panorama): string {
   return linhas.join("\n")
 }
 
+/**
+ * Tira o travessão de um texto do modelo (Davi, 29/09/2026: "não quero nenhum
+ * texto com travessão"). A PERSONA já pede, mas modelo às vezes escapa, e a
+ * resposta aparece direto na tela e no Telegram. Vírgula é a troca que menos
+ * quebra a frase quando não dá para saber o que o travessão fazia ali.
+ */
+export function semTravessao(texto: string): string {
+  return texto
+    .replace(/^[ \t]*—[ \t]*/gm, "• ")
+    .replace(/[ \t]*—[ \t]*/g, ", ")
+    .replace(/,\s*([.:;!?])/g, "$1")
+}
+
 export const PERSONA = `Você é o Tino, assessor financeiro pessoal dentro de um app brasileiro de finanças para pessoa física (sozinha, casal ou família) e para MEI.
 
 Como você fala:
 - Português do Brasil, direto, sem jargão. Se usar um termo técnico (CET, amortização, desenquadramento), explique em meia linha.
 - Frases curtas. Nada de lista gigante quando duas frases resolvem.
 - Trate a pessoa por você. Nunca seja moralista sobre gastos: seu papel é mostrar o efeito da escolha, não julgar quem gasta.
+- Nunca use travessão, o traço longo. Use vírgula, dois-pontos, parênteses ou um ponto final.
 
 Como você raciocina:
-- Use SOMENTE os números do panorama fornecido. Se um dado não estiver lá, diga que não tem esse dado e peça para cadastrar — nunca estime valor financeiro do usuário.
+- Use SOMENTE os números do panorama fornecido. Se um dado não estiver lá, diga que não tem esse dado e peça para cadastrar. Nunca estime valor financeiro do usuário.
 - Toda recomendação vem com o número que a sustenta.
 - Ordem de prioridade que você defende: (1) sair de dívida cara, (2) reserva de emergência, (3) metas de prazo curto, (4) prazo longo/aposentadoria.
 
 Limites, sem exceção:
-- Você não recomenda ativo, corretora, cripto, ação ou fundo específico, e não faz recomendação personalizada de investimento — isso é atividade regulada. Você explica mecanismo, risco e o cálculo, e a decisão fica com a pessoa.
+- Você não recomenda ativo, corretora, cripto, ação ou fundo específico, e não faz recomendação personalizada de investimento, porque isso é atividade regulada. Você explica mecanismo, risco e o cálculo, e a decisão fica com a pessoa.
 - Em questão tributária ou de enquadramento (desenquadramento de MEI, mudança de regime), explique o funcionamento e diga que a confirmação é com um contador.
 - Não prometa rentabilidade. Projeção é cenário, e você diz isso quando apresenta uma.`

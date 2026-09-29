@@ -97,7 +97,7 @@ export function TelaReserva({
 
             {/* Os três pontos são datas, não percentuais: "até 28 de outubro"
                 contra "com o alvo, até março" é a régua que a pessoa entende. */}
-            <div className={estilos.linhaDoTempo} role="img" aria-label={`Hoje, ${rotuloCompetencia(hoje.slice(0, 7), true)}. Sua reserva aguenta até ${dataPorExtenso(ate!, hoje)}. Com o alvo de ${mesesAlvo} meses, aguentaria até ${comAlvo ? dataPorExtenso(comAlvo, hoje) : "—"}.`}>
+            <div className={estilos.linhaDoTempo} role="img" aria-label={`Hoje, ${rotuloCompetencia(hoje.slice(0, 7), true)}. Sua reserva aguenta até ${dataPorExtenso(ate!, hoje)}. Com o alvo de ${mesesAlvo} meses, aguentaria até ${comAlvo ? dataPorExtenso(comAlvo, hoje) : "data sem cálculo"}.`}>
               <i className={estilos.trilho} />
               <i className={estilos.cheio} style={{ width: `${posicaoVoce}%` }} />
               <span className={estilos.marco} style={{ left: "0%" }} data-lado="inicio">
@@ -115,7 +115,7 @@ export function TelaReserva({
               {!completa && (
                 <span className={estilos.marco} style={{ left: `${posicaoAlvo}%` }} data-lado="fim">
                   <i data-cor="alvo" />
-                  <b>{comAlvo ? rotuloCompetencia(comAlvo.slice(0, 7), true) : "—"}</b>
+                  <b>{comAlvo ? rotuloCompetencia(comAlvo.slice(0, 7), true) : "sem alvo"}</b>
                   <small>com o alvo</small>
                 </span>
               )}
@@ -425,7 +425,7 @@ function FormasDeJuntar({
         {forma === "SOBRA" && (
           <p className={estilos.nota}>
             {sobraCentavos > 0
-              ? <>Em média sobram {formatarMoeda(sobraCentavos)} por mês — entradas menos saídas dos últimos meses.</>
+              ? <>Em média sobram {formatarMoeda(sobraCentavos)} por mês: entradas menos saídas dos últimos meses.</>
               : <>Em média não sobra nada: as saídas passam das entradas em {formatarMoeda(Math.abs(sobraCentavos))} por mês. <Link href="/orcamento">Ver onde cortar</Link></>}
           </p>
         )}

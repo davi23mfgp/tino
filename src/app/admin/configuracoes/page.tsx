@@ -102,7 +102,7 @@ export default function ConfiguracoesAdmin() {
     <div className="space-y-4">
       <Aviso tom="info">
         Mudar o preço aqui muda o que a página de vendas anuncia e o que o gateway cobra de quem assinar a partir de
-        agora. Quem já assinou continua no valor que contratou — o preço fica congelado na assinatura.
+        agora. Quem já assinou continua no valor que contratou: o preço fica congelado na assinatura.
       </Aviso>
 
       {mensagem && <p className="text-[calc(13px*var(--escala-letra))] text-positivo">{mensagem}</p>}

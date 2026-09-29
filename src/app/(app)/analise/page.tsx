@@ -160,7 +160,7 @@ export default async function Analise() {
 
             <p className="mt-3 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
               A série usa saldo em conta e parcelamentos, que têm data em cada lançamento. Fica de fora{" "}
-              {mensal.foraDaSerie.join(", ")} — esses só têm o valor de hoje no banco, e repeti-lo para trás faria o
+              {mensal.foraDaSerie.join(", ")}, porque esses só têm o valor de hoje no banco, e repeti-lo para trás faria o
               gráfico mostrar uma melhora que não houve.
             </p>
           </div>
@@ -205,7 +205,7 @@ export default async function Analise() {
         <GraficoDozeMeses dados={panorama.historico} competenciaDestacada={competencia} />
         <p className="mt-3 text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
           Barra para cima é mês que sobrou; para baixo, mês que faltou. O mês atual vai cheio e os anteriores em
-          meio-tom, porque ele ainda não terminou — comparar mês pela metade com mês fechado engana.
+          meio-tom, porque ele ainda não terminou: comparar mês pela metade com mês fechado engana.
         </p>
       </Cartao>
 

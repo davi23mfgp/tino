@@ -1,0 +1,25 @@
+# Atualizações agrupadas uma vez por semana, para não virar um PR por pacote.
+# Next e Prisma ficam de fora das atualizações de versão maior: a versão do
+# Next aqui tem API diferente da documentação comum (ver AGENTS.md), e subir
+# de versão maior é trabalho de sessão própria, não de robô.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      dependencias:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: next
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

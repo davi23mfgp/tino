@@ -65,7 +65,7 @@ export function LigarAvisoDoBanco({
       })
       setTeste(
         resposta.ok
-          ? "Deu certo. O aviso de teste está na fila de conferência acima — confira e apague, se quiser."
+          ? "Deu certo. O aviso de teste está na fila de conferência acima. Confira e apague, se quiser."
           : "O envio não passou. A chave pode ter sido revogada; gere outra.",
       )
     } catch {
@@ -83,7 +83,7 @@ export function LigarAvisoDoBanco({
         </p>
       )}
       <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-        O aviso que o banco já manda vira lançamento sozinho, na hora da compra. É o mais perto do automático — e o
+        O aviso que o banco já manda vira lançamento sozinho, na hora da compra. É o mais perto do automático, e o
         Tino recusa compra negada, estorno e pré-autorização de posto.
       </p>
 
@@ -128,7 +128,7 @@ export function LigarAvisoDoBanco({
 
       <ol className="mt-3 space-y-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
         <li>
-          1. No Android, instale um encaminhador de notificação — MacroDroid e Tasker fazem isso — e dê a ele a
+          1. No Android, instale um encaminhador de notificação (MacroDroid e Tasker fazem isso) e dê a ele a
           permissão de <b>acesso às notificações</b>.
         </li>
         <li>
@@ -137,7 +137,7 @@ export function LigarAvisoDoBanco({
         </li>
         <li>
           3. Ação: <b>requisição HTTP POST</b> para o endereço acima, com corpo JSON{" "}
-          <code className="rounded bg-papel-2 px-1.5 py-0.5">{`{"titulo":"[app]","texto":"[texto]"}`}</code> — onde{" "}
+          <code className="rounded bg-papel-2 px-1.5 py-0.5">{`{"titulo":"[app]","texto":"[texto]"}`}</code>, onde{" "}
           <code className="rounded bg-papel-2 px-1.5 py-0.5">[app]</code> e{" "}
           <code className="rounded bg-papel-2 px-1.5 py-0.5">[texto]</code> são as variáveis do encaminhador.
         </li>
@@ -145,8 +145,8 @@ export function LigarAvisoDoBanco({
       </ol>
 
       <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-[color:var(--texto-3)]">
-        Isto é Android. No iPhone o sistema não deixa nenhum app ler a notificação de outro — ali o caminho é
-        compartilhar o aviso com o Tino, ou falar pelo WhatsApp.
+        Isto é Android. No iPhone o sistema não deixa nenhum app ler a notificação de outro. Ali o caminho é
+        compartilhar o aviso com o Tino, ou falar pelo Telegram.
       </p>
     </div>
   )

@@ -31,7 +31,7 @@ import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
 import { ConfigAtalhoLancar } from "@/components/config-atalho-lancar"
 import { MeusDados } from "@/components/meus-dados"
-import { FotoDePerfil } from "@/components/foto-de-perfil"
+import { EditarPerfil } from "@/components/editar-perfil"
 import { CORES_DE_TEMA, useTheme } from "@/components/theme-provider"
 import { useValoresOcultos } from "@/components/ocultar-valores"
 import { IdentidadeBanco } from "@/components/banco-perfil"
@@ -64,6 +64,7 @@ interface Usuario {
   email: string
   avatarUrl: string | null
   lar: { nome: string; tipo: "SOLO" | "CASAL" | "FAMILIA" } | null
+  podeMudarCasa?: boolean
 }
 
 const TIPOS_CONTA = [
@@ -135,12 +136,14 @@ export default function Configuracoes() {
   const [saindo, setSaindo] = useState(false)
 
   async function recarregarContas() {
-    const [lista, of] = await Promise.all([
-      buscar<Conta[]>("/api/contas"),
-      buscar<{ provedor: string; sandbox: boolean; conexoes: Conexao[] }>("/api/open-finance"),
-    ])
-    setContas(lista)
-    setOpenFinance(of)
+    // Separados de propósito (29/09/2026): as contas vinham num Promise.all com
+    // /api/open-finance, e quando o provedor não sobe (Open Finance está
+    // desligado, sem chaves) a lista de contas falhava junto, com a mensagem
+    // "Não consegui carregar suas contas" para quem nunca usou Open Finance.
+    setContas(await buscar<Conta[]>("/api/contas"))
+    buscar<{ provedor: string; sandbox: boolean; conexoes: Conexao[] }>("/api/open-finance")
+      .then(setOpenFinance)
+      .catch(() => setOpenFinance(null))
   }
 
   async function recarregarContagens() {
@@ -463,10 +466,18 @@ export default function Configuracoes() {
             <>
               <DialogHeader>
                 <DialogTitle>Seu perfil</DialogTitle>
-                <DialogDescription>Foto e nome que aparecem no app.</DialogDescription>
+                <DialogDescription>Foto, nome e casa, tudo num lugar.</DialogDescription>
               </DialogHeader>
               <DialogBody>
-                <FotoDePerfil />
+                {usuario && (
+                  <EditarPerfil
+                    nome={usuario.nome}
+                    email={usuario.email}
+                    casa={usuario.lar}
+                    podeMudarCasa={usuario.podeMudarCasa ?? false}
+                    aoSalvar={() => buscar<Usuario>("/api/usuario").then(setUsuario).catch(() => undefined)}
+                  />
+                )}
                 <Button variant="ghost" size="sm" className="mt-3" onClick={completarPerfil} disabled={completando}>
                   {completando ? "Abrindo…" : "Completar perfil"}
                 </Button>

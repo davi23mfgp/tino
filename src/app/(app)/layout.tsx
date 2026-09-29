@@ -17,6 +17,9 @@ export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 import { RenovarAtalhoDeLancar } from "@/components/atalho-de-lancar"
 import { AlertasProvider } from "@/components/alertas-provider"
+import { OuvidoDeErros } from "@/components/ouvido-de-erros"
+import { AvisoDeTermos } from "@/components/aviso-de-termos"
+import { MUDANCAS_DA_VERSAO, precisaVerTermos } from "@/lib/termos"
 import { ParedeDeAssinatura } from "@/components/parede-de-assinatura"
 import { estadoDoAcesso } from "@/lib/acesso-assinatura"
 
@@ -32,7 +35,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // O papel vem do banco, não do token: o token vale 30 dias, e tirar o papel
     // de alguém precisa valer no próximo clique. `avatarUrl` pela mesma razão:
     // trocar a foto não deveria esperar o token vencer para aparecer.
-    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true } }),
+    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true, termosVersao: true } }),
   ])
 
   // Lar apagado com token ainda válido: manda para o login em vez de estourar.
@@ -60,6 +63,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
     // duplicado que existia antes dele.
     <BuscaPaginasProvider mei={false} apenasLoja={apenasLoja}>
+      <OuvidoDeErros />
       {/* Uma busca de alertas para a tela inteira: barra do topo, faixa
           crítica, recado do Tino e dock liam a mesma lista separados. */}
       <AlertasProvider><IdentidadesProvider><div className="area-do-app min-h-screen">
@@ -94,6 +98,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
               a barra do topo continuam de pé, porque sair e ir para
               Configurações precisa continuar possível. */}
           <main className="animate-page-enter">
+            {/* O funcionário da loja não tem acesso a /api/usuario (ver
+                `@/lib/acesso`): o aviso é para o titular da conta. */}
+            {!apenasLoja && precisaVerTermos(usuario?.termosVersao) && <AvisoDeTermos mudancas={MUDANCAS_DA_VERSAO} />}
             <ParedeDeAssinatura acesso={acesso}>{children}</ParedeDeAssinatura>
           </main>
           {/* Renova o atalho na barra de notificações de quem já o ligou. */}

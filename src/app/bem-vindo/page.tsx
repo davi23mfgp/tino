@@ -184,7 +184,7 @@ export default function BemVindo() {
     {
       titulo: "Quanto entra e quanto sai por mês?",
       texto:
-        "Não precisa ser exato — é a partir daí que eu calculo sua sobra, sua reserva e a projeção. Dá para corrigir depois.",
+        "Não precisa ser exato. É a partir daí que eu calculo sua sobra, sua reserva e a projeção. Dá para corrigir depois.",
       conteudo: (
         <div className="space-y-3">
           <label className="block space-y-1.5">
@@ -291,7 +291,7 @@ export default function BemVindo() {
                     <p className="rounded-xl border border-negativo/30 bg-negativo/10 p-2.5 text-xs text-negativo">
                       Vou registrar {formatarMoeda(-Math.abs(paraCentavos(conta.saldo)))} como cheque especial a{" "}
                       {conta.jurosChequeEspecial || "8,0"}% ao mês. Se você não souber a taxa, deixo no teto legal de 8%
-                      e você corrige depois em Configurações — é quase sempre o juro mais caro que você paga, então ela
+                      e você corrige depois em Configurações. É quase sempre o juro mais caro que você paga, então ela
                       entra no topo do plano.
                     </p>
                   )}
@@ -382,7 +382,7 @@ export default function BemVindo() {
     {
       titulo: "Tem compra parcelada em andamento?",
       texto:
-        "Esta é a pergunta que mais muda o resultado. Parcela some do extrato mas continua tomando um pedaço de cada fatura por meses — se eu não souber, a projeção mente.",
+        "Esta é a pergunta que mais muda o resultado. Parcela some do extrato mas continua tomando um pedaço de cada fatura por meses. Se eu não souber, a projeção mente.",
       conteudo: (
         <div className="space-y-3">
           {cartoes.length === 0 && (
@@ -452,7 +452,7 @@ export default function BemVindo() {
                     <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                       Faltam{" "}
                       {Math.max(0, Number(parcelamento.parcelasTotal) - Number(parcelamento.parcelasPagas || 0))}{" "}
-                      parcela(s) —{" "}
+                      parcela(s),{" "}
                       {formatarMoeda(
                         paraCentavos(parcelamento.valorParcela) *
                           Math.max(0, Number(parcelamento.parcelasTotal) - Number(parcelamento.parcelasPagas || 0)),
@@ -552,7 +552,7 @@ export default function BemVindo() {
     {
       titulo: "Para onde você quer chegar?",
       texto:
-        "Uma meta basta para começar. Se você ainda não tem reserva de emergência, ela costuma vir antes de tudo — é o que impede um imprevisto de virar dívida cara.",
+        "Uma meta basta para começar. Se você ainda não tem reserva de emergência, ela costuma vir antes de tudo: é o que impede um imprevisto de virar dívida cara.",
       conteudo: (
         <div className="space-y-3">
           <div className="grid gap-2 sm:grid-cols-2">
@@ -619,7 +619,7 @@ export default function BemVindo() {
             <span>
               Sim, tenho CNPJ de MEI
               <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                Crio uma conta separada para o CNPJ — misturar PF e PJ é o erro que mais complica MEI.
+                Crio uma conta separada para o CNPJ, porque misturar PF e PJ é o erro que mais complica MEI.
               </span>
             </span>
           </label>

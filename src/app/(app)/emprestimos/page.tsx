@@ -213,7 +213,7 @@ export default function Emprestimos() {
             <p className={local.selo}><i aria-hidden />{parecer.texto}</p>
             <p className={local.parcela}>{formatarMoeda(analise.parcelaCentavos)}<span>/mês</span></p>
             <p className={local.custo}>
-              Você recebe <b>{formatarMoeda(analise.liberadoCentavos)}</b> e devolve <b>{formatarMoeda(analise.totalPagoCentavos)}</b> —{" "}
+              Você recebe <b>{formatarMoeda(analise.liberadoCentavos)}</b> e devolve <b>{formatarMoeda(analise.totalPagoCentavos)}</b>,{" "}
               <em>{formatarMoeda(analise.totalPagoCentavos - analise.liberadoCentavos)} a mais</em>
             </p>
             <div className={local.reguas}>

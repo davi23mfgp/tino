@@ -60,7 +60,7 @@ const PARA_ONDE_FOI = [
 function Inicio() {
   return <>
     <div className="cel-heroi">
-      <p className="cel-ola">Olá, Marina.</p>
+      <p className="cel-ola">Olá, Nicole.</p>
       <p className="cel-mes">setembro de 2026</p>
     </div>
     <div className="cel-cartao cel-cartao--destaque">
@@ -103,7 +103,7 @@ const DIAS = [
   {dia:"08 de setembro",itens:[{nome:"Plano de saúde",nota:"Plano de saúde · Conta corrente",valor:"− R$ 640,00"}]},
   {dia:"06 de setembro",itens:[{nome:"Cinema e bar",nota:"Lazer e eventos · Cartão Gold",valor:"− R$ 140,00"}]},
   {dia:"05 de setembro",itens:[
-    {nome:"Salário Marina",nota:"Salário · Conta corrente",valor:"+ R$ 5.200,00"},
+    {nome:"Salário Nicole",nota:"Salário · Conta corrente",valor:"+ R$ 5.200,00"},
     {nome:"Salário Rafael",nota:"Salário · Conta corrente",valor:"+ R$ 3.400,00"},
     {nome:"Aluguel",nota:"Aluguel e condomínio · Conta corrente",valor:"− R$ 2.025,00"},
   ]},

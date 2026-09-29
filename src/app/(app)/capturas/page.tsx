@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react"
 import Link from "next/link"
-import { Bell, ChevronRight, Mail, MessageCircle, Send, Share2, X } from "lucide-react"
+import { Bell, ChevronRight, Mail, Send, Share2, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -11,7 +11,7 @@ import { useMarca } from "@/components/identidades-visuais"
 import { LigarAvisoDoBanco } from "@/components/ligar-aviso-do-banco"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
-import { CanalWhatsApp } from "@/components/canal-whatsapp"
+import { CanalTelegram } from "@/components/canal-telegram"
 import { SeletorCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -63,7 +63,7 @@ interface Conta {
 }
 
 type Categoria = CategoriaSelecionavel
-type Jeito = "compartilhar" | "aviso" | "whatsapp"
+type Jeito = "compartilhar" | "aviso" | "telegram"
 
 const ORIGEM: Record<string, string> = {
   NOTIFICACAO: "aviso do banco",
@@ -92,7 +92,7 @@ function quando(captura: Captura) {
 export default function Capturas() {
   const [capturas, setCapturas] = useState<Captura[]>([])
   const [chaves, setChaves] = useState<Chave[]>([])
-  const [canais, setCanais] = useState<{ whatsapp: boolean; telegram: boolean }>({ whatsapp: false, telegram: false })
+  const [canais, setCanais] = useState<{ telegram: boolean; telegramUsuario: string | null }>({ telegram: false, telegramUsuario: null })
   const [contas, setContas] = useState<Conta[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [maisUsadas, setMaisUsadas] = useState<string[]>([])
@@ -125,7 +125,7 @@ export default function Capturas() {
 
   const carregar = useCallback(async () => {
     const [fila, listaContas, listaCategorias] = await Promise.all([
-      buscar<{ capturas: Captura[]; chaves: Chave[]; canais: { whatsapp: boolean; telegram: boolean }; maisUsadas: string[] }>("/api/capturas"),
+      buscar<{ capturas: Captura[]; chaves: Chave[]; canais: { telegram: boolean; telegramUsuario: string | null }; maisUsadas: string[] }>("/api/capturas"),
       buscar<Conta[]>("/api/contas"),
       buscar<Categoria[]>("/api/categorias"),
     ])
@@ -237,8 +237,8 @@ export default function Capturas() {
     }, 5000)
   }
 
-  async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM" | "WHATSAPP") {
-    const nome = origem === "WHATSAPP" ? "WhatsApp" : origem === "TELEGRAM" ? "Telegram" : "Meu celular"
+  async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM") {
+    const nome = origem === "TELEGRAM" ? "Telegram" : "Meu celular"
     const resposta = await enviar<{ chave: string }>("/api/capturas", { nome, origem }, "PUT")
     setChaveNova(resposta.chave)
     carregar()
@@ -359,7 +359,7 @@ export default function Capturas() {
           <div className={estilos.jeitos}>
             <button type="button" onClick={() => setJeito("compartilhar")}><Share2 aria-hidden />Compartilhar</button>
             <button type="button" onClick={() => setJeito("aviso")}>{ligado("NOTIFICACAO") && <em aria-label="ligado" />}<Bell aria-hidden />Aviso do banco</button>
-            <button type="button" onClick={() => setJeito("whatsapp")} data-fora={!canais.whatsapp || undefined}>{ligado("WHATSAPP") && <em aria-label="ligado" />}<MessageCircle aria-hidden />WhatsApp</button>
+            <button type="button" onClick={() => setJeito("telegram")} data-fora={!canais.telegram || undefined}>{ligado("TELEGRAM") && <em aria-label="ligado" />}<Send aria-hidden />Telegram</button>
             <Link href="/cartoes"><Mail aria-hidden />E-mail</Link>
           </div>
         </div>
@@ -368,9 +368,9 @@ export default function Capturas() {
       <Dialog open={jeito !== null} onOpenChange={(aberto) => { if (!aberto) setJeito(null) }}>
         <DialogContent className={estilos.dialogo}>
           <DialogHeader>
-            <DialogTitle>{jeito === "compartilhar" ? "Compartilhar do celular" : jeito === "aviso" ? "Compras pelo aviso do banco" : "WhatsApp"}</DialogTitle>
+            <DialogTitle>{jeito === "compartilhar" ? "Compartilhar do celular" : jeito === "aviso" ? "Compras pelo aviso do banco" : "Telegram"}</DialogTitle>
             <DialogDescription>
-              {jeito === "compartilhar" ? "Android. Não precisa de chave nem de programa: um toque por compra." : jeito === "aviso" ? "Um aplicativo de automação no celular lê o aviso do banco e repassa para cá. Você escolhe quais apps podem ser lidos e revoga quando quiser." : "Mande a compra numa mensagem para o Tino e ela cai na fila."}
+              {jeito === "compartilhar" ? "Android. Não precisa de chave nem de programa: um toque por compra." : jeito === "aviso" ? "Um aplicativo de automação no celular lê o aviso do banco e repassa para cá. Você escolhe quais apps podem ser lidos e revoga quando quiser." : "Mande a compra numa mensagem para o Tino no Telegram, por escrito, em áudio ou o arquivo da fatura, e ela cai na fila."}
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
@@ -382,8 +382,8 @@ export default function Capturas() {
               </ol>
             )}
             {jeito === "aviso" && <LigarAvisoDoBanco semCabecalho endereco={endereco} chaveNova={chaveNova} aoGerar={() => criarChave("NOTIFICACAO")} />}
-            {jeito === "whatsapp" && <CanalWhatsApp semCabecalho disponivel={canais.whatsapp} chaves={chaves} chaveNova={chaveNova} aoGerar={() => criarChave("WHATSAPP")} />}
-            {jeito !== "compartilhar" && jeito && <Chaves chaves={chaves.filter((chave) => chave.origem === (jeito === "aviso" ? "NOTIFICACAO" : "WHATSAPP"))} aoRevogar={revogarChave} />}
+            {jeito === "telegram" && <CanalTelegram semCabecalho disponivel={canais.telegram} usuarioDoBot={canais.telegramUsuario} chaves={chaves} chaveNova={chaveNova} aoGerar={() => criarChave("TELEGRAM")} />}
+            {jeito !== "compartilhar" && jeito && <Chaves chaves={chaves.filter((chave) => chave.origem === (jeito === "aviso" ? "NOTIFICACAO" : "TELEGRAM"))} aoRevogar={revogarChave} />}
           </DialogBody>
         </DialogContent>
       </Dialog>
@@ -439,7 +439,7 @@ function AvisoCompartilhado({ resultado }: { resultado: string }) {
       atencao: false,
     },
     confirmada: {
-      texto: "Compra guardada e já lançada — a leitura veio com confiança alta.",
+      texto: "Compra guardada e já lançada: a leitura veio com confiança alta.",
       atencao: false,
     },
     descartada: {

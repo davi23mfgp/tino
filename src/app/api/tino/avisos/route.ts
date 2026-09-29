@@ -4,7 +4,8 @@ import { avisar, escolherAvisos } from "@/lib/tino/avisar"
 
 export const dynamic = "force-dynamic"
 
-const CANAIS = ["NENHUM", "WHATSAPP", "TELEGRAM"] as const
+// O WhatsApp saiu em 29/09/2026 ("deixe só Telegram").
+const CANAIS = ["NENHUM", "TELEGRAM"] as const
 const SEVERIDADES = ["INFO", "ATENCAO", "CRITICO"] as const
 
 /**

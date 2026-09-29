@@ -108,7 +108,30 @@ Depois de colar, faça um *redeploy*: variável nova só entra em build novo.
 
 ---
 
-## 5. Promover o seu usuário a admin
+## 5. A conta de admin
+
+**Desde 29/09/2026 a conta de admin é `admin.tino@gmail.com`**, garantida a cada
+build por `scripts/garantir-admin.mjs`. Na Vercel (Settings → Environment
+Variables, Production, marcadas como Sensitive):
+
+1. `ADMIN_EMAIL` = `admin.tino@gmail.com` — fica para sempre.
+2. `ADMIN_SENHA` = a senha que você quer — **só até a primeira publicação**.
+   O build cria a conta com ela se não existir. Depois, apague a variável:
+   ela nunca é regravada numa conta que já existe (senão trocar a senha no
+   app duraria só até o próximo deploy).
+3. Publique (junte a branch no `main`). No log do build aparece
+   `[admin] admin.tino@gmail.com criada como admin.`
+4. Entre com essa conta e abra `/admin`.
+
+A senha nunca vai para o repositório: arquivo versionado guarda a senha no
+histórico do git para sempre, mesmo depois de apagada.
+
+Outras contas que já eram admin continuam sendo; o log do build avisa quantas
+há. Para tirar: `DATABASE_URL="…" node scripts/admin.mjs rebaixar <email>`.
+
+O resto desta seção é o jeito manual, que continua valendo.
+
+### Promover outra conta à mão
 
 Não existe tela que promova ninguém — de propósito. Tela que concede privilégio
 é uma tela a mais para dar errado, e uma escalada de privilégio a mais para

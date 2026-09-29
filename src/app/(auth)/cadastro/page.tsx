@@ -7,7 +7,7 @@ import { ArrowLeft, ShoppingBag, Wallet } from "lucide-react"
 
 import { enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
-import { TinoMascote } from "@/components/tino-mascote"
+import { TinoMarca } from "@/components/tino-mascote"
 
 /**
  * Criar conta, em dois passos.
@@ -61,7 +61,7 @@ export default function Cadastro() {
       <main className="flex min-h-screen items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="flex items-center gap-3">
-            <TinoMascote estado="tranquilo" className="size-11" />
+            <TinoMarca className="size-11" />
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-muted-fg">Tino</p>
               <h1 className="font-display text-2xl font-bold tracking-tight">O que você quer organizar?</h1>
@@ -91,7 +91,7 @@ export default function Cadastro() {
               <span>
                 <span className="font-display block text-[calc(16px*var(--escala-letra))] font-semibold">Meu dinheiro e minha loja</span>
                 <span className="mt-1 block text-[calc(13px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                  Tudo o que está acima, mais venda no balcão, estoque, limite do MEI e DAS — com o dinheiro do CNPJ
+                  Tudo o que está acima, mais venda no balcão, estoque, limite do MEI e DAS, com o dinheiro do CNPJ
                   separado do seu.
                 </span>
               </span>

@@ -39,10 +39,16 @@ ajude a organizar dívidas, juntar para metas, projetar e decidir empréstimo.
 7. **Português do Brasil em tudo**: código, comentários, commits, interface.
    Nomes de variáveis e funções em português.
 
+8. **Nenhum texto com travessão** (Davi, 29/09/2026). Vale para tela,
+   Telegram, e-mail, termos e respostas do assistente: use vírgula,
+   dois-pontos, parênteses ou ponto. O teste `testes/sem-travessao.test.ts`
+   varre as strings de `src/` e falha se aparecer um, e `semTravessao` limpa
+   a resposta do modelo. Vale também para commits e mensagens ao Davi.
+
 ## Antes de mexer em cálculo
 
 ```bash
-npm test          # 251 testes, cerca de um segundo e meio
+npm test          # 585 testes, cerca de oito segundos; a CI roda os mesmos a cada push
 ```
 
 Se mudar regra de cálculo, o teste correspondente tem de mudar junto — e
@@ -76,6 +82,16 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   e dos ajustes, e `/conectar` leva para Anotar. O código do provedor
   (`src/lib/open-finance/`, `src/app/api/open-finance/`) fica desligado no
   repositório. Não ofereça conexão com banco em tela nenhuma.
+- **Conta de admin: `admin.tino@gmail.com`** (29/09/2026). Criada ou promovida
+  no build por `scripts/garantir-admin.mjs`, com `ADMIN_EMAIL` e `ADMIN_SENHA`
+  na Vercel. A senha que o Davi mandou no chat **nunca** vai para o
+  repositório, nem em teste, nem em comentário.
+- **Sem WhatsApp** (29/09/2026: "não temos wpp por enquanto, então pode
+  tirar. Deixe só telegram"). A rota `/api/whatsapp` saiu, Anotar mostra só
+  Telegram, e a política de privacidade não cita mais a Meta. A biblioteca
+  `src/lib/captura/whatsapp.ts` fica no repositório, desligada, como o Open
+  Finance. O botão "Abrir no WhatsApp" do Fiado continua: é o WhatsApp do
+  próprio dono, um link `wa.me`, não integração do Tino.
 - Já disse (registro antigo): por enquanto, esqueça Telegram, PDF de fatura
   e integração com modelo de linguagem. **Também superado**: as três coisas
   foram pedidas e construídas depois (Telegram e assistente Tino, ver
@@ -103,6 +119,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   estranhas no computador. Testar e mandar captura dos dois, e do tema
   claro no celular.
 - Vidro líquido e gradiente continuam em todos os temas.
+- **Mudança de desenho só depois do canvas** (29/09/2026: "nas coisas que
+  pedir pra mexer que é design não mexa sem antes ver no Claude Design").
+  Mesmo quando o Davi descreve o jeito exato, a mudança visual vai primeiro
+  para o canvas; código só depois da escolha. Correção de defeito,
+  velocidade e texto podem ir direto.
 - **O que abre por cima é sólido** (28/09/2026: "toda parte de menu tá
   basicamente transparente, tem que ser bem visível"). Menu, gaveta, diálogo,
   lista de opções, dica e aviso usam a classe `superficie-flutuante`
@@ -117,8 +138,10 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   resto não aparece, sem aviso. O primeiro canvas ("Tino — telas passo a
   passo", Nh6zs8PsNNNF51HqZq2ycD) passou disso e guarda os passos 1 a 17.
   Do 18 em diante: "Tino — telas, parte 2"
-  (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK). Chegando perto de 190
-  arquivos, abrir uma parte 3.
+  (https://claude.ai/artifact/PbXK5P5Xez3Y15hUF8LKGK), passos 18 a 29. Do 30
+  em diante: "Tino · telas, parte 3"
+  (https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi). Chegando perto de 190
+  arquivos, abrir uma parte 4.
 - **Estilo das telas da loja** (29/09/2026, "pode deixar estilo última
   tela"): quadros finos como Finanças da loja (H2) e MEI (N1) — número
   grande em peso leve com os centavos menores, rótulo curto, a referência

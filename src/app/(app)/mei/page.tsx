@@ -86,7 +86,7 @@ const nomeDoMes = (competencia: string) => {
   const texto = rotuloCompetencia(competencia)
   return texto.charAt(0).toUpperCase() + texto.slice(1).replace(/ de \d{4}$/, "")
 }
-const pct = (parte: number, todo: number) => (todo > 0 ? formatarPercentual(Math.round((parte / todo) * 10_000), 1) : "—")
+const pct = (parte: number, todo: number) => (todo > 0 ? formatarPercentual(Math.round((parte / todo) * 10_000), 1) : "sem dado")
 
 function Reais({ centavos }: { centavos: number }) {
   const texto = formatarMoeda(Math.abs(centavos))
@@ -258,7 +258,7 @@ export default function Mei() {
           rotulo="Média por mês"
           apoio={situacao.mediaMensalCentavos > 0 ? `cabe ${formatarMoeda(situacao.tetoMensalRestanteCentavos)}/mês` : "sem mês fechado ainda"}
         >
-          {situacao.mediaMensalCentavos > 0 ? <Reais centavos={situacao.mediaMensalCentavos} /> : "—"}
+          {situacao.mediaMensalCentavos > 0 ? <Reais centavos={situacao.mediaMensalCentavos} /> : "sem dado"}
         </Quadro>
         {atrasados.length > 0 ? (
           <Quadro rotulo="DAS" tom="negativo" apoio={`${nomeDoMes(atrasados[0].competencia).toLowerCase()} · desde ${ddmm(atrasados[0].das.vencimento)}`}>

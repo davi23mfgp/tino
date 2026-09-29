@@ -102,7 +102,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
           data: {
             larId: sessao.larId,
             contaId: criada.id,
-            credor: `${conta.nome} — cheque especial`,
+            credor: `${conta.nome}, cheque especial`,
             tipo: "CHEQUE_ESPECIAL",
             saldoDevedorCentavos: Math.abs(conta.saldoCentavos),
             // A taxa informada pelo usuário vence. Sem ela, o teto legal de 8%
@@ -111,7 +111,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
             jurosMensalBps: conta.jurosChequeEspecialBps ?? chequeEspecialPadraoBps,
             observacao: conta.jurosChequeEspecialBps
               ? null
-              : "Juros no teto legal de 8% a.m. — informe a taxa do seu contrato para a projeção ficar exata.",
+              : "Juros no teto legal de 8% a.m. Informe a taxa do seu contrato para a projeção ficar exata.",
           },
         })
       }

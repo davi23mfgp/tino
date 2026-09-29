@@ -64,7 +64,7 @@ export const POST = comSessao<Contexto>(async (sessao, requisicao, contexto) => 
     } else {
       lancamento = await tx.transacao.create({ data: {
         larId: sessao.larId, contaId, metaId: id, data, valorCentavos: valor, tipo, pago: true,
-        descricao: `${dados.retirada ? "Retirada" : "Aporte"} — ${meta.nome}`,
+        descricao: `${dados.retirada ? "Retirada" : "Aporte"}: ${meta.nome}`,
         competencia: periodoMetas(data).competencia, membroId: sessao.membroId, hashImport,
       } })
     }

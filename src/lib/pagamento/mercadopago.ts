@@ -136,7 +136,7 @@ export const gatewayMercadoPago: Gateway = {
       method: "POST",
       idempotencia: pedido.referencia,
       body: JSON.stringify({
-        reason: `Tino — ${pedido.nomeDoPlano}`,
+        reason: `Tino · ${pedido.nomeDoPlano}`,
         external_reference: pedido.referencia,
         payer_email: pedido.emailDoPagador,
         back_url: pedido.urlRetorno,

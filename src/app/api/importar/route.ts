@@ -1,4 +1,5 @@
 import { comSessao, corpo, erro, ok, ErroDeUso } from "@/lib/api"
+import { consumirLimite, REGRAS } from "@/lib/limite"
 import { confirmarImportacao, previaImportacao, type FormatoImportacao } from "@/lib/importar"
 import { PdfProtegido } from "@/lib/importar/pdf"
 import { prisma } from "@/lib/prisma"
@@ -24,6 +25,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   const conta = await prisma.conta.findFirst({ where: { id: contaId, larId: sessao.larId } })
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
+
+  // A prévia pode chamar a IA (categoria das lojas, releitura de PDF), que é
+  // paga por chamada: sem teto, reenviar o arquivo em laço vira conta do dono.
+  await consumirLimite(`caro:importar:${sessao.usuarioId}`, REGRAS.caro)
 
   try {
     const previa = await previaImportacao({

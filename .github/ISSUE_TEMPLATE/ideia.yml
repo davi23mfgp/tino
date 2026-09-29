@@ -1,0 +1,15 @@
+name: Ideia ou pedido
+description: Tela nova, ajuste de cálculo, coisa que falta.
+labels: [ideia]
+body:
+  - type: textarea
+    id: pedido
+    attributes:
+      label: O que você quer
+    validations:
+      required: true
+  - type: textarea
+    id: porque
+    attributes:
+      label: Para quê
+      description: Que decisão ou conta isso ajuda a fazer.

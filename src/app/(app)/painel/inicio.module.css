@@ -1,0 +1,189 @@
+/* Início, opção C do canvas (passo 30, 29/09/2026). O topo verde continua em
+   painel.module.css; daqui para baixo é este arquivo. No celular, abas Hoje,
+   Mês e Futuro; no computador, uma coluna larga e um trilho à direita. */
+
+/* Amarelo de atenção desta tela. A variável --atencao do tema vale cinza
+   (oklch .7 0 0) e o canvas pediu amarelo: "pede atenção" em cinza não
+   chama a atenção de ninguém. */
+.grade { --amarelo:oklch(0.8 0.14 78); display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+.abas { position:sticky; top:8px; z-index:5; display:flex; padding:4px; border-radius:999px; border:1px solid var(--pauta); background:var(--papel-1); backdrop-filter:blur(18px); }
+.abas button { flex:1; min-height:40px; border-radius:999px; font-size:calc(14px * var(--escala-letra)); color:var(--texto-3); }
+.abas button[aria-selected=true] { background:color-mix(in oklab, var(--foreground), transparent 88%); font-weight:650; color:var(--foreground); }
+
+.grupo { display:none; flex-direction:column; gap:12px; min-width:0; }
+.grade[data-aba=hoje] .grupo[data-grupo=hoje],
+.grade[data-aba=mes] .grupo[data-grupo=mes],
+.grade[data-aba=futuro] .grupo[data-grupo=futuro] { display:flex; }
+
+@media (min-width:1024px) {
+  .grade {
+    display:grid; gap:16px; align-items:start;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.95fr);
+    grid-template-areas:
+      "fluxo fluxo conferir"
+      "onde recentes faturas"
+      "indicadores indicadores dividas";
+  }
+  .abas { display:none; }
+  /* Mais específico que a regra das abas lá em cima: sem isso o grupo da aba
+     aberta continuava um bloco só e empilhava três seções numa coluna. */
+  .grade[data-aba] .grupo[data-grupo] { display:contents; }
+  .grade [data-area=fluxo] { grid-area:fluxo; }
+  .grade [data-area=conferir] { grid-area:conferir; }
+  .grade [data-area=onde] { grid-area:onde; }
+  .grade [data-area=recentes] { grid-area:recentes; }
+  .grade [data-area=faturas] { grid-area:faturas; }
+  .grade [data-area=indicadores] { grid-area:indicadores; }
+  .grade [data-area=dividas] { grid-area:dividas; }
+}
+
+/* ---- bloco e cabeçalho */
+.bloco { display:flex; flex-direction:column; gap:14px; min-width:0; padding:20px; border:1px solid var(--pauta); border-radius:var(--raio-cartao); background:var(--papel-1); }
+.cabeca { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.cabeca h2, .saudeTopo h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; letter-spacing:-.01em; }
+.cabeca p, .saudeTopo p { margin-top:2px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.cabeca > a, .linkCabeca { flex-shrink:0; font-size:calc(12.5px * var(--escala-letra)); color:var(--acao); white-space:nowrap; }
+.rotulo { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.apoio { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.vazio { display:flex; min-height:64px; align-items:center; justify-content:center; gap:8px; font-size:13px; color:var(--texto-2); }
+.vazio svg { width:15px; }
+
+/* Número grande e fino, centavos menores (o estilo das telas da loja). */
+.reais { font-weight:300; letter-spacing:-.035em; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1.1; }
+.reais small { font-size:.52em; opacity:.62; }
+.reais[data-tamanho=medio] { font-size:calc(24px * var(--escala-letra)); }
+.reais[data-tamanho=grande] { font-size:calc(30px * var(--escala-letra)); }
+.reais[data-tom=positivo] { color:var(--acao); }
+.reais[data-tom=negativo] { color:var(--negativo); }
+
+.chip { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650; white-space:nowrap; background:color-mix(in oklab, var(--acao), transparent 84%); color:var(--acao); }
+.chip[data-tom=atencao] { background:color-mix(in oklab, var(--amarelo), transparent 82%); color:var(--amarelo); }
+.chip[data-tom=negativo] { background:color-mix(in oklab, var(--negativo), transparent 84%); color:var(--negativo); }
+
+/* ---- conferir: uma compra por vez, as outras empilhadas atrás */
+.pilha { position:relative; padding-bottom:12px; }
+.pilha::before, .pilha::after { content:""; position:absolute; left:14px; right:14px; bottom:0; height:30px; border-radius:18px; background:color-mix(in oklab, var(--foreground), transparent 96%); }
+.pilha::after { left:7px; right:7px; bottom:6px; background:color-mix(in oklab, var(--foreground), transparent 94%); }
+.compraConferir { position:relative; z-index:1; display:flex; flex-direction:column; gap:12px; padding:16px; border-radius:20px; border:1px solid var(--pauta); background:var(--papel-2); }
+.linhaConferir { display:flex; align-items:center; gap:12px; }
+.linhaConferir strong { display:block; font-size:calc(15px * var(--escala-letra)); font-weight:650; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.linhaConferir small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.iconeConferir { display:grid; place-items:center; width:42px; height:42px; flex-shrink:0; border-radius:12px; background:color-mix(in oklab, var(--acao), transparent 86%); color:var(--acao); }
+.iconeConferir svg { width:20px; height:20px; }
+.valorConferir { font-size:calc(30px * var(--escala-letra)); font-weight:300; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+.valorConferir small { font-size:.52em; opacity:.62; }
+.categoriaConferir { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.categoriaConferir span { margin-left:6px; padding:3px 9px; border-radius:999px; background:color-mix(in oklab, var(--primary, var(--acao)), transparent 84%); color:var(--foreground); font-weight:600; }
+.categoriaConferir em { font-style:normal; color:var(--amarelo); }
+.botoesConferir { display:grid; grid-template-columns:auto 1fr; gap:8px; }
+.botoesConferir button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:0 16px; border-radius:999px; border:1px solid var(--pauta); font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.botoesConferir button[data-principal] { border-color:transparent; background:var(--acao); color:var(--background); }
+.botoesConferir button:disabled { opacity:.5; }
+.botoesConferir svg { width:16px; height:16px; }
+
+/* ---- faturas */
+.faturas { display:grid; gap:10px; }
+.fatura { container-type:inline-size; display:flex; flex-direction:column; gap:10px; padding:14px 16px; border-radius:18px; border:1px solid var(--pauta); background:var(--papel-2); transition:background var(--tempo) var(--curva); }
+.fatura:hover { background:color-mix(in oklab, var(--papel-2), var(--foreground) 4%); }
+.faturaTopo { display:grid; grid-template-columns:32px minmax(0,1fr) auto; align-items:center; gap:10px; }
+.faturaTopo strong { display:block; font-size:calc(13.5px * var(--escala-letra)); font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.faturaTopo small { display:block; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); }
+.logoBanco { width:32px; height:32px; border-radius:50%; }
+.faturaValor { display:flex; justify-content:space-between; align-items:flex-end; gap:8px; }
+.faturaValor > div > small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.faturaValor p { text-align:right; font-size:max(10px, calc(11.5px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
+.trilho { height:4px; border-radius:999px; background:color-mix(in oklab, var(--foreground), transparent 90%); overflow:hidden; }
+.trilho i { display:block; height:100%; border-radius:999px; background:var(--acao); }
+.trilho[data-tom=atencao] i { background:var(--amarelo); }
+
+/* ---- listas: compras recentes e dívidas */
+.lista { display:grid; }
+.lista li + li { border-top:1px solid var(--pauta); }
+.lista a { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:12px; min-height:56px; padding:8px 0; }
+.lista strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lista small { display:block; font-size:max(10px, calc(11.5px * var(--escala-letra))); color:var(--texto-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lista b { font-size:calc(14px * var(--escala-letra)); font-weight:500; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.logo { display:grid; place-items:center; width:38px; height:38px; flex-shrink:0; }
+.logo:has(> img, > span[aria-label]) > .icone { display:none; }
+/* Logo que não carregou mostra o texto alternativo espremido; some o texto, o
+   leitor de tela continua lendo o alt. */
+.logo img { font-size:0; color:transparent; }
+.icone { display:grid; place-items:center; width:38px; height:38px; border-radius:12px; background:color-mix(in oklab, var(--acao), transparent 88%); color:var(--acao); }
+.icone svg { width:18px; height:18px; }
+.corDivida { width:8px; height:30px; border-radius:999px; background:var(--acao); }
+.corDivida[data-peso="médio"] { background:var(--amarelo); }
+.corDivida[data-peso=caro] { background:var(--negativo); }
+
+/* ---- para onde foi: a rosca */
+.rosca { position:relative; width:180px; height:180px; margin:4px auto 0; }
+.circulo { position:absolute; inset:0; border-radius:50%; -webkit-mask:radial-gradient(circle, transparent 70px, #000 71px); mask:radial-gradient(circle, transparent 70px, #000 71px); }
+.centro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.centro > small { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.legenda { display:grid; gap:2px; }
+.legenda li { display:grid; grid-template-columns:10px minmax(0,1fr) 40px auto; align-items:center; gap:8px; min-height:30px; font-size:calc(13px * var(--escala-letra)); }
+.legenda i { width:10px; height:10px; border-radius:3px; }
+.legenda span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.legenda small { text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.legenda b { font-weight:500; font-variant-numeric:tabular-nums; }
+.estouros { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.estouros > span { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+
+/* ---- saúde e indicadores */
+.saudeTopo { display:grid; grid-template-columns:64px minmax(0,1fr) auto; align-items:center; gap:14px; }
+.anelNota { --nota:0deg; position:relative; display:grid; place-items:center; width:64px; height:64px; border-radius:50%; background:conic-gradient(var(--amarelo) var(--nota), color-mix(in oklab, var(--foreground), transparent 90%) 0); }
+.anelNota[data-situacao=SAUDAVEL] { background:conic-gradient(var(--acao) var(--nota), color-mix(in oklab, var(--foreground), transparent 90%) 0); }
+.anelNota::after { content:""; position:absolute; inset:7px; border-radius:50%; background:var(--papel-1); }
+.anelNota span { position:relative; z-index:1; font-size:calc(18px * var(--escala-letra)); font-weight:300; }
+.indicadores { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+.indicadores > div { display:flex; flex-direction:column; gap:6px; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--amarelo), transparent 72%); background:linear-gradient(160deg, color-mix(in oklab, var(--amarelo), transparent 88%), transparent 70%), var(--papel-2); }
+.indicadores > div[data-faixa=BOM] { border-color:color-mix(in oklab, var(--positivo), transparent 70%); background:linear-gradient(160deg, color-mix(in oklab, var(--positivo), transparent 88%), transparent 70%), var(--papel-2); }
+.indicadores > div[data-faixa=CRITICO] { border-color:color-mix(in oklab, var(--negativo), transparent 70%); background:linear-gradient(160deg, color-mix(in oklab, var(--negativo), transparent 88%), transparent 70%), var(--papel-2); }
+.indicadorTopo { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.indicadorTopo b { font-size:calc(20px * var(--escala-letra)); font-weight:300; color:var(--amarelo); white-space:nowrap; }
+.indicadores > div[data-faixa=BOM] .indicadorTopo b { color:var(--positivo); }
+.indicadores > div[data-faixa=CRITICO] .indicadorTopo b { color:var(--negativo); }
+.indicadores small { font-size:max(10px, calc(11.5px * var(--escala-letra))); line-height:1.35; color:var(--texto-3); }
+.proximaAcao { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:12px; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--acao), transparent 70%); background:linear-gradient(90deg, color-mix(in oklab, var(--acao), transparent 88%), transparent 70%); }
+.proximaAcao > span:first-child { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--acao); color:var(--background); font-weight:750; }
+.proximaAcao strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
+.proximaAcao small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.proximaAcao b { text-align:right; font-size:calc(17px * var(--escala-letra)); font-weight:400; color:var(--acao); white-space:nowrap; }
+.proximaAcao b small { font-size:max(10px, calc(11px * var(--escala-letra))); }
+
+/* ---- fluxo de caixa: barras juntas, com o valor escrito */
+.numerosFluxo { display:flex; flex-wrap:wrap; gap:8px 28px; align-items:flex-end; }
+.numerosFluxo > div > small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.barrasFluxo { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:4px; }
+.barrasFluxo > div { display:flex; flex-direction:column; align-items:center; min-width:0; }
+.metade { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; width:100%; }
+.metade[data-lado=baixo] { justify-content:flex-start; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 82%); }
+.metade i { display:block; width:62%; max-width:30px; border-radius:6px; background:var(--acao); }
+.metade[data-lado=baixo] i { background:var(--negativo); }
+.metade em { font-style:normal; font-size:max(9px, calc(10px * var(--escala-letra))); font-variant-numeric:tabular-nums; color:var(--texto-2); white-space:nowrap; line-height:16px; }
+.barrasFluxo > div[data-futuro] i { background:repeating-linear-gradient(135deg, color-mix(in oklab, var(--acao), transparent 25%) 0 3px, color-mix(in oklab, var(--acao), transparent 78%) 3px 6px); }
+.barrasFluxo > div[data-futuro] .metade[data-lado=baixo] i { background:repeating-linear-gradient(135deg, color-mix(in oklab, var(--negativo), transparent 25%) 0 3px, color-mix(in oklab, var(--negativo), transparent 78%) 3px 6px); }
+.barrasFluxo > div > small { margin-top:6px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
+.barrasFluxo > div:not([data-futuro]) > small { color:var(--texto-2); }
+.legendaFluxo { display:flex; align-items:center; gap:6px; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
+.legendaFluxo span { width:10px; height:10px; border-radius:3px; background:var(--acao); }
+.legendaFluxo span[data-tipo=previsto] { margin-left:10px; background:repeating-linear-gradient(135deg, var(--acao) 0 2px, transparent 2px 4px); border:1px solid color-mix(in oklab, var(--acao), transparent 50%); }
+
+@media (max-width:640px) {
+  .bloco { padding:16px; }
+  .metade em { font-size:9px; }
+}
+
+:global(.light) .grade { --amarelo:oklch(0.6 0.15 65); }
+
+/* No trilho estreito do computador o nome do banco cortava ("Banco ..."): o
+   prazo desce para a linha de baixo. */
+@container (max-width:300px) {
+  .faturaTopo { grid-template-columns:32px minmax(0,1fr); }
+  .faturaTopo .chip { grid-column:2; justify-self:start; }
+}
+/* No celular os doze rótulos não cabem: os meses previstos iguais repetiam
+   o mesmo número; fica só o primeiro. */
+@media (max-width:640px) {
+  .barrasFluxo > div[data-futuro] ~ div[data-futuro] em { display:none; }
+}

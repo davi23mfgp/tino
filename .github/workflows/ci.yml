@@ -1,0 +1,43 @@
+# Confere tipos e testes a cada push e a cada PR.
+#
+# Existe porque a Vercel só publica: um build que passa não quer dizer que as
+# contas fecham. Os testes de cálculo (dinheiro em centavos, taxas em bps, MEI)
+# rodam aqui antes de o PR chegar ao main.
+#
+# Não precisa de banco nem de segredo de verdade: os testes são de função pura.
+# O JWT_SECRET abaixo é de mentira e só existe porque `src/lib/auth.ts` se
+# recusa a carregar sem um segredo de 32 caracteres.
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conferir:
+    name: Tipos e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      JWT_SECRET: segredo-de-mentira-so-para-a-ci-000000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Tipos
+        run: npm run tipos
+      - name: Testes
+        run: npm test

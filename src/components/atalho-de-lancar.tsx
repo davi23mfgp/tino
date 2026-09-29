@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from "react"
  *   ligado, ela também volta sozinha uma vez por dia, mesmo com o app fechado.
  * - **Não permite** escrever dentro da própria notificação: a API tem botão,
  *   não campo de texto. Responder ali dentro só existe em aplicativo nativo,
- *   ou pelo WhatsApp, que o Tino já atende.
+ *   ou pelo Telegram, que o Tino já atende.
  *
  * A notificação é criada pelo próprio aparelho quando o app abre, e o servidor
  * a repõe uma vez por dia por push. Não há fornecedor no meio: o par de chaves

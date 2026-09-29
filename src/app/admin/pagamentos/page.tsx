@@ -76,7 +76,7 @@ export default async function PagamentosAdmin() {
                   <p className="text-[calc(13px*var(--escala-letra))]">{falha.assinatura.usuario.nome}</p>
                   <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
                     {falha.assinatura.usuario.email} · {ROTULO_PROVEDOR[falha.provedor]} ·{" "}
-                    {falha.criadoEm.toLocaleDateString("pt-BR")}
+                    {falha.criadoEm.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}
                   </p>
                   <p className="mt-0.5 text-[calc(12px*var(--escala-letra))] text-negativo">
                     {falha.motivoFalha ?? "O provedor não informou o motivo."}
@@ -111,7 +111,7 @@ export default async function PagamentosAdmin() {
               <tbody className="divide-y divide-pauta">
                 {cobrancas.map((cobranca) => (
                   <tr key={cobranca.id}>
-                    <td className="py-2.5 pr-3 text-muted-fg">{cobranca.criadoEm.toLocaleDateString("pt-BR")}</td>
+                    <td className="py-2.5 pr-3 text-muted-fg">{cobranca.criadoEm.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</td>
                     <td className="py-2.5 pr-3">
                       <p>{cobranca.assinatura.usuario.nome}</p>
                       <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">{cobranca.assinatura.usuario.email}</p>

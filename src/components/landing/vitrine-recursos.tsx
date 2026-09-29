@@ -15,6 +15,10 @@ import { ArrowRight } from "lucide-react"
  * imagem e sem biblioteca: são números da conta de demonstração, os mesmos que
  * aparecem nas capturas logo acima.
  *
+ * Números conferidos com a demo em 29/09/2026: a sobra de setembro é pequena e
+ * a projeção desce. Ficam assim: vitrine que mostra número bonito inventado
+ * contradiz a regra 3 do produto logo na primeira página.
+ *
  * O verde da marca aparece só no dado — nunca no fundo do cartão inteiro. É a
  * mesma regra do app: o verde diz "isto é seu", não decora.
  */
@@ -41,7 +45,7 @@ const RECURSOS = [
   {
     ancora: "planejamento",
     rotulo: "Seu futuro",
-    texto: "Onde você chega no ritmo de hoje.",
+    texto: "Onde você chega no ritmo de hoje, mesmo quando a notícia é ruim.",
     arte: <ArteDaProjecao />,
   },
 ]
@@ -68,14 +72,14 @@ function ArteDoMes() {
   return (
     <div className="lp-arte-mes">
       <span className="lp-arte-rotulo">Sobrou em setembro</span>
-      <strong className="lp-arte-numero">R$ 4.436</strong>
+      <strong className="lp-arte-numero">R$ 423</strong>
       <div className="lp-arte-barras">
         <i style={{ width: "100%" }} data-tom="entrou" />
-        <i style={{ width: "48%" }} data-tom="saiu" />
+        <i style={{ width: "95%" }} data-tom="saiu" />
       </div>
       <div className="lp-arte-legenda">
         <span>entrou 8.600</span>
-        <span>saiu 4.164</span>
+        <span>saiu 8.177</span>
       </div>
     </div>
   )
@@ -87,7 +91,7 @@ function ArteDoCartao() {
     <div className="lp-arte-cartao">
       <span className="lp-arte-rotulo">Próxima fatura</span>
       <strong className="lp-arte-numero">R$ 579,00</strong>
-      <span className="lp-arte-pilula">vence em 6 dias</span>
+      <span className="lp-arte-pilula">vence em 7 dias</span>
       <div className="lp-arte-meses">
         {[62, 38, 24, 12].map((altura, indice) => (
           <i key={altura} style={{ height: `${altura}%` }} data-aceso={indice === 0} />
@@ -102,13 +106,13 @@ function ArteDoOrcamento() {
   return (
     <div className="lp-arte-orcamento">
       <span className="lp-arte-rotulo">Usado do plano</span>
-      <strong className="lp-arte-numero">78%</strong>
+      <strong className="lp-arte-numero">124%</strong>
       <div className="lp-arte-trilho">
-        <i style={{ width: "78%" }} />
+        <i style={{ width: "100%" }} />
       </div>
       <div className="lp-arte-linha">
-        <span>Mercado</span>
-        <b>passou R$ 120</b>
+        <span>Supermercado</span>
+        <b>passou R$ 196</b>
       </div>
     </div>
   )
@@ -118,8 +122,8 @@ function ArteDoOrcamento() {
 function ArteDaProjecao() {
   return (
     <div className="lp-arte-projecao">
-      <span className="lp-arte-rotulo">Em 24 meses</span>
-      <strong className="lp-arte-numero">R$ 16.005</strong>
+      <span className="lp-arte-rotulo">Em 12 meses</span>
+      <strong className="lp-arte-numero">R$ 9.724</strong>
       <svg viewBox="0 0 220 70" preserveAspectRatio="none" aria-hidden className="lp-arte-linha-svg">
         <defs>
           <linearGradient id="lp-area" x1="0" y1="0" x2="0" y2="1">
@@ -127,16 +131,16 @@ function ArteDaProjecao() {
             <stop offset="100%" stopColor="#45f45c" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d="M0 58 L44 52 L88 44 L132 30 L176 22 L220 6 L220 70 L0 70 Z" fill="url(#lp-area)" />
+        <path d="M0 8 L44 18 L88 28 L132 38 L176 48 L220 58 L220 70 L0 70 Z" fill="url(#lp-area)" />
         <path
-          d="M0 58 L44 52 L88 44 L132 30 L176 22 L220 6"
+          d="M0 8 L44 18 L88 28 L132 38 L176 48 L220 58"
           fill="none"
           stroke="#45f45c"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="220" cy="6" r="4" fill="#45f45c" />
+        <circle cx="220" cy="58" r="4" fill="#45f45c" />
       </svg>
     </div>
   )

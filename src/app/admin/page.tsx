@@ -25,12 +25,13 @@ export default async function VisaoGeralAdmin() {
   inicioDoMes.setUTCDate(1)
   inicioDoMes.setUTCHours(0, 0, 0, 0)
 
-  const [assinaturas, totalContas, canceladasNoMes, chamadosAbertos, falhasRecentes] = await Promise.all([
+  const [assinaturas, totalContas, canceladasNoMes, chamadosAbertos, falhasRecentes, errosAbertos] = await Promise.all([
     prisma.assinatura.findMany({ select: { status: true, ciclo: true, valorCentavos: true } }),
     prisma.usuario.count(),
     prisma.assinatura.count({ where: { status: "CANCELADA", canceladaEm: { gte: inicioDoMes } } }),
     prisma.chamado.count({ where: { status: "ABERTO" } }),
     prisma.cobranca.count({ where: { status: "FALHOU", criadoEm: { gte: inicioDoMes } } }),
+    prisma.erroRegistrado.count({ where: { status: "NOVO" } }),
   ])
 
   const porStatus = contarPorStatus(assinaturas)
@@ -48,7 +49,7 @@ export default async function VisaoGeralAdmin() {
         <Aviso tom="atencao">
           {semGateway.length === 2
             ? "Nenhum meio de pagamento está configurado: ninguém consegue assinar. Falta colar as chaves do Mercado Pago e da Stripe nas variáveis de ambiente."
-            : `${semGateway[0].rotulo} sem chave configurada — o botão dele aparece desabilitado para o cliente.`}
+            : `${semGateway[0].rotulo} sem chave configurada: o botão dele aparece desabilitado para o cliente.`}
         </Aviso>
       )}
 
@@ -117,6 +118,12 @@ export default async function VisaoGeralAdmin() {
             <span>Cobranças recusadas neste mês</span>
             <Link href="/admin/pagamentos" className="numero text-acao">
               {falhasRecentes}
+            </Link>
+          </li>
+          <li className="flex items-center justify-between gap-3 border-b border-pauta pb-2">
+            <span>Erros em aberto no app</span>
+            <Link href="/admin/erros" className="numero text-acao">
+              {errosAbertos}
             </Link>
           </li>
           <li className="flex items-center justify-between gap-3">

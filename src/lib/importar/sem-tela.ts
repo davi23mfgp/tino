@@ -21,7 +21,7 @@ export function motivoParaNaoImportarSozinho(previa: PreviaImportacao): string |
   if (conferencia.lidoCentavos !== conferencia.informadoCentavos) {
     return (
       `Li ${formatarMoeda(conferencia.lidoCentavos)} em lançamentos, mas a fatura diz ${formatarMoeda(conferencia.informadoCentavos)}. ` +
-      "Não importei nada para não gravar errado — abra o app em Importar para conferir."
+      "Não importei nada para não gravar errado. Abra o app em Importar para conferir."
     )
   }
   return null
