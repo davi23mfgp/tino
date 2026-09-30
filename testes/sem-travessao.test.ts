@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { execSync } from "node:child_process"
+import { execFileSync } from "node:child_process"
 import { readFileSync } from "node:fs"
 import { describe, it } from "node:test"
 import ts from "typescript"
@@ -12,7 +12,11 @@ import { semTravessao } from "@/lib/tino/chat"
 
 describe("texto sem travessão", () => {
   it("nenhuma string, template ou texto de JSX em src/ tem travessão", () => {
-    const arquivos = execSync("git ls-files 'src/**/*.ts' 'src/**/*.tsx'").toString().trim().split("\n")
+    // Aspas simples não são glob no cmd.exe; a lista ficava vazia no Windows
+    // e o teste tentava ler o caminho "" em vez de conferir os textos.
+    const arquivos = execFileSync("git", ["ls-files", "src"], { encoding: "utf8" })
+      .split(/\r?\n/)
+      .filter((arquivo) => /^src\/.*\.tsx?$/.test(arquivo))
     const achados: string[] = []
     for (const arquivo of arquivos) {
       const fonte = readFileSync(arquivo, "utf8")

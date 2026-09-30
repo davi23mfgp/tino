@@ -102,7 +102,7 @@ export async function exigirSessao(): Promise<Sessao> {
   return sessao
 }
 
-export async function gravarCookieSessao(token: string) {
+export async function gravarCookieSessao(token: string, manterConectado = true) {
   const jar = await cookies()
   jar.set(COOKIE_SESSAO, token, {
     httpOnly: true,
@@ -111,7 +111,7 @@ export async function gravarCookieSessao(token: string) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    ...(manterConectado ? { maxAge: 60 * 60 * 24 * 30 } : {}),
   })
 }
 

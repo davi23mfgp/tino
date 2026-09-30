@@ -404,6 +404,7 @@ model InscricaoPush {
 model Usuario {
   id             String          @id @default(cuid())
   email          String          @unique
+  googleId       String?         @unique
   senhaHash      String
   nome           String
   avatarUrl      String?

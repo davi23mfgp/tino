@@ -1,0 +1,72 @@
+import { cookies } from "next/headers"
+import { NextResponse } from "next/server"
+
+import { criarToken, gravarCookieSessao } from "@/lib/auth"
+import { configuracaoGoogle, verificarIdentidadeGoogle } from "@/lib/google-login"
+import { prisma } from "@/lib/prisma"
+import { registrarAcesso } from "@/lib/registro-acesso"
+
+function voltar(requisicao: Request, motivo: string) {
+  return NextResponse.redirect(new URL(`/login?erro=${motivo}`, requisicao.url))
+}
+
+export async function GET(requisicao: Request) {
+  const parametros = new URL(requisicao.url).searchParams
+  const jar = await cookies()
+  const estado = jar.get("google_estado")?.value
+  const nonce = jar.get("google_nonce")?.value
+  const manterConectado = jar.get("google_manter")?.value !== "0"
+  jar.delete("google_estado")
+  jar.delete("google_nonce")
+  jar.delete("google_manter")
+
+  if (parametros.has("error")) return voltar(requisicao, "google-cancelado")
+  if (!estado || !nonce || parametros.get("state") !== estado || !parametros.get("code")) {
+    return voltar(requisicao, "google-expirado")
+  }
+  const configuracao = configuracaoGoogle()
+  if (!configuracao) return voltar(requisicao, "google-indisponivel")
+
+  try {
+    const troca = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: configuracao.clienteId,
+        client_secret: configuracao.clienteSegredo,
+        code: parametros.get("code")!,
+        grant_type: "authorization_code",
+        redirect_uri: configuracao.retorno,
+      }),
+      cache: "no-store",
+    })
+    if (!troca.ok) return voltar(requisicao, "google-falhou")
+    const dados: { id_token?: string } = await troca.json()
+    if (!dados.id_token) return voltar(requisicao, "google-falhou")
+    const identidade = await verificarIdentidadeGoogle(dados.id_token, configuracao.clienteId, nonce)
+
+    let usuario = await prisma.usuario.findUnique({ where: { googleId: identidade.googleId }, include: { membro: true } })
+    if (!usuario) {
+      usuario = await prisma.usuario.findUnique({ where: { email: identidade.email }, include: { membro: true } })
+      if (!usuario) return voltar(requisicao, "google-sem-conta")
+      // E-mail externo do Google pode mudar de dono. Só uma caixa Gmail, que
+      // o próprio Google administra, é suficiente para ligar a conta sozinha.
+      if (!identidade.email.endsWith("@gmail.com") || usuario.googleId) {
+        return voltar(requisicao, "google-vinculo")
+      }
+      usuario = await prisma.usuario.update({
+        where: { id: usuario.id }, data: { googleId: identidade.googleId }, include: { membro: true },
+      })
+    }
+
+    await prisma.usuario.update({ where: { id: usuario.id }, data: { ultimoLogin: new Date() } })
+    await registrarAcesso(requisicao, usuario.id, "LOGIN")
+    await gravarCookieSessao(await criarToken({
+      usuarioId: usuario.id, email: usuario.email, nome: usuario.nome,
+      larId: usuario.larId, membroId: usuario.membroId, papel: usuario.membro?.papel ?? "TITULAR",
+    }), manterConectado)
+    return NextResponse.redirect(new URL("/painel", requisicao.url))
+  } catch {
+    return voltar(requisicao, "google-falhou")
+  }
+}

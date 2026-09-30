@@ -10,7 +10,7 @@ import { registrarAcesso } from "@/lib/registro-acesso"
 const HASH_FALSO = "$2a$12$pUjYLGc.bllSI.9n598Yyu0Xojk4m5altsbg.IDJiYscdr4fI9.c6"
 
 export async function POST(requisicao: Request) {
-  const dados = await corpo<{ email: string; senha: string }>(requisicao)
+  const dados = await corpo<{ email: string; senha: string; manterConectado?: boolean }>(requisicao)
   const email = exigir(dados.email, "Informe o e-mail").trim().toLowerCase()
   const senha = exigir(dados.senha, "Informe a senha")
 
@@ -51,6 +51,7 @@ export async function POST(requisicao: Request) {
       membroId: usuario.membroId,
       papel: usuario.membro?.papel ?? "TITULAR",
     }),
+    dados.manterConectado !== false,
   )
 
   return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email })

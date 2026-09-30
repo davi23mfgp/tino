@@ -1368,3 +1368,30 @@ separadamente no fechamento desta rodada.
 real, e não se repetir abaixo. Confirmado: uma única `DemonstracaoReal` no
 hero; seções seguintes usam capturas desktop e painéis, sem aparelhos móveis.
 Build de produção aprovado (63 páginas); prévia local reaberta e conferida.
+# 29/09/2026 — login de vidro e entrada com Google
+
+O login segue as duas referências L1/L3 fornecidas pelo Davi: cartão de vidro
+central em grafite, ação verde forte, leão desenhado atrás no desktop e no
+rodapé do celular. O logo aprovado pelo Davi foi copiado sem alteração para
+`public/mascote/leao-login.png` e é usado no cartão e no fundo. Uma geração
+realista foi explicitamente rejeitada e não entra na tela.
+O formulário mantém e-mail/senha, exibe a senha a pedido e permite sessão só
+até fechar o navegador quando "Manter conectado" está desligado.
+
+Google usa autorização por código, `state` e `nonce` em cookies curtos e
+`id_token` validado no servidor pelas chaves públicas do Google. A identidade
+estável é `sub`, gravada em `Usuario.googleId`, nunca o e-mail. Na primeira
+entrada, uma conta Tino já existente com Gmail verificado pode ser vinculada
+automaticamente; outras contas precisam de uma etapa de vínculo autenticado,
+que ainda não existe. Google não cria contas novas nem contorna o aceite dos
+termos e a escolha entre finanças pessoais e loja do cadastro atual.
+
+Para ligar o botão em produção, configurar `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` no ambiente, e cadastrar a URI
+exata de retorno no cliente OAuth Web do Google. Sem esses valores, o botão
+informa que está em configuração em vez de prometer uma entrada impossível.
+O botão Google ocupa o botão contornado inferior das referências; criar conta
+fica como link menor embaixo. Também seguem pendentes na Vercel as variáveis
+`ADMIN_EMAIL`, `ADMIN_SENHA` (só para criação inicial),
+`TELEGRAM_BOT_USUARIO`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SEGREDO` e
+`CRON_SECRET`. Nenhum valor secreto foi colocado no repositório.
