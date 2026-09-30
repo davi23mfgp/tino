@@ -33,8 +33,8 @@ export default function FormularioLogin({ googleDisponivel }: { googleDisponivel
     setEntrando(true)
     setErro(null)
     try {
-      await enviar("/api/auth/login", { email, senha, manterConectado })
-      router.push("/painel")
+      const resposta = await enviar<{ precisaMfa?: boolean }>("/api/auth/login", { email, senha, manterConectado })
+      router.push(resposta.precisaMfa ? "/login/mfa" : "/painel")
       router.refresh()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui entrar.")

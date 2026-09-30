@@ -27,7 +27,8 @@ if (process.env.TINO_LOG_QUERIES === "1") {
   cliente.$on("query", (dado) => {
     quantas += 1;
     somaMs += dado.duration;
-    console.log(`[consulta ${quantas}] ${dado.duration}ms · total ${somaMs}ms · ${dado.query.slice(0, 90)}`);
+    // SQL bruto pode conter literal ou dado financeiro. Medir sem registrar conteúdo.
+    console.log(`[consulta ${quantas}] ${dado.duration}ms · total ${somaMs}ms`);
   });
 }
 

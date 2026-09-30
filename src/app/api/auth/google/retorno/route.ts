@@ -5,6 +5,7 @@ import { criarToken, gravarCookieSessao } from "@/lib/auth"
 import { COOKIE_CADASTRO_GOOGLE, configuracaoGoogle, criarCadastroGoogle, verificarIdentidadeGoogle } from "@/lib/google-login"
 import { prisma } from "@/lib/prisma"
 import { registrarAcesso } from "@/lib/registro-acesso"
+import { criarDesafioMfa } from "@/lib/mfa"
 
 function voltar(requisicao: Request, motivo: string) {
   return NextResponse.redirect(new URL(`/login?erro=${motivo}`, requisicao.url))
@@ -65,11 +66,16 @@ export async function GET(requisicao: Request) {
       })
     }
 
+    if (usuario.mfaSegredo) {
+      await criarDesafioMfa(usuario.id, manterConectado)
+      return NextResponse.redirect(new URL("/login/mfa", requisicao.url))
+    }
     await prisma.usuario.update({ where: { id: usuario.id }, data: { ultimoLogin: new Date() } })
     await registrarAcesso(requisicao, usuario.id, "LOGIN")
     await gravarCookieSessao(await criarToken({
       usuarioId: usuario.id, email: usuario.email, nome: usuario.nome,
       larId: usuario.larId, membroId: usuario.membroId, papel: usuario.membro?.papel ?? "TITULAR",
+      mfaVersao: usuario.mfaVersao,
     }), manterConectado)
     return NextResponse.redirect(new URL("/painel", requisicao.url))
   } catch {

@@ -3,6 +3,8 @@ import { jwtVerify } from "jose"
 
 import { COOKIE_SESSAO } from "@/lib/cookie-sessao"
 import { rotaPermitida, type PapelDeAcesso } from "@/lib/acesso"
+import { origemPermitida } from "@/lib/origem-segura"
+import { politicaDeConteudo } from "@/lib/politica-conteudo"
 
 /**
  * Barra o funcionário da loja fora de tela pessoal, por URL — não só por menu.
@@ -18,18 +20,35 @@ import { rotaPermitida, type PapelDeAcesso } from "@/lib/acesso"
  * aqui só arriscaria os dois discordarem no dia em que um dos dois mudar.
  */
 export async function proxy(requisicao: NextRequest) {
+  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))))
+  const politica = politicaDeConteudo(nonce, process.env.NODE_ENV !== "production")
+  const cabecalhos = new Headers(requisicao.headers)
+  cabecalhos.set("x-nonce", nonce)
+  cabecalhos.set("Content-Security-Policy", politica)
+  const resposta = await decidirAcesso(requisicao, cabecalhos)
+  resposta.headers.set("Content-Security-Policy", politica)
+  // Uma resposta HTML não pode reutilizar o nonce da requisição anterior.
+  if (!requisicao.nextUrl.pathname.startsWith("/api/")) resposta.headers.set("Cache-Control", "private, no-store")
+  return resposta
+}
+
+async function decidirAcesso(requisicao: NextRequest, cabecalhos: Headers) {
+  const continuar = () => NextResponse.next({ request: { headers: cabecalhos } })
+  if (requisicao.nextUrl.pathname.startsWith("/api/") && !origemPermitida(requisicao)) {
+    return NextResponse.json({ erro: "Origem da requisição não permitida." }, { status: 403 })
+  }
   const token = requisicao.cookies.get(COOKIE_SESSAO)?.value
-  if (!token) return NextResponse.next()
+  if (!token) return continuar()
 
   const segredo = process.env.JWT_SECRET
-  if (!segredo) return NextResponse.next()
+  if (!segredo) return continuar()
 
   let papel: PapelDeAcesso
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(segredo), { algorithms: ["HS256"] })
     papel = (payload.papel as PapelDeAcesso) ?? "TITULAR"
   } catch {
-    return NextResponse.next()
+    return continuar()
   }
 
   const caminho = requisicao.nextUrl.pathname
@@ -40,7 +59,7 @@ export async function proxy(requisicao: NextRequest) {
   // lido de qualquer jeito, e a vitrine volta a ser servida do cache.
   if (caminho === "/") return NextResponse.redirect(new URL("/painel", requisicao.url))
 
-  if (rotaPermitida(papel, caminho)) return NextResponse.next()
+  if (rotaPermitida(papel, caminho)) return continuar()
 
   if (caminho.startsWith("/api/")) {
     return NextResponse.json({ erro: "Este login só acessa a loja." }, { status: 403 })

@@ -3,7 +3,8 @@ import { Prisma } from "@prisma/client"
 import { cookies } from "next/headers"
 
 import { abrirTeste } from "@/lib/acesso-assinatura"
-import { erro, ok } from "@/lib/api"
+import { corpo, erro, ok } from "@/lib/api"
+import { origemPermitida } from "@/lib/origem-segura"
 import { criarToken, gravarCookieSessao, hashSenha } from "@/lib/auth"
 import { COOKIE_CADASTRO_GOOGLE, lerCadastroGoogle } from "@/lib/google-login"
 import { consumirLimite, ipDaRequisicao, LimiteEstourado, REGRAS } from "@/lib/limite"
@@ -13,6 +14,7 @@ import { semearLar } from "@/lib/semear"
 import { VERSAO_TERMOS } from "@/lib/termos"
 
 export async function POST(requisicao: Request) {
+  if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
   try {
     await consumirLimite(`cadastro:ip:${ipDaRequisicao(requisicao)}`, REGRAS.cadastro)
   } catch (excecao) {
@@ -25,7 +27,7 @@ export async function POST(requisicao: Request) {
   if (!identidade) return erro("Sua confirmação com Google expirou. Tente novamente.", 401)
 
   let dados: { nome?: unknown; tipoLar?: unknown; modoMei?: unknown; aceiteTermos?: unknown }
-  try { dados = await requisicao.json() } catch { return erro("Dados inválidos.") }
+  try { dados = await corpo(requisicao); if (!dados || typeof dados !== "object") return erro("Dados inválidos.") } catch { return erro("Dados inválidos.") }
   const nome = typeof dados.nome === "string" ? dados.nome.trim() : ""
   if (!nome || nome.length > 80) return erro("Informe seu nome (até 80 caracteres).")
   if (identidade.email.length > 254) return erro("E-mail longo demais.")

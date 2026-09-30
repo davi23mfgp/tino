@@ -64,7 +64,7 @@ describe("regex escrita pelo usuário", () => {
 })
 
 describe("variáveis de ambiente", () => {
-  const base = { NODE_ENV: "development", DATABASE_URL: "postgresql://x", JWT_SECRET: "x".repeat(32) }
+  const base = { NODE_ENV: "development", DATABASE_URL: "postgresql://x", JWT_SECRET: "x".repeat(32), MFA_CHAVE_CRIPTOGRAFIA: "a".repeat(64) }
 
   it("ambiente mínimo correto não acusa nada", () => {
     assert.deepEqual(conferirAmbiente(base as NodeJS.ProcessEnv), [])
@@ -82,7 +82,18 @@ describe("variáveis de ambiente", () => {
 
   it("produção sem TLS no banco é acusada", () => {
     const problemas = conferirAmbiente({ ...base, NODE_ENV: "production" } as NodeJS.ProcessEnv)
-    assert.ok(problemas.some((p) => p.variavel === "DATABASE_URL" && !p.fatal))
+    assert.ok(problemas.some((p) => p.variavel === "DATABASE_URL" && p.fatal))
+  })
+  it("produção exige chave MFA válida e TLS na conexão direta", () => {
+    const problemas = conferirAmbiente({ ...base, NODE_ENV: "production", DATABASE_URL: "postgresql://x?sslmode=require", DIRECT_URL: "postgresql://x", MFA_CHAVE_CRIPTOGRAFIA: "" } as NodeJS.ProcessEnv)
+    assert.ok(problemas.some((p) => p.variavel === "MFA_CHAVE_CRIPTOGRAFIA" && p.fatal))
+    assert.ok(problemas.some((p) => p.variavel === "DIRECT_URL" && p.fatal))
+  })
+  it("texto parecido com TLS em outro parâmetro não libera conexão sem TLS", () => {
+    for (const endereco of ["postgresql://x?nota=sslmode=require", "postgresql://x?sslmode=require-invalido", "postgresql://x?sslmode=disable&nota=sslmode=require"]) {
+      const problemas = conferirAmbiente({ ...base, NODE_ENV: "production", DATABASE_URL: endereco } as NodeJS.ProcessEnv)
+      assert.ok(problemas.some((p) => p.variavel === "DATABASE_URL" && p.fatal))
+    }
   })
 
   it("nunca repete o valor da variável na mensagem", () => {

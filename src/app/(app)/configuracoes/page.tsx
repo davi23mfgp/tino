@@ -17,6 +17,7 @@ import {
   Plus,
   Trash2,
   Smartphone,
+  ShieldCheck,
   Sun,
   Tags,
   Wand2,
@@ -437,6 +438,11 @@ export default function Configuracoes() {
               <ChevronRight aria-hidden />
             </button>
           )}
+          <Link href="/seguranca" className={estilos.linha}>
+            <Quadro cor="oklch(0.55 0.12 260)"><ShieldCheck /></Quadro>
+            <span><strong>Segurança da conta</strong><small>Autenticação em dois fatores</small></span>
+            <ChevronRight aria-hidden />
+          </Link>
           <button type="button" className={estilos.linha} onClick={() => setDialogo("dados")}>
             <Quadro cor="oklch(0.55 0.12 260)">
               <Download />

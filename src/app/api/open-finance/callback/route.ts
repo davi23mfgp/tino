@@ -56,7 +56,7 @@ export async function GET(requisicao: Request) {
     await sincronizarConexao({ larId: sessao.larId, conexaoId: gravada.id })
     destino.searchParams.set("conectado", gravada.instituicao)
   } catch (excecao) {
-    console.error("[tino] falha no callback de Open Finance", excecao)
+    console.error("[tino] falha no callback de Open Finance", excecao instanceof Error ? excecao.name : "Erro")
     destino.searchParams.set("erro", "falha-conexao")
   }
 

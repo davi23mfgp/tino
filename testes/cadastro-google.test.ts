@@ -10,7 +10,11 @@ test("cadastro Google aceita apenas identidade assinada", async () => {
     const identidade = { googleId: "google-123", email: "nova@gmail.com", nome: "Nova Pessoa" }
     const token = await criarCadastroGoogle(identidade)
     assert.deepEqual(await lerCadastroGoogle(token), identidade)
-    assert.equal(await lerCadastroGoogle(`${token.slice(0, -1)}${token.endsWith("a") ? "b" : "a"}`), null)
+    // Último caractere de base64url pode mudar só bits de preenchimento,
+    // mantendo a mesma assinatura. Adulterar o primeiro muda bytes reais.
+    const partes = token.split(".")
+    partes[2] = `${partes[2][0] === "a" ? "b" : "a"}${partes[2].slice(1)}`
+    assert.equal(await lerCadastroGoogle(partes.join(".")), null)
     assert.equal(await lerCadastroGoogle(undefined), null)
   } finally {
     if (anterior === undefined) delete process.env.JWT_SECRET

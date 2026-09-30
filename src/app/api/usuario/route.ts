@@ -77,7 +77,7 @@ export const PATCH = comSessao(async (sessao, requisicao) => {
 
   // O nome vai no token ("Olá, Nicole" vem dele): sem regravar, o nome novo só
   // apareceria no próximo login.
-  if (nome !== undefined && nome !== sessao.nome) await gravarCookieSessao(await criarToken({ usuarioId: sessao.usuarioId, email: sessao.email, nome, larId: sessao.larId, membroId: sessao.membroId, papel: sessao.papel }))
+  if (nome !== undefined && nome !== sessao.nome) await gravarCookieSessao(await criarToken({ ...sessao, nome }))
 
   return ok({ avatarUrl, nome, casaNome, casaTipo })
 })

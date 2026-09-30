@@ -30,6 +30,11 @@ const PARES: Array<{ liga: string; exige: string[]; motivo: string }> = [
   { liga: "RESEND_API_KEY", exige: ["RESEND_WEBHOOK_SECRET"], motivo: "recebimento de fatura sem assinatura" },
 ]
 
+function conexaoComTls(endereco: string): boolean {
+  try { return ["require", "verify-full", "verify-ca"].includes(new URL(endereco).searchParams.get("sslmode") ?? "") }
+  catch { return false }
+}
+
 export function conferirAmbiente(env: NodeJS.ProcessEnv = process.env): Problema[] {
   const problemas: Problema[] = []
   const producao = env.NODE_ENV === "production"
@@ -39,8 +44,17 @@ export function conferirAmbiente(env: NodeJS.ProcessEnv = process.env): Problema
     problemas.push({ variavel: "JWT_SECRET", motivo: "ausente ou com menos de 32 caracteres", fatal: true })
   }
   // Banco gerenciado sem TLS trafega extrato de gente em claro pela internet.
-  if (producao && env.DATABASE_URL && !/sslmode=(require|verify-full|verify-ca)/.test(env.DATABASE_URL)) {
-    problemas.push({ variavel: "DATABASE_URL", motivo: "sem sslmode=require em produção", fatal: false })
+  if (producao && env.DATABASE_URL && !conexaoComTls(env.DATABASE_URL)) {
+    problemas.push({ variavel: "DATABASE_URL", motivo: "sem sslmode=require em produção", fatal: true })
+  }
+  if (producao && env.DIRECT_URL && !conexaoComTls(env.DIRECT_URL)) {
+    problemas.push({ variavel: "DIRECT_URL", motivo: "sem TLS na conexão de migração", fatal: true })
+  }
+  if (!env.MFA_CHAVE_CRIPTOGRAFIA || !/^[a-fA-F0-9]{64}$/.test(env.MFA_CHAVE_CRIPTOGRAFIA)) {
+    problemas.push({ variavel: "MFA_CHAVE_CRIPTOGRAFIA", motivo: "configure 32 bytes em hexadecimal para habilitar a proteção em dois fatores", fatal: producao })
+  }
+  if (env.TINO_LOG_QUERIES === "1" && producao) {
+    problemas.push({ variavel: "TINO_LOG_QUERIES", motivo: "instrumentação de consultas deve permanecer desligada em produção", fatal: true })
   }
 
   for (const par of PARES) {

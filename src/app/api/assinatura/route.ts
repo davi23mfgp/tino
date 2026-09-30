@@ -111,7 +111,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     return ok({ url: checkout.url })
   } catch (excecao) {
     if (excecao instanceof GatewayNaoConfigurado) throw new ErroDeUso(excecao.message, 503)
-    console.error("[tino] falha ao abrir checkout", excecao)
+    console.error("[tino] falha ao abrir checkout", excecao instanceof Error ? excecao.name : "Erro")
     throw new ErroDeUso("Não consegui abrir o pagamento agora. Tente de novo em instantes.", 502)
   }
 })
@@ -132,7 +132,7 @@ export const DELETE = comSessao(async (sessao) => {
       await gateway(assinatura.provedor).cancelar(assinatura.idExterno)
     } catch (excecao) {
       if (excecao instanceof GatewayNaoConfigurado) throw new ErroDeUso(excecao.message, 503)
-      console.error("[tino] falha ao cancelar no provedor", excecao)
+      console.error("[tino] falha ao cancelar no provedor", excecao instanceof Error ? excecao.name : "Erro")
       throw new ErroDeUso("Não consegui cancelar junto ao provedor. Tente de novo ou fale com o suporte.", 502)
     }
   }

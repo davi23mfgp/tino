@@ -24,6 +24,9 @@ export function semDadosPessoais(texto: string): string {
   return (
     texto
       .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [chave]")
+      .replace(/\b(senha(?:Hash)?|password|mfaSegredo|mfaPendente|token|secret|chave)\s*[:=]\s*(?:"[^"\n]*"|'[^'\n]*'|[^\s,;}]+)/gi, "$1: [segredo]")
+      .replace(/\b(?:valor|saldo|limite|renda)\w*Centavos\s*[:=]\s*-?\d+/gi, "[valor financeiro]")
+      .replace(/R\$\s*[\d.,]+/g, "[valor financeiro]")
       .replace(/\b(sk|pk|rk|gsk|re|whsec|sk-ant)[-_][A-Za-z0-9_-]{8,}/g, "[chave]")
       .replace(/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,}/g, "[token]")
       .replace(/postgres(ql)?:\/\/[^\s"']+/gi, "[banco]")
@@ -32,6 +35,17 @@ export function semDadosPessoais(texto: string): string {
       .replace(/\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/g, "[cnpj]")
       .replace(/(\+?55\s?)?\(?\d{2}\)?\s?9?\d{4}[-\s]?\d{4}\b/g, "[telefone]")
   )
+}
+
+/** Prisma inclui dados da chamada na mensagem; basta nome/código e pontos da pilha. */
+export function resumirExcecao(excecao: unknown): { mensagem: string; pilha: string | null } {
+  if (!(excecao instanceof Error)) return { mensagem: "Erro inesperado", pilha: null }
+  const prisma = excecao.name.startsWith("Prisma")
+  const codigo = "code" in excecao && typeof excecao.code === "string" && /^P\d{4}$/.test(excecao.code) ? excecao.code : ""
+  return {
+    mensagem: prisma ? `${excecao.name} ${codigo}`.trim() : semDadosPessoais(`${excecao.name}: ${excecao.message}`),
+    pilha: excecao.stack ? excecao.stack.split("\n").filter((linha) => /^\s*at /.test(linha)).map(semDadosPessoais).join("\n") : null,
+  }
 }
 
 /**
@@ -81,7 +95,7 @@ export async function registrarErro(erro: ErroParaRegistrar) {
       update: { ocorrencias: { increment: 1 }, ultimoEm: agora, status: "NOVO", rota, usuarioId: erro.usuarioId ?? undefined },
     })
   } catch (falha) {
-    console.error("[tino] não consegui registrar o erro", falha)
+    console.error("[tino] não consegui registrar o erro", falha instanceof Error ? falha.name : "Erro")
   }
 }
 
@@ -90,6 +104,6 @@ export async function registrarAcaoDoAdmin(adminId: string, acao: string, alvoId
   try {
     await prisma.registroAdmin.create({ data: { adminId, acao, alvoId: alvoId ?? null, detalhe: detalhe ? detalhe.slice(0, 300) : null } })
   } catch (falha) {
-    console.error("[tino] não consegui registrar a ação do admin", falha)
+    console.error("[tino] não consegui registrar a ação do admin", falha instanceof Error ? falha.name : "Erro")
   }
 }

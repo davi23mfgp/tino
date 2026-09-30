@@ -11,15 +11,9 @@ import { NextResponse } from "next/server"
 import { getSessao, type Sessao } from "@/lib/auth"
 import { estadoDoAcesso } from "@/lib/acesso-assinatura"
 import { rotaPermitida, type PapelDeAcesso } from "@/lib/acesso"
-
-export class ErroDeUso extends Error {
-  constructor(
-    mensagem: string,
-    readonly status = 400,
-  ) {
-    super(mensagem)
-  }
-}
+import { origemPermitida } from "@/lib/origem-segura"
+import { ErroDeUso } from "@/lib/erro-de-uso"
+export { ErroDeUso } from "@/lib/erro-de-uso"
 
 export function ok<T>(dados: T, status = 200) {
   return NextResponse.json(dados, { status })
@@ -27,6 +21,19 @@ export function ok<T>(dados: T, status = 200) {
 
 export function erro(mensagem: string, status = 400) {
   return NextResponse.json({ erro: mensagem }, { status })
+}
+
+/** Auth pública também precisa devolver validação como 400, sem stack trace. */
+export function comPublica(handler: (requisicao: Request) => Promise<Response>) {
+  return async (requisicao: Request): Promise<Response> => {
+    if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
+    try { return await handler(requisicao) }
+    catch (excecao) {
+      if (excecao instanceof ErroDeUso) return erro(excecao.message, excecao.status)
+      console.error("[tino] falha em autenticação pública", excecao instanceof Error ? excecao.name : "Erro")
+      return erro("Não foi possível concluir. Tente novamente.", 500)
+    }
+  }
 }
 
 /**
@@ -48,6 +55,7 @@ const CONVIDADO_PODE_ESCREVER = ["/api/usuario", "/api/auth", "/api/suporte"]
 
 export function comSessao<T>(handler: (sessao: Sessao, requisicao: Request, contexto: T) => Promise<Response>) {
   return async (requisicao: Request, contexto: T): Promise<Response> => {
+    if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
     const sessao = await getSessao()
     if (!sessao) return erro("Sessão expirada. Entre novamente.", 401)
 
@@ -93,15 +101,16 @@ export function comSessao<T>(handler: (sessao: Sessao, requisicao: Request, cont
       if (excecao instanceof ErroDeUso) return erro(excecao.message, excecao.status)
       // Só o caminho: a query pode trazer chave, token ou dado pessoal, e log
       // vive mais e é visto por mais gente do que o banco.
-      console.error("[tino] falha na rota", requisicao.method, caminhoDaRota, excecao)
+      // Exceções do Prisma podem trazer os argumentos da consulta. Não
+      // despejar o objeto bruto no log do provedor, fora dos filtros do app.
+      console.error("[tino] falha na rota", requisicao.method, caminhoDaRota, excecao instanceof Error ? excecao.name : "Erro")
       // E no registro de erros do admin, agrupado e sem dado pessoal
       // (`@/lib/erros`). Import tardio: este arquivo é importado por tudo, e o
       // registro puxa o Prisma.
-      const { registrarErro } = await import("@/lib/erros")
+      const { registrarErro, resumirExcecao } = await import("@/lib/erros")
       await registrarErro({
         origem: "SERVIDOR",
-        mensagem: excecao instanceof Error ? `${excecao.name}: ${excecao.message}` : String(excecao),
-        pilha: excecao instanceof Error ? excecao.stack : null,
+        ...resumirExcecao(excecao),
         rota: caminhoDaRota,
         metodo: requisicao.method,
         usuarioId: sessao.usuarioId,

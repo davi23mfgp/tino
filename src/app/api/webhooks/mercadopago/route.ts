@@ -42,7 +42,7 @@ export async function POST(requisicao: Request) {
       return NextResponse.json({ erro: "Gateway não configurado." }, { status: 503 })
     }
 
-    console.error("[tino] falha ao processar webhook do Mercado Pago", excecao)
+    console.error("[tino] falha ao processar webhook do Mercado Pago", excecao instanceof Error ? excecao.name : "Erro")
     // 500 pede reentrega. Engolir a falha com 200 perderia o pagamento em
     // silêncio, e ninguém descobriria antes do cliente reclamar.
     return NextResponse.json({ erro: "Falha ao processar." }, { status: 500 })

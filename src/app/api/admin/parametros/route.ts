@@ -31,7 +31,7 @@ export const PUT = comAdmin(async (sessao, requisicao) => {
   } catch (excecao) {
     // O detalhe vai para o log; a resposta não repete mensagem de exceção,
     // que pode vir do banco e descrever o esquema por dentro.
-    console.error("[tino] parâmetro recusado", dados.chave, excecao)
+    console.error("[tino] parâmetro recusado", dados.chave, excecao instanceof Error ? excecao.name : "Erro")
     return NextResponse.json({ erro: "Valor inválido para este parâmetro." }, { status: 400 })
   }
 

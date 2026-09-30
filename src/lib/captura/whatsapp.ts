@@ -96,7 +96,7 @@ export async function enviarModelo(
   if (!resposta.ok) {
     // O corpo do erro da Meta diz qual é o problema (modelo não aprovado,
     // número fora da lista, janela). Sem isso o diagnóstico vira adivinhação.
-    console.error("[tino] a Meta recusou o modelo", modelo, await resposta.text().catch(() => ""))
+    console.error("[tino] a Meta recusou o modelo", resposta.status)
     return false
   }
 

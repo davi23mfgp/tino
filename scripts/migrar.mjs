@@ -26,6 +26,23 @@ if (faltando.length) {
   process.exit(1)
 }
 
+// Preview sem os novos segredos não deve sequer migrar um banco compartilhado
+// por configuração antiga. Validar antes de tocar a conexão, não só no Next.
+if (process.env.VERCEL_ENV) {
+  const problemas = []
+  if (!/^[a-fA-F0-9]{64}$/.test(process.env.MFA_CHAVE_CRIPTOGRAFIA ?? "")) problemas.push("MFA_CHAVE_CRIPTOGRAFIA")
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) problemas.push("JWT_SECRET")
+  for (const nome of ["DATABASE_URL", "DIRECT_URL"]) {
+    let tls = false
+    try { tls = ["require", "verify-full", "verify-ca"].includes(new URL(process.env[nome]).searchParams.get("sslmode")) } catch {}
+    if (!tls) problemas.push(`${nome} com TLS`)
+  }
+  if (problemas.length) {
+    console.error(`Configure antes de migrar: ${problemas.join(", ")}. Nenhuma migration foi executada.`)
+    process.exit(1)
+  }
+}
+
 const TENTATIVAS = 3
 const ESPERA_MS = [0, 5_000, 15_000]
 

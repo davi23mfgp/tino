@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { headers } from "next/headers"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
@@ -53,7 +54,10 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // O nonce do CSP muda a cada pedido. HTML estático não receberia o nonce
+  // extraído pelo Next do cabeçalho e seus scripts seriam bloqueados.
+  await headers()
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body

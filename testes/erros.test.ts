@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { impressaoDoErro, semDadosPessoais } from "@/lib/erros"
+import { impressaoDoErro, resumirExcecao, semDadosPessoais } from "@/lib/erros"
 
 describe("registro de erros sem dado pessoal", () => {
   it("tira e-mail, CPF, CNPJ, telefone, chaves e endereço do banco", () => {
@@ -17,6 +17,20 @@ describe("registro de erros sem dado pessoal", () => {
 
   it("não estraga mensagem comum", () => {
     assert.equal(semDadosPessoais("Cannot read properties of undefined (reading 'valor')"), "Cannot read properties of undefined (reading 'valor')")
+  })
+  it("remove valores financeiros e credenciais de mensagens", () => {
+    const texto = semDadosPessoais('saldoInicialCentavos: 98765 limiteCentavos: 12345 R$ 500,00 senha: "senha-teste" mfaSegredo: "segredo-teste"')
+    for (const trecho of ["98765", "12345", "500,00", "senha-teste", "segredo-teste"]) assert.ok(!texto.includes(trecho))
+  })
+  it("erro Prisma não guarda os argumentos nem a mensagem original na pilha", () => {
+    const falha = new Error('Invalid query: senhaHash: "hash-privado", valorCentavos: 98765')
+    falha.name = "PrismaClientValidationError"
+    falha.stack = `${falha.name}: ${falha.message}\n    at executar (/app/contas.ts:1:2)`
+    const resumo = resumirExcecao(falha)
+    assert.equal(resumo.mensagem, "PrismaClientValidationError")
+    assert.ok(!JSON.stringify(resumo).includes("hash-privado"))
+    assert.ok(!JSON.stringify(resumo).includes("98765"))
+    assert.match(resumo.pilha!, /at executar/)
   })
 })
 

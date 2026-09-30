@@ -1,0 +1,45 @@
+name: Backup cifrado do banco
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: backup-tino
+  cancel-in-progress: false
+jobs:
+  copiar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container: postgres:18-bookworm
+    env:
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BACKUP_CHAVE_CRIPTOGRAFIA: ${{ secrets.BACKUP_CHAVE_CRIPTOGRAFIA }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/backup.mjs
+      - name: Testar restauração em Postgres isolado
+        env:
+          RESTAURACAO_DATABASE_URL: postgresql://postgres@127.0.0.1:5549/postgres
+          CONFIRMAR_RESTAURACAO: BANCO_ISOLADO_VAZIO
+        run: |
+          install -d -o postgres -g postgres -m 700 /tmp/tino-restauracao
+          gosu postgres initdb -D /tmp/tino-restauracao --auth=trust --no-instructions > /dev/null
+          gosu postgres pg_ctl -D /tmp/tino-restauracao -l /tmp/tino-restauracao.log -o '-p 5549 -h 127.0.0.1' start
+          trap 'gosu postgres pg_ctl -D /tmp/tino-restauracao stop -m fast > /dev/null' EXIT
+          node scripts/restaurar-backup.mjs .backups/*.dump.enc
+          psql "$RESTAURACAO_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1 FROM "Usuario" LIMIT 0' > /dev/null
+          psql "$RESTAURACAO_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1 FROM "Transacao" LIMIT 0' > /dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup-cifrado-${{ github.run_id }}
+          path: .backups/*.dump.enc
+          retention-days: 30
+          if-no-files-found: error
+      - name: Remover cópia do executor
+        if: always()
+        run: node -e "require('fs').rmSync('.backups',{recursive:true,force:true})"

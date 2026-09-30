@@ -423,6 +423,16 @@ model Usuario {
   /// continuaria abrindo a conta mesmo depois de a pessoa perder o acesso.
   sessoesValidasDesde DateTime?
 
+  /// Segredo TOTP cifrado com chave separada do JWT. Códigos de recuperação
+  /// ficam apenas como hash e são consumidos uma vez, dentro de transação.
+  mfaSegredo String?
+  mfaPendente String?
+  mfaPendenteExpiraEm DateTime?
+  mfaUltimoPasso Int?
+  mfaRecuperacao String[] @default([])
+  mfaVersao Int @default(0)
+  mfaDesafioHash String?
+
   /// Prova do consentimento (LGPD, art. 8º, §2º: o ônus da prova é do
   /// controlador). Guarda qual versão do texto a pessoa aceitou e quando.
   termosVersao    String?

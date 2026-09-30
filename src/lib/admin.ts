@@ -8,16 +8,17 @@
  *
  * O papel é um campo na conta do próprio usuário — não há login separado. Não
  * existe tela que promova ninguém a admin: a conta de `ADMIN_EMAIL` é
- * garantida no build (`scripts/garantir-admin.mjs`), e qualquer outra é um
+ * criada no build quando ainda não existe (`scripts/garantir-admin.mjs`), e qualquer outra é um
  * comando no banco (`docs/PAGAMENTO-E-ADMIN.md`). Uma tela que concede
  * privilégio é uma tela a mais para dar errado.
  */
 
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { NextResponse } from "next/server"
 
 import { getSessao, type Sessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { origemPermitida } from "@/lib/origem-segura"
 
 export async function ehAdmin(usuarioId: string): Promise<boolean> {
   const usuario = await prisma.usuario.findUnique({
@@ -38,26 +39,35 @@ export async function sessaoDeAdmin(): Promise<Sessao> {
   const sessao = await getSessao()
   if (!sessao) notFound()
   if (!(await ehAdmin(sessao.usuarioId))) notFound()
+  if (!sessao.mfaConfirmadoEm) redirect("/seguranca?obrigatorio=1")
+  if (Date.now() / 1000 - sessao.mfaConfirmadoEm > 12 * 3600) redirect("/login")
   return sessao
 }
 
 /** Para rotas de API do admin. Mesmo 404, mesma razão. */
 export function comAdmin<T>(handler: (sessao: Sessao, requisicao: Request, contexto: T) => Promise<Response>) {
   return async (requisicao: Request, contexto: T): Promise<Response> => {
+    if (!origemPermitida(requisicao)) return NextResponse.json({ erro: "Origem da requisição não permitida." }, { status: 403 })
     const sessao = await getSessao()
     if (!sessao || !(await ehAdmin(sessao.usuarioId))) {
       return NextResponse.json({ erro: "Não encontrado." }, { status: 404 })
     }
+    if (!sessao.mfaConfirmadoEm || Date.now() / 1000 - sessao.mfaConfirmadoEm > 12 * 3600) {
+      return NextResponse.json({ erro: "Confirme a autenticação em dois fatores para acessar a administração." }, { status: 403 })
+    }
+    const { consumirLimite, REGRAS } = await import("@/lib/limite")
 
     try {
+      await consumirLimite(`admin:${sessao.usuarioId}`, REGRAS.apiEscrita)
       return await handler(sessao, requisicao, contexto)
     } catch (excecao) {
-      console.error("[tino] falha na rota do admin", requisicao.method, new URL(requisicao.url).pathname, excecao)
-      const { registrarErro } = await import("@/lib/erros")
+      const { ErroDeUso } = await import("@/lib/api")
+      if (excecao instanceof ErroDeUso) return NextResponse.json({ erro: excecao.message }, { status: excecao.status })
+      console.error("[tino] falha na rota do admin", requisicao.method, new URL(requisicao.url).pathname, excecao instanceof Error ? excecao.name : "Erro")
+      const { registrarErro, resumirExcecao } = await import("@/lib/erros")
       await registrarErro({
         origem: "SERVIDOR",
-        mensagem: excecao instanceof Error ? `${excecao.name}: ${excecao.message}` : String(excecao),
-        pilha: excecao instanceof Error ? excecao.stack : null,
+        ...resumirExcecao(excecao),
         rota: new URL(requisicao.url).pathname,
         metodo: requisicao.method,
         usuarioId: sessao.usuarioId,

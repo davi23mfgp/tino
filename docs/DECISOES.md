@@ -145,3 +145,13 @@ Valores cortados nos cartões corrigidos, formulário de contas fixas em diálog
 ### 09/09/2026 — iOS com shadcn
 
 Pedido do usuário implementado na estrutura principal: abas Agora/Futuro/Categorias, Drawer e Accordion no menu, controles shadcn, previsão compartilhada e capturas reais atualizadas. Detalhes e verificações em CONTINUAR-NO-OUTRO-NOTEBOOK.md.
+
+
+## 30/09/2026 — Privacidade dos valores
+
+Pedido: operador não acompanhar valores dos usuários e política mais clara. Revisão textual preparada com versão 2026-09-30, sem mudança de layout. Painel já não consulta finanças pessoais, mas banco e servidor ainda processam texto aberto; não prometer ausência técnica de acesso. Criptografia de ponta a ponta exige chaves dos usuários e adaptação de recuperação, família, importação e IA. Plano e limites em `docs/PRIVACIDADE-SEM-ACESSO-AOS-VALORES.md`. Não implementada nem publicada nesta rodada.
+
+
+## 30/09/2026 — Controles de segurança antes de outras mudanças
+
+Davi confirmou adiar o cofre de ponta a ponta e priorizar os 20 requisitos. Implementados MFA TOTP com desafio separado e recuperação de uso único (senha/Google), exigência no admin, revogação por versão de MFA, CSRF/CSP com nonce, rate limit transacional, redução de logs e atualização de dependências. Preparados backup cifrado com job de teste isolado, monitor externo, papéis mínimos SQL e procedimentos de rollback/recuperação. O painel continua sem finanças pessoais; acesso técnico ao banco não foi eliminado. 601 testes, tipos e build de teste aprovados; integração HTTP com Postgres e Chromium confirmada. Configuração/ativação dos serviços externos ainda pendente. Código deve ficar na branch `codex/continuacao-tino` até configurar e comprovar Preview; documento temporário de continuidade fica também na main. Não publicar alegação de 20 requisitos completos nem ausência técnica de acesso aos valores. Evidência e próximos passos em `docs/SEGURANCA-OPERACAO.md`.

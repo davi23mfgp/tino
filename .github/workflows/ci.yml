@@ -11,7 +11,7 @@ name: CI
 
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main, "claude/**", "codex/**"]
   pull_request:
 
 permissions:
@@ -41,3 +41,5 @@ jobs:
         run: npm run tipos
       - name: Testes
         run: npm test
+      - name: Auditoria de dependências em produção
+        run: npm audit --omit=dev --audit-level=high

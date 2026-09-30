@@ -1,16 +1,20 @@
 import { prisma } from "@/lib/prisma"
 import { conferirSenha, criarToken, gravarCookieSessao } from "@/lib/auth"
-import { corpo, erro, exigir, ok } from "@/lib/api"
+import { comPublica, corpo, erro, exigir, ok } from "@/lib/api"
 import { consumirLimite, ipDaRequisicao, liberarLimite, LimiteEstourado, REGRAS } from "@/lib/limite"
 import { registrarAcesso } from "@/lib/registro-acesso"
+import { criarDesafioMfa } from "@/lib/mfa"
+import { origemPermitida } from "@/lib/origem-segura"
+import { validar, z, campo } from "@/lib/validar"
 
 /// Hash bcrypt custo 12 de um texto qualquer. Conferir contra ele quando o
 /// e-mail não existe faz as duas respostas levarem o mesmo tempo — sem isso o
 /// atraso do bcrypt denunciaria quais e-mails têm conta.
 const HASH_FALSO = "$2a$12$pUjYLGc.bllSI.9n598Yyu0Xojk4m5altsbg.IDJiYscdr4fI9.c6"
 
-export async function POST(requisicao: Request) {
-  const dados = await corpo<{ email: string; senha: string; manterConectado?: boolean }>(requisicao)
+export const POST = comPublica(async (requisicao: Request) => {
+  if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
+  const dados = validar(z.object({ email: campo.email(), senha: z.string().min(1).max(128), manterConectado: z.boolean().optional() }), await corpo(requisicao))
   const email = exigir(dados.email, "Informe o e-mail").trim().toLowerCase()
   const senha = exigir(dados.senha, "Informe a senha")
 
@@ -35,6 +39,11 @@ export async function POST(requisicao: Request) {
   const senhaConfere = await conferirSenha(senha, usuario?.senhaHash ?? HASH_FALSO)
   if (!usuario || !senhaConfere) return invalido
 
+  if (usuario.mfaSegredo) {
+    await criarDesafioMfa(usuario.id, dados.manterConectado !== false)
+    return ok({ precisaMfa: true })
+  }
+
   // Acertou: o contador não tem por que lembrar das tentativas que deram certo.
   await liberarLimite(porEmail)
   await liberarLimite(porIp)
@@ -50,9 +59,10 @@ export async function POST(requisicao: Request) {
       larId: usuario.larId,
       membroId: usuario.membroId,
       papel: usuario.membro?.papel ?? "TITULAR",
+      mfaVersao: usuario.mfaVersao,
     }),
     dados.manterConectado !== false,
   )
 
   return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email })
-}
+})

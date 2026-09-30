@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 
-import { ErroDeUso } from "@/lib/api"
+import { ErroDeUso } from "@/lib/erro-de-uso"
 
 /**
  * Limite de tentativas.
@@ -65,19 +65,22 @@ export class LimiteEstourado extends ErroDeUso {
  * acontecer na tentativa que já deveria ter sido recusada.
  */
 export async function consumirLimite(chave: string, regra: Regra) {
+  // Serializa a mesma chave entre todas as instâncias. Leitura seguida de
+  // upsert sem trava perdia tentativas em requisições simultâneas.
+  const resultado = await prisma.$transaction(async (tx) => {
+  await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${chave}))::text`
   const agora = new Date()
-
-  const atual = await prisma.limiteAcesso.findUnique({ where: { chave } })
+  const atual = await tx.limiteAcesso.findUnique({ where: { chave } })
 
   if (atual?.bloqueadoAte && atual.bloqueadoAte > agora) {
-    throw new LimiteEstourado(Math.ceil((atual.bloqueadoAte.getTime() - agora.getTime()) / 1000))
+    return Math.ceil((atual.bloqueadoAte.getTime() - agora.getTime()) / 1000)
   }
 
   const janelaVelha = !atual || agora.getTime() - atual.janelaInicio.getTime() > regra.janelaSegundos * 1000
   const tentativas = janelaVelha ? 1 : atual.tentativas + 1
   const estourou = tentativas > regra.maximo
 
-  await prisma.limiteAcesso.upsert({
+  await tx.limiteAcesso.upsert({
     where: { chave },
     create: { chave, tentativas, janelaInicio: agora },
     update: {
@@ -87,7 +90,10 @@ export async function consumirLimite(chave: string, regra: Regra) {
     },
   })
 
-  if (estourou) throw new LimiteEstourado(regra.bloqueioSegundos)
+  return estourou ? regra.bloqueioSegundos : null
+  }, { maxWait: 10_000, timeout: 10_000 })
+  // O erro sai depois do commit: lançar dentro da transação desfaria o contador.
+  if (resultado !== null) throw new LimiteEstourado(resultado)
 }
 
 /**

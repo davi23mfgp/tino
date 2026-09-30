@@ -14,3 +14,6 @@ tsconfig.tsbuildinfo
 .build-*.log
 .dev-*.log
 .teste-resultado.log
+.backups/
+*.dump
+*.dump.enc

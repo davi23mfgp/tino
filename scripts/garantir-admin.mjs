@@ -47,8 +47,13 @@ async function garantir(prisma) {
   const existente = await prisma.usuario.findUnique({ where: { email }, select: { id: true, admin: true } })
 
   if (existente) {
-    if (!existente.admin) await prisma.usuario.update({ where: { id: existente.id }, data: { admin: true } })
-    console.log(`[admin] ${email} ${existente.admin ? "já é admin" : "agora é admin"}.`)
+    // Cadastro comum não comprova posse do e-mail. Promover uma conta antiga
+    // só por corresponder ao ADMIN_EMAIL daria privilégio a quem a criou antes.
+    if (!existente.admin) {
+      console.error("[admin] A conta configurada existe sem privilégio administrativo. Nenhum acesso foi concedido. Confirme a titularidade e use o procedimento explícito de promoção.")
+      return
+    }
+    console.log(`[admin] ${email} já é admin.`)
     if (senha) console.log("[admin] ADMIN_SENHA ignorada: a conta já existe e a senha dela não é regravada. Apague a variável da Vercel.")
   } else {
     if (!senha) {

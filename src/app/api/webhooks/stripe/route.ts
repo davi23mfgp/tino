@@ -35,7 +35,7 @@ export async function POST(requisicao: Request) {
       return NextResponse.json({ erro: "Gateway não configurado." }, { status: 503 })
     }
 
-    console.error("[tino] falha ao processar webhook da Stripe", excecao)
+    console.error("[tino] falha ao processar webhook da Stripe", excecao instanceof Error ? excecao.name : "Erro")
     return NextResponse.json({ erro: "Falha ao processar." }, { status: 500 })
   }
 }

@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/prisma"
 import { criarToken, gravarCookieSessao, hashSenha } from "@/lib/auth"
-import { corpo, erro, exigir, ok } from "@/lib/api"
+import { comPublica, corpo, erro, exigir, ok } from "@/lib/api"
 import { consumirLimite, ipDaRequisicao, LimiteEstourado, REGRAS } from "@/lib/limite"
 import { semearLar } from "@/lib/semear"
 import { abrirTeste } from "@/lib/acesso-assinatura"
 import { registrarAcesso } from "@/lib/registro-acesso"
 import { VERSAO_TERMOS } from "@/lib/termos"
+import { validar, z, campo } from "@/lib/validar"
+import { origemPermitida } from "@/lib/origem-segura"
 
 interface Entrada {
   nome: string
@@ -19,7 +21,8 @@ interface Entrada {
   aceiteTermos?: boolean
 }
 
-export async function POST(requisicao: Request) {
+export const POST = comPublica(async (requisicao: Request) => {
+  if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
   // Criação de conta em massa vinda da mesma máquina: cinco por hora.
   try {
     await consumirLimite(`cadastro:ip:${ipDaRequisicao(requisicao)}`, REGRAS.cadastro)
@@ -28,7 +31,11 @@ export async function POST(requisicao: Request) {
     throw excecao
   }
 
-  const dados = await corpo<Entrada>(requisicao)
+  const dados = validar(z.object({
+    nome: campo.textoObrigatorio(80), email: campo.email(), senha: z.string().min(8).max(128),
+    tipoLar: z.enum(["SOLO", "CASAL", "FAMILIA"]).optional(), nomeLar: campo.textoObrigatorio(80).optional(),
+    modoMei: z.boolean().optional(), aceiteTermos: z.literal(true),
+  }), await corpo(requisicao))
 
   const email = exigir(dados.email, "Informe o e-mail").trim().toLowerCase()
   const nome = exigir(dados.nome, "Informe seu nome").trim()
@@ -81,4 +88,4 @@ export async function POST(requisicao: Request) {
   )
 
   return ok({ id: usuario.id, nome, email, larId: lar.id }, 201)
-}
+})

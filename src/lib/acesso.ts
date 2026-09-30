@@ -18,7 +18,7 @@ export type PapelDeAcesso = "TITULAR" | "CONJUGE" | "DEPENDENTE" | "CONVIDADO" |
 
 // "/api/erros": a tela do funcionário também quebra, e o erro dele tem de
 // chegar ao registro do admin como o de qualquer um.
-const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/login", "/api/auth/logout", "/termos", "/privacidade", "/api/erros"]
+const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/login", "/seguranca", "/api/auth/mfa", "/api/auth/logout", "/termos", "/privacidade", "/api/erros"]
 
 /// Vive sob "/loja" mas é resultado/lucro do negócio, não operação de balcão —
 /// checado antes do prefixo geral, senão "começa com /loja" liberaria sozinho.

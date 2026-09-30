@@ -12,7 +12,7 @@ export async function registrarAcesso(requisicao: Request, usuarioId: string, ev
       data: { usuarioId, evento, ip: ipDaRequisicao(requisicao).slice(0, 64) },
     })
   } catch (excecao) {
-    console.error("[tino] falha ao gravar registro de acesso", excecao)
+    console.error("[tino] falha ao gravar registro de acesso", excecao instanceof Error ? excecao.name : "Erro")
   }
 }
 

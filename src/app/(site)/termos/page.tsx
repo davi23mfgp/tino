@@ -53,6 +53,15 @@ const SECOES = [
     ],
   },
   {
+    titulo: "Privacidade e atendimento",
+    conteudo: [
+      "O painel administrativo serve para cuidar do cadastro, da assinatura, do atendimento e dos problemas técnicos. Ele não disponibiliza seus saldos, lançamentos, dívidas, investimentos ou conversas com o assistente. O suporte pode ler o conteúdo que você enviar em um chamado; não envie senhas nem códigos de autenticação.",
+      "As senhas de acesso são verificadas por hash, sem consulta à senha original no painel. Ao entrar pelo Google, sua senha do Google não é fornecida ao Tino.",
+      "Os dados financeiros ainda são processados no servidor e não possuem criptografia de ponta a ponta. As limitações de acesso técnico, as finalidades do tratamento, os fornecedores e seus direitos estão descritos na Política de Privacidade. Estes termos não autorizam uso dos seus dados financeiros para curiosidade pessoal, venda de dados ou publicidade.",
+      "Ao convidar alguém para compartilhar o lar como casal ou família, essa pessoa terá acesso aos registros financeiros compartilhados. Confira o endereço de e-mail antes de enviar o convite. Cada participante usa seu próprio login; não compartilhe sua senha.",
+    ],
+  },
+  {
     titulo: "Dados de outras pessoas que você cadastra",
     conteudo: [
       "Clientes do fiado, funcionários da loja e membros do lar são dados de terceiros. Sobre eles, quem decide o uso é você: para a LGPD, você é o controlador e o Tino é o operador, que trata esses dados só para executar o serviço, seguindo suas instruções.",
