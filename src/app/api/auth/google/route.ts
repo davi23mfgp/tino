@@ -14,7 +14,7 @@ export async function GET(requisicao: Request) {
     client_id: configuracao.clienteId,
     redirect_uri: configuracao.retorno,
     response_type: "code",
-    scope: "openid email",
+    scope: "openid email profile",
     state: estado,
     nonce,
   }).toString()

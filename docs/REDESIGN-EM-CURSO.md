@@ -1383,8 +1383,8 @@ Google usa autorização por código, `state` e `nonce` em cookies curtos e
 estável é `sub`, gravada em `Usuario.googleId`, nunca o e-mail. Na primeira
 entrada, uma conta Tino já existente com Gmail verificado pode ser vinculada
 automaticamente; outras contas precisam de uma etapa de vínculo autenticado,
-que ainda não existe. Google não cria contas novas nem contorna o aceite dos
-termos e a escolha entre finanças pessoais e loja do cadastro atual.
+que ainda não existe. Para identidades novas, o cadastro com Google segue
+o aceite dos termos e a escolha entre finanças pessoais e loja.
 
 Para ligar o botão em produção, configurar `GOOGLE_CLIENT_ID`,
 `GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` no ambiente, e cadastrar a URI
@@ -1404,3 +1404,12 @@ interação permanecem iguais. A seção de saúde usa o anel principal, quatro
 anéis menores e o próximo passo, seguindo a primeira referência. No desktop
 ela ocupa as três colunas da grade, eliminando o vazio ao lado. Esta rodada
 fica em prévia local para o Davi revisar antes de qualquer publicação.
+
+## 29/09/2026 — cadastro pelo Google
+
+O login Google também atende identidades novas. Após a validação do e-mail,
+um cookie assinado por 15 minutos permite abrir o cadastro. Nome, tipo de
+conta, composição da casa e aceite explícito dos termos são exigidos antes
+de criar lar, categorias, teste gratuito e sessão. A escolha da conta Google
+sozinha não cria conta. Esta mudança de autenticação é separada da prévia
+visual do painel acima.

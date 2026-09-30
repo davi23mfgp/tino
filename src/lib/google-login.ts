@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify } from "jose"
+import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose"
 
 const chavesGoogle = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"))
 
@@ -23,5 +23,31 @@ export async function verificarIdentidadeGoogle(token: string, clienteId: string
   if (payload.nonce !== nonce || !payload.sub || payload.email_verified !== true || typeof payload.email !== "string") {
     throw new Error("Identidade Google incompleta ou não verificada.")
   }
-  return { googleId: payload.sub, email: payload.email.trim().toLowerCase() }
+  return { googleId: payload.sub, email: payload.email.trim().toLowerCase(), nome: typeof payload.name === "string" ? payload.name.trim().slice(0, 80) : "" }
+}
+
+export const COOKIE_CADASTRO_GOOGLE = "google_cadastro"
+
+function segredoCadastro() {
+  const segredo = process.env.JWT_SECRET
+  if (!segredo || segredo.length < 32) throw new Error("JWT_SECRET ausente ou curto.")
+  return new TextEncoder().encode(segredo)
+}
+
+export async function criarCadastroGoogle(dados: { googleId: string; email: string; nome: string }) {
+  return new SignJWT({ ...dados })
+    .setProtectedHeader({ alg: "HS256" })
+    .setAudience("google-cadastro")
+    .setIssuedAt()
+    .setExpirationTime("15m")
+    .sign(segredoCadastro())
+}
+
+export async function lerCadastroGoogle(token: string | undefined) {
+  if (!token) return null
+  try {
+    const { payload } = await jwtVerify(token, segredoCadastro(), { algorithms: ["HS256"], audience: "google-cadastro" })
+    if (typeof payload.googleId !== "string" || typeof payload.email !== "string" || typeof payload.nome !== "string") return null
+    return { googleId: payload.googleId, email: payload.email, nome: payload.nome }
+  } catch { return null }
 }

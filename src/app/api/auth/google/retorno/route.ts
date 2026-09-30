@@ -2,7 +2,7 @@ import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 import { criarToken, gravarCookieSessao } from "@/lib/auth"
-import { configuracaoGoogle, verificarIdentidadeGoogle } from "@/lib/google-login"
+import { COOKIE_CADASTRO_GOOGLE, configuracaoGoogle, criarCadastroGoogle, verificarIdentidadeGoogle } from "@/lib/google-login"
 import { prisma } from "@/lib/prisma"
 import { registrarAcesso } from "@/lib/registro-acesso"
 
@@ -48,7 +48,13 @@ export async function GET(requisicao: Request) {
     let usuario = await prisma.usuario.findUnique({ where: { googleId: identidade.googleId }, include: { membro: true } })
     if (!usuario) {
       usuario = await prisma.usuario.findUnique({ where: { email: identidade.email }, include: { membro: true } })
-      if (!usuario) return voltar(requisicao, "google-sem-conta")
+      if (!usuario) {
+        const resposta = NextResponse.redirect(new URL("/cadastro/google", requisicao.url))
+        resposta.cookies.set(COOKIE_CADASTRO_GOOGLE, await criarCadastroGoogle(identidade), {
+          httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 900,
+        })
+        return resposta
+      }
       // E-mail externo do Google pode mudar de dono. Só uma caixa Gmail, que
       // o próprio Google administra, é suficiente para ligar a conta sozinha.
       if (!identidade.email.endsWith("@gmail.com") || usuario.googleId) {
