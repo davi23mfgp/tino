@@ -211,6 +211,11 @@ export default function Cadastro() {
           </button>
         </form>
 
+        <div className="mt-5 flex items-center gap-3 text-xs text-muted-fg"><span className="h-px flex-1 bg-pauta" />ou<span className="h-px flex-1 bg-pauta" /></div>
+        <a href="/api/auth/google" className="mt-5 block w-full rounded-[var(--raio-pilula)] border border-pauta py-3 text-center text-sm font-medium transition hover:border-positivo/50">
+          Cadastrar com Google
+        </a>
+
         <p className="mt-6 text-center text-sm text-muted-fg">
           Já tem conta?{" "}
           <Link href="/login" className="text-acao hover:underline">

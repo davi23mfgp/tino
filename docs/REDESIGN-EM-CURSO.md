@@ -1383,8 +1383,8 @@ Google usa autorização por código, `state` e `nonce` em cookies curtos e
 estável é `sub`, gravada em `Usuario.googleId`, nunca o e-mail. Na primeira
 entrada, uma conta Tino já existente com Gmail verificado pode ser vinculada
 automaticamente; outras contas precisam de uma etapa de vínculo autenticado,
-que ainda não existe. Google não cria contas novas nem contorna o aceite dos
-termos e a escolha entre finanças pessoais e loja do cadastro atual.
+que ainda não existe. Para identidades novas, o cadastro com Google segue
+o aceite dos termos e a escolha entre finanças pessoais e loja.
 
 Para ligar o botão em produção, configurar `GOOGLE_CLIENT_ID`,
 `GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` no ambiente, e cadastrar a URI
@@ -1395,3 +1395,11 @@ fica como link menor embaixo. Também seguem pendentes na Vercel as variáveis
 `ADMIN_EMAIL`, `ADMIN_SENHA` (só para criação inicial),
 `TELEGRAM_BOT_USUARIO`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SEGREDO` e
 `CRON_SECRET`. Nenhum valor secreto foi colocado no repositório.
+## 29/09/2026 — cadastro pelo Google
+
+O login Google também atende identidades novas. Após a validação do e-mail,
+um cookie assinado por 15 minutos permite abrir o cadastro. Nome, tipo de
+conta, composição da casa e aceite explícito dos termos são exigidos antes
+de criar lar, categorias, teste gratuito e sessão. A escolha da conta Google
+sozinha não cria conta. Esta mudança de autenticação é separada da prévia
+visual do painel, que aguarda revisão antes de publicação.
