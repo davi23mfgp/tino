@@ -1395,3 +1395,12 @@ fica como link menor embaixo. Também seguem pendentes na Vercel as variáveis
 `ADMIN_EMAIL`, `ADMIN_SENHA` (só para criação inicial),
 `TELEGRAM_BOT_USUARIO`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SEGREDO` e
 `CRON_SECRET`. Nenhum valor secreto foi colocado no repositório.
+
+## 29/09/2026 — prévia do painel antes de publicar
+
+Pedido novo: no desktop a carteira de cartões ocupa toda a largura, com dois
+cartões por linha e elevação ao passar o mouse; no celular a pilha e sua
+interação permanecem iguais. A seção de saúde usa o anel principal, quatro
+anéis menores e o próximo passo, seguindo a primeira referência. No desktop
+ela ocupa as três colunas da grade, eliminando o vazio ao lado. Esta rodada
+fica em prévia local para o Davi revisar antes de qualquer publicação.
