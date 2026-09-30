@@ -1405,6 +1405,12 @@ anéis menores e o próximo passo, seguindo a primeira referência. No desktop
 ela ocupa as três colunas da grade, eliminando o vazio ao lado. Esta rodada
 fica em prévia local para o Davi revisar antes de qualquer publicação.
 
+Na revisão visual seguinte, os quatro indicadores passaram da faixa horizontal
+miúda para uma grade 2×2 com anéis, valores e referências legíveis. O cartão
+do saldo ganhou vidro grafite com reflexos verdes discretos, preservando o
+gradiente e a marca d'água do leão. No desktop, o nome e a fatura dos cartões
+ficaram maiores; as regras do celular e a seleção animada da pilha continuam.
+
 ## 29/09/2026 — cadastro pelo Google
 
 O login Google também atende identidades novas. Após a validação do e-mail,

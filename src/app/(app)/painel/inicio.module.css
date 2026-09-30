@@ -132,7 +132,7 @@
 .saudeBloco { container-type:inline-size; gap:20px; }
 .saudeTopo { display:flex; align-items:center; justify-content:space-between; gap:16px; }
 .saudeTopo h2 { font-size:calc(18px * var(--escala-letra)); }
-.saudeCorpo { display:grid; grid-template-columns:160px minmax(0,1fr); align-items:center; gap:22px; }
+.saudeCorpo { display:grid; grid-template-columns:180px minmax(0,1fr); align-items:center; gap:28px; }
 .anelNota { --nota:0deg; --cor-nota:var(--amarelo); position:relative; width:148px; height:148px; }
 .anelNota[data-situacao=SAUDAVEL] { --cor-nota:var(--acao); }
 /* O anel é recortado, não pintado por cima: o fundo do bloco é translúcido,
@@ -141,17 +141,18 @@
 .anelNota span { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .anelNota strong { font-size:calc(48px * var(--escala-letra)); font-weight:300; line-height:1; }
 .anelNota small { margin-top:5px; font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--cor-nota); }
-.indicadores { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px 18px; }
-.indicador { display:flex; align-items:center; gap:12px; min-width:0; }
-.anelIndicador { --cor-indicador:var(--amarelo); flex:none; width:48px; height:48px; border-radius:50%; background:conic-gradient(var(--cor-indicador) var(--progresso),color-mix(in oklab,var(--foreground),transparent 88%) 0); -webkit-mask:radial-gradient(circle,transparent 18px,#000 19px); mask:radial-gradient(circle,transparent 18px,#000 19px); }
+.indicadores { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.indicador { display:flex; align-items:center; gap:14px; min-width:0; min-height:94px; padding:14px 16px; border:1px solid color-mix(in oklab,var(--foreground),transparent 89%); border-radius:18px; background:linear-gradient(130deg,color-mix(in oklab,var(--foreground),transparent 95%),transparent); }
+.anelIndicador { --cor-indicador:var(--amarelo); flex:none; width:54px; height:54px; border-radius:50%; background:conic-gradient(var(--cor-indicador) var(--progresso),color-mix(in oklab,var(--foreground),transparent 88%) 0); -webkit-mask:radial-gradient(circle,transparent 20px,#000 21px); mask:radial-gradient(circle,transparent 20px,#000 21px); }
 .indicador[data-faixa=BOM] .anelIndicador { --cor-indicador:var(--positivo); }
 .indicador[data-faixa=CRITICO] .anelIndicador { --cor-indicador:var(--negativo); }
 .indicadorTexto { min-width:0; }
-.indicadorTexto strong { display:block; font-size:calc(13px * var(--escala-letra)); font-weight:650; }
-.indicadorTexto b { display:block; margin-top:1px; font-size:calc(16px * var(--escala-letra)); font-weight:500; color:var(--amarelo); font-variant-numeric:tabular-nums; }
+.indicadorTexto strong { display:block; font-size:calc(13px * var(--escala-letra)); font-weight:650; color:var(--foreground); }
+.indicadorTexto b { display:block; margin-top:2px; font-size:calc(21px * var(--escala-letra)); font-weight:650; line-height:1.15; color:var(--amarelo); font-variant-numeric:tabular-nums; }
 .indicador[data-faixa=BOM] .indicadorTexto b { color:var(--positivo); }
 .indicador[data-faixa=CRITICO] .indicadorTexto b { color:var(--negativo); }
-.indicadorTexto small { display:block; margin-top:3px; font-size:max(10px, calc(11.5px * var(--escala-letra))); line-height:1.35; color:var(--texto-3); }
+.indicadorTexto small { display:block; margin-top:4px; font-size:max(11px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-2); }
+@container (max-width:760px) { .saudeCorpo { grid-template-columns:160px minmax(0,1fr); gap:18px; } .indicadores { grid-template-columns:1fr; } }
 @container (max-width:580px) { .saudeCorpo { grid-template-columns:1fr; } .anelNota { margin:auto; } .indicadores { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @container (max-width:400px) { .indicadores { grid-template-columns:1fr; } }
 .proximaAcao { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:12px; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--acao), transparent 70%); background:linear-gradient(90deg, color-mix(in oklab, var(--acao), transparent 88%), transparent 70%); }
