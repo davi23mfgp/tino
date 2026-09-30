@@ -18,23 +18,24 @@
 
 @media (min-width:1024px) {
   .grade {
-    display:grid; gap:16px; align-items:start;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.95fr);
-    grid-template-areas:
-      "fluxo fluxo conferir"
-      "onde recentes dividas"
-      "indicadores indicadores indicadores";
+    display:grid; gap:12px; align-items:start;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-auto-rows:4px;
+    grid-auto-flow:dense;
   }
   .abas { display:none; }
   /* Mais específico que a regra das abas lá em cima: sem isso o grupo da aba
      aberta continuava um bloco só e empilhava três seções numa coluna. */
   .grade[data-aba] .grupo[data-grupo] { display:contents; }
-  .grade [data-area=fluxo] { grid-area:fluxo; }
-  .grade [data-area=conferir] { grid-area:conferir; }
-  .grade [data-area=onde] { grid-area:onde; }
-  .grade [data-area=recentes] { grid-area:recentes; }
-  .grade [data-area=indicadores] { grid-area:indicadores; }
-  .grade [data-area=dividas] { grid-area:dividas; }
+  /* Linhas curtas medidas pelo componente encaixam blocos de alturas
+     diferentes sem reservar uma coluna vazia quando não há dívidas. */
+  .grade [data-area] { grid-row-end:span var(--linhas-bloco, 25); }
+  .grade [data-area=fluxo] { grid-column:span 2; order:0; }
+  .grade [data-area=conferir] { order:1; }
+  .grade [data-area=onde] { order:2; }
+  .grade [data-area=recentes] { order:3; }
+  .grade [data-area=dividas] { order:4; }
+  .grade [data-area=indicadores] { grid-column:1/-1; order:5; }
 }
 
 /* ---- bloco e cabeçalho */

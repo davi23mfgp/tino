@@ -1,6 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState, type CSSProperties } from "react"
+import { Plus } from "lucide-react"
+import { CadastroDeConta } from "@/components/cadastro-de-conta"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
 
 import { IdentidadeBanco } from "@/components/banco-perfil"
@@ -44,6 +47,8 @@ const FRESTA = 64
  */
 export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
   const router = useRouter()
+  const [novoAberto, setNovoAberto] = useState(false)
+  const [salvandoNovo, setSalvandoNovo] = useState(false)
   const [aberto, setAberto] = useState(cartoes.length - 1)
   const primeiro = useRef<HTMLButtonElement>(null)
   const [altura, setAltura] = useState(0)
@@ -64,7 +69,7 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
   const posicao = (indice: number) => (indice === aberto ? cartoes.length - 1 : indice < aberto ? indice : indice - 1)
 
   return (
-    <div className={estilos.carteira} style={{ height: alturaTotal }}>
+    <><div className={estilos.carteira} style={{ height: alturaTotal }}>
       {cartoes.map((cartao, indice) => {
         const estaAberto = indice === aberto
         const lugar = posicao(indice)
@@ -106,6 +111,10 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
           </button>
         )
       })}
+      <button type="button" className={estilos.novoCartao} onClick={() => setNovoAberto(true)} aria-label="Adicionar cartão"><Plus aria-hidden /><span>Novo cartão</span></button>
     </div>
+    <Dialog open={novoAberto} onOpenChange={(valor) => { if (!salvandoNovo) setNovoAberto(valor) }}><DialogContent><DialogHeader><DialogTitle>Novo cartão</DialogTitle></DialogHeader><DialogBody>
+      <CadastroDeConta tipoInicial="CARTAO_CREDITO" nomesExistentes={cartoes.map((cartao) => cartao.instituicao || "")} aoMudarSalvando={setSalvandoNovo} aoCancelar={() => setNovoAberto(false)} aoCriar={() => { setNovoAberto(false); router.refresh() }} />
+    </DialogBody></DialogContent></Dialog></>
   )
 }

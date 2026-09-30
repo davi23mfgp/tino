@@ -15,6 +15,7 @@ import {
   Palette,
   Pencil,
   Plus,
+  Trash2,
   Smartphone,
   Sun,
   Tags,
@@ -35,6 +36,7 @@ import { EditarPerfil } from "@/components/editar-perfil"
 import { CORES_DE_TEMA, useTheme } from "@/components/theme-provider"
 import { useValoresOcultos } from "@/components/ocultar-valores"
 import { IdentidadeBanco } from "@/components/banco-perfil"
+import { GerenciarCartao } from "@/components/gerenciar-cartao"
 import { CadastroDeConta } from "@/components/cadastro-de-conta"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog"
@@ -130,6 +132,8 @@ export default function Configuracoes() {
   const [openFinance, setOpenFinance] = useState<{ provedor: string; sandbox: boolean; conexoes: Conexao[] } | null>(null)
 
   const [dialogo, setDialogo] = useState<null | "perfil" | "contas" | "nova" | "avisos" | "atalho" | "dados" | "suporte" | "banco">(null)
+  const [cartaoEmEdicao, setCartaoEmEdicao] = useState<Conta | null>(null)
+  const [excluirCartaoDireto, setExcluirCartaoDireto] = useState(false)
   const [mensagem, setMensagem] = useState<string | null>(null)
   const [salvandoConta, setSalvandoConta] = useState(false)
   const [completando, setCompletando] = useState(false)
@@ -140,7 +144,7 @@ export default function Configuracoes() {
     // /api/open-finance, e quando o provedor não sobe (Open Finance está
     // desligado, sem chaves) a lista de contas falhava junto, com a mensagem
     // "Não consegui carregar suas contas" para quem nunca usou Open Finance.
-    setContas(await buscar<Conta[]>("/api/contas"))
+    setContas((await buscar<Conta[]>("/api/contas")).filter((conta) => conta.tipo !== "PJ_MEI"))
     buscar<{ provedor: string; sandbox: boolean; conexoes: Conexao[] }>("/api/open-finance")
       .then(setOpenFinance)
       .catch(() => setOpenFinance(null))
@@ -506,11 +510,13 @@ export default function Configuracoes() {
                           {conta.limiteCentavos ? ` · limite ${formatarMoeda(conta.limiteCentavos)}` : ""}
                         </p>
                       </div>
-                      <span
-                        className={`valor-sensivel shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums ${conta.saldoCentavos < 0 ? "text-negativo" : ""}`}
-                      >
-                        {formatarMoeda(conta.saldoCentavos)}
-                      </span>
+                      <div className="flex shrink-0 flex-col items-end">
+                        <span className={`valor-sensivel whitespace-nowrap text-sm font-semibold tabular-nums ${conta.saldoCentavos < 0 ? "text-negativo" : ""}`}>{formatarMoeda(conta.saldoCentavos)}</span>
+                        {conta.tipo === "CARTAO_CREDITO" && <div className="flex gap-1">
+                          <button type="button" aria-label={`Editar ${conta.nome}`} className="flex min-h-11 items-center gap-1 rounded-full px-2 text-xs text-muted-fg hover:bg-papel-2" onClick={() => { setExcluirCartaoDireto(false); setDialogo(null); setCartaoEmEdicao(conta) }}><Pencil className="size-4" aria-hidden />Editar</button>
+                          <button type="button" aria-label={`Excluir ${conta.nome}`} className="flex min-h-11 items-center gap-1 rounded-full px-2 text-xs text-negativo hover:bg-papel-2" onClick={() => { setExcluirCartaoDireto(true); setDialogo(null); setCartaoEmEdicao(conta) }}><Trash2 className="size-4" aria-hidden />Excluir</button>
+                        </div>}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -629,6 +635,10 @@ export default function Configuracoes() {
           )}
         </DialogContent>
       </Dialog>
+      {cartaoEmEdicao && <GerenciarCartao key={cartaoEmEdicao.id} cartao={cartaoEmEdicao} excluirInicialmente={excluirCartaoDireto}
+        fechar={() => { setCartaoEmEdicao(null); setDialogo("contas") }}
+        aoSalvar={() => { void recarregarContas(); router.refresh() }}
+        aoRemover={() => { setCartaoEmEdicao(null); setDialogo("contas"); void recarregarContas(); router.refresh() }} />}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import estilos from "./inicio.module.css"
 
@@ -21,9 +21,34 @@ type Aba = (typeof ABAS)[number]["valor"]
  * para isso (ver `.grupo` em inicio.module.css).
  */
 export function AbasDoInicio({ children }: { children: React.ReactNode }) {
+  const grade = useRef<HTMLDivElement>(null)
   const [aba, setAba] = useState<Aba>("hoje")
+  useEffect(() => {
+    const elemento = grade.current
+    if (!elemento) return
+    const blocos = new Set<HTMLElement>()
+    const medir = () => {
+      for (const bloco of blocos) {
+        const linhas = Math.ceil((bloco.getBoundingClientRect().height + 12) / 16)
+        bloco.style.setProperty("--linhas-bloco", String(Math.max(1, linhas)))
+      }
+    }
+    const observador = new ResizeObserver(medir)
+    const registrar = () => {
+      // Seções podem chegar depois da hidratação pelo streaming do Next.
+      // Observar só a lista inicial deixava os blocos novos sobrepostos.
+      elemento.querySelectorAll<HTMLElement>("[data-area]").forEach((bloco) => {
+        if (!blocos.has(bloco)) { blocos.add(bloco); observador.observe(bloco) }
+      })
+      medir()
+    }
+    const mudancas = new MutationObserver(registrar)
+    mudancas.observe(elemento, { childList: true, subtree: true })
+    registrar()
+    return () => { observador.disconnect(); mudancas.disconnect() }
+  }, [])
   return (
-    <div className={estilos.grade} data-aba={aba}>
+    <div ref={grade} className={estilos.grade} data-aba={aba}>
       <div className={estilos.abas} role="tablist" aria-label="Partes do início">
         {ABAS.map((item) => (
           <button key={item.valor} type="button" role="tab" aria-selected={aba === item.valor} onClick={() => setAba(item.valor)}>

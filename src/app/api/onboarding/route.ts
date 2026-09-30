@@ -3,9 +3,15 @@ import { comSessao, corpo, ok } from "@/lib/api"
 import { competenciaAtual, competenciaMaisMeses } from "@/lib/datas"
 import { criarParcelamento } from "@/lib/parcelamentos"
 import { reservaIdeal } from "@/lib/financeiro"
+import { validar, z } from "@/lib/validar"
+import { OBJETIVOS_FINANCEIROS, PERFIS_DE_RISCO } from "@/lib/perfil-inicial"
 import { valorVigente } from "@/lib/parametros"
 
 interface Entrada {
+  tipoLar?: "SOLO" | "CASAL" | "FAMILIA"
+  objetivosFinanceiros?: string[]
+  perfilDeRisco?: string
+
   rendaMensalCentavos?: number
   custoMensalEstimadoCentavos?: number
   diaInicioMes?: number
@@ -57,7 +63,15 @@ interface Entrada {
  * que é pior que não ter nada.
  */
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<Entrada>(requisicao)
+  const dados: Entrada = validar(z.object({
+    rendaMensalCentavos: z.number().int().min(0).max(2147483647).optional(),
+    diaInicioMes: z.number().int().min(1).max(31).optional(),
+    tipoLar: z.enum(["SOLO", "CASAL", "FAMILIA"]).optional(),
+    objetivosFinanceiros: z.array(z.enum(OBJETIVOS_FINANCEIROS.map((objetivo) => objetivo.valor))).max(10).optional(),
+    perfilDeRisco: z.enum(PERFIS_DE_RISCO.map((perfil) => perfil.valor)).optional(),
+    contas: z.array(z.object({ nome: z.string().trim().min(1).max(80), tipo: z.enum(["CORRENTE", "POUPANCA", "DINHEIRO", "INVESTIMENTO"]), instituicao: z.string().trim().max(80).optional(), saldoCentavos: z.number().int().min(-2147483647).max(2147483647), jurosChequeEspecialBps: z.number().int().min(0).max(10000).optional() })).max(30).optional(),
+    cartoes: z.array(z.object({ nome: z.string().trim().min(1).max(80), instituicao: z.string().trim().max(80).optional(), limiteCentavos: z.number().int().min(0).max(2147483647).optional(), diaVencimento: z.number().int().min(1).max(31).optional(), faturaAtualCentavos: z.number().int().min(0).max(2147483647).optional() })).max(30).optional(),
+  }).passthrough(), await corpo(requisicao))
   const competencia = competenciaAtual()
   const cartoesCriados: string[] = []
 
@@ -82,6 +96,12 @@ export const POST = comSessao(async (sessao, requisicao) => {
     }
 
     for (const conta of dados.contas ?? []) {
+      // Reabrir a conversa não deve repetir a mesma conta nem o cheque especial.
+      const existente = await tx.conta.findFirst({ where: { larId: sessao.larId, arquivada: false, nome: conta.nome, tipo: conta.tipo, saldoInicialCentavos: conta.saldoCentavos, OR: [{ instituicao: conta.instituicao || null }, { instituicao: null }] } })
+      if (existente) {
+        if (!existente.instituicao && conta.instituicao) await tx.conta.update({ where: { id: existente.id }, data: { instituicao: conta.instituicao } })
+        continue
+      }
       const criada = await tx.conta.create({
         data: {
           larId: sessao.larId,
@@ -118,6 +138,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
     }
 
     for (const cartao of dados.cartoes ?? []) {
+      const existente = await tx.conta.findFirst({ where: { larId: sessao.larId, arquivada: false, tipo: "CARTAO_CREDITO", nome: cartao.nome, OR: [{ instituicao: cartao.instituicao || null }, { instituicao: null }] } })
+      if (existente) { cartoesCriados.push(existente.id); continue }
       const criado = await tx.conta.create({
         data: {
           larId: sessao.larId,
@@ -199,6 +221,9 @@ export const POST = comSessao(async (sessao, requisicao) => {
       where: { id: sessao.larId },
       data: {
         onboardingEm: new Date(),
+        ...(dados.tipoLar ? { tipo: dados.tipoLar } : {}),
+        ...(dados.objetivosFinanceiros ? { objetivosFinanceiros: [...new Set(dados.objetivosFinanceiros)] } : {}),
+        ...(dados.perfilDeRisco ? { perfilDeRisco: dados.perfilDeRisco } : {}),
         ...(dados.diaInicioMes ? { diaInicioMes: dados.diaInicioMes } : {}),
         ...(dados.custoMensalEstimadoCentavos
           ? { custoEstimadoCentavos: dados.custoMensalEstimadoCentavos }

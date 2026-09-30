@@ -2,6 +2,8 @@ import { IdentidadesProvider } from "@/components/identidades-visuais"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
+import { cookies } from "next/headers"
+import { COOKIE_CONVITE, tokenDeConviteValido } from "@/lib/convites"
 import { getSessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { competenciaAtual, rotuloCompetencia } from "@/lib/datas"
@@ -26,6 +28,8 @@ import { estadoDoAcesso } from "@/lib/acesso-assinatura"
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const sessao = await getSessao()
   if (!sessao) redirect("/login")
+  const convitePendente = (await cookies()).get(COOKIE_CONVITE)?.value
+  if (convitePendente && tokenDeConviteValido(convitePendente)) redirect(`/convite/${convitePendente}`)
 
   const [lar, usuario] = await Promise.all([
     prisma.lar.findUnique({

@@ -356,6 +356,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
 export function contextoParaModelo(panorama: Panorama): string {
   const linhas = [
     `Lar: ${panorama.lar.nome} (${panorama.lar.tipo.toLowerCase()}). Mês de referência: ${rotuloCompetencia(panorama.competencia)}.`,
+    `Prioridades declaradas: ${(panorama.lar.objetivosFinanceiros ?? []).join(", ") || "ainda não informadas"}. Preferência de risco: ${panorama.lar.perfilDeRisco ?? "ainda não informada"}.`,
     `Saldo disponível: ${formatarMoeda(panorama.saldoTotalCentavos)}.`,
     `Mês atual: receitas ${formatarMoeda(panorama.mes.receitasCentavos)}, despesas ${formatarMoeda(panorama.mes.despesasCentavos)}, sobra ${formatarMoeda(panorama.mes.sobraCentavos)}.`,
     `Médias dos últimos meses: receita ${formatarMoeda(panorama.medias.receitaCentavos)}, despesa ${formatarMoeda(panorama.medias.despesaCentavos)}, sobra ${formatarMoeda(panorama.medias.sobraCentavos)}, custo fixo ${formatarMoeda(panorama.medias.custoFixoCentavos)}, custo essencial ${formatarMoeda(panorama.medias.custoEssencialCentavos)}.`,

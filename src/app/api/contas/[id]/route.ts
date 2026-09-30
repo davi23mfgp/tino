@@ -71,15 +71,15 @@ export const DELETE = comSessao<Contexto>(async (sessao, _requisicao, contexto) 
 
   const conta = await prisma.conta.findFirst({
     where: { id, larId: sessao.larId },
-    include: { _count: { select: { transacoes: true } } },
+    include: { _count: { select: { transacoes: true, faturas: true, parcelamentos: true, orcamentosCartao: true, metas: true, recorrencias: true, dividas: true } } },
   })
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
 
   // Apagar uma conta com histórico levaria o extrato junto e mudaria totais de
   // meses já fechados. Conta com lançamento só pode ser arquivada.
-  if (conta._count.transacoes > 0) {
+  if (Object.values(conta._count).some((quantidade) => quantidade > 0)) {
     await prisma.conta.update({ where: { id }, data: { arquivada: true } })
-    return ok({ arquivada: true, motivo: "A conta tem lançamentos e foi arquivada em vez de excluída." })
+    return ok({ arquivada: true, motivo: "O histórico da conta foi preservado; ela foi arquivada." })
   }
 
   await prisma.conta.delete({ where: { id } })

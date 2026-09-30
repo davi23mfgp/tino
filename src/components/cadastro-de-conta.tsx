@@ -10,7 +10,7 @@ import { useIdentidadeVisual } from "@/components/identidades-visuais"
 import { showToast } from "@/components/ui/toast"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { SelectNative } from "@/components/ui/select-native"
 
 import estilos from "./cadastro-de-conta.module.css"
@@ -33,7 +33,7 @@ const TIPOS = [
   { valor: "CARTAO_CREDITO", rotulo: "Cartão de crédito" },
   { valor: "POUPANCA", rotulo: "Poupança" },
   { valor: "INVESTIMENTO", rotulo: "Investimento" },
-  { valor: "PJ_MEI", rotulo: "Conta MEI" },
+  
 ]
 
 /**
@@ -72,11 +72,13 @@ function Logo({ nome }: { nome: string }) {
 
 export function CadastroDeConta({
   nomesExistentes,
+  tipoInicial = "CORRENTE",
   aoCriar,
   aoCancelar,
   aoMudarSalvando,
 }: {
   /** Instituições das contas que a pessoa já tem, inclusive fora do catálogo. */
+  tipoInicial?: string
   nomesExistentes: string[]
   aoCriar: () => void
   aoCancelar: () => void
@@ -86,7 +88,7 @@ export function CadastroDeConta({
   const [busca, setBusca] = useState("")
   const [outro, setOutro] = useState(false)
   const [nomeEditado, setNomeEditado] = useState(false)
-  const [nova, setNova] = useState({ nome: "", tipo: "CORRENTE", instituicao: "", saldo: "", limite: "", venc: "", bandeira: "" })
+  const [nova, setNova] = useState({ nome: "", tipo: tipoInicial, instituicao: "", saldo: "", limite: "", venc: "", bandeira: "" })
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -139,24 +141,24 @@ export function CadastroDeConta({
     setErro(null)
     try {
       if (!nova.nome.trim()) throw new Error("Dê um nome à conta.")
-      const campos = nova.tipo === "CARTAO_CREDITO" ? [nova.saldo, nova.limite] : [nova.saldo]
+      const campos = nova.tipo === "CARTAO_CREDITO" ? [nova.limite] : [nova.saldo]
       if (campos.some((valor) => valor.trim() && !/^-?(?:\d+|\d{1,3}(?:\.\d{3})+)(?:[,.]\d{1,2})?$/.test(valor.trim()))) {
         throw new Error("Informe os valores como 1.234,56 ou 1234.56.")
       }
       if (campos.some((valor) => Math.abs(paraCentavos(valor)) > 2147483647)) throw new Error("Valor acima do limite permitido.")
       if (nova.tipo === "CARTAO_CREDITO") {
         if (paraCentavos(nova.limite) < 0) throw new Error("O limite não pode ser negativo.")
-        if (nova.venc && (!Number.isInteger(Number(nova.venc)) || Number(nova.venc) < 1 || Number(nova.venc) > 31)) {
-          throw new Error("Escolha um dia entre 1 e 31.")
+        if (nova.venc && !/^\d{4}-\d{2}-\d{2}$/.test(nova.venc)) {
+          throw new Error("Escolha a data da próxima fatura.")
         }
       }
       await enviar("/api/contas", {
         nome: nova.nome.trim(),
         tipo: nova.tipo,
         instituicao: nova.instituicao.trim() || undefined,
-        saldoInicialCentavos: nova.saldo ? paraCentavos(nova.saldo) : 0,
+        saldoInicialCentavos: nova.tipo === "CARTAO_CREDITO" ? 0 : nova.saldo ? paraCentavos(nova.saldo) : 0,
         limiteCentavos: nova.tipo === "CARTAO_CREDITO" && nova.limite ? paraCentavos(nova.limite) : undefined,
-        diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc) : undefined,
+        diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc.slice(-2)) : undefined,
         bandeira: nova.tipo === "CARTAO_CREDITO" && nova.bandeira ? nova.bandeira : undefined,
       })
       showToast("Conta adicionada")
@@ -296,17 +298,16 @@ export function CadastroDeConta({
               required
             />
           </Field>
-          <Field>
+          {nova.tipo !== "CARTAO_CREDITO" && <Field>
             <FieldLabel htmlFor="conta-saldo">Saldo atual (R$)</FieldLabel>
             <Input
               inputMode="decimal"
               id="conta-saldo"
               value={nova.saldo}
               onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
-              placeholder={nova.tipo === "CARTAO_CREDITO" ? "-1.250,00" : "0,00"}
+              placeholder="0,00"
             />
-            {nova.tipo === "CARTAO_CREDITO" && <FieldDescription>Negativo quando há fatura em aberto.</FieldDescription>}
-          </Field>
+          </Field>}
           {nova.tipo === "CARTAO_CREDITO" && (
             <>
               <Field>
@@ -320,16 +321,12 @@ export function CadastroDeConta({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="conta-venc">Dia do vencimento</FieldLabel>
+                <FieldLabel htmlFor="conta-venc">Vencimento da próxima fatura</FieldLabel>
                 <Input
                   id="conta-venc"
                   value={nova.venc}
                   onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
-                  type="number"
-                  min={1}
-                  max={31}
-                  step={1}
-                  placeholder="10"
+                  type="date"
                 />
               </Field>
               <Field>

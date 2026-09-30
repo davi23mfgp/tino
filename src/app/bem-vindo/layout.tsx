@@ -10,7 +10,7 @@ export default async function LayoutBemVindo({ children }: { children: React.Rea
     <div className="mx-auto min-h-screen w-full max-w-2xl px-4 py-8">
       <p className="text-xs uppercase tracking-[0.3em] text-muted-fg">Tino</p>
       <p className="mt-1 text-sm text-muted-fg">
-        Oi, {sessao.nome.split(" ")[0]}. Sete perguntas rápidas e eu já te mostro onde você está.
+        Oi, {sessao.nome.split(" ")[0]}. Vamos conhecer suas contas e prioridades para começar.
       </p>
       {children}
     </div>

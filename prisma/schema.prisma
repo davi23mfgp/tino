@@ -272,6 +272,9 @@ model Lar {
   /// Marca quando o usuário terminou a conversa inicial. Enquanto for null, o
   /// app leva para o /bem-vindo em vez de mostrar um painel vazio.
   onboardingEm DateTime?
+  objetivosFinanceiros String[] @default([])
+  perfilDeRisco String?
+  convites ConviteLar[]
 
   /// Gasto mensal que o usuário estimou na conversa inicial. É a referência de
   /// custo de vida enquanto não houver histórico lançado — sem ela, o app
@@ -1863,4 +1866,18 @@ model RegistroAdmin {
 
   @@index([criadoEm])
   @@index([alvoId])
+}
+
+/// Só o hash do link fica no banco; o convite vale para um e-mail específico.
+model ConviteLar {
+  id String @id @default(cuid())
+  larId String
+  lar Lar @relation(fields: [larId], references: [id], onDelete: Cascade)
+  emissorId String
+  email String
+  tokenHash String @unique
+  criadoEm DateTime @default(now())
+  expiraEm DateTime
+  aceitoEm DateTime?
+  @@index([larId, email])
 }

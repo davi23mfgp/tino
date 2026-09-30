@@ -1426,3 +1426,40 @@ Davi solicitou enviar a atualização e vê-la funcionando no site público.
 A prévia da branch `codex/login-vidro` foi integrada para envio à `main`;
 o cadastro Google já estava publicado. A integração mantém as mudanças
 de largura, contraste e leitura do painel da prévia revisada.
+
+## 30/09/2026 — pedido recuperado do outro Codex, em prévia
+
+O link compartilhado `cx_6abd43e59b70819198c883352ba32dc2` contém o pedido
+completo. Os commits mencionados (`26f2f8b`, `8f76f65`, `7a81f36`) ficaram
+locais naquele ambiente e não estavam em nenhuma branch remota. A integração
+anterior de `codex/login-vidro` levou só o painel antigo para produção.
+
+Implementado neste checkout para revisão, antes de novo envio:
+- Conversa pessoal de cinco etapas: renda e dia de recebimento; contas com
+  instituição visual, tipo e saldo; cartões com limite e calendário da próxima
+  fatura; prioridades com seleção múltipla e preferência de risco; individual,
+  casal ou família. Saem gasto estimado, parcelamentos, dívidas, meta com valor
+  e MEI. Mantidos os tokens e o estilo já existentes.
+- Perfil: Editar e Excluir visíveis na linha do cartão em Contas e cartões.
+  Remoção com vínculos arquiva; conta MEI fica fora da lista pessoal sem apagar
+  o histórico. Novo cartão não pede saldo inicial nem valor da fatura.
+- No desktop, cartões com largura limitada e lado a lado, com botão + de
+  cadastro ao lado. Os blocos do painel são medidos e encaixados em linhas
+  curtas; a grade não reserva uma coluna vazia para dívidas ausentes. As regras
+  de pilha e abas do celular são preservadas.
+- Objetivos e perfil ficam no Lar e entram no contexto do assessor. Convites
+  por link específico para e-mail, com expiração de sete dias e hash no banco.
+  Login Google é aceito; a entrada só ocorre após confirmação. Contas novas e
+  vazias podem entrar; espaços já usados não são transferidos para evitar
+  perda de acesso ao histórico. Sem RESEND_API_KEY e EMAIL_REMETENTE, o app
+  entrega um link copiável e informa que o e-mail não foi enviado.
+
+Tipos, 588 testes e build passaram no banco local. Testes HTTP adicionais
+validaram repetição sem duplicatas, escolhas múltiplas persistidas, validação
+do dia, edição/arquivamento com orçamento associado e convite com restrição
+ao e-mail correto e revogação da sessão anterior. Produção pendente da
+aprovação explícita da prévia solicitada pelo Davi nesta conversa.
+
+Prévia local validada em 30/09/2026: captura real do build de produção local, com cartões lado a lado e tile de criação, formulário de cartão sem saldo, salário e dia de recebimento, calendário de vencimento e seleção simultânea de prioridades. Playwright confirmou que o tile adicional permanece oculto no mobile. Capturas disponíveis em `/workspace/scratch/previa-tino/`. Alterações aguardam revisão visual do usuário antes de commit, push e publicação.
+
+Ajuste solicitado na revisão visual: os cartões no desktop agora crescem para dividir toda a largura disponível, mantendo o botão de criação ao lado e eliminando a sobra à direita. A regra de distribuição continua restrita ao desktop. Prévia atualizada antes da publicação.

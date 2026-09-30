@@ -36,6 +36,8 @@ export interface Panorama {
     id: string
     nome: string
     tipo: string
+    objetivosFinanceiros?: string[]
+    perfilDeRisco?: string | null
     diaInicioMes: number
     estrategiaDivida: "AVALANCHE" | "BOLA_DE_NEVE" | "PROPORCIONAL"
     mesesReserva: number
@@ -488,6 +490,8 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       id: lar.id,
       nome: lar.nome,
       tipo: lar.tipo as string,
+      objetivosFinanceiros: lar.objetivosFinanceiros,
+      perfilDeRisco: lar.perfilDeRisco,
       diaInicioMes: lar.diaInicioMes,
       estrategiaDivida: lar.estrategiaDivida as Panorama["lar"]["estrategiaDivida"],
       mesesReserva: lar.mesesReserva,
