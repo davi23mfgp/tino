@@ -34,8 +34,17 @@
   .grade [data-area=conferir] { order:1; }
   .grade [data-area=onde] { order:2; }
   .grade [data-area=recentes] { order:3; }
+  .grade:not(:has([data-area=dividas])) [data-area=recentes] { grid-column:span 2; }
   .grade [data-area=dividas] { order:4; }
   .grade [data-area=indicadores] { grid-column:1/-1; order:5; }
+  /* Sem alertas nem dívidas, duas colunas formam pares completos. Esticar
+     o par evita o buraco abaixo do bloco mais curto. */
+  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])) {
+    grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:auto; align-items:stretch;
+  }
+  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])) [data-area] { grid-row-end:auto; }
+  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])) [data-area=recentes] { grid-column:auto; }
+
 }
 
 /* ---- bloco e cabeçalho */
