@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
-import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { AcoesDaConta } from "@/components/barra-topo"
@@ -29,7 +28,6 @@ import { CarteiraCartoes } from "@/components/carteira-cartoes"
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Início · Tino", robots: { index: false, follow: false } }
 
-const CORES_FAIXA: Record<string, string> = { BOM: "text-positivo", ATENCAO: "text-atencao", CRITICO: "text-negativo", SEM_DADO: "text-muted-fg" }
 const CORES = ["#34c759", "#5ac8fa", "#af52de", "#ff9f0a", "#ff375f", "#8e8e93"]
 
 
@@ -164,10 +162,8 @@ export default async function Painel() {
 
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
-    {/* O topo, os atalhos e a carteira de cartões ficam exatamente como
-        estavam (Davi, 29/09/2026: "já disse que quero manter isso, o resto
-        pode mudar"). Daqui para baixo é a opção C do canvas (passo 30):
-        Hoje, Mês e Futuro no celular; no computador, coluna larga e trilho. */}
+    {/* A carteira continua empilhada no celular. No desktop, os cartões
+        aproveitam a largura do painel sem perder seleção e movimento. */}
     <section className={estilos.painel} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
       {/* Cartões numa carteira (Davi, 23/09): um atrás do outro, o tocado
@@ -230,19 +226,22 @@ export default async function Painel() {
           </> : <p className={e.vazio}>Os gastos do mês aparecem aqui.</p>}
         </section>
 
-        <section className={e.bloco} data-area="indicadores" aria-labelledby="saude-titulo">
+        <section className={cn(e.bloco, e.saudeBloco)} data-area="indicadores" aria-labelledby="saude-titulo">
           <div className={e.saudeTopo}>
-            <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}><span>{diagnostico.nota}</span></div>
-            <div><h2 id="saude-titulo">Saúde {diagnostico.nota} de 100</h2><p>{diagnostico.situacao === "SAUDAVEL" ? "saudável" : "pede atenção"} · abaixo de 50 é crítico, acima de 75 é saudável</p></div>
+            <h2 id="saude-titulo">Saúde do dinheiro</h2>
             <Link href="/analise" className={e.linkCabeca}>Ver análise →</Link>
           </div>
-          <div className={e.indicadores}>{indicadores.map((linha) => (
-            <div key={linha.chave} data-faixa={linha.faixa}>
-              <div className={e.indicadorTopo}><span>{linha.nome}</span><b>{linha.valor}</b></div>
-              {linha.escala && <ReguaDoIndicador numero={linha.numero} escala={linha.escala} cor={CORES_FAIXA[linha.faixa]} />}
-              <small>{linha.referencia}</small>
+          <div className={e.saudeCorpo}>
+            <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}>
+              <span><strong>{diagnostico.nota}</strong><small>{diagnostico.situacao === "SAUDAVEL" ? "saudável" : "pede atenção"}</small></span>
             </div>
-          ))}</div>
+            <div className={e.indicadores}>{indicadores.map((linha) => (
+              <div key={linha.chave} className={e.indicador} data-faixa={linha.faixa}>
+                <div className={e.anelIndicador} style={{ "--progresso": `${linha.escala ? Math.max(0, Math.min(1, linha.numero / linha.escala.maximo)) * 360 : 0}deg` } as CSSProperties} aria-hidden="true" />
+                <div className={e.indicadorTexto}><strong>{linha.nome}</strong><b>{linha.valor}</b><small>{linha.referencia}</small></div>
+              </div>
+            ))}</div>
+          </div>
           {diagnostico.prioridades[0] && <Link href="/analise" className={e.proximaAcao}>
             <span>1</span>
             <span className="min-w-0"><strong>{diagnostico.prioridades[0].titulo}</strong><small>{diagnostico.prioridades[0].porque}</small></span>

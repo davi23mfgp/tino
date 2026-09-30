@@ -1395,6 +1395,22 @@ fica como link menor embaixo. Também seguem pendentes na Vercel as variáveis
 `ADMIN_EMAIL`, `ADMIN_SENHA` (só para criação inicial),
 `TELEGRAM_BOT_USUARIO`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SEGREDO` e
 `CRON_SECRET`. Nenhum valor secreto foi colocado no repositório.
+
+## 29/09/2026 — prévia do painel antes de publicar
+
+Pedido novo: no desktop a carteira de cartões ocupa toda a largura, com dois
+cartões por linha e elevação ao passar o mouse; no celular a pilha e sua
+interação permanecem iguais. A seção de saúde usa o anel principal, quatro
+anéis menores e o próximo passo, seguindo a primeira referência. No desktop
+ela ocupa as três colunas da grade, eliminando o vazio ao lado. Esta rodada
+fica em prévia local para o Davi revisar antes de qualquer publicação.
+
+Na revisão visual seguinte, os quatro indicadores passaram da faixa horizontal
+miúda para uma grade 2×2 com anéis, valores e referências legíveis. O cartão
+do saldo ganhou vidro grafite com reflexos verdes discretos, preservando o
+gradiente e a marca d'água do leão. No desktop, o nome e a fatura dos cartões
+ficaram maiores; as regras do celular e a seleção animada da pilha continuam.
+
 ## 29/09/2026 — cadastro pelo Google
 
 O login Google também atende identidades novas. Após a validação do e-mail,
@@ -1402,4 +1418,11 @@ um cookie assinado por 15 minutos permite abrir o cadastro. Nome, tipo de
 conta, composição da casa e aceite explícito dos termos são exigidos antes
 de criar lar, categorias, teste gratuito e sessão. A escolha da conta Google
 sozinha não cria conta. Esta mudança de autenticação é separada da prévia
-visual do painel, que aguarda revisão antes de publicação.
+visual do painel acima.
+
+## 30/09/2026 — publicação da prévia do painel
+
+Davi solicitou enviar a atualização e vê-la funcionando no site público.
+A prévia da branch `codex/login-vidro` foi integrada para envio à `main`;
+o cadastro Google já estava publicado. A integração mantém as mudanças
+de largura, contraste e leitura do painel da prévia revisada.
