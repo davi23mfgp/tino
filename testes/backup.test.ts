@@ -13,10 +13,12 @@ test("backup cifra o fluxo, autentica o arquivo e recusa chave errada/adulteraç
   const { criarCopia, verificarCopia } = await carregar()
   const diretorio = await mkdtemp(join(tmpdir(), "tino-backup-"))
   try {
-    const programa = join(diretorio, "dump-falso")
-    await writeFile(programa, '#!/bin/sh\nprintf "registro privado de teste"\n', { mode: 0o700 })
+    // Node executa o produtor fictício tanto no Windows quanto no Linux;
+    // um shell script com shebang só funcionava no runner Unix.
+    const programa = join(diretorio, "dump-falso.cjs")
+    await writeFile(programa, 'process.stdout.write("registro privado de teste")\n')
     const destino = join(diretorio, "copia.enc"), chave = randomBytes(32)
-    await criarCopia({ destino, chave, ambiente: process.env, programa })
+    await criarCopia({ destino, chave, ambiente: process.env, programa: process.execPath, argumentos: [programa] })
     const bytes = await readFile(destino)
     assert.ok(!bytes.includes(Buffer.from("registro privado")))
     await verificarCopia(destino, chave)

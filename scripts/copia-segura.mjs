@@ -32,14 +32,14 @@ function executar(programa, argumentos, ambiente, entrada = "ignore") {
   return { processo, terminou }
 }
 
-export async function criarCopia({ destino, chave, ambiente, programa = "pg_dump" }) {
+export async function criarCopia({ destino, chave, ambiente, programa = "pg_dump", argumentos = ["--format=custom", "--no-owner", "--no-privileges"] }) {
   const nonce = randomBytes(12)
   const arquivo = await open(destino, "wx", 0o600)
   await arquivo.write(Buffer.concat([MARCA, nonce]))
   await arquivo.close()
   const cifra = createCipheriv("aes-256-gcm", chave, nonce)
   cifra.setAAD(MARCA)
-  const { processo, terminou } = executar(programa, ["--format=custom", "--no-owner", "--no-privileges"], ambiente)
+  const { processo, terminou } = executar(programa, argumentos, ambiente)
   try {
     await Promise.all([terminou, pipeline(processo.stdout, cifra, createWriteStream(destino, { flags: "a", mode: 0o600 }))])
     await appendFile(destino, cifra.getAuthTag())

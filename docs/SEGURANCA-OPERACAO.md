@@ -79,6 +79,16 @@ HTTPS efetivo, roles do banco, MFA cadastrado no admin, configuração dos Secre
 
 ## Evidência local desta implementação
 
+### Continuação no notebook Windows — 30/09/2026
+
+- Prisma Client 5.22 gerado com engine nativa, sem adapter/override de QA. As 39 migrations aplicaram no banco local isolado `tino_security_qa_20260930`.
+- `npm run tipos`, 601 testes, auditoria das dependências de produção sem achados e build Next com Webpack passaram. O teste de backup passou a usar Node como produtor fictício, pois o shell script com shebang do teste anterior não iniciava no Windows. O comando de build passou a escolher Webpack explicitamente após falha interna do Turbopack nas fontes.
+- Integração HTTP real aprovada no banco isolado: cadastro, MFA, recuperação de uso único, desafio consumido, sessão anterior revogada, bloqueio do admin, CSRF e 24 chamadas concorrentes.
+- `pg_dump` 18 gerou cópia cifrada; `pg_restore` 18 restaurou em outro banco local vazio. As contagens de demonstração coincidiram: 1 usuário e 287 transações. Isso comprova o fluxo local, não a rotina do GitHub nem a recuperação no Neon.
+- O domínio publicado respondeu HTTPS 200 com HSTS. O código de segurança ainda está apenas nesta branch; produção não recebeu MFA.
+- A lista de variáveis Vercel não contém `MFA_CHAVE_CRIPTOGRAFIA` nem `MONITORAMENTO_SEGREDO`. `DATABASE_URL` e `DIRECT_URL` aparecem em Production e Preview, mas a separação dos bancos não foi comprovada. Nenhum Preview de segurança deve rodar migrations antes dessa conferência.
+- O GitHub CLI deste notebook não está autenticado. Não foi possível conferir/configurar Secrets, variable de monitoramento nem executar os workflows de backup e monitor. Estas dependências externas continuam pendentes.
+
 - `npm run tipos`: aprovado após conclusão do build.
 - `npm test`: 601 testes aprovados. Inclui vetores públicos RFC 6238, recusa de TOTP reutilizado, adulteração/chave/contexto incorretos no AES-GCM, origem/CSRF, CSP e integridade de envelope do backup.
 - `npm audit`: zero vulnerabilidades conhecidas após Next/eslint-config-next 16.3.8, ESLint 9 e atualização de dependências transitivas.

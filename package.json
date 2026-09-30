@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && node scripts/migrar.mjs && node scripts/semear-se-pedido.mjs && node scripts/garantir-admin.mjs && next build",
+    "build": "prisma generate && node scripts/migrar.mjs && node scripts/semear-se-pedido.mjs && node scripts/garantir-admin.mjs && next build --webpack",
     "start": "next start",
     "tipos": "tsc --noEmit",
     "prisma:generate": "prisma generate",
