@@ -67,7 +67,7 @@ Metas iniciais: perder no máximo 24 horas de registros (RPO) e restaurar servi�
 
 `/api/saude` exige Bearer secreto e testa o banco com tempo limitado; resposta não inclui dados pessoais ou configuração. Workflow externo executa aproximadamente a cada 15 minutos, tenta três vezes, abre uma issue de incidente e fecha quando recuperar. Ativar notificações para responsáveis no GitHub. Monitor não é SLA: schedule pode atrasar e falhas do próprio GitHub exigem provedor independente para disponibilidade maior.
 
-Backup falho aparece como execução falha no Actions; responsáveis devem receber notificações de workflows e conferir backup com menos de 26 horas. Configurar alerta específico de atraso com monitor independente antes de depender do serviço para dados críticos.
+Backup falho aparece como execução falha no Actions. O monitor também consulta o último backup concluído com restauração validada na branch principal: ausência ou idade maior que 26 horas abre incidente e falha a execução; uma cópia recente resolve o incidente. Responsáveis devem ativar notificações. Falha do próprio GitHub exige monitor independente antes de depender do serviço para dados críticos.
 
 Dependabot e CI continuam ativos. CI passa a executar `npm audit --omit=dev --audit-level=high`; correções precisam ser revisadas e testes executados. Aviso de vulnerabilidade não é prova de exploração; auditoria sem achados não prova ausência de falhas. Actions e imagens também precisam de atualização e revisão de permissões.
 
