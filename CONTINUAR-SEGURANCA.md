@@ -252,3 +252,10 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Pedido: aproveitar o espaço abaixo de Conferir, de preferência com digitação e ditado. Adicionado bloco “Anotar agora” com campo em largura total, microfone e envio, reutilizando o leitor e a rota de capturas rápidas.
 - Após registro, atualiza a fila do painel e avisa “Anotado para conferir”; não confirma automaticamente nem entra no saldo. Falhas da anotação agora mostram aviso e preservam texto; bloqueio de envio repetido durante requisição.
 - Layout escopado ao painel, controles de 44px. Tipos e 618 testes passaram; conferir composição e microfone no navegador após deploy.
+
+## 01/10/2026: área própria de pontos e milhas
+- Pedido: milhas com apresentação por programas, logos, administração, compra, envio e previsão, fora de Conferir.
+- Nova rota /milhas no grupo Cartões e link na central. Cartões de Livelo, Esfera, Smiles, LATAM Pass e Azul Fidelidade usam ícones dos sites oficiais (fallback neutro quando indisponíveis) e acesso ao site para comprar, transferir ou resgatar.
+- Configuração, saldo manual e previsões atuais/futuras dos cartões usam o componente persistente existente e dados limitados ao lar da sessão. Saldo continua por cartão; não somar saldos de cartões do mesmo programa, pois podem representar o mesmo saldo informado.
+- Simulação de compra/transferência calcula bônus e custo por mil pontos recebidos, assumindo conversão 1:1. Simulação não salva operação nem altera saldo; execução externa no programa, sem integração de credenciais. Não confundir com transação real concluída.
+- Conferir fatura agora somente fatura, sem a aba de pontos. Tipos e 618 testes passaram; logos externos e interface precisam ser conferidos no Preview.

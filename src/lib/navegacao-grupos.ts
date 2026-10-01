@@ -99,7 +99,7 @@ export const NUCLEO: GrupoNav[] = [
     chave: "cartoes",
     titulo: "Cartões",
     pergunta: "Faturas, limites e parcelas",
-    itens: [{ rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard }],
+    itens: [{ rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard }, { rota: "/milhas", rotulo: "Pontos e milhas", Icone: Flag }],
   },
   {
     chave: "perfil",

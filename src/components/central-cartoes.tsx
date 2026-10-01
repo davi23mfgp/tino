@@ -83,6 +83,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
   }
 
   return <div className={estilos.pagina}>
+    <Link href="/milhas" className="inline-flex min-h-11 items-center gap-2 text-sm text-positivo">Pontos e milhas →</Link>
     {/* Cartões (Davi, 25/09: opção B do canvas com a fatura da B3 e o limite
         dentro do cartão). A pilha de carteira escondia metade de cada cartão
         atrás do seguinte, e o nome do cartão aparecia três vezes na tela: no
@@ -252,7 +253,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
       {/* Apagar mora aqui desde que a lixeira saiu de cada linha da lista. */}
       {(form?.compra || form?.parcelamento) && <button type="button" className={estilos.excluirCompra} onClick={() => { const alvo = form.compra ? { id: form.compra.id, nome: form.compra.descricao, tipo: "transacoes" as const } : { id: form.parcelamento!.id, nome: form.parcelamento!.descricao, tipo: "parcelamentos" as const }; setForm(null); setExcluir(alvo) }}><Trash2 aria-hidden />Excluir compra</button>}
     </DialogContent></Dialog>
-    <Dialog open={conferir} onOpenChange={setConferir}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>Conferir fatura</DialogTitle><DialogDescription>Compras sem categoria e os pontos que esta fatura rende.</DialogDescription></DialogHeader><AjudaCartao cartao={cartao} mes={mes} objetivos={["fatura", "pontos"]} semCabecalho aoAbrir={(destino) => { setConferir(false); if (destino === "compras") setCategoria("sem"); setAba(destino) }} /></DialogContent></Dialog>
+    <Dialog open={conferir} onOpenChange={setConferir}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>Conferir fatura</DialogTitle><DialogDescription>Revise as compras e categorias desta fatura.</DialogDescription></DialogHeader><AjudaCartao cartao={cartao} mes={mes} objetivos={["fatura"]} semCabecalho aoAbrir={(destino) => { setConferir(false); if (destino === "compras") setCategoria("sem"); setAba(destino) }} /></DialogContent></Dialog>
     <Dialog open={Boolean(excluir)} onOpenChange={(aberto) => !aberto && setExcluir(null)}><DialogContent><DialogHeader><DialogTitle>Excluir {excluir?.nome}?</DialogTitle><DialogDescription>Esta ação não pode ser desfeita.</DialogDescription></DialogHeader>{erro && <p role="alert">{erro}</p>}<div className={estilos.rodapeModal}><Button variant="outline" onClick={() => setExcluir(null)}>Cancelar</Button><Button variant="destructive" disabled={ocupado} onClick={() => void remover()}>Excluir</Button></div></DialogContent></Dialog>
   </div>
 }
