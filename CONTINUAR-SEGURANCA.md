@@ -259,3 +259,8 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Configuração, saldo manual e previsões atuais/futuras dos cartões usam o componente persistente existente e dados limitados ao lar da sessão. Saldo continua por cartão; não somar saldos de cartões do mesmo programa, pois podem representar o mesmo saldo informado.
 - Simulação de compra/transferência calcula bônus e custo por mil pontos recebidos, assumindo conversão 1:1. Simulação não salva operação nem altera saldo; execução externa no programa, sem integração de credenciais. Não confundir com transação real concluída.
 - Conferir fatura agora somente fatura, sem a aba de pontos. Tipos e 618 testes passaram; logos externos e interface precisam ser conferidos no Preview.
+
+## 01/10/2026: previsões mensais de milhas
+- Pedido: modernizar previsões de parcelas futuras. Substituídas linhas horizontais por três cartões mensais com previsão em destaque, unidade separada e base de parcelas discreta. Uma coluna no celular.
+- Ausência de taxa ou câmbio aparece como “A calcular” e instrução específica, em vez de “Não informado pontos”. Explicação completa recolhida em “Base e cálculo da previsão”; valores de parcelas respeitam ocultação.
+- Mesmas fórmulas e competências, sem mudança no saldo nem duplicidade de parcelas. Tipos e 618 testes passaram; composição visual a conferir no Preview.

@@ -12,8 +12,20 @@
 .campos input,.campos select { min-height:44px; width:100%; border:1px solid var(--pauta); border-radius:12px; padding:8px 12px; background:var(--papel-1); color:var(--foreground); }
 .campos button { min-height:44px; border-radius:12px; border:1px solid var(--pauta); color:var(--acao); font-size:calc(13px * var(--escala-letra)); }
 .campos:disabled { opacity:.6; }
-.projecao h4 { font-size:calc(13px * var(--escala-letra)); font-weight:500; margin-bottom:8px; }
-.projecao > div { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; padding:12px 0; border-bottom:1px solid var(--pauta); font-size:calc(12px * var(--escala-letra)); }
-.projecao small { color:var(--texto-3); }
-.projecao b { font-weight:500; font-variant-numeric:tabular-nums; }
-@media(max-width:520px) { .campos,.resumo { grid-template-columns:1fr; } .projecao > div { grid-template-columns:1fr auto; } .projecao small { grid-row:2; } }
+.projecao { display:grid; gap:14px; }
+.projecao > header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.projecao h4 { font-size:calc(14px * var(--escala-letra)); font-weight:550; }
+.projecao header span { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.meses { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.meses article { display:grid; align-content:start; gap:16px; padding:18px; border:1px solid var(--pauta); border-radius:16px; background:color-mix(in oklab,var(--foreground),transparent 98%); min-width:0; }
+.meses h5 { font-size:calc(12px * var(--escala-letra)); font-weight:500; color:var(--texto-2); }
+.pontosPrevistos { display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; font-size:calc(30px * var(--escala-letra)); font-weight:400; color:var(--acao); font-variant-numeric:tabular-nums; }
+.pontosPrevistos small { font-size:calc(11px * var(--escala-letra)); font-weight:400; color:var(--texto-3); }
+.pontosPrevistos[data-pendente] { font-size:calc(23px * var(--escala-letra)); color:var(--texto-3); }
+.basePrevista { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px; padding-top:12px; border-top:1px solid var(--pauta); font-size:calc(11px * var(--escala-letra)); }
+.basePrevista span { color:var(--texto-3); }
+.basePrevista b { font-weight:500; font-variant-numeric:tabular-nums; }
+.pendente { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.entenderPrevisao summary { display:flex; align-items:center; min-height:44px; cursor:pointer; color:var(--texto-3); font-size:calc(11px * var(--escala-letra)); }
+@media(max-width:650px) { .meses { grid-template-columns:1fr; } }
+@media(max-width:520px) { .campos,.resumo { grid-template-columns:1fr; } }

@@ -71,12 +71,23 @@ export function PontosCartao({ cartao, mes }: { cartao: DadosCartao; mes: string
     </details>
     <p role="status" className={estilos.apoio}>{estado}</p>
     {regra.moeda === "dolar" && <p className={estilos.apoio}>{buscandoCambio ? "Buscando câmbio…" : cambio ? `Câmbio usado: R$ ${cambio.toLocaleString("pt-BR", { minimumFractionDigits: 3 })}${regra.cambioMilesimos === null ? ` · ${cotacao?.fonte ?? "automático"}${cotacao?.data ? ` · ${cotacao.data}` : ""}` : " · informado por você"}` : "Informe o câmbio para calcular."}</p>}
-    <div className={estilos.projecao}><h4>Previsão das parcelas futuras</h4>{[1, 2, 3].map((indice) => {
-      const competencia = competenciaMaisMeses(mes, indice)
-      const futuro = resumoDoMes(cartao, competencia)
-      const estimativa = regra.taxaMilesimos > 0 ? calcularPontos(futuro.previsto, 0, regra, cambio) : null
-      return <div key={competencia}><span>{rotuloCompetencia(competencia)}</span><small>{formatarMoeda(futuro.previsto)} em parcelas</small><b>{numero(estimativa)} {regra.unidade}</b></div>
-    })}</div>
-    <p className={estilos.apoio}>Base da fatura: {formatarMoeda(Math.max(0, resumo.gastos - resumo.creditos))}, após créditos. Previsões são estimativas com a regra informada; compras elegíveis e câmbio podem variar. Parcelas futuras são mostradas separadamente para evitar duplicidade. O saldo é informado por você e não é atualizado automaticamente pelo programa.</p>
+    <section className={estilos.projecao} aria-label="Previsão de pontos das parcelas futuras">
+      <header><h4>Próximos 3 meses</h4><span>Acúmulo previsto nas parcelas</span></header>
+      <div className={estilos.meses}>{[1, 2, 3].map((indice) => {
+        const competencia = competenciaMaisMeses(mes, indice)
+        const futuro = resumoDoMes(cartao, competencia)
+        const estimativa = regra.taxaMilesimos > 0 ? calcularPontos(futuro.previsto, 0, regra, cambio) : null
+        return <article key={competencia}>
+          <h5>{rotuloCompetencia(competencia)}</h5>
+          <p className={estilos.pontosPrevistos} data-pendente={estimativa === null || undefined}>{estimativa === null ? "A calcular" : numero(estimativa)}{estimativa !== null && <small>{regra.unidade}</small>}</p>
+          <div className={estilos.basePrevista}><span>Parcelas previstas</span><b className="valor-sensivel">{formatarMoeda(futuro.previsto)}</b></div>
+          {estimativa === null && <p className={estilos.pendente}>{regra.taxaMilesimos <= 0 ? "Configure a taxa de acúmulo acima." : "Informe o câmbio para calcular."}</p>}
+        </article>
+      })}</div>
+    </section>
+    <details className={estilos.entenderPrevisao}>
+      <summary>Base e cálculo da previsão</summary>
+      <p className={estilos.apoio}>Base da fatura: <span className="valor-sensivel">{formatarMoeda(Math.max(0, resumo.gastos - resumo.creditos))}</span>, após créditos. Previsões são estimativas com a regra informada; compras elegíveis e câmbio podem variar. Parcelas futuras são mostradas separadamente para evitar duplicidade. O saldo é informado por você e não é atualizado automaticamente pelo programa.</p>
+    </details>
   </div>
 }
