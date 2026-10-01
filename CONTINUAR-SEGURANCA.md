@@ -173,3 +173,7 @@ Validação desta entrega: 618 testes passaram. Cliente Prisma gerado sem engine
 ### Tracejado discreto na projeção — 01/10/2026
 
 A pedido do usuário, substituídas as listras diagonais grossas do fluxo no painel por fundo suave e contorno tracejado fino. Legenda acompanha o novo desenho; cores verde/vermelho e cálculos preservados. Conferência visual pendente de Preview.
+
+### Organização dos filtros do extrato — 01/10/2026
+
+Tipo de movimento em controle segmentado próprio; conta, categoria e sem categoria em segunda linha alinhada. Removidos rolagem lateral e quebra aleatória. Alvos de toque 44px, opções selecionadas/removíveis e filtros imediatos preservados. Visual ainda requer conferência no Preview.

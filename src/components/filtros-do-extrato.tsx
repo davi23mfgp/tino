@@ -14,10 +14,9 @@ import estilos from "./filtros-do-extrato.module.css"
  * Filtros do extrato (Davi, 24/09: a tela da opção A do canvas, e o botão de
  * filtro abrindo a folha da opção B).
  *
- * A tela antiga gastava cinco linhas de controles antes do primeiro
- * lançamento. Aqui o uso comum cabe numa linha de chips que desliza (tipo,
- * conta, categoria, sem categoria), e o resto mora numa folha que sobe de
- * baixo — pelo botão ao lado da busca ou pelo toque em "Conta" e "Categoria".
+ * Tipo de movimento tem um segmento próprio; conta e categoria ficam na
+ * segunda linha, sem quebra aleatória. As opções completas continuam na
+ * folha aberta pelo botão Filtros ou pelo toque em Conta e Categoria.
  *
  * O filtro vale no toque, sem botão de aplicar: a lista de trás já muda
  * enquanto a folha está aberta, e o botão do pé mostra quanto o filtro
@@ -141,6 +140,7 @@ export function FiltrosDoExtrato({
           </button>
         )}
 
+        <div className={estilos.tiposRapidos} role="group" aria-label="Tipo de movimento">
         {TIPOS.map((opcao) => (
           <button
             key={opcao.valor}
@@ -154,6 +154,8 @@ export function FiltrosDoExtrato({
           </button>
         ))}
 
+        </div>
+        <div className={estilos.detalhesRapidos} role="group" aria-label="Conta e categoria">
         {conta ? (
           <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarConta("")} aria-label={`Tirar o filtro da conta ${conta.nome}`}>
             <span className={estilos.nome}>{nomeCurtoDaConta(conta.nome)}</span> <X aria-hidden className="size-3.5" />
@@ -183,6 +185,7 @@ export function FiltrosDoExtrato({
         >
           Sem categoria
         </button>
+        </div>
       </div>
 
       <Dialog open={aberta} onOpenChange={setAberta}>

@@ -4,12 +4,15 @@
 .buscaEFiltro { display:flex; gap:8px; min-width:0; }
 .buscaEFiltro > :first-child { flex:1; min-width:0; }
 
-/* A linha desliza de lado em vez de quebrar: quebrada, ela voltava a ocupar
-   as duas ou três linhas de controles que a mudança veio tirar. A margem
-   negativa deixa o último chip sumir na borda, que é o sinal de que há mais. */
-.linha { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px; scroll-padding-inline:16px; }
-.linha::-webkit-scrollbar { display:none; }
-@media (min-width:701px) { .linha { margin:0; padding:2px 0; flex-wrap:wrap; overflow:visible; } }
+/* Separar tipo e detalhamento evita a quebra aleatória dos seis chips. */
+.linha { display:grid; gap:10px; min-width:0; }
+.tiposRapidos { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; max-width:400px; padding:4px; border:1px solid var(--pauta); border-radius:16px; background:color-mix(in oklab,var(--foreground),transparent 97%); }
+.tiposRapidos .chip { justify-content:center; min-height:44px; border:0; border-radius:12px; background:transparent; padding:0 12px; }
+.tiposRapidos .chip[data-ligado] { background:var(--acao); color:var(--background); font-weight:550; }
+.detalhesRapidos { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.detalhesRapidos .chip { justify-content:space-between; min-width:0; max-width:none; min-height:44px; border-radius:12px; padding:0 10px; font-size:calc(12px * var(--escala-letra)); }
+.detalhesRapidos .chip:last-child { justify-content:center; }
+@media(min-width:701px) { .detalhesRapidos { grid-template-columns:repeat(3,minmax(0,180px)); } }
 
 .chip, .botaoFiltros {
   flex-shrink:0; display:inline-flex; align-items:center; gap:6px; min-height:40px; max-width:220px; padding:0 15px;
