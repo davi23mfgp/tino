@@ -1,0 +1,31 @@
+/* Material translúcido e contraste suave, sem faixas grossas de urgência. */
+.painel {
+  background:color-mix(in oklab,var(--papel-1),transparent 12%) !important;
+  backdrop-filter:blur(28px) saturate(135%);
+  border-color:color-mix(in oklab,var(--foreground),transparent 90%);
+  box-shadow:0 20px 64px #0003,inset 0 1px 0 #ffffff0a;
+}
+.painel [role=tablist] { background:color-mix(in oklab,var(--foreground),transparent 95%); border-radius:14px; }
+.painel [role=tab] { font-size:calc(12px * var(--escala-letra)); font-weight:500; }
+.painel [role=tab][aria-selected=true] { background:color-mix(in oklab,var(--papel-1),var(--foreground) 7%); box-shadow:0 1px 4px #0001; }
+.painel .aviso {
+  border:1px solid color-mix(in oklab,var(--foreground),transparent 94%);
+  border-radius:18px;
+  background:color-mix(in oklab,var(--papel-1),var(--foreground) 5%);
+  box-shadow:0 2px 8px #00000008;
+  gap:10px;
+  padding:14px 12px;
+}
+.painel .aviso[data-lido=true] { background:transparent; opacity:.8; }
+.painel .aviso > span { background:transparent; width:28px; height:28px; }
+.painel .aviso > span svg { stroke-width:1.4; }
+.painel .aviso[data-severidade=CRITICO] > span { color:var(--negativo); }
+.painel .aviso h2 { font-size:calc(13px * var(--escala-letra)); letter-spacing:-.015em; }
+.painel .aviso h2 > span:last-child { white-space:normal; overflow:visible; }
+.painel .aviso p { font-size:calc(12px * var(--escala-letra)); line-height:1.5; }
+.painel .aviso > div > div > span { font-size:calc(10px * var(--escala-letra)); opacity:.7; }
+.painel .aviso a { font-size:calc(11px * var(--escala-letra)); min-height:44px; margin-top:0; }
+.painel .aviso > button { background:transparent; color:var(--texto-3); }
+.painel .aviso > button:hover:not(:disabled) { background:color-mix(in oklab,var(--acao),transparent 94%); color:var(--acao); }
+.painel footer { border-color:color-mix(in oklab,var(--foreground),transparent 94%); }
+.painel > div:has(> article) { scrollbar-width:thin; scrollbar-color:var(--pauta) transparent; }

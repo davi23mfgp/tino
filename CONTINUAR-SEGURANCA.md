@@ -155,3 +155,7 @@ Corrigida a separação de moeda minúscula (`r$`) e valores com `reais` na entr
 ### Painel sem vazios entre colunas e retomada dos 20 controles — 01/10/2026
 
 Retirado o encaixe por altura com ResizeObserver. Desktop usa linhas completas alinhadas: carteira/fluxo; compras/conferência/categorias; dívidas em faixa com itens lado a lado; saúde em largura completa. Os cartões mantêm suas proporções e regras de movimento. Conferência visual do deploy ainda necessária. Checklist dos 20 controles atualizado: Preview separado e Ready comprovado pelo usuário; Production, MFA administrativo, secrets dos workflows, backup/monitor reais e recuperação Neon continuam dependendo de acesso externo.
+
+### Notificações delicadas inspiradas no iOS — 01/10/2026
+
+Painel translúcido com desfoque, bordas suaves, tipografia menor, títulos sem corte, ícones finos e ações discretas. Removida a faixa lateral grossa; criticidade continua no ícone e ordenação. Alvos de toque de 44px preservados. Visual ainda precisa de conferência no Preview; ações de leitura, filtro e limpeza preservadas. Retomada dos 20 controles continua pendente da conferência de Production/MFA solicitada ao usuário.
