@@ -43,7 +43,7 @@ export default function BemVindo() {
           tipo: conta.tipo, instituicao: conta.tipo === "DINHEIRO" ? undefined : conta.instituicao,
           saldoCentavos: conta.saldo ? paraCentavos(conta.saldo) * (conta.negativa ? -1 : 1) : 0,
         })),
-        cartoes: cartoes.map((cartao) => ({ nome: `Cartão ${cartao.instituicao}`, instituicao: cartao.instituicao, limiteCentavos: cartao.limite ? paraCentavos(cartao.limite) : undefined, diaVencimento: cartao.vencimento ? Number(cartao.vencimento.slice(-2)) : undefined })),
+        cartoes: cartoes.map((cartao) => ({ nome: `Cartão ${cartao.instituicao}`, instituicao: cartao.instituicao, limiteCentavos: cartao.limite ? paraCentavos(cartao.limite) : undefined, diaVencimento: cartao.vencimento ? Number(cartao.vencimento) : undefined })),
       })
       if (emails.length) {
         const links = await enviar<{ email: string; link: string; enviado: boolean }[]>("/api/convites", { emails })
@@ -72,10 +72,10 @@ export default function BemVindo() {
         <div className="flex items-center justify-between">{conta.tipo === "CORRENTE" ? <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={conta.negativa} onChange={(e) => atualizar(setContas, indice, { negativa: e.target.checked })} />Conta no negativo</label> : <span />}<button type="button" aria-label={`Remover conta ${indice + 1}`} className="grid size-11 place-items-center text-muted-fg" onClick={() => remover(setContas, indice)}><Trash2 className="size-4" /></button></div>
       </div>)}<BotaoAdicionar onClick={() => setContas([...contas, { tipo: "CORRENTE", instituicao: "", saldo: "", negativa: false }])}>Adicionar conta</BotaoAdicionar>
     </div> },
-    { titulo: "Quais cartões você usa?", texto: "Escolha a instituição, o limite e a data da próxima fatura. As compras e parcelas entram quando você importar a fatura.", conteudo: <div className="space-y-3">
+    { titulo: "Quais cartões você usa?", texto: "Escolha a instituição, o limite e o dia de vencimento. As compras e parcelas entram quando você importar a fatura.", conteudo: <div className="space-y-3">
       {cartoes.map((cartao, indice) => <div key={indice} className="space-y-3 rounded-[var(--raio-cartao)] border border-pauta p-3"><SeletorInstituicao valor={cartao.instituicao} aoEscolher={(instituicao) => atualizar(setCartoes, indice, { instituicao })} />
         <label className="block space-y-1 text-sm">Limite total (R$)<input className={campo} inputMode="decimal" placeholder="6.000,00" value={cartao.limite} onChange={(e) => atualizar(setCartoes, indice, { limite: e.target.value })} /></label>
-        <label className="block space-y-1 text-sm">Vencimento da próxima fatura<input type="date" className={campo} value={cartao.vencimento} onChange={(e) => atualizar(setCartoes, indice, { vencimento: e.target.value })} /><span className="block text-xs text-muted-fg">O dia escolhido será usado nos vencimentos mensais.</span></label>
+        <label className="block space-y-1 text-sm">Dia de vencimento<select className={campo} value={cartao.vencimento} onChange={(e) => atualizar(setCartoes, indice, { vencimento: e.target.value })}><option value="">Selecione o dia</option>{Array.from({ length: 31 }, (_, i) => <option key={i + 1} value={i + 1}>Dia {i + 1}</option>)}</select><span className="block text-xs text-muted-fg">O dia escolhido será usado nos vencimentos mensais.</span></label>
         <button type="button" aria-label={`Remover cartão ${indice + 1}`} className="flex min-h-11 items-center gap-2 text-sm text-muted-fg" onClick={() => remover(setCartoes, indice)}><Trash2 className="size-4" />Remover cartão</button>
       </div>)}<BotaoAdicionar onClick={() => setCartoes([...cartoes, { instituicao: "", limite: "", vencimento: "" }])}>Adicionar cartão</BotaoAdicionar>
     </div> },

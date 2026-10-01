@@ -158,7 +158,7 @@ export function CadastroDeConta({
         instituicao: nova.instituicao.trim() || undefined,
         saldoInicialCentavos: nova.tipo === "CARTAO_CREDITO" ? 0 : nova.saldo ? paraCentavos(nova.saldo) : 0,
         limiteCentavos: nova.tipo === "CARTAO_CREDITO" && nova.limite ? paraCentavos(nova.limite) : undefined,
-        diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc.slice(-2)) : undefined,
+        diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc) : undefined,
         bandeira: nova.tipo === "CARTAO_CREDITO" && nova.bandeira ? nova.bandeira : undefined,
       })
       showToast("Conta adicionada")
@@ -321,13 +321,11 @@ export function CadastroDeConta({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="conta-venc">Vencimento da próxima fatura</FieldLabel>
-                <Input
-                  id="conta-venc"
-                  value={nova.venc}
-                  onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}
-                  type="date"
-                />
+                <FieldLabel htmlFor="conta-venc">Dia de vencimento</FieldLabel>
+                <SelectNative id="conta-venc" value={nova.venc} onChange={(evento) => setNova({ ...nova, venc: evento.target.value })}>
+                  <option value="">Selecione o dia</option>
+                  {Array.from({ length: 31 }, (_, i) => <option key={i + 1} value={i + 1}>Dia {i + 1}</option>)}
+                </SelectNative>
               </Field>
               <Field>
                 <FieldLabel htmlFor="conta-bandeira">Bandeira</FieldLabel>

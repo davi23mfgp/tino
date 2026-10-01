@@ -65,3 +65,7 @@ Em 01/10/2026, o usuário determinou: só interromper por ação que o agente re
 ### Ajuste solicitado nos textos legais — 01/10/2026
 
 Removidos nome civil e endereço residencial dos Termos e da Política de Privacidade a pedido do usuário; mantidos CNPJ e canais de atendimento. Layout preservado. Alteração na branch de segurança; produção continua pendente. Login Google em Preview ainda mostra configuração indisponível segundo captura do usuário; conferir escopo das três variáveis e callback, depois redeploy. Preview de segurança chegou a Ready após configurar banco vazio tino_preview na branch Neon de testes; aprovação do build não comprova login/MFA nem operação dos backups.
+
+### Dia de vencimento — ajuste solicitado em 01/10/2026
+
+Cadastro inicial, adição e edição de cartões agora selecionam dia do mês (1 a 31), como o recebimento do salário, sem pedir data completa. API continua recebendo diaVencimento; nenhuma migration necessária. Edição preserva o dia original inclusive 29/30/31, sem convertê-lo para uma data limitada pelo mês atual. Layout preservado, mudança apenas na branch de prévia.
