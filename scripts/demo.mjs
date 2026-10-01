@@ -76,6 +76,47 @@ async function limpar() {
   return removidos.count
 }
 
+/** Completa o mês atual, inclusive no dia 1, sem apagar testes na demo. */
+async function completarMesDaDemo(larId) {
+  const hoje = new Date()
+  const competencia = competenciaDe(hoje)
+  await prisma.$transaction(async (banco) => {
+    // Dois builds simultâneos não devem duplicar as compras fictícias.
+    await banco.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`demo-mes:${larId}:${competencia}`}))::text`
+    const lar = await banco.lar.findFirst({
+      where: { id: larId, usuarios: { some: { email: EMAIL } } },
+      include: { contas: { where: { arquivada: false }, orderBy: { criadoEm: "asc" } }, categorias: true },
+    })
+    if (!lar) throw new Error("Complemento permitido somente no lar da conta fictícia.")
+    const corrente = lar.contas.find((conta) => conta.tipo === "CORRENTE")
+    const cartoes = lar.contas.filter((conta) => conta.tipo === "CARTAO_CREDITO")
+    const compras = [
+      { descricao: "Supermercado Pão de Açúcar", categoria: "Supermercado", valorCentavos: 28645, conta: corrente },
+      { descricao: "Uber", categoria: "Aplicativos de transporte", valorCentavos: 2870, conta: cartoes[0] ?? corrente },
+      { descricao: "Drogaria Raia", categoria: "Farmácia", valorCentavos: 8490, conta: corrente },
+      { descricao: "iFood", categoria: "Delivery", valorCentavos: 6290, conta: cartoes[1] ?? corrente },
+      { descricao: "Posto Ipiranga", categoria: "Combustível", valorCentavos: 18000, conta: corrente },
+      { descricao: "Netflix", categoria: "Assinaturas e streaming", valorCentavos: 5590, conta: cartoes[0] ?? corrente },
+    ]
+    for (const [indice, compra] of compras.entries()) {
+      const categoria = lar.categorias.find((linha) => linha.nome === compra.categoria)
+      if (!compra.conta || !categoria) continue
+      const marca = `tino-demo-mes:${competencia}:${indice}`
+      if (await banco.transacao.findFirst({ where: { larId, descricaoOriginal: marca }, select: { id: true } })) continue
+      await banco.transacao.create({ data: {
+        larId, contaId: compra.conta.id, membroId: compra.conta.membroId,
+        categoriaId: categoria.id, descricao: compra.descricao, descricaoOriginal: marca,
+        valorCentavos: compra.valorCentavos, tipo: "DESPESA", pago: true,
+        data: dia(hoje.getUTCFullYear(), hoje.getUTCMonth() + 1, hoje.getUTCDate()), competencia,
+        ...(compra.conta.tipo === "CARTAO_CREDITO" && {
+          competenciaFatura: competenciaDaFatura(hoje, compra.conta.diaFechamento ?? 28, compra.conta.diaVencimento ?? 6),
+        }),
+      } })
+    }
+  })
+  console.log("Compras fictícias do mês atual conferidas na demonstração.")
+}
+
 async function main() {
   if (process.argv.includes("--limpar")) {
     console.log(`Conta de demonstração removida (${await limpar()}).`)
@@ -86,8 +127,8 @@ async function main() {
   // Só o pedido explícito de recriação SEMEAR_DEMO=1 mantém o comportamento antigo.
   const previaDeSeguranca = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "codex/continuacao-tino"
   if (previaDeSeguranca && process.env.SEMEAR_DEMO !== "1") {
-    const existente = await prisma.usuario.findUnique({ where: { email: EMAIL }, select: { id: true } })
-    if (existente) { console.log("Demonstracao existente preservada."); return }
+    const existente = await prisma.usuario.findUnique({ where: { email: EMAIL }, select: { id: true, larId: true } })
+    if (existente) { await completarMesDaDemo(existente.larId); console.log("Demonstracao existente preservada e mês atual preenchido."); return }
   }
   await limpar()
 
@@ -702,6 +743,8 @@ async function main() {
       veredito: "CUIDADO",
     },
   })
+
+  await completarMesDaDemo(lar.id)
 
   const totais = await prisma.transacao.groupBy({
     by: ["tipo"],

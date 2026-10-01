@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowRight, Check } from "lucide-react"
 
+import { formatarMoeda } from "@/lib/dinheiro"
 import { enviar } from "@/lib/cliente"
 import { DitarGasto } from "@/components/ditar-gasto"
 import { Abertura } from "@/components/abertura"
@@ -39,7 +40,7 @@ function TelaDeLancar() {
   const [texto, setTexto] = useState("")
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
-  const [feitos, setFeitos] = useState<string[]>([])
+  const [feitos, setFeitos] = useState<{ descricao: string; valorCentavos: number }[]>([])
   const campo = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -53,8 +54,8 @@ function TelaDeLancar() {
     setOcupado(true)
     setErro(null)
     try {
-      await enviar("/api/capturas/rapida", { texto: limpo })
-      setFeitos((atual) => [limpo, ...atual])
+      const resultado = await enviar<{ leitura: { estabelecimento: string | null; valorCentavos: number } }>("/api/capturas/rapida", { texto: limpo })
+      setFeitos((atual) => [{ descricao: resultado.leitura.estabelecimento ?? "Conferir descrição na fila", valorCentavos: resultado.leitura.valorCentavos }, ...atual])
       setTexto("")
       campo.current?.focus()
     } catch (falha) {
@@ -104,9 +105,10 @@ function TelaDeLancar() {
       {feitos.length > 0 && (
         <div className="space-y-2 px-1">
           {feitos.map((linha, indice) => (
-            <p key={`${linha}-${indice}`} className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))]">
+            <p key={`${linha.descricao}-${indice}`} className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))]">
               <Check className="size-4 shrink-0 text-positivo" />
-              <span className="min-w-0 flex-1 truncate">{linha}</span>
+              <span className="min-w-0 flex-1 truncate">{linha.descricao}</span>
+              {linha.valorCentavos > 0 && <span className="shrink-0 tabular-nums text-tinta-2">{formatarMoeda(linha.valorCentavos)}</span>}
             </p>
           ))}
           <div className="flex flex-wrap gap-2 pt-1">

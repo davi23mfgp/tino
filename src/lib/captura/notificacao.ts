@@ -221,8 +221,8 @@ export function lerTextoLivre(texto: string, agora = new Date()): NotificacaoLid
   const limpo = texto.replace(/\s+/g, " ").trim()
 
   // Aceita "52,30", "52.30", "R$ 52", "52" — o número solto no fim ou no começo.
-  const casaValor = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+\.\d{2}|\d+)\s*$/.exec(limpo)
-  const casaValorInicio = /^(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+\.\d{2}|\d+)\s+/.exec(limpo)
+  const casaValor = /(?:R\s*\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+\.\d{2}|\d+)\s*(?:real|reais|conto(?:s)?)?\s*$/i.exec(limpo)
+  const casaValorInicio = /^(?:R\s*\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2}|\d+\.\d{2}|\d+)\s*(?:real|reais|conto(?:s)?)?\s+/i.exec(limpo)
   const casado = casaValor ?? casaValorInicio
 
   // Ninguém fala "mercado 52,30": fala "paguei cinquenta e dois reais e trinta

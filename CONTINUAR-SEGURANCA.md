@@ -143,3 +143,11 @@ Usuário disse pode subir. Integrada origin/main à branch de trabalho, preserva
 ### Regra final confirmada da carteira — 01/10/2026
 
 Usuário confirmou explicitamente: o cartão da frente fica parado; somente os de trás levantam ao passar o mouse. O mais utilizado começa à frente (frequência de compras em 90 dias, já implementada). Movimento agora exclui o cartão aberto/selecionado. Esta regra substitui os pedidos anteriores de animar todos os cartões.
+
+### Demo com compras no mês atual — 01/10/2026
+
+Usuário pediu preencher todas as áreas fictícias, especialmente Compras recentes e Para onde foi. Seed antigo não tinha despesas no dia 1. Complemento adiciona seis compras categorizadas em centavos, pagas/confirmadas, na competência atual, distribuídas por conta corrente e dois cartões, com competência de fatura própria. Executado tanto em criação quanto no build Preview que preserva demo existente; usa marca por mês e trava transacional para não duplicar, consulta lar vinculado exclusivamente ao e-mail demo. Não apaga testes nem toca contas reais. Demais módulos já têm histórico, parcelas, dívidas, metas, investimentos, orçamento e capturas. Efetivação no banco depende do próximo deploy da prévia.
+
+### Descrição e valor na anotação rápida — 01/10/2026
+
+Corrigida a separação de moeda minúscula (`r$`) e valores com `reais` na entrada digitada ou ditada. A confirmação usa a descrição interpretada e mostra o valor em coluna separada, em vez de repetir a frase bruta como nome. O texto original continua guardado para conferência. Regressões cobrem moeda antes/depois do nome e números que pertencem ao produto, como B12.

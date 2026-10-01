@@ -131,6 +131,17 @@ describe("lerNotificacao — o que não é gasto", () => {
 })
 
 describe("lerTextoLivre", () => {
+  it("separa moeda e valor do nome digitado ou ditado", () => {
+    for (const texto of ["comprimidos r$ 10", "comprimidos R$ 10", "comprimidos 10 reais", "comprimidos R$ 10 reais", "r$ 10 comprimidos", "10 reais comprimidos"]) {
+      const leitura = lerTextoLivre(texto, HOJE)
+      assert.equal(leitura.estabelecimento, "comprimidos", texto)
+      assert.equal(leitura.valorCentavos, 1000, texto)
+    }
+    const vitamina = lerTextoLivre("vitamina B12 r$ 10,50", HOJE)
+    assert.equal(vitamina.estabelecimento, "vitamina B12")
+    assert.equal(vitamina.valorCentavos, 1050)
+  })
+
   it("entende o jeito que a pessoa escreve", () => {
     const mercado = lerTextoLivre("mercado 52,30", HOJE)
     assert.equal(mercado.valorCentavos, 5230)
