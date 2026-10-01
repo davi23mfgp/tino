@@ -6,6 +6,7 @@ import { Send } from "lucide-react"
 
 import { enviar } from "@/lib/cliente"
 import { DitarGasto } from "@/components/ditar-gasto"
+import { showToast } from "@/components/ui/toast"
 
 /**
  * A caixa de anotar em uma linha, na tela Hoje.
@@ -22,12 +23,15 @@ export function AnotarRapido({ aoRegistrar }: { aoRegistrar?: () => void }) {
   const [ocupado, setOcupado] = useState(false)
 
   async function anotar(valor: string) {
-    if (!valor.trim()) return
+    if (!valor.trim() || ocupado) return
     setOcupado(true)
     try {
       await enviar("/api/capturas/rapida", { texto: valor })
       setTexto("")
       aoRegistrar?.()
+      showToast("Anotado para conferir")
+    } catch (falha) {
+      showToast("Não consegui anotar", { description: falha instanceof Error ? falha.message : "Tente de novo.", variant: "error" })
     } finally {
       setOcupado(false)
     }
@@ -37,11 +41,12 @@ export function AnotarRapido({ aoRegistrar }: { aoRegistrar?: () => void }) {
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        anotar(texto)
+        void anotar(texto)
       }}
       className="flex gap-2"
     >
       <input
+        disabled={ocupado}
         value={texto}
         onChange={(e) => setTexto(e.target.value)}
         placeholder="mercado 52,30"

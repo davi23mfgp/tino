@@ -291,3 +291,13 @@
 .detalhesDivida b { display:inline-flex; align-items:center; gap:5px; font-size:calc(12px * var(--escala-letra)); font-weight:450; }
 .dividasBloco .detalhesDivida .corDivida { display:inline-block; width:4px; height:4px; border-radius:50%; }
 @media(max-width:520px) { .cabecaDividas { align-items:flex-start; } .cabecaDividas > div { display:grid; gap:4px; } .cabecaDividas a { font-size:calc(10px * var(--escala-letra)); } }
+
+/* A coluna de conferência também permite registrar a próxima anotação. */
+.anotarNoPainel { display:grid; gap:14px; margin-top:22px; padding:18px 16px; border:1px solid var(--vidro-borda); border-radius:18px; background:color-mix(in oklab,var(--foreground),transparent 98%); }
+.anotarNoPainel h3 { font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.anotarNoPainel header p { margin-top:4px; font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.anotarNoPainel form { display:grid; grid-template-columns:minmax(0,1fr) 44px; gap:10px; }
+.anotarNoPainel input { grid-column:1 / -1; width:100%; min-width:0; min-height:48px; font-size:calc(13px * var(--escala-letra)); border-radius:12px; }
+.anotarNoPainel form > div { min-width:0; }
+.anotarNoPainel form button { min-height:44px; }
+.anotarNoPainel form > button { display:grid; place-items:center; padding:0; border-radius:12px; }

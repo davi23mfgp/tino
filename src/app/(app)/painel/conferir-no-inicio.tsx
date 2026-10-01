@@ -8,6 +8,7 @@ import { Check, ReceiptText, X } from "lucide-react"
 import { enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { showToast } from "@/components/ui/toast"
+import { AnotarRapidoHoje } from "@/components/anotar-rapido"
 
 import estilos from "./inicio.module.css"
 
@@ -82,6 +83,10 @@ export function ConferirNoInicio({ capturas, total, contaPadraoId }: { capturas:
             <button type="button" disabled={ocupado} onClick={() => void decidir(true)} data-principal><Check aria-hidden />Confirmar</button>
           </div>
         </div>
+      </div>
+      <div className={estilos.anotarNoPainel}>
+        <header><h3>Anotar agora</h3><p>Digite ou dite. Depois, confira aqui.</p></header>
+        <AnotarRapidoHoje />
       </div>
     </section>
   )

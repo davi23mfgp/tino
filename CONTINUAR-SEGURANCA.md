@@ -247,3 +247,8 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Pedido explícito: remover contornos pontilhados das barras futuras de fluxo de caixa; usar apenas cor transparente.
 - Barras futuras positivas e negativas agora têm preenchimento da cor original a 35%, sem borda. Legenda de projeção acompanha o mesmo preenchimento; realizados preservados.
 - Tipos e 618 testes passaram; visual no Preview ainda requer conferência após deploy.
+
+## 01/10/2026: anotar e ditar na coluna de conferência
+- Pedido: aproveitar o espaço abaixo de Conferir, de preferência com digitação e ditado. Adicionado bloco “Anotar agora” com campo em largura total, microfone e envio, reutilizando o leitor e a rota de capturas rápidas.
+- Após registro, atualiza a fila do painel e avisa “Anotado para conferir”; não confirma automaticamente nem entra no saldo. Falhas da anotação agora mostram aviso e preservam texto; bloqueio de envio repetido durante requisição.
+- Layout escopado ao painel, controles de 44px. Tipos e 618 testes passaram; conferir composição e microfone no navegador após deploy.
