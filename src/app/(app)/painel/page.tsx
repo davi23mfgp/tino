@@ -16,7 +16,7 @@ import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia } from "@/lib
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { montarPanorama } from "@/lib/tino/panorama"
-import { montarDiagnostico } from "@/lib/tino/diagnostico"
+import { montarDiagnostico, type Indicador } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
@@ -235,8 +235,8 @@ export default async function Painel() {
             </div>
             <div className={e.indicadores}>{indicadores.map((linha) => (
               <div key={linha.chave} className={e.indicador} data-faixa={linha.faixa}>
-                <div className={e.anelIndicador} style={{ "--progresso": `${linha.escala ? Math.max(0, Math.min(1, linha.numero / linha.escala.maximo)) * 360 : 0}deg` } as CSSProperties} aria-hidden="true" />
-                <div className={e.indicadorTexto}><strong>{linha.nome}</strong><b>{linha.valor}</b><small>{linha.referencia}</small></div>
+                <ReguaIndicador indicador={linha} />
+                <div className={e.indicadorTexto}><strong>{linha.nome}</strong><b>{linha.valor}</b><span className={e.estadoIndicador}>{linha.faixa === "BOM" ? "Dentro do parâmetro" : linha.faixa === "CRITICO" ? "Precisa de cuidado" : "Atenção"}</span><small>{linha.referencia}</small></div>
               </div>
             ))}</div>
           </div>
@@ -334,4 +334,19 @@ function abreviar(centavos: number) {
 /** Faixas de custo da dívida, as mesmas da tela Dívidas: acima de 5% ao mês é caro. */
 function pesoDoJuro(bps: number) {
   return bps > 500 ? "caro" : bps >= 200 ? "médio" : "leve"
+}
+
+function ReguaIndicador({ indicador }: { indicador: Indicador }) {
+  const escala = indicador.escala
+  if (!escala) return null
+  const porcentagem = (valor: number) => Math.max(0, Math.min(100, valor / escala.maximo * 100))
+  const inicio = porcentagem(Math.min(escala.bom, escala.atencao))
+  const fim = porcentagem(Math.max(escala.bom, escala.atencao))
+  // Reserva o espaço do marcador nas pontas para não recortá-lo em 0%/100%.
+  return <div className={e.reguaIndicador} aria-hidden="true" style={{
+    "--primeiro-limite": `${inicio}%`, "--segundo-limite": `${fim}%`,
+    "--posicao": `${porcentagem(indicador.numero)}%`,
+    "--primeira-cor": escala.menorMelhor ? "var(--positivo)" : "var(--negativo)",
+    "--ultima-cor": escala.menorMelhor ? "var(--negativo)" : "var(--positivo)",
+  } as CSSProperties}><span /></div>
 }

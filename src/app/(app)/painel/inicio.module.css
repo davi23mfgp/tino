@@ -237,3 +237,20 @@
 @container (max-width:760px) { .saudeCorpo { grid-template-columns:1fr; } .indicadores { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @container (max-width:580px) { .anelNota { margin:0; } }
 @container (max-width:350px) { .indicadores { grid-template-columns:1fr; } }
+
+/* Régua fina com faixas reais do diagnóstico; reserva inverte as cores,
+   pois ter mais meses de cobertura é melhor que ter menos. */
+.saudeBloco { gap:12px; }
+.saudeCorpo { gap:12px; }
+.anelNota { padding-bottom:10px; }
+.anelNota strong { font-size:calc(28px * var(--escala-letra)); }
+.indicador { padding:12px 14px; border-radius:10px; gap:12px; background:color-mix(in oklab,var(--foreground),transparent 98%); }
+.indicadorTexto strong { font-size:calc(12px * var(--escala-letra)); font-weight:550; }
+.indicadorTexto b { font-size:calc(23px * var(--escala-letra)); margin:6px 0 2px; }
+.estadoIndicador { display:block; font-size:max(10px,calc(11px * var(--escala-letra))); color:var(--amarelo); }
+.indicador[data-faixa=BOM] .estadoIndicador { color:var(--positivo); }
+.indicador[data-faixa=CRITICO] .estadoIndicador { color:var(--negativo); }
+.indicadorTexto small { margin-top:8px; font-size:max(10px,calc(11px * var(--escala-letra))); }
+.reguaIndicador { order:2; position:relative; height:4px; margin:2px 4px; border-radius:999px; background:linear-gradient(to right,var(--primeira-cor) 0 var(--primeiro-limite),var(--amarelo) var(--primeiro-limite) var(--segundo-limite),var(--ultima-cor) var(--segundo-limite) 100%); }
+.reguaIndicador span { position:absolute; left:var(--posicao); top:50%; width:8px; height:8px; border:2px solid var(--foreground); border-radius:50%; background:var(--papel-1); transform:translate(-50%,-50%); box-shadow:0 0 0 2px var(--papel-1); }
+.proximaAcao { padding:10px 12px; }

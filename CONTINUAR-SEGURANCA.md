@@ -93,3 +93,7 @@ Saúde do dinheiro: nota compacta, quatro indicadores sem anéis, prioridade men
 ### Correção da validação do vencimento — 01/10/2026
 
 Captura mostrou Dia 10 selecionado, mas cadastro recusava pedindo data completa. Restava validação antiga YYYY-MM-DD em CadastroDeConta. Substituída por leitura de dia mensal 1–31 antes de enviar API, com testes de regressão cobrindo todos os dias, ausência opcional e entradas inválidas. Não alterado layout.
+
+### Régua colorida da saúde — 01/10/2026
+
+Usuário pediu saúde mais fina/moderna e parâmetros verde/amarelo/vermelho. Indicadores agora mostram régua de 4px com limites reais de escala.bom/atencao/maximo, marcador do valor atual e rótulo textual da faixa; meses de reserva inverte a direção das cores. Valores, thresholds e diagnóstico preservados. Espaçamento, nota e prioridade mais compactos. Prévia ainda requer conferência visual.
