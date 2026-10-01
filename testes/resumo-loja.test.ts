@@ -49,7 +49,7 @@ describe("resumo da loja", () => {
     const resumo = resumirLoja([
       venda(10000, [{ forma: "DINHEIRO", valor: 10000, liquido: 10000, cai: 0, recebido: true }]),
       venda(20000, [{ forma: "CREDITO_VISTA", valor: 20000, liquido: 19302, cai: 30 }]),
-    ])
+    ], HOJE)
 
     assert.equal(resumo.recebidoCentavos, 10000)
     assert.equal(resumo.aReceberCentavos, 19302)

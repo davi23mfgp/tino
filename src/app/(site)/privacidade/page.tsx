@@ -36,7 +36,7 @@ const SECOES = [
   {
     titulo: "Quem é responsável pelos seus dados",
     conteudo: [
-      "O Tino é operado por DAVI MARQUES FRANCO DE GODOY PEREIRA (microempreendedor individual), CNPJ 63.443.755/0001-80, com endereço em Travessa Alameda Praia Formosa, 5, Aracaju – SE. O encarregado pelo tratamento de dados pessoais (DPO) atende pelo e-mail davi23mfgp@gmail.com.",
+      "O Tino é operado pelo responsável inscrito no CNPJ 63.443.755/0001-80. O encarregado pelo tratamento de dados pessoais (DPO) atende pelo e-mail davi23mfgp@gmail.com.",
       "A Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018) chama isso de controlador: quem decide o que é feito com seus dados. Para qualquer pedido sobre privacidade, é com esse contato que você fala.",
     ],
   },

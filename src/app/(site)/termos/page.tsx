@@ -30,7 +30,7 @@ const SECOES = [
   {
     titulo: "Quem oferece o Tino",
     conteudo: [
-      "O Tino é oferecido por DAVI MARQUES FRANCO DE GODOY PEREIRA (microempreendedor individual), CNPJ 63.443.755/0001-80, com endereço em Travessa Alameda Praia Formosa, 5, Aracaju – SE, e atendimento pelo e-mail davi23mfgp@gmail.com e pela tela Falar com o suporte, dentro do app.",
+      "O Tino é oferecido pelo responsável inscrito no CNPJ 63.443.755/0001-80, com atendimento pelo e-mail davi23mfgp@gmail.com e pela tela Falar com o suporte, dentro do app.",
       "Ao criar a conta você declara que leu e aceita estes termos e a Política de Privacidade. A data e a versão do aceite ficam registradas.",
     ],
   },

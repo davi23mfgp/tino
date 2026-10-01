@@ -61,3 +61,7 @@ Este ambiente não tem credenciais Vercel/Neon; o token do GitHub CLI está inv�
 ### Bloqueio externo comprovado e regra do usuário
 
 Em 01/10/2026, o usuário determinou: só interromper por ação que o agente realmente não consegue executar; regra registrada em AGENTS.md. Vercel CLI instalado temporariamente via npx, mas `vercel login` falhou antes de emitir autorização. Requisições a `api.vercel.com` e `api.neon.tech` receberam HTTP 403 do proxy de saída (CONNECT recusado). Não é falha do aplicativo nem aprovação recusada: a política de rede deste ambiente impede acesso aos provedores. Além de autenticação, é necessário liberar a rede dos provedores ou continuar em ambiente conectado a eles. Nenhum segredo foi gerado/substituído e nenhum banco foi alterado.
+
+### Ajuste solicitado nos textos legais — 01/10/2026
+
+Removidos nome civil e endereço residencial dos Termos e da Política de Privacidade a pedido do usuário; mantidos CNPJ e canais de atendimento. Layout preservado. Alteração na branch de segurança; produção continua pendente. Login Google em Preview ainda mostra configuração indisponível segundo captura do usuário; conferir escopo das três variáveis e callback, depois redeploy. Preview de segurança chegou a Ready após configurar banco vazio tino_preview na branch Neon de testes; aprovação do build não comprova login/MFA nem operação dos backups.
