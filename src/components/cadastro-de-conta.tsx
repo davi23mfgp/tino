@@ -11,6 +11,7 @@ import { showToast } from "@/components/ui/toast"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { lerDiaVencimento } from "@/lib/dia-vencimento"
 import { SelectNative } from "@/components/ui/select-native"
 
 import estilos from "./cadastro-de-conta.module.css"
@@ -148,9 +149,6 @@ export function CadastroDeConta({
       if (campos.some((valor) => Math.abs(paraCentavos(valor)) > 2147483647)) throw new Error("Valor acima do limite permitido.")
       if (nova.tipo === "CARTAO_CREDITO") {
         if (paraCentavos(nova.limite) < 0) throw new Error("O limite não pode ser negativo.")
-        if (nova.venc && !/^\d{4}-\d{2}-\d{2}$/.test(nova.venc)) {
-          throw new Error("Escolha a data da próxima fatura.")
-        }
       }
       await enviar("/api/contas", {
         nome: nova.nome.trim(),
@@ -158,7 +156,7 @@ export function CadastroDeConta({
         instituicao: nova.instituicao.trim() || undefined,
         saldoInicialCentavos: nova.tipo === "CARTAO_CREDITO" ? 0 : nova.saldo ? paraCentavos(nova.saldo) : 0,
         limiteCentavos: nova.tipo === "CARTAO_CREDITO" && nova.limite ? paraCentavos(nova.limite) : undefined,
-        diaVencimento: nova.tipo === "CARTAO_CREDITO" && nova.venc ? Number(nova.venc) : undefined,
+        diaVencimento: nova.tipo === "CARTAO_CREDITO" ? lerDiaVencimento(nova.venc) : undefined,
         bandeira: nova.tipo === "CARTAO_CREDITO" && nova.bandeira ? nova.bandeira : undefined,
       })
       showToast("Conta adicionada")

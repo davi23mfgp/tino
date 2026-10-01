@@ -89,3 +89,7 @@ Usuário autorizou modernizar especificamente o menu do avatar. Cabeçalho com a
 ### Refinamentos visuais solicitados — 01/10/2026
 
 Saúde do dinheiro: nota compacta, quatro indicadores sem anéis, prioridade menor; cálculo e referências preservados. Menu da conta reduzido. Notificações: painel flutuante compacto no desktop, estado vazio ilustrado, ações de rodapé somente quando existem avisos; filtros/ações existentes preservados. Cadastro com superfície igual ao app, rótulos, mostrar senha e escolhas em três blocos; configuração inicial dentro de superfície consistente e centralizada. Alterações só em Preview; evidência visual final e 20 controles continuam pendentes.
+
+### Correção da validação do vencimento — 01/10/2026
+
+Captura mostrou Dia 10 selecionado, mas cadastro recusava pedindo data completa. Restava validação antiga YYYY-MM-DD em CadastroDeConta. Substituída por leitura de dia mensal 1–31 antes de enviar API, com testes de regressão cobrindo todos os dias, ausência opcional e entradas inválidas. Não alterado layout.
