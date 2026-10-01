@@ -169,35 +169,13 @@ export default async function Analise() {
 
       {/* Sem risco nem ponto forte, o cartão ficava só com o título. */}
       {(diagnostico.riscos.length > 0 || diagnostico.pontosFortes.length > 0) && (
-      <Cartao titulo="O que pesa e o que ajuda">
-          <div className="space-y-3">
-            {diagnostico.riscos.length > 0 && (
-              <div>
-                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-negativo">Riscos</p>
-                <ul className="mt-1.5 space-y-1.5">
-                  {diagnostico.riscos.map((risco) => (
-                    <li key={risco} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                      {risco}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {diagnostico.pontosFortes.length > 0 && (
-              <div>
-                <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-positivo">Pontos fortes</p>
-                <ul className="mt-1.5 space-y-1.5">
-                  {diagnostico.pontosFortes.map((ponto) => (
-                    <li key={ponto} className="text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-                      {ponto}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-      </Cartao>
+      <div className={analise.leituraObjetiva}>
+        {[{ titulo: "Pede atenção", faixas: ["ATENCAO", "CRITICO"], textos: diagnostico.riscos }, { titulo: "Pontos fortes", faixas: ["BOM"], textos: diagnostico.pontosFortes }].filter((grupo) => grupo.textos.length > 0).map((grupo) => <section key={grupo.titulo} className={analise.bloco}>
+          <h2>{grupo.titulo}</h2>
+          <ul>{diagnostico.indicadores.filter((indicador) => grupo.faixas.includes(indicador.faixa)).map((indicador) => <li key={indicador.chave} data-faixa={indicador.faixa}><span>{indicador.nome}</span><b className="valor-sensivel">{indicador.valor}</b></li>)}</ul>
+          <details><summary>Entender a leitura</summary>{grupo.textos.map((texto) => <p key={texto}>{texto}</p>)}</details>
+        </section>)}
+      </div>
       )}
 
       {/* ── Gráficos ──────────────────────────────────── */}

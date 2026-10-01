@@ -76,3 +76,34 @@
 @media (min-width:1024px) {
   .dentro { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
 }
+
+/* Leitura compacta: pares alinhados e números leves, sem listras dominantes. */
+.aba { align-items:stretch; }
+.topo,.bloco,.patrimonio { border-radius:18px; padding:20px; }
+.rotulo { text-transform:none; letter-spacing:0; font-weight:450; }
+.tres { gap:20px; }
+.tres > div + div { padding-left:20px; border-left:1px solid var(--pauta); }
+.tres dd { font-size:calc(clamp(18px,2.3vw,28px) * var(--escala-letra)); font-weight:400; letter-spacing:-.04em; }
+.tres dd small { font-weight:400; }
+.barra { height:6px; border-radius:99px; gap:1px; }
+.sobra { background:color-mix(in oklab,var(--bom),transparent 75%); }
+.leitura { font-size:calc(11px * var(--escala-letra)); }
+.leitura b { font-weight:500; }
+.bloco { display:flex; flex-direction:column; gap:12px; }
+.bloco h2 { font-weight:550; font-size:calc(14px * var(--escala-letra)); }
+.bloco .lista { flex:1; display:grid; }
+.lista li { min-height:44px; font-size:calc(12px * var(--escala-letra)); }
+.lista b { font-weight:500; }
+.lista i { width:6px; height:6px; border-radius:50%; }
+.duas { height:5px; }
+.legenda { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.legenda span { display:flex; flex-direction:column; align-items:flex-start; gap:4px; font-size:calc(11px * var(--escala-letra)); }
+.legenda i { display:none; }
+.legenda b { font-size:calc(20px * var(--escala-letra)); font-weight:400; }
+.explicacao { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); margin-top:auto; }
+.explicacao summary { min-height:44px; display:flex; align-items:center; cursor:pointer; }
+.explicacao p { line-height:1.6; }
+.patrimonio summary b { display:flex; flex-wrap:wrap; gap:8px 20px; justify-content:space-between; font-weight:450; }
+.patrimonio summary > div { flex:1; }
+.patrimonio summary b span { font-size:calc(22px * var(--escala-letra)); letter-spacing:-.03em; }
+@media(max-width:520px) { .tres { gap:8px; } .tres > div + div { padding-left:8px; } .topo,.bloco,.patrimonio { padding:16px; } .legenda b { font-size:calc(17px * var(--escala-letra)); } }

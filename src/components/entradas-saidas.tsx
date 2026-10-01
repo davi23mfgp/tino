@@ -132,26 +132,7 @@ export function EntradasESaidas({
           )}
         </div>
 
-        <p className={estilos.leitura}>
-          {!temRenda ? (
-            <>
-              Nenhuma entrada lançada em {mes}: a barra mostra só os gastos, e sem a renda não dá para dizer quanto
-              sobrou. Lance o que entrou para a conta fechar.
-            </>
-          ) : resultado >= 0 ? (
-            <>
-              A renda inteira numa barra: cada cor é para onde foi, o listrado é o que sobrou:{" "}
-              <b data-tom={tomDaSobra}>{formatarPercentual(sobraBps, 1)}</b>. Abaixo de{" "}
-              {formatarPercentual(REFERENCIA_TAXA_POUPANCA.atencao, 0)} não se forma reserva;{" "}
-              {formatarPercentual(REFERENCIA_TAXA_POUPANCA.bom, 0)} ou mais constrói patrimônio.
-            </>
-          ) : (
-            <>
-              Saiu <b data-tom="critico">{formatarMoeda(-resultado)}</b> a mais do que entrou. O traço marca onde a renda
-              acabou: o que passa dele saiu do saldo guardado, do cartão ou de dívida.
-            </>
-          )}
-        </p>
+        <p className={estilos.leitura}>{!temRenda ? "Sem entradas registradas." : resultado >= 0 ? <><b data-tom={tomDaSobra}>{formatarPercentual(sobraBps, 1)}</b> da renda disponível após os gastos.</> : <><b data-tom="critico">{formatarMoeda(-resultado)}</b> além da renda registrada.</>}</p>
       </section>
 
       {grupos.length > 0 && (
@@ -176,7 +157,7 @@ export function EntradasESaidas({
       {despesasCentavos > 0 && (
         <section className={cn("ficha", estilos.bloco)}>
           <header>
-            <h2>Fixo e variável</h2>
+            <h2>Custos mensais</h2>
           </header>
           <div className={estilos.duas} aria-hidden>
             <span data-parte="fixo" style={{ width: `${(custoFixoCentavos / somaFixoVariavel) * 100}%` }} />
@@ -185,20 +166,19 @@ export function EntradasESaidas({
           <div className={estilos.legenda}>
             <span>
               <i data-parte="fixo" aria-hidden />
-              <b className="valor-sensivel">{formatarMoeda(custoFixoCentavos)}</b> fixo · não muda com o uso
+              <b className="valor-sensivel">{formatarMoeda(custoFixoCentavos)}</b> fixo estimado
             </span>
             <span>
               <i data-parte="variavel" aria-hidden />
-              <b className="valor-sensivel">{formatarMoeda(custoVariavelCentavos)}</b> variável · onde dá para mexer
+              <b className="valor-sensivel">{formatarMoeda(custoVariavelCentavos)}</b> variável registrado
             </span>
           </div>
           {temRenda && (
             <p className={estilos.leitura}>
-              O fixo toma <b data-tom={tomDoFixo}>{formatarPercentual(fixoBps, 1)}</b> da renda. Até{" "}
-              {formatarPercentual(REFERENCIA_CUSTO_FIXO.bom, 0)} sobra folga para imprevisto; acima de{" "}
-              {formatarPercentual(REFERENCIA_CUSTO_FIXO.atencao, 0)} o orçamento engessa.
+              Fixos: <b data-tom={tomDoFixo}>{formatarPercentual(fixoBps, 1)}</b> da renda. Referência: até {formatarPercentual(REFERENCIA_CUSTO_FIXO.bom, 0)}.
             </p>
           )}
+          <details className={estilos.explicacao}><summary>Como calculamos</summary><p>Fixos estimados e parcelas mensais. O variável considera os gastos do mês que excedem esses fixos; não é a classificação individual de cada compra.</p></details>
         </section>
       )}
 

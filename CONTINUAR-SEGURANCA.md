@@ -201,3 +201,7 @@ Valor/prazo agrupados; juros/IOF ao lado em desktop; nome e salvamento com área
 ### Indicadores da análise distribuídos pela largura — 01/10/2026
 
 Usuário autorizou métricas adicionais para aproveitar espaço vazio. Seis indicadores originais usam cartões uniformes com régua, referência curta e explicação recolhida. Acrescentadas entradas/saídas/resultado do mês e ativos/passivos/patrimônio líquido usando DRE e balanço existentes. Novas métricas são valores registrados, sem faixas inventadas e sem mudar nota/prioridades. Quatro colunas em telas largas; valores respeitam ocultação de dados sensíveis. Conferência visual pendente do deploy.
+
+### Entradas e saídas refinadas — 01/10/2026
+
+Resumo mensal leve, barra fina sem listras, blocos lado a lado alinhados em altura, custos mensais com distinção explícita entre fixos estimados e gastos registrados. Cálculos preservados. Riscos/pontos fortes em linhas objetivas com explicações completas recolhidas; patrimônio compacto e detalhes preservados. Visual pendente de Preview.
