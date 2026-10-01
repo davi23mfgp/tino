@@ -20,7 +20,7 @@ type Aba = (typeof ABAS)[number]["valor"]
  * vem. No computador as abas somem e tudo aparece junto, porque lá há largura
  * para isso (ver `.grupo` em inicio.module.css).
  */
-export function AbasDoInicio({ children }: { children: React.ReactNode }) {
+export function AbasDoInicio({ children, carteira }: { children: React.ReactNode; carteira?: React.ReactNode }) {
   const grade = useRef<HTMLDivElement>(null)
   const [aba, setAba] = useState<Aba>("hoje")
   useEffect(() => {
@@ -49,6 +49,7 @@ export function AbasDoInicio({ children }: { children: React.ReactNode }) {
   }, [])
   return (
     <div ref={grade} className={estilos.grade} data-aba={aba}>
+      {carteira}
       <div className={estilos.abas} role="tablist" aria-label="Partes do início">
         {ABAS.map((item) => (
           <button key={item.valor} type="button" role="tab" aria-selected={aba === item.valor} onClick={() => setAba(item.valor)}>

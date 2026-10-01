@@ -73,3 +73,7 @@ Cadastro inicial, adição e edição de cartões agora selecionam dia do mês (
 ### Quantidade de convites — ajuste solicitado em 01/10/2026
 
 No cadastro inicial, casal/família escolhe quantidade de convidados (1 a 10) e recebe um campo de e-mail por pessoa. Quantidade não inclui o próprio usuário; opção Convidar depois mantém o cadastro sem convites. Envia somente os campos da quantidade atual, recusa vazios e duplicados. Individual continua sem convites. Layout e API de convites preservados.
+
+### Correção da largura dos cartões — 01/10/2026
+
+Removido flex-grow do cartão desktop; largura máxima 360px e proporção 1.586, sem altura fixa. Novo cartão vira ação compacta abaixo. Carteira incorporada à grade existente, antes das abas no celular; desktop coloca carteira com até um cartão ao lado do fluxo, e múltiplos cartões ocupam linha inteira. Sem mudança de cores/identidade. Verificação visual de Preview ainda necessária.

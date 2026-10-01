@@ -162,9 +162,8 @@ export default async function Painel() {
 
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
-    {/* A carteira continua empilhada no celular. No desktop, os cartões
-        aproveitam a largura do painel sem perder seleção e movimento. */}
-    <section className={estilos.painel} aria-labelledby="cartoes-titulo">
+    <AbasDoInicio carteira={
+<section className={estilos.painel} data-area="cartoes" data-multiplos={cartoes.length > 1 ? "sim" : "nao"} aria-labelledby="cartoes-titulo">
       <Cabecalho titulo="Cartões e faturas" id="cartoes-titulo" href="/cartoes" acao="Ver cartões" />
       {/* Cartões numa carteira (Davi, 23/09): um atrás do outro, o tocado
           levanta. Os números saem daqui, do servidor; a pilha só anima. */}
@@ -192,8 +191,7 @@ export default async function Painel() {
         }
       })} /> : <Link href="/configuracoes" className={estilos.vazio}>Cadastrar primeiro cartão <ArrowRight /></Link>}
     </section>
-
-    <AbasDoInicio>
+    }>
       <div className={e.grupo} data-grupo="hoje">
         {capturasNoInicio.length > 0 && <ConferirNoInicio capturas={capturasNoInicio} total={quantidadePendente} contaPadraoId={contaPadrao?.id ?? null} />}
 
