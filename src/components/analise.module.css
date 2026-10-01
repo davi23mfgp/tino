@@ -138,3 +138,34 @@
 .leituraObjetiva details { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
 .leituraObjetiva summary { min-height:44px; display:flex; align-items:center; cursor:pointer; }
 .leituraObjetiva p { margin-top:8px; line-height:1.6; }
+
+/* Categorias: distribuição compacta acima, comparação e calendário em par. */
+.categorias { align-items:stretch; }
+.categorias .coluna { display:contents; }
+.categorias .bloco { border-radius:18px; padding:18px; background:var(--papel-1); backdrop-filter:none; }
+.categorias .cabecalho { flex-wrap:wrap; gap:4px 12px; }
+.categorias .cabecalho h2 { font-size:calc(14px * var(--escala-letra)); font-weight:550; }
+.categorias .cabecalho small { font-size:calc(10px * var(--escala-letra)); }
+.categoriasCompactas { order:-1; }
+.categoriasCompactas .lista { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:12px 24px; }
+.categoriasCompactas .lista li { border:0; padding:8px 0; }
+.categoriasCompactas .lista li > div { font-size:calc(12px * var(--escala-letra)); gap:8px; }
+.categoriasCompactas .lista li > div > span:first-of-type { font-weight:450; white-space:normal; }
+.categoriasCompactas .lista li > div > b { font-size:calc(13px * var(--escala-letra)); font-weight:500; }
+.categoriasCompactas .lista li > div > i { width:5px; height:5px; }
+.categoriasCompactas .lista .medidaCategoria { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:8px; font-size:calc(10px * var(--escala-letra)); color:var(--texto-3); }
+.medidaCategoria .barra { height:3px; }
+.categoriasCompactas .lista .medidaCategoria .barra { overflow:visible; }
+.medidaCategoria .variacao { min-width:0; margin:0; font-weight:450; font-size:calc(10px * var(--escala-letra)); }
+.comparacaoCompacta .subiu { display:grid; align-content:start; gap:0; }
+.comparacaoCompacta .subiu li { min-height:64px; align-items:center; font-size:calc(12px * var(--escala-letra)); }
+.comparacaoCompacta .subiu b { font-weight:500; }
+.categorias .calendario { gap:4px; }
+.categorias .calendario > span { height:28px; border-radius:7px; font-size:calc(10px * var(--escala-letra)); }
+.categorias .calendario > span[data-gasto] { background:color-mix(in oklab,var(--negativo),transparent calc((1 - var(--forca)) * 100%)); color:var(--foreground); }
+.categorias .calendario > span[data-hoje] { outline:1px solid var(--pauta); outline-offset:2px; }
+.resumoDias { display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; font-size:calc(10px * var(--escala-letra)); }
+.resumoDias b { display:block; margin-top:4px; font-weight:450; font-size:calc(16px * var(--escala-letra)); }
+.categorias .escala { font-size:calc(10px * var(--escala-letra)); margin-top:4px; }
+.categorias .escala i { width:8px; height:8px; border-radius:3px; }
+@media(min-width:1024px) { .categoriasCompactas { grid-column:1/-1; } .categoriasCompactas .lista { grid-template-columns:repeat(3,minmax(0,1fr)); } }

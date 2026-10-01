@@ -205,3 +205,7 @@ Usuário autorizou métricas adicionais para aproveitar espaço vazio. Seis indi
 ### Entradas e saídas refinadas — 01/10/2026
 
 Resumo mensal leve, barra fina sem listras, blocos lado a lado alinhados em altura, custos mensais com distinção explícita entre fixos estimados e gastos registrados. Cálculos preservados. Riscos/pontos fortes em linhas objetivas com explicações completas recolhidas; patrimônio compacto e detalhes preservados. Visual pendente de Preview.
+
+### Categorias com leitura compacta — 01/10/2026
+
+Categorias distribuídas em largura completa (3 colunas desktop), barras finas, valores e participação no mês. Comparação de aumentos e calendário abaixo em par alinhado; calendário menor e resumo objetivo de maior dia/média dos dias com gasto. Comparação mantém corte do mesmo período do mês anterior; nenhum cálculo foi alterado. Aparência exige conferência de Preview.
