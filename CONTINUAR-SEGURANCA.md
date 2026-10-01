@@ -151,3 +151,7 @@ Usuário pediu preencher todas as áreas fictícias, especialmente Compras recen
 ### Descrição e valor na anotação rápida — 01/10/2026
 
 Corrigida a separação de moeda minúscula (`r$`) e valores com `reais` na entrada digitada ou ditada. A confirmação usa a descrição interpretada e mostra o valor em coluna separada, em vez de repetir a frase bruta como nome. O texto original continua guardado para conferência. Regressões cobrem moeda antes/depois do nome e números que pertencem ao produto, como B12.
+
+### Painel sem vazios entre colunas e retomada dos 20 controles — 01/10/2026
+
+Retirado o encaixe por altura com ResizeObserver. Desktop usa linhas completas alinhadas: carteira/fluxo; compras/conferência/categorias; dívidas em faixa com itens lado a lado; saúde em largura completa. Os cartões mantêm suas proporções e regras de movimento. Conferência visual do deploy ainda necessária. Checklist dos 20 controles atualizado: Preview separado e Ready comprovado pelo usuário; Production, MFA administrativo, secrets dos workflows, backup/monitor reais e recuperação Neon continuam dependendo de acesso externo.

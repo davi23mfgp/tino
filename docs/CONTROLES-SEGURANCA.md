@@ -1,6 +1,6 @@
-# Conferência dos 20 controles — 30/09/2026
+# Conferência dos 20 controles — 01/10/2026
 
-O trabalho continua na branch `codex/continuacao-tino`. Publicação adiada pelo usuário até concluir os ajustes. Implementação e evidência em produção são etapas distintas.
+O trabalho continua na branch `codex/continuacao-tino`. Publicação autorizada pelo usuário; código enviado ao GitHub. Deploy de Production ainda precisa de comprovação. Implementação e evidência em produção são etapas distintas.
 
 | Item | Preparado no projeto | Comprovação externa pendente |
 | --- | --- | --- |
@@ -11,7 +11,7 @@ O trabalho continua na branch `codex/continuacao-tino`. Publicação adiada pelo
 | 5. Entradas | Zod, limites de JSON e tamanho | Conferência dos fluxos publicados |
 | 6. Sanitização | Escape React, JSON limitado, logs redigidos | Revisar eventuais novos campos HTML e integrações |
 | 7. SQL Injection | Prisma e parâmetros nas consultas verificadas | Nenhuma garantia de auditoria completa do sistema |
-| 8. Migrations | 39 migrations aplicadas em banco isolado; build valida segredos antes de migrar | Banco de Preview separado e execução do deploy |
+| 8. Migrations | 39 migrations aplicadas em banco isolado; build valida segredos antes de migrar | Preview separado em `tino_preview` e deploy Ready confirmados pelo usuário; conferir Production |
 | 9. Rollback | Procedimento de compatibilidade de schema e restauração em banco novo | Simulação no provedor; código antigo não deve contornar MFA |
 | 10. Acesso | Permissões no servidor e isolamento por lar; admin exige MFA | Cadastro MFA do administrador |
 | 11. Sessão | Expiração, revogação no banco e revogação ao alterar MFA | Conferência publicada |
