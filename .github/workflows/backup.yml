@@ -18,7 +18,7 @@ jobs:
       BACKUP_CHAVE_CRIPTOGRAFIA: ${{ secrets.BACKUP_CHAVE_CRIPTOGRAFIA }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: node scripts/backup.mjs
