@@ -177,3 +177,7 @@ A pedido do usuário, substituídas as listras diagonais grossas do fluxo no pai
 ### Organização dos filtros do extrato — 01/10/2026
 
 Tipo de movimento em controle segmentado próprio; conta, categoria e sem categoria em segunda linha alinhada. Removidos rolagem lateral e quebra aleatória. Alvos de toque 44px, opções selecionadas/removíveis e filtros imediatos preservados. Visual ainda requer conferência no Preview.
+
+### Limite do orçamento em pop-up — 01/10/2026
+
+A etiqueta de limite de categoria e o botão + limite abrem diálogo para editar valor, escolher meses de validade, salvar ou cancelar. Salvamento usa API existente e mantém demais limites; cancelamento não altera rascunho. Validação de valor e erro no diálogo, estados de envio e toque mínimo 44px. Pedido refere-se ao orçamento por categoria, identificado pela imagem, e não ao limite de crédito do cartão.

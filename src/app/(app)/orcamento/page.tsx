@@ -10,14 +10,14 @@ import { Vazio } from "@/components/ui/painel"
 import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
 import { DivisaoDaRenda } from "@/components/divisao-da-renda"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import estilos from "./orcamento.module.css"
 
 /**
  * Orçamento por categoria.
  *
- * O limite é editado direto na linha, sem tela de cadastro à parte: orçamento
- * que exige navegar para outro lugar para ajustar um valor não é revisado, e
- * orçamento não revisado deixa de valer em duas semanas.
+ * O limite abre um diálogo na própria página para editar e salvar sem
+ * navegar para outra tela.
  */
 
 interface Categoria {
@@ -47,6 +47,9 @@ interface Orcamento {
 
 
 export default function OrcamentoPagina() {
+  const [ajuste, setAjuste] = useState<Categoria | null>(null)
+  const [valorAjuste, setValorAjuste] = useState("")
+  const [erroAjuste, setErroAjuste] = useState("")
   const [competencia, setCompetencia] = useState(competenciaAtual())
   const [dados, setDados] = useState<Orcamento | null>(null)
   const [rascunho, setRascunho] = useState<Record<string, string>>({})
@@ -72,12 +75,12 @@ export default function OrcamentoPagina() {
     carregar().catch(()=>setMensagem("Não foi possível carregar o orçamento. Recarregue a página."))
   }, [carregar])
 
-  async function salvar() {
+  async function salvar(limites = rascunho) {
     setOcupado(true)
     setMensagem(null)
 
     try {
-      const linhas = Object.entries(rascunho)
+      const linhas = Object.entries(limites)
         .filter(([, valor]) => valor.trim())
         .map(([categoriaId, valor]) => ({ categoriaId, limiteCentavos: paraCentavos(valor) }))
 
@@ -92,8 +95,12 @@ export default function OrcamentoPagina() {
           : "Salvo para este mês.",
       )
       await carregar()
+      return true
     } catch (erro) {
-      setMensagem(erro instanceof Error ? erro.message : "Não consegui salvar.")
+      const texto = erro instanceof Error ? erro.message : "Não consegui salvar."
+      setMensagem(texto)
+      setErroAjuste(texto)
+      return false
     } finally {
       setOcupado(false)
     }
@@ -243,16 +250,9 @@ export default function OrcamentoPagina() {
                       <span data-estourou={passou || undefined}>
                         {limite === 0 ? "sem limite" : passou ? `passou ${formatarMoeda(gastoDaCategoria - limite)}` : `faltam ${formatarMoeda(limite - gastoDaCategoria)}`}
                       </span>
-                      <label className={estilos.limite}>
-                        <span>limite</span>
-                        <input
-                          aria-label={`Limite de ${categoria.nome}`}
-                          value={rascunho[categoria.id] ?? ""}
-                          onChange={(evento) => setRascunho((atual) => ({ ...atual, [categoria.id]: evento.target.value }))}
-                          inputMode="decimal"
-                          placeholder="0,00"
-                        />
-                      </label>
+                      <button type="button" className={estilos.limite} aria-label={`Ajustar limite de ${categoria.nome}`} onClick={() => { setAjuste(categoria); setValorAjuste(rascunho[categoria.id] ?? ""); setErroAjuste("") }}>
+                        <span>limite</span><b className="valor-sensivel">{paraTexto(limite)}</b>
+                      </button>
                     </div>
                   </div>
                 </li>
@@ -274,12 +274,30 @@ export default function OrcamentoPagina() {
               <li key={linha.categoria.id} data-sem>
                 <span className={estilos.icone}><SimboloCategoria categoria={linha.categoria} /></span>
                 <div className={estilos.nomeValor}><span>{linha.categoria.nome}</span><b className="valor-sensivel">{formatarMoeda(linha.gastoCentavos)}</b></div>
-                <button type="button" className={estilos.definir} onClick={() => setAbertas((atual) => new Set(atual).add(linha.categoria.id))}>+ limite</button>
+                <button type="button" className={estilos.definir} onClick={() => { setAjuste(linha.categoria); setValorAjuste(""); setErroAjuste("") }}>+ limite</button>
               </li>
             ))}
           </ul>
         </section>
       )}
+
+      <Dialog open={ajuste !== null} onOpenChange={(abrir) => { if (!abrir && !ocupado) setAjuste(null) }}>
+        <DialogContent largura="curta">
+          <DialogHeader><DialogTitle>Ajustar limite</DialogTitle><DialogDescription>{ajuste?.nome} · {rotuloCompetencia(competencia)}</DialogDescription></DialogHeader>
+          <form className={estilos.ajusteLimite} onSubmit={async (evento) => {
+            evento.preventDefault()
+            if (!ajuste || ocupado) return
+            const valor = paraCentavos(valorAjuste)
+            if (!/^(?:\d{1,3}(?:\.\d{3})+|\d+)(?:[,.]\d{1,2})?$/.test(valorAjuste.trim()) || !Number.isSafeInteger(valor) || valor < 0 || valor > 2147483647) { setErroAjuste("Informe um valor válido em reais."); return }
+            if (await salvar({ ...rascunho, [ajuste.id]: valorAjuste })) setAjuste(null)
+          }}>
+            <label>Limite da categoria (R$)<input autoFocus inputMode="decimal" value={valorAjuste} onChange={(evento) => { setValorAjuste(evento.target.value); setErroAjuste("") }} placeholder="0,00" disabled={ocupado} /></label>
+            <label>Valer para<select value={String(repetir)} disabled={ocupado} onChange={(evento) => setRepetir(Number(evento.target.value))}>{[0, 2, 5, 11].map((n) => <option key={n} value={n}>{n === 0 ? "Só este mês" : `Por ${n + 1} meses`}</option>)}</select></label>
+            {erroAjuste && <p role="alert">{erroAjuste}</p>}
+            <div><button type="button" disabled={ocupado} onClick={() => setAjuste(null)}>Cancelar</button><button type="submit" disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar limite"}</button></div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <details className={estilos.recolhido}>
         <summary>Dividir com quem mora com você</summary>

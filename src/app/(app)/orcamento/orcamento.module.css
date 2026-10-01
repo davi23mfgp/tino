@@ -104,3 +104,17 @@
      1.000px de largura deixava a barra com 900px e o número longe do nome. */
   .bloco .lista { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
 }
+
+/* Etiqueta clicável abre edição explícita, com cancelamento sem alterações. */
+.limite { min-height:44px; height:auto; padding:0 12px; cursor:pointer; }
+.limite:hover,.limite:focus-visible { border-color:var(--acao); }
+.limite b { min-width:64px; text-align:right; font-size:calc(13px * var(--escala-letra)); font-weight:550; color:var(--foreground); }
+.definir { min-height:44px; }
+.ajusteLimite { display:grid; gap:16px; padding-top:8px; }
+.ajusteLimite label { display:grid; gap:8px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.ajusteLimite input,.ajusteLimite select { min-height:44px; padding:10px 12px; border:1px solid var(--pauta); border-radius:12px; background:var(--papel-1); color:var(--foreground); font-size:calc(15px * var(--escala-letra)); }
+.ajusteLimite > div { display:flex; justify-content:flex-end; gap:8px; }
+.ajusteLimite button { min-height:44px; padding:0 16px; border-radius:12px; font-size:calc(13px * var(--escala-letra)); }
+.ajusteLimite button[type=submit] { background:var(--acao); color:var(--background); }
+.ajusteLimite button:disabled { opacity:.5; }
+.ajusteLimite p { color:var(--negativo); font-size:calc(12px * var(--escala-letra)); }
