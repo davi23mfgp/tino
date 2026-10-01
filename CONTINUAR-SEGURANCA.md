@@ -51,3 +51,9 @@ O novo monitor abre incidente quando não há backup validado da branch principa
 Checkout de segurança: `C:/Users/iasdn/Documents/tino-seguranca`, branch local `codex/seguranca-validacao`, enviada para a branch remota acima. Banco QA `tino_security_qa_20260930`; restauração `tino_security_restore_20260930`. `.env` e backups locais não foram versionados. Servidor de teste em 3014 foi parado. Não usar essas credenciais em produção.
 
 O checkout antigo `C:/Users/iasdn/Documents/tino` tinha alterações locais de documentação; não sobrescrever. Nenhum dado de produção foi alterado na validação. Para mudanças futuras, seguir AGENTS.md: português, dinheiro em centavos, evidência antes de afirmações e push normal após verificações pertinentes.
+
+## Continuação no ambiente cloud — 01/10/2026
+
+Checkout atualizado por fast-forward até `f424500`. Acrescentada verificação automatizada do comando de pré-publicação: configuração válida sem conexão ao banco, recusa de TLS desligado, segredo reutilizado, chave inválida, callback HTTP, logs SQL ligados e segredo ausente; erros não exibem credenciais. Tipos aprovados e 608 testes aprovados. Nenhuma alteração de layout ou publicação.
+
+Este ambiente não tem credenciais Vercel/Neon; o token do GitHub CLI está inválido. Push Git está disponível. As pendências externas listadas acima continuam abertas. Para continuar com a infraestrutura, usar notebook autenticado ou configurar os acessos neste ambiente, sem enviar segredos pelo chat. A resposta vazia do conector para workflows não foi usada como prova de aprovação do CI.
