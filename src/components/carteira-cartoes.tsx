@@ -42,16 +42,17 @@ const FRESTA = 64
  * a tela inteira do celular. Na pilha, cada cartão a mais custa uma fresta de
  * 64px, e o banco continua reconhecível pela cor e pelo logo.
  *
- * O último cartão começa aberto porque é o que está na frente, como numa
+ * O primeiro da lista (mais usado) começa aberto na frente, como numa
  * carteira de verdade: nada se move até a pessoa tocar.
  */
 export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
   const router = useRouter()
   const [novoAberto, setNovoAberto] = useState(false)
   const [salvandoNovo, setSalvandoNovo] = useState(false)
-  const [aberto, setAberto] = useState(cartoes.length - 1)
+  const [aberto, setAberto] = useState(0)
   const primeiro = useRef<HTMLButtonElement>(null)
   const [altura, setAltura] = useState(0)
+  const [cartaoElevado, setCartaoElevado] = useState<string | null>(null)
 
   // A altura do cartão depende da largura (proporção de cartão real). Mede o
   // primeiro para a pilha ter a altura certa: frestas mais um cartão inteiro.
@@ -69,7 +70,7 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
   const posicao = (indice: number) => (indice === aberto ? cartoes.length - 1 : indice < aberto ? indice : indice - 1)
 
   return (
-    <><div className={estilos.carteira} style={{ height: alturaTotal }}>
+    <><div className={estilos.carteira} style={{ height: alturaTotal }} onPointerLeave={() => setCartaoElevado(null)}>
       {cartoes.map((cartao, indice) => {
         const estaAberto = indice === aberto
         const lugar = posicao(indice)
@@ -81,7 +82,10 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
             aria-expanded={estaAberto}
             aria-label={estaAberto ? `${cartao.nome}: abrir a tela de cartões` : `Mostrar ${cartao.nome}`}
             onClick={() => (estaAberto ? router.push("/cartoes") : setAberto(indice))}
-            className={cn(estilos.cartao, estaAberto && estilos.levantado)}
+            onPointerEnter={(evento) => { if (evento.pointerType === "mouse" || evento.pointerType === "pen") setCartaoElevado(cartao.id) }}
+            onFocus={() => setCartaoElevado(cartao.id)}
+            onBlur={() => setCartaoElevado(null)}
+            className={cn(estilos.cartao, estaAberto && estilos.levantado, cartaoElevado === cartao.id && estilos.elevado)}
             style={{ "--cor-banco": cartao.cor, top: lugar * FRESTA, zIndex: lugar + 1 } as CSSProperties}
           >
             <span className={estilos.topo}>

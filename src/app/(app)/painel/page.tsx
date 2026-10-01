@@ -39,7 +39,7 @@ export default async function Painel() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
   const mesesFuturos = [competencia, competenciaMaisMeses(competencia, 1), competenciaMaisMeses(competencia, 2)]
-  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos, usuario, contaPadrao] = await Promise.all([
+  const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos, usuario, contaPadrao, usoCartoes] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
     prisma.captura.findMany({ where: { larId: sessao.larId, status: "PENDENTE" }, orderBy: { criadoEm: "desc" }, take: 10 }),
     prisma.captura.aggregate({ where: { larId: sessao.larId, status: "PENDENTE" }, _count: { _all: true }, _sum: { valorCentavos: true } }),
@@ -60,7 +60,15 @@ export default async function Painel() {
     // Conta para lançar a compra confirmada quando a captura não disse qual: a
     // mesma escolha da tela Anotar, a primeira conta que não é cartão.
     prisma.conta.findFirst({ where: { larId: sessao.larId, arquivada: false, tipo: { not: "CARTAO_CREDITO" } }, orderBy: { criadoEm: "asc" }, select: { id: true } }),
+    prisma.transacao.groupBy({
+      by: ["contaId"],
+      where: { larId: sessao.larId, tipo: "DESPESA", data: { gte: new Date(Date.now() - 90 * 86400000) }, conta: { tipo: "CARTAO_CREDITO", arquivada: false } },
+      _count: { _all: true },
+    }),
   ])
+  // Frequência de compras, não tamanho da dívida: mais usado fica aberto à frente.
+  const usoPorCartao = new Map(usoCartoes.map((linha) => [linha.contaId, linha._count._all]))
+  cartoes.sort((a, b) => (usoPorCartao.get(b.id) ?? 0) - (usoPorCartao.get(a.id) ?? 0))
 
   // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
   // passar pelo mesmo numero que aparece no topo da tela.
