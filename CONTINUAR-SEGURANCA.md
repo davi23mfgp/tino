@@ -77,3 +77,7 @@ No cadastro inicial, casal/família escolhe quantidade de convidados (1 a 10) e 
 ### Correção da largura dos cartões — 01/10/2026
 
 Removido flex-grow do cartão desktop; largura máxima 360px e proporção 1.586, sem altura fixa. Novo cartão vira ação compacta abaixo. Carteira incorporada à grade existente, antes das abas no celular; desktop coloca carteira com até um cartão ao lado do fluxo, e múltiplos cartões ocupam linha inteira. Sem mudança de cores/identidade. Verificação visual de Preview ainda necessária.
+
+### Separação do cadastro pessoal e MEI — 01/10/2026
+
+Usuário pediu retirar a escolha Meu dinheiro / Meu dinheiro e minha loja do início, manter a mesma landing e ter outro login MEI. Cadastro pessoal agora abre diretamente o formulário e envia modoMei=false. Perguntado se o acesso MEI já possui endereço ou deve ser criado dentro do Tino; implementação do destino separado aguarda essa informação, sem presumir isolamento por simples troca de URL. Não remover dados ou acessos empresariais existentes.
