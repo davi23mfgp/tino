@@ -61,57 +61,43 @@ export function TopoDaAnalise({ diagnostico, mes }: { diagnostico: Diagnostico; 
   </div>
 }
 
-/**
- * Indicadores: o que está fora da faixa vem primeiro, um cartão cada, com a
- * régua e o caminho para resolver. O que está bem vira uma linha — ocupar o
- * mesmo espaço dava o mesmo peso a quem não pede nada.
- */
-export function IndicadoresDaAnalise({ indicadores }: { indicadores: Indicador[] }) {
-  // O vermelho antes do amarelo: é o que pesa mais na nota.
-  const fora = indicadores.filter(foraDaFaixa).sort((a, b) => (a.faixa === b.faixa ? 0 : a.faixa === "CRITICO" ? -1 : 1))
-  const bons = indicadores.filter((indicador) => indicador.faixa === "BOM")
-  const semFaixa = indicadores.filter((indicador) => indicador.faixa === "SEM_DADO")
-
-  // Os demais entram na mesma grade dos cartões: no computador ocupam a vaga
-  // que sobra na última linha, em vez de uma faixa de ponta a ponta com um
-  // item só.
-  return <div className={estilos.cartoes}>
-    {fora.map((indicador) => {
+/** Grade uniforme ocupa a largura e mantém referências acessíveis sob demanda. */
+export function IndicadoresDaAnalise({ indicadores, resumo }: { indicadores: Indicador[]; resumo?: Pick<Diagnostico, "dre" | "balanco"> }) {
+  const ordem = { CRITICO: 0, ATENCAO: 1, BOM: 2, SEM_DADO: 3 }
+  const ordenados = [...indicadores].sort((a, b) => ordem[a.faixa] - ordem[b.faixa])
+  const extras = resumo ? [
+    { nome: "Entradas", valor: resumo.dre.receitasCentavos, apoio: "Registradas no mês" },
+    { nome: "Saídas", valor: resumo.dre.despesasCentavos, apoio: "Registradas no mês" },
+    { nome: "Resultado do mês", valor: resumo.dre.resultadoCentavos, apoio: "Entradas menos saídas" },
+    { nome: "Ativos totais", valor: resumo.balanco.ativoTotalCentavos, apoio: "O que você tem" },
+    { nome: "Dívidas totais", valor: resumo.balanco.passivoTotalCentavos, apoio: "Passivos do balanço" },
+    { nome: "Patrimônio líquido", valor: resumo.balanco.patrimonioLiquidoCentavos, apoio: "Ativos menos dívidas" },
+  ] : []
+  return <div className={`${estilos.cartoes} ${estilos.gradeIndicadores}`}>
+    {ordenados.map((indicador) => {
       const destino = ONDE_RESOLVER_INDICADOR[indicador.chave]
+      const referencia = indicador.escala
+        ? `${indicador.escala.menorMelhor ? "Até" : "A partir de"} ${indicador.chave === "liquidez" ? `${indicador.escala.bom} meses` : `${indicador.escala.bom / 100}%`}`
+        : "Sem faixa de referência"
+      const estado = indicador.faixa === "BOM" ? "Adequado" : indicador.faixa === "SEM_DADO" ? (indicador.escala ? "Sem dado" : "Contexto") : SELO[indicador.faixa]
       return <article key={indicador.chave} className={estilos.cartao} data-faixa={indicador.faixa}>
-        <header><h3>{indicador.nome}</h3><span className={estilos.selo}>{SELO[indicador.faixa as keyof typeof SELO]}</span></header>
-        <b className={estilos.valor}>{indicador.valor}</b>
-        {indicador.escala && <Regua numero={indicador.numero} escala={indicador.escala} />}
-        <footer>
-          <span>{indicador.referencia}</span>
-          {destino && <Link href={destino.href}>{destino.texto} →</Link>}
+        <header><h3>{indicador.nome}</h3><span className={estilos.estadoCompacto}><i aria-hidden />{estado}</span></header>
+        <b className={`${estilos.valor} valor-sensivel`}>{indicador.valor}</b>
+        {indicador.escala ? <Regua numero={indicador.numero} escala={indicador.escala} /> : <span className={estilos.semRegua} />}
+        <p className={estilos.referenciaCurta}>{referencia}</p>
+        <footer className={estilos.rodapeIndicador}>
+          <details><summary>Referência</summary><p>{indicador.referencia}</p><p>{indicador.leitura}</p></details>
+          {destino && <Link href={destino.href} aria-label={`${destino.texto}: ${indicador.nome}`}>Abrir →</Link>}
         </footer>
       </article>
     })}
-
-    {(bons.length > 0 || semFaixa.length > 0) && (
-      <section className={`${estilos.bloco} ${estilos.demais}`}>
-        {bons.length > 0 && <>
-          <p className={estilos.rotuloBloco}>Na faixa boa</p>
-          <ul>{bons.map((indicador) => <LinhaDoIndicador key={indicador.chave} indicador={indicador} apoio={indicador.referencia} />)}</ul>
-        </>}
-        {semFaixa.length > 0 && <>
-          <p className={estilos.rotuloBloco}>Sem faixa</p>
-          {/* Com régua e sem faixa, o que falta é dado (a renda não lançada,
-              por exemplo), e a leitura diz qual. Sem régua, a referência
-              explica por que não há faixa — o gasto essencial. */}
-          <ul>{semFaixa.map((indicador) => <LinhaDoIndicador key={indicador.chave} indicador={indicador} apoio={indicador.escala ? indicador.leitura : indicador.referencia} />)}</ul>
-        </>}
-      </section>
-    )}
+    {extras.map((linha) => <article key={linha.nome} className={`${estilos.cartao} ${estilos.metricaExtra}`}>
+      <header><h3>{linha.nome}</h3><span className={estilos.estadoCompacto}>Registrado</span></header>
+      <b className={`${estilos.valor} valor-sensivel`}>{formatarMoeda(linha.valor)}</b>
+      <p className={estilos.referenciaCurta}>{linha.apoio}</p>
+      <footer className={estilos.rodapeIndicador}><details><summary>Como calculamos</summary><p className="valor-sensivel">{linha.apoio}. {linha.nome === "Ativos totais" ? `Disponível: ${formatarMoeda(resumo!.balanco.ativoCirculanteCentavos)}. Aplicado: ${formatarMoeda(resumo!.balanco.ativoAplicadoCentavos)}.` : linha.nome === "Dívidas totais" ? `Curto prazo: ${formatarMoeda(resumo!.balanco.passivoCurtoPrazoCentavos)}. Longo prazo: ${formatarMoeda(resumo!.balanco.passivoLongoPrazoCentavos)}.` : linha.nome === "Patrimônio líquido" ? "Total de ativos menos total de passivos do balanço." : "Considera os lançamentos registrados no mês selecionado."}</p></details></footer>
+    </article>)}
   </div>
-}
-
-function LinhaDoIndicador({ indicador, apoio }: { indicador: Indicador; apoio: string }) {
-  return <li data-faixa={indicador.faixa}>
-    <span><strong>{indicador.nome}</strong><small>{apoio}</small></span>
-    <b>{indicador.valor}</b>
-  </li>
 }
 
 /** As três zonas da referência, na ordem em que aparecem da esquerda para a direita. */

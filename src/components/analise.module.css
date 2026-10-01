@@ -106,3 +106,26 @@
 .barra i { display:block; height:100%; border-radius:99px; background:var(--cor); }
 .mais { justify-self:start; min-height:40px; padding:0 14px; border-radius:var(--raio-pilula); border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); font-size:calc(13px * var(--escala-letra)); font-weight:600; }
 .nota { padding:0 4px; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.5; color:var(--texto-3); }
+
+/* Indicadores em grade uniforme: contexto curto e detalhes sob demanda. */
+.gradeIndicadores { grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); align-items:stretch; }
+.gradeIndicadores .cartao { padding:18px; border-radius:18px; background:var(--papel-1); backdrop-filter:none; gap:8px; }
+.gradeIndicadores .cartao header { flex-direction:column; align-items:flex-start; gap:5px; }
+.gradeIndicadores .cartao h3 { font-size:calc(12px * var(--escala-letra)); font-weight:500; }
+.estadoCompacto { display:inline-flex; align-items:center; gap:5px; font-size:calc(10px * var(--escala-letra)); color:var(--cor,var(--texto-3)); }
+.estadoCompacto i { width:4px; height:4px; border-radius:50%; background:currentColor; }
+.gradeIndicadores .valor { font-size:calc(28px * var(--escala-letra)); font-weight:400; letter-spacing:-.04em; margin:4px 0; }
+.gradeIndicadores .regua { height:3px; margin:6px 0; }
+.gradeIndicadores .regua em { width:8px; height:8px; margin:-4px 0 0 -4px; border-width:1px; }
+.semRegua { height:3px; margin:6px 0; border-radius:99px; background:var(--pauta); }
+.referenciaCurta { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.gradeIndicadores .cartao footer { margin-top:2px; align-items:center; }
+.gradeIndicadores .cartao footer a { min-height:44px; font-size:calc(11px * var(--escala-letra)); font-weight:450; }
+.rodapeIndicador details { min-width:0; flex:1; font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.rodapeIndicador summary { display:flex; align-items:center; min-height:44px; cursor:pointer; }
+.rodapeIndicador summary::after { content:" +"; margin-left:6px; }
+.rodapeIndicador details[open] summary::after { content:" −"; }
+.rodapeIndicador details p { line-height:1.6; margin-bottom:8px; }
+.gradeIndicadores .metricaExtra { --cor:var(--foreground); }
+.metricaExtra .estadoCompacto { color:var(--texto-3); }
+@media(min-width:1100px) { .gradeIndicadores { grid-template-columns:repeat(4,minmax(0,1fr)); } }

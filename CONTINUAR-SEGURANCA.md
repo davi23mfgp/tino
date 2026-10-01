@@ -197,3 +197,7 @@ Roteiro de dívidas com colunas mês/pagamento/dívidas/saldo restante, seleçã
 ### Controles de empréstimo modernos e organizados — 01/10/2026
 
 Valor/prazo agrupados; juros/IOF ao lado em desktop; nome e salvamento com área própria. Campo monetário refinado, régua fina, parcelas segmentadas discretas e responsividade. Cálculos de empréstimo, CET e gravação da proposta preservados. Visual requer conferência no Preview.
+
+### Indicadores da análise distribuídos pela largura — 01/10/2026
+
+Usuário autorizou métricas adicionais para aproveitar espaço vazio. Seis indicadores originais usam cartões uniformes com régua, referência curta e explicação recolhida. Acrescentadas entradas/saídas/resultado do mês e ativos/passivos/patrimônio líquido usando DRE e balanço existentes. Novas métricas são valores registrados, sem faixas inventadas e sem mudar nota/prioridades. Quatro colunas em telas largas; valores respeitam ocultação de dados sensíveis. Conferência visual pendente do deploy.

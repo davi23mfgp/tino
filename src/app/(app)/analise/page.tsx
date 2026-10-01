@@ -81,7 +81,7 @@ export default async function Analise() {
       <TopoDaAnalise diagnostico={diagnostico} mes={nomeDoMes} />
 
       <AbasInternas abas={[{ chave: "indicadores", titulo: "Indicadores", conteudo: (<>
-      <IndicadoresDaAnalise indicadores={diagnostico.indicadores} />
+      <IndicadoresDaAnalise indicadores={diagnostico.indicadores} resumo={{ dre, balanco }} />
       </>) }, { chave: "entradas", titulo: "Entradas e saídas", conteudo: (<>
       {/* ── A renda numa barra ─────────────────────────── */}
       <EntradasESaidas
