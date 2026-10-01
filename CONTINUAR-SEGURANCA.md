@@ -69,3 +69,7 @@ Removidos nome civil e endereço residencial dos Termos e da Política de Privac
 ### Dia de vencimento — ajuste solicitado em 01/10/2026
 
 Cadastro inicial, adição e edição de cartões agora selecionam dia do mês (1 a 31), como o recebimento do salário, sem pedir data completa. API continua recebendo diaVencimento; nenhuma migration necessária. Edição preserva o dia original inclusive 29/30/31, sem convertê-lo para uma data limitada pelo mês atual. Layout preservado, mudança apenas na branch de prévia.
+
+### Quantidade de convites — ajuste solicitado em 01/10/2026
+
+No cadastro inicial, casal/família escolhe quantidade de convidados (1 a 10) e recebe um campo de e-mail por pessoa. Quantidade não inclui o próprio usuário; opção Convidar depois mantém o cadastro sem convites. Envia somente os campos da quantidade atual, recusa vazios e duplicados. Individual continua sem convites. Layout e API de convites preservados.

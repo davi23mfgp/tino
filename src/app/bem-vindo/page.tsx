@@ -25,7 +25,8 @@ export default function BemVindo() {
   const [objetivosFinanceiros, setObjetivos] = useState<string[]>([])
   const [perfilDeRisco, setPerfil] = useState("NAO_SEI")
   const [tipoLar, setTipoLar] = useState("SOLO")
-  const [emailsConvite, setEmailsConvite] = useState("")
+  const [quantidadeConvites, setQuantidadeConvites] = useState("1")
+  const [emailsConvite, setEmailsConvite] = useState<string[]>([])
   const [convites, setConvites] = useState<{ email: string; link: string; enviado: boolean }[] | null>(null)
   async function concluir() {
     setSalvando(true); setErro(null)
@@ -34,8 +35,11 @@ export default function BemVindo() {
       if (valores.some((valor) => valor.trim() && (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:[,.]\d{1,2})?$/.test(valor.trim()) || paraCentavos(valor) > 2147483647))) throw new Error("Confira os valores: use 1.234,56 ou 1234.56.")
       if (contas.some((conta) => conta.tipo !== "DINHEIRO" && !conta.instituicao && conta.saldo)) throw new Error("Escolha o banco de cada conta com saldo informado.")
       if (cartoes.some((cartao) => !cartao.instituicao)) throw new Error("Escolha a instituição de cada cartão ou remova o cartão vazio.")
-      const emails = tipoLar === "SOLO" ? [] : [...new Set(emailsConvite.split(/[;,\n]/).map((email) => email.trim().toLowerCase()).filter(Boolean))]
-      if (emails.some((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || emails.length > 10) throw new Error("Informe até dez e-mails válidos, separados por vírgula.")
+      const quantidade = tipoLar === "SOLO" ? 0 : Number(quantidadeConvites)
+      const emails = Array.from({ length: quantidade }, (_, indice) => (emailsConvite[indice] ?? "").trim().toLowerCase())
+      if (emails.some((email) => !email)) throw new Error("Preencha o e-mail de cada pessoa que deseja convidar.")
+      if (new Set(emails).size !== emails.length) throw new Error("Informe um e-mail diferente para cada pessoa.")
+      if (emails.some((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || emails.length > 10) throw new Error("Informe um e-mail válido para cada pessoa (até dez convites).")
       await enviar("/api/onboarding", {
         rendaMensalCentavos: renda ? paraCentavos(renda) : undefined, diaInicioMes: Number(diaInicioMes), tipoLar, objetivosFinanceiros, perfilDeRisco,
         contas: contas.filter((conta) => conta.instituicao || conta.tipo === "DINHEIRO").map((conta) => ({
@@ -85,7 +89,11 @@ export default function BemVindo() {
     </div> },
     { titulo: "Quem vai usar este espaço?", texto: "Individual, casal ou família. Quem aceitar seu convite terá acesso completo a este espaço.", conteudo: <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">{[{ valor: "SOLO", nome: "Só eu" }, { valor: "CASAL", nome: "Casal" }, { valor: "FAMILIA", nome: "Família" }].map((tipo) => <button type="button" key={tipo.valor} aria-pressed={tipoLar === tipo.valor} onClick={() => setTipoLar(tipo.valor)} className={cn("min-h-16 rounded-[var(--raio-campo)] border p-3 text-sm", tipoLar === tipo.valor ? "border-acao bg-acao/10" : "border-pauta")}>{tipo.nome}</button>)}</div>
-      {tipoLar !== "SOLO" && <label className="block space-y-2 text-sm">Quem você quer convidar?<textarea value={emailsConvite} onChange={(e) => setEmailsConvite(e.target.value)} className={campo} placeholder="E-mails separados por vírgula" /><span className="block text-xs text-muted-fg">A pessoa entra com o e-mail convidado, inclusive pelo Google, e aceita o link. Você também poderá copiar o link para compartilhar.</span></label>}
+      {tipoLar !== "SOLO" && <div className="space-y-3">
+        <label className="block space-y-2 text-sm">Quantas pessoas você quer convidar?<select className={campo} value={quantidadeConvites} onChange={(e) => setQuantidadeConvites(e.target.value)}><option value="0">Convidar depois</option>{Array.from({ length: 10 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1} {i === 0 ? "pessoa" : "pessoas"}</option>)}</select><span className="block text-xs text-muted-fg">Conte apenas as pessoas que serão convidadas, sem incluir você.</span></label>
+        {Array.from({ length: Number(quantidadeConvites) }, (_, indice) => <label key={indice} className="block space-y-2 text-sm">E-mail da pessoa {indice + 1}<input type="email" className={campo} value={emailsConvite[indice] ?? ""} placeholder="nome@email.com" onChange={(e) => setEmailsConvite((atual) => { const novos = [...atual]; novos[indice] = e.target.value; return novos })} /></label>)}
+        <p className="text-xs text-muted-fg">A pessoa entra com o e-mail convidado, inclusive pelo Google, e aceita o link. Você também poderá copiar o link para compartilhar.</p>
+      </div>}
     </div> },
   ]
   if (convites) return <div className="mt-8 space-y-4"><h1 className="text-2xl font-bold">Seu espaço está pronto</h1>{convites.map((convite) => <div key={convite.email} className="space-y-2 rounded-[var(--raio-cartao)] border border-pauta p-3"><p className="text-sm">{convite.email}</p><p className="text-xs text-muted-fg">{convite.enviado ? "Convite enviado por e-mail." : "Copie o link abaixo e envie à pessoa. O envio de e-mail não está disponível."}</p><input readOnly aria-label={`Link de convite para ${convite.email}`} className={campo} value={convite.link} onFocus={(e) => e.target.select()} /></div>)}<button type="button" className="rounded-full bg-primary px-5 py-3 text-primary-foreground" onClick={() => { router.push("/painel"); router.refresh() }}>Abrir painel</button></div>
