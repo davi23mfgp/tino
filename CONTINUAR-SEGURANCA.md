@@ -264,3 +264,7 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Pedido: modernizar previsões de parcelas futuras. Substituídas linhas horizontais por três cartões mensais com previsão em destaque, unidade separada e base de parcelas discreta. Uma coluna no celular.
 - Ausência de taxa ou câmbio aparece como “A calcular” e instrução específica, em vez de “Não informado pontos”. Explicação completa recolhida em “Base e cálculo da previsão”; valores de parcelas respeitam ocultação.
 - Mesmas fórmulas e competências, sem mudança no saldo nem duplicidade de parcelas. Tipos e 618 testes passaram; composição visual a conferir no Preview.
+
+## 01/10/2026: opções de conta no filtro
+- Pedido: organizar “Conta ou cartão”. Grade de duas colunas com botões de largura igual, altura mínima de 48px e cantos discretos. Nomes podem quebrar linha sem corte; seleção e filtro imediato preservados.
+- Tipos e 618 testes passaram; aparência a conferir no Preview.

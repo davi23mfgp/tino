@@ -58,8 +58,10 @@
 .segmento button { min-height:40px; border-radius:var(--raio-pilula); font-size:calc(14.5px * var(--escala-letra)); color:var(--foreground); }
 .segmento button[aria-checked="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 
-.contas { display:flex; flex-wrap:wrap; gap:8px; }
-.contas .chip { min-height:42px; font-size:calc(14.5px * var(--escala-letra)); }
+.contas { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.contas .chip { width:100%; max-width:none; min-width:0; min-height:48px; padding:10px 12px; border-radius:12px; font-size:calc(13px * var(--escala-letra)); text-align:left; }
+.contas .nome { white-space:normal; overflow:visible; overflow-wrap:anywhere; line-height:1.35; }
+.contas .chip:focus-visible { outline:2px solid var(--acao); outline-offset:2px; }
 .bolinha { width:9px; height:9px; flex-shrink:0; border-radius:999px; }
 
 /* Duas linhas de quatro, como na opção B. Com "Outras" aberto, a grade rola
