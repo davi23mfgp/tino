@@ -49,7 +49,7 @@ export function PontosCartao({ cartao, mes }: { cartao: DadosCartao; mes: string
   const resumo = resumoDoMes(cartao, mes)
   const cambio = regra.cambioMilesimos === null ? cotacao?.valor ?? null : regra.cambioMilesimos / 1000
   const pontos = regra.taxaMilesimos > 0 ? calcularPontos(resumo.gastos, resumo.creditos, regra, cambio) : null
-  const numero = (valor: number | null) => valor === null ? "—" : valor.toLocaleString("pt-BR")
+  const numero = (valor: number | null) => valor === null ? "Não informado" : valor.toLocaleString("pt-BR")
   if (carregando) return <p role="status">Carregando pontos e milhas…</p>
   return <div className={estilos.painel}>
     <header><h3>Pontos e milhas · {cartao.nome}</h3><p>Acompanhe seu saldo e o que as compras podem render.</p></header>
