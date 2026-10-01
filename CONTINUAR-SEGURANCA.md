@@ -159,3 +159,7 @@ Retirado o encaixe por altura com ResizeObserver. Desktop usa linhas completas a
 ### Notificações delicadas inspiradas no iOS — 01/10/2026
 
 Painel translúcido com desfoque, bordas suaves, tipografia menor, títulos sem corte, ícones finos e ações discretas. Removida a faixa lateral grossa; criticidade continua no ícone e ordenação. Alvos de toque de 44px preservados. Visual ainda precisa de conferência no Preview; ações de leitura, filtro e limpeza preservadas. Retomada dos 20 controles continua pendente da conferência de Production/MFA solicitada ao usuário.
+
+### Dívidas e conferência mais compactas — 01/10/2026
+
+Usuário rejeitou faixa de dívidas espaçosa e conferência esticada. Conferência passa a faixa no topo em desktop, com descrição, valor, categoria e ações em linha; retirada pilha decorativa. Dívidas unem total lateral e itens compactos com bordas finas. Celular mantém empilhamento responsivo. Mesmas operações de confirmação/descarte; categoria ausente oferece link para fila. Conferência visual pendente de deploy.

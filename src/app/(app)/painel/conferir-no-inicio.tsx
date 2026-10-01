@@ -64,9 +64,9 @@ export function ConferirNoInicio({ capturas, total, contaPadraoId }: { capturas:
 
   const posicao = total - restantes.length + 1
   return (
-    <section className={estilos.bloco} aria-labelledby="conferir-titulo" data-area="conferir">
+    <section className={estilos.bloco + " " + estilos.conferirBloco} aria-labelledby="conferir-titulo" data-area="conferir">
       <header className={estilos.cabeca}>
-        <div><h2 id="conferir-titulo">Conferir</h2><p>nada entra no saldo sem você olhar</p></div>
+        <div><h2 id="conferir-titulo">Conferir</h2><p>Revise antes de entrar no saldo.</p></div>
         <Link href="/capturas">{posicao} de {total} →</Link>
       </header>
       <div className={estilos.pilha}>
@@ -76,7 +76,7 @@ export function ConferirNoInicio({ capturas, total, contaPadraoId }: { capturas:
             <div className="min-w-0"><strong>{atual.estabelecimento ?? "Sem descrição"}</strong><small>{atual.quando} · {atual.via}</small></div>
           </div>
           <p className={estilos.valorConferir}><Reais centavos={atual.valorCentavos ?? 0} /></p>
-          <p className={estilos.categoriaConferir}>{atual.categoriaNome ? <>categoria <span>{atual.categoriaNome}</span></> : <em>sem categoria: escolha em Anotar</em>}</p>
+          <p className={estilos.categoriaConferir}>{atual.categoriaNome ? <>categoria <span>{atual.categoriaNome}</span></> : <Link href="/capturas">Escolher categoria →</Link>}</p>
           <div className={estilos.botoesConferir}>
             <button type="button" disabled={ocupado} onClick={() => void decidir(false)}><X aria-hidden />Não foi</button>
             <button type="button" disabled={ocupado} onClick={() => void decidir(true)} data-principal><Check aria-hidden />Confirmar</button>

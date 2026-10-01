@@ -275,7 +275,7 @@ export default async function Painel() {
           <p className={e.legendaFluxo}><span data-tipo="real" />já aconteceu <span data-tipo="previsto" />projeção</p>
         </section>
 
-        {panorama.dividas.lista.length > 0 && <section className={e.bloco} data-area="dividas" aria-labelledby="dividas-titulo">
+        {panorama.dividas.lista.length > 0 && <section className={cn(e.bloco, e.dividasBloco)} data-area="dividas" aria-labelledby="dividas-titulo">
           <Cabeca id="dividas-titulo" titulo="Dívidas" href="/dividas" acao="Plano" />
           <div><small className={e.rotulo}>Você deve</small><Reais centavos={panorama.dividas.totalCentavos} tamanho="grande" /></div>
           <ul className={e.lista}>{panorama.dividas.lista.slice(0, 4).map((divida) => (
