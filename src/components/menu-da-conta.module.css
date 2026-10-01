@@ -1,0 +1,9 @@
+/* Só opacidade: zoom e deslocamento brigavam visualmente com o ajuste de
+   posição do Popper e com a montagem do seletor de tema. */
+.menu[data-state="open"] { animation: aparecer 120ms ease-out !important; }
+.menu[data-state="closed"] { animation: desaparecer 90ms ease-in !important; }
+@keyframes aparecer { from { opacity:0; } to { opacity:1; } }
+@keyframes desaparecer { from { opacity:1; } to { opacity:0; } }
+@media (prefers-reduced-motion:reduce) {
+  .menu[data-state] { animation:none !important; }
+}

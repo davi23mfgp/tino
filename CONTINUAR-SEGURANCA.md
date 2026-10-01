@@ -97,3 +97,7 @@ Captura mostrou Dia 10 selecionado, mas cadastro recusava pedindo data completa.
 ### Régua colorida da saúde — 01/10/2026
 
 Usuário pediu saúde mais fina/moderna e parâmetros verde/amarelo/vermelho. Indicadores agora mostram régua de 4px com limites reais de escala.bom/atencao/maximo, marcador do valor atual e rótulo textual da faixa; meses de reserva inverte a direção das cores. Valores, thresholds e diagnóstico preservados. Espaçamento, nota e prioridade mais compactos. Prévia ainda requer conferência visual.
+
+### Estabilidade ao abrir menu do avatar — 01/10/2026
+
+Usuário relata tremor na abertura. Ajuste dirigido ao menu da conta: animação somente de opacidade, sem zoom/deslocamento; modo não modal evita mudança de largura por bloqueio de rolagem; reserva do seletor de tema corrigida de 48 para 54px para não mudar altura ao montar. Outros dropdowns preservados. Correção estrutural verificada por tipos/testes; confirmar suavidade no navegador do usuário em Preview.

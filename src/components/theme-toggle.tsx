@@ -18,7 +18,7 @@ export function ThemeToggle({ variante = "icone" }: { variante?: "icone" | "menu
   useEffect(() => setMounted(true), [])
 
   // Reserva o espaço antes de montar: sem isso a barra salta na hidratação.
-  if (!mounted) return <div className={variante === "menu" ? "h-12 w-full" : "size-11 shrink-0"} />
+  if (!mounted) return <div className={variante === "menu" ? "h-[54px] w-full" : "size-11 shrink-0"} />
 
   const isDark = theme === "dark"
 
