@@ -270,6 +270,7 @@ function ListaMeses({
           </div>
         )}
       </header>
+      <div className={estilos.colunasRoteiro} aria-hidden><span>Mês</span><span>Pagamento</span><span>Dívidas</span><span>Saldo restante</span></div>
       <ul>
         {doAno.map((passo) => {
           const pago = passo.pagamentos.reduce((soma, item) => soma + item.valorCentavos, 0)
@@ -277,8 +278,8 @@ function ListaMeses({
             <li key={passo.competencia}>
               <button type="button" aria-pressed={passo.competencia === selecionado} onClick={() => aoEscolher(passo.competencia)}>
                 <b>{rotuloCompetencia(passo.competencia, true)}</b>
-                <span>
-                  paga {formatarMoeda(pago)}
+                <span className={estilos.pagamentoRoteiro}><small>Pagamento</small><b>{formatarMoeda(pago)}</b></span>
+                <span className={estilos.estadoRoteiro}>
                   {passo.quitadas.length > 0 ? (
                     <small className={estilos.quitada}>
                       <Check className="size-3.5" aria-hidden />
@@ -289,7 +290,7 @@ function ListaMeses({
                   )}
                 </span>
                 <span className={estilos.resta}>
-                  resta
+                  <small>Saldo restante</small>
                   <b>{formatarMoeda(passo.dividaRestanteCentavos)}</b>
                 </span>
               </button>

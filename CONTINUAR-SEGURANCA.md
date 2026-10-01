@@ -189,3 +189,7 @@ Pedido visual: bloco de chegada ao alvo mais moderno. Opções em controle segme
 ### Organização moderna da tela de dívidas — 01/10/2026
 
 Prioridade de pagamento em faixa discreta; dívidas em lista única com separadores finos, metadados agrupados, saldos alinhados e progresso curto. Simulador refinado com slider fino e atalhos de pagamento extra que usam o mesmo cálculo existente. Sem alteração de juros, estratégia ou projeção. Tipos/testes e publicação acompanhados; aparência requer conferência no Preview.
+
+### Mês a mês do plano refinado — 01/10/2026
+
+Roteiro de dívidas com colunas mês/pagamento/dívidas/saldo restante, seleção de ano segmentada e acento fino no mês selecionado. Valores alinhados e sem repetição de rótulos em desktop; celular reorganiza linhas com rótulos locais. Quitações e interação com o mês preservadas, sem mudança nos cálculos. Visual pendente de conferência no Preview.

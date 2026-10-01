@@ -66,3 +66,31 @@
 .lista li button > span small.quitada { color:var(--bom); font-weight:600; }
 .resta { text-align:right; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .resta b { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--foreground); font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+/* Roteiro com colunas estáveis: valores comparáveis sem repetir rótulos. */
+.lista { padding:20px; border-radius:20px; }
+.lista header h2 { font-weight:550; letter-spacing:-.02em; }
+.lista .anos { gap:3px; padding:3px; border:1px solid var(--pauta); border-radius:13px; overflow-x:auto; max-width:60%; }
+.lista .anos button { min-height:44px; border:0; border-radius:10px; background:transparent; font-size:calc(12px * var(--escala-letra)); font-weight:450; }
+.lista .anos button[aria-pressed=true] { background:color-mix(in oklab,var(--acao),transparent 90%); color:var(--acao); font-weight:550; }
+.colunasRoteiro { display:grid; grid-template-columns:90px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap:20px; padding:16px 12px 8px; font-size:calc(10px * var(--escala-letra)); color:var(--texto-3); }
+.colunasRoteiro span:last-child { text-align:right; }
+.lista ul { margin-top:0; }
+.lista li button { position:relative; width:100%; margin:0; grid-template-columns:90px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap:20px; min-height:64px; padding:12px; border-radius:12px; transition:background .18s ease; }
+.lista li button[aria-pressed=true] { background:color-mix(in oklab,var(--acao),transparent 96%); }
+.lista li button[aria-pressed=true]::before { content:""; position:absolute; left:0; top:18px; bottom:18px; width:2px; border-radius:99px; background:var(--acao); }
+.lista li button:hover { background:color-mix(in oklab,var(--foreground),transparent 97%); }
+.lista li button > b { font-size:calc(13px * var(--escala-letra)); font-weight:550; }
+.lista li button .pagamentoRoteiro b,.lista li button .resta b { font-size:calc(15px * var(--escala-letra)); font-weight:450; letter-spacing:-.015em; font-variant-numeric:tabular-nums; }
+.lista li button .pagamentoRoteiro small,.lista li button .resta > small { display:none; }
+.lista li button .estadoRoteiro small { margin:0; white-space:normal; overflow:visible; font-size:calc(11px * var(--escala-letra)); line-height:1.5; }
+@media(max-width:600px) {
+  .lista { padding:16px; }
+  .colunasRoteiro { display:none; }
+  .lista li button { grid-template-columns:64px minmax(0,1fr) auto; gap:4px 12px; padding:12px 8px; }
+  .lista li button > b { grid-row:1 / span 2; align-self:center; }
+  .lista li button .pagamentoRoteiro small,.lista li button .resta > small { display:block; font-size:calc(10px * var(--escala-letra)); color:var(--texto-3); margin-top:0; }
+  .estadoRoteiro { grid-column:2; grid-row:2; }
+  .resta { grid-column:3; grid-row:1 / span 2; align-self:center; }
+  .lista li button .pagamentoRoteiro b,.lista li button .resta b { font-size:calc(13px * var(--escala-letra)); }
+}
