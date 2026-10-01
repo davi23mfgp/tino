@@ -57,3 +57,7 @@ O checkout antigo `C:/Users/iasdn/Documents/tino` tinha alterações locais de d
 Checkout atualizado por fast-forward até `f424500`. Acrescentada verificação automatizada do comando de pré-publicação: configuração válida sem conexão ao banco, recusa de TLS desligado, segredo reutilizado, chave inválida, callback HTTP, logs SQL ligados e segredo ausente; erros não exibem credenciais. Tipos aprovados e 608 testes aprovados. Nenhuma alteração de layout ou publicação.
 
 Este ambiente não tem credenciais Vercel/Neon; o token do GitHub CLI está inválido. Push Git está disponível. As pendências externas listadas acima continuam abertas. Para continuar com a infraestrutura, usar notebook autenticado ou configurar os acessos neste ambiente, sem enviar segredos pelo chat. A resposta vazia do conector para workflows não foi usada como prova de aprovação do CI.
+
+### Bloqueio externo comprovado e regra do usuário
+
+Em 01/10/2026, o usuário determinou: só interromper por ação que o agente realmente não consegue executar; regra registrada em AGENTS.md. Vercel CLI instalado temporariamente via npx, mas `vercel login` falhou antes de emitir autorização. Requisições a `api.vercel.com` e `api.neon.tech` receberam HTTP 403 do proxy de saída (CONNECT recusado). Não é falha do aplicativo nem aprovação recusada: a política de rede deste ambiente impede acesso aos provedores. Além de autenticação, é necessário liberar a rede dos provedores ou continuar em ambiente conectado a eles. Nenhum segredo foi gerado/substituído e nenhum banco foi alterado.

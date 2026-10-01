@@ -20,6 +20,10 @@ reaberto.
 6. **Não afirme sem provar.** Teste verde não prova comportamento visual.
 7. **Push automático** depois de tipos e testes verdes. Force-push, rebase e
    apagar branch continuam pedindo confirmação.
+8. **Só interromper por dependência real do usuário.** Continuar autonomamente
+   o trabalho autorizado. Pedir participação apenas quando faltar acesso,
+   informação indispensável ou uma ação que o agente realmente não consegue
+   executar; explicar o bloqueio comprovado e a ação mínima para destravá-lo.
 
 ## Comandos
 
