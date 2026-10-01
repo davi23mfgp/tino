@@ -34,6 +34,8 @@ O código de segurança não foi incorporado à main nem publicado nesta sessão
 
 ## Pendências reais e ordem de trabalho
 
+Foi adicionada a conferência somente leitura `npm run seguranca:conferir-publicacao`. Execute com as variáveis do ambiente alvo já carregadas; ela nunca conecta ao banco, imprime valores ou executa migrations. Verifica nomes obrigatórios, TLS, formatos, separação das chaves e callback Google. Aprovação deste comando não comprova a configuração externa nem substitui as etapas abaixo.
+
 1. Acesso GitHub: CLI estava sem autenticação. Push Git funcionou, mas não foi possível configurar/conferir Secrets, proteção de main ou executar workflows manualmente.
 2. Vercel: `MFA_CHAVE_CRIPTOGRAFIA` e `MONITORAMENTO_SEGREDO` estavam ausentes. `DATABASE_URL`/`DIRECT_URL` existiam nos dois ambientes, mas a separação Preview/Production não foi comprovada. Google estava configurado somente em Production.
 3. Garantir banco de Preview separado ANTES de qualquer deploy/migration. Configurar chaves distintas por ambiente e guardar recuperação fora do banco, Git e chat.

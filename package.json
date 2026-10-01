@@ -17,6 +17,7 @@
     "db:start": "node scripts/banco.mjs start",
     "db:stop": "node scripts/banco.mjs stop",
     "backup": "node scripts/backup.mjs",
+    "seguranca:conferir-publicacao": "node scripts/conferir-publicacao.mjs",
     "backup:restaurar": "node scripts/restaurar-backup.mjs",
     "test:seguranca:integracao": "tsx scripts/verificar-seguranca.ts",
     "test": "node --import tsx --test \"testes/*.test.ts\"",
