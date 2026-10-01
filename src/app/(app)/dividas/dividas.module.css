@@ -66,3 +66,39 @@
 @media (min-width:900px) {
   .resumo { padding:24px; }
 }
+
+/* Dívidas: prioridade discreta, informações alinhadas e simulação leve. */
+.ataque { position:relative; padding:16px 20px; border-radius:18px; border-color:var(--pauta) !important; gap:16px; }
+.ataque::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--peso); flex-shrink:0; }
+.ataque .rotulo { text-transform:none; letter-spacing:0; font-size:calc(11px * var(--escala-letra)); font-weight:450; }
+.alvo { font-size:calc(14px * var(--escala-letra)); font-weight:550; white-space:normal; }
+.botaoPlano { border-radius:12px; background:color-mix(in oklab,var(--acao),transparent 90%); border:1px solid color-mix(in oklab,var(--acao),transparent 80%); color:var(--acao); font-size:calc(12px * var(--escala-letra)); font-weight:500; padding:0 14px; }
+.cabecalhoLista h2 { font-weight:550; }
+.lista { gap:0; border:1px solid var(--pauta); border-radius:18px; overflow:hidden; background:var(--papel-1); }
+.divida { border:0 !important; border-bottom:1px solid var(--pauta) !important; border-radius:0; background:transparent !important; box-shadow:none !important; padding:18px; gap:6px 14px; }
+.divida:last-child { border-bottom:0 !important; }
+.divida > i { width:5px; height:5px; align-self:start; margin-top:8px; }
+.divida strong { font-size:calc(14px * var(--escala-letra)); font-weight:550; }
+.meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; font-size:calc(11px * var(--escala-letra)); }
+.meta span + span { padding-left:12px; border-left:1px solid var(--pauta); }
+.saldo { grid-column:3; grid-row:1 / span 3; align-self:center; }
+.saldo b { font-size:calc(20px * var(--escala-letra)); font-weight:450; letter-spacing:-.025em; }
+.saldo small { font-size:calc(11px * var(--escala-letra)); font-weight:450; }
+.progresso { grid-column:2; width:min(100%,240px); height:3px; margin-top:4px; }
+.progresso i { background:color-mix(in oklab,var(--acao),transparent 30%); }
+.observacao { grid-column:2; margin-top:2px; font-size:calc(11px * var(--escala-letra)); }
+.simulacao { border-radius:18px; }
+.simulacao h2 { font-size:calc(15px * var(--escala-letra)); font-weight:550; }
+.simulacao output { font-size:calc(22px * var(--escala-letra)); font-weight:400; letter-spacing:-.03em; }
+.simulacao input[type=range] { appearance:none; -webkit-appearance:none; background:transparent; height:44px; cursor:pointer; margin-top:8px; }
+.simulacao input[type=range]::-webkit-slider-runnable-track { height:3px; border-radius:99px; background:linear-gradient(to right,var(--acao) var(--preenchimento),var(--pauta) var(--preenchimento)); }
+.simulacao input[type=range]::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:16px; height:16px; margin-top:-6.5px; border:3px solid var(--papel-1); border-radius:50%; background:var(--acao); box-shadow:0 0 0 1px color-mix(in oklab,var(--acao),transparent 50%); }
+.simulacao input[type=range]::-moz-range-track { height:3px; border-radius:99px; background:var(--pauta); }
+.simulacao input[type=range]::-moz-range-progress { height:3px; background:var(--acao); }
+.simulacao input[type=range]::-moz-range-thumb { width:10px; height:10px; border:3px solid var(--papel-1); border-radius:50%; background:var(--acao); }
+.atalhosExtra { display:flex; flex-wrap:wrap; gap:6px; }
+.atalhosExtra button { min-height:44px; padding:0 12px; border:1px solid var(--pauta); border-radius:12px; font-size:calc(11px * var(--escala-letra)); color:var(--texto-2); }
+.atalhosExtra button[aria-pressed=true] { background:color-mix(in oklab,var(--acao),transparent 92%); border-color:color-mix(in oklab,var(--acao),transparent 75%); color:var(--acao); }
+.resultado > div { background:transparent; border:0; border-left:1px solid var(--pauta); border-radius:0; }
+.resultado b { font-weight:450; }
+@media(max-width:520px) { .divida { padding:14px; gap:8px 10px; } .saldo b { font-size:calc(16px * var(--escala-letra)); } .ataque { padding:14px; } .simulacao header { flex-wrap:wrap; } .meta { gap:4px 8px; } .meta span + span { padding-left:8px; } }

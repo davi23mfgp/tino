@@ -185,3 +185,7 @@ A etiqueta de limite de categoria e o botão + limite abrem diálogo para editar
 ### Planejamento da reserva refinado — 01/10/2026
 
 Pedido visual: bloco de chegada ao alvo mais moderno. Opções em controle segmentado suave, aporte com campo delicado, slider próprio fino, previsão em linha com acento lateral e ajuda secundária. Escopo CSS restrito ao planejador; cálculos, formas de juntar e gravação de meta preservados. Alvos 44px e layout responsivo. Visual ainda requer conferência no Preview.
+
+### Organização moderna da tela de dívidas — 01/10/2026
+
+Prioridade de pagamento em faixa discreta; dívidas em lista única com separadores finos, metadados agrupados, saldos alinhados e progresso curto. Simulador refinado com slider fino e atalhos de pagamento extra que usam o mesmo cálculo existente. Sem alteração de juros, estratégia ou projeção. Tipos/testes e publicação acompanhados; aparência requer conferência no Preview.

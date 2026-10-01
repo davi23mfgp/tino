@@ -6,7 +6,7 @@ import topo from "./dividas.module.css"
 import pesos from "@/components/peso-do-juro.module.css"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
 import { Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
@@ -393,7 +393,7 @@ export default function Dividas() {
       {primeira && (
         <section className={cn("ficha", topo.ataque, pesos.peso)} data-peso={pesoDoJuro(primeira.jurosMensalBps)}>
           <div className="min-w-0">
-            <p className={topo.rotulo}>Ataque agora</p>
+            <p className={topo.rotulo}>Prioridade de pagamento</p>
             <p className={topo.alvo}>
               {primeira.credor}
               {primeira.jurosMensalBps > 0 && <> · {formatarPercentual(primeira.jurosMensalBps)} a.m.</>}
@@ -402,7 +402,7 @@ export default function Dividas() {
               {primeira.jurosMensalBps > 0 ? referenciaDoJuro(pesoDoJuro(primeira.jurosMensalBps)) : "sem juros informados, cadastre a taxa"}
             </p>
           </div>
-          <Link href="/plano" className={topo.botaoPlano}>Plano</Link>
+          <Link href="/plano" className={topo.botaoPlano}>Ver plano →</Link>
         </section>
       )}
 
@@ -437,8 +437,8 @@ export default function Dividas() {
               <div key={divida.id} className={cn("ficha", topo.divida, pesos.peso)} data-peso={pesoDoJuro(divida.jurosMensalBps)}>
                 <i aria-hidden />
                 <div className="min-w-0">
-                  <strong className="truncate">{divida.credor}</strong>
-                  <p className={topo.meta}>{detalhes.join(" · ")}</p>
+                  <strong>{divida.credor}</strong>
+                  <p className={topo.meta}>{detalhes.map((detalhe, indice) => <span key={indice}>{detalhe}</span>)}</p>
                 </div>
                 <div className={topo.saldo}>
                   <b className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</b>
@@ -465,11 +465,12 @@ export default function Dividas() {
       {base?.plano && abertas.length > 0 && (
         <Cartao estatico className={topo.simulacao}>
           <header>
-            <h2 id="titulo-extra">E se pagar mais?</h2>
+            <h2 id="titulo-extra">Antecipe sua quitação</h2>
             <output htmlFor="pagamento-extra">+{formatarMoeda(extraCentavos)}/mês</output>
           </header>
           <input
             id="pagamento-extra"
+            style={{ "--preenchimento": `${tetoExtra > 0 ? Math.min(100, extraCentavos / tetoExtra * 100) : 0}%` } as CSSProperties}
             type="range"
             aria-labelledby="titulo-extra"
             aria-valuetext={`${formatarMoeda(extraCentavos)} a mais por mês`}
@@ -479,6 +480,7 @@ export default function Dividas() {
             value={extraCentavos}
             onChange={(evento) => setExtraCentavos(Number(evento.target.value))}
           />
+          <div className={topo.atalhosExtra} role="group" aria-label="Pagamento extra mensal">{[0, 10000, 25000, 50000].filter((valor) => valor <= tetoExtra).map((valor) => <button key={valor} type="button" aria-pressed={extraCentavos === valor} onClick={() => setExtraCentavos(valor)}>{valor === 0 ? "Sem extra" : `+ ${formatarMoeda(valor)}`}</button>)}</div>
           {extraCentavos === 0 ? (
             <p className={topo.dica}>
               Arraste para ver quanto antes você fica livre. Sem extra, são{" "}
