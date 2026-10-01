@@ -68,3 +68,17 @@
 
 .sair { justify-self:center; min-height:44px; padding:0 18px; font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--negativo); }
 .dialogo { background:color-mix(in oklab, var(--background), var(--foreground) 5%) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+
+/* Ícones de sistema discretos; cores de marca ficam nas contas e cartões. */
+.quadro { width:32px; height:32px; border-radius:10px; color:var(--texto-2); background:color-mix(in oklab,var(--foreground),transparent 97%); border:1px solid var(--pauta); box-shadow:none; }
+.quadro svg { width:17px; height:17px; stroke-width:1.5; }
+.linha strong,.cabecalho h2 { font-weight:550; }
+.adicionar { min-height:44px; border-radius:12px; font-size:calc(12px * var(--escala-letra)); font-weight:500; }
+.trilho { padding-top:4px; }
+.mini { width:210px; height:132px; gap:4px; padding:14px; border-radius:16px; box-shadow:inset 0 0 0 1px #ffffff20,0 4px 12px #0001; }
+.mini > span { font-weight:550; margin-top:auto; }
+.mini > b { font-weight:550; margin-top:4px; }
+.mini .identidadeMini { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.mini .logoMini { width:28px; height:28px; min-width:28px; border-radius:8px; background:white; color:var(--texto-3); text-shadow:none; }
+.identidadeMini em { font-style:normal; font-size:calc(10px * var(--escala-letra)); font-weight:650; color:#fff; }
+.verTodas { min-height:44px; font-size:calc(12px * var(--escala-letra)); font-weight:500; }

@@ -28,6 +28,7 @@ import {
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { encontrarBanco } from "@/lib/bancos-perfil"
+import { ROTULO_BANDEIRA } from "@/lib/bandeiras"
 import { showToast } from "@/components/ui/toast"
 import { RelatarProblema } from "@/components/relatar-problema"
 import { VigiasConfig } from "@/components/vigias-config"
@@ -52,6 +53,7 @@ interface Conta {
   saldoCentavos: number
   limiteCentavos: number | null
   diaVencimento: number | null
+  bandeira?: string | null
 }
 
 interface Conexao {
@@ -114,9 +116,9 @@ function fundoDoCartao(conta: Conta, indice: number) {
   return `linear-gradient(135deg, oklch(0.55 0.13 calc(var(--matiz) + ${giro})), oklch(0.3 0.08 calc(var(--matiz) + ${giro + 30})))`
 }
 
-function Quadro({ cor, children }: { cor: string; children: React.ReactNode }) {
+function Quadro({ children }: { cor: string; children: React.ReactNode }) {
   return (
-    <span className={estilos.quadro} style={{ "--q": cor } as React.CSSProperties} aria-hidden>
+    <span className={estilos.quadro} aria-hidden>
       {children}
     </span>
   )
@@ -299,7 +301,11 @@ export default function Configuracoes() {
                     style={{ "--fundo-cartao": fundoDoCartao(conta, indice) } as React.CSSProperties}
                     onClick={() => setDialogo("contas")}
                   >
-                    <span>{conta.nome}</span>
+                    <div className={estilos.identidadeMini}>
+                      <IdentidadeBanco instituicao={conta.instituicao} nome={conta.nome} className={estilos.logoMini} />
+                      {conta.tipo === "CARTAO_CREDITO" && conta.bandeira && <em>{ROTULO_BANDEIRA[conta.bandeira] ?? ""}</em>}
+                    </div>
+                    <span>{conta.nome.replace(/\s*\(?final\s*\d{4}\)?/i, "")}</span>
                     <small>{conta.instituicao ?? rotuloTipo(conta.tipo)}</small>
                     <b className="valor-sensivel">{formatarMoeda(conta.saldoCentavos)}</b>
                   </button>
@@ -513,6 +519,7 @@ export default function Configuracoes() {
                         <p className="truncate text-[calc(12px*var(--escala-letra))] text-muted-fg">
                           {rotuloTipo(conta.tipo)}
                           {conta.instituicao && ` · ${conta.instituicao}`}
+                          {conta.tipo === "CARTAO_CREDITO" && conta.bandeira && ROTULO_BANDEIRA[conta.bandeira] ? ` · ${ROTULO_BANDEIRA[conta.bandeira]}` : ""}
                           {conta.limiteCentavos ? ` · limite ${formatarMoeda(conta.limiteCentavos)}` : ""}
                         </p>
                       </div>

@@ -209,3 +209,7 @@ Resumo mensal leve, barra fina sem listras, blocos lado a lado alinhados em altu
 ### Categorias com leitura compacta — 01/10/2026
 
 Categorias distribuídas em largura completa (3 colunas desktop), barras finas, valores e participação no mês. Comparação de aumentos e calendário abaixo em par alinhado; calendário menor e resumo objetivo de maior dia/média dos dias com gasto. Comparação mantém corte do mesmo período do mês anterior; nenhum cálculo foi alterado. Aparência exige conferência de Preview.
+
+### Ícones discretos e identidade bancária nas configurações — 01/10/2026
+
+Ícones das opções agora neutros com traço fino, sem quadrados saturados. Miniaturas de contas/cartões mostram identidade visual do banco e bandeira cadastrada (sem inventar quando ausente), mantendo cor institucional com contraste. Bandeira também na lista de gerenciamento. Seletor de cores de tema mantém amostras funcionais. Visual pendente do Preview.
