@@ -1,0 +1,17 @@
+.resumo {
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid currentColor;
+  border-radius: 24px;
+}
+.resumo ul {
+  padding-left: 20px;
+  display: grid;
+  gap: 16px;
+  line-height: 1.65;
+}
+.resumo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
+}
