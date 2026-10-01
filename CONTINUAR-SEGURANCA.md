@@ -273,3 +273,7 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Pedido: cartões suaves e arredondados como no exemplo enviado. Painel de até 460px, cartões com raio de 24px e sombra suave; ícone neutro em quadrado arredondado à esquerda, título e texto com espaço maior, data pequena à direita.
 - Removido ponto verde junto ao título. Marcar lida passou para ação textual discreta na base, liberando largura para a mensagem. Links, filtros, marcação e arquivamento preservados; foco e alvos de 44px mantidos.
 - Cores acompanham tema claro/escuro; urgência crítica permanece identificada no ícone. Tipos e 618 testes passaram; visual no Preview pendente.
+
+## 01/10/2026: preferência revisada das barras futuras
+- Usuário pediu voltar ao pontilhado. Restaurados contorno pontilhado e preenchimento de 10% nas barras futuras positivas/negativas e na legenda. Substitui decisão anterior de preenchimento sólido transparente.
+- Tipos e 618 testes passaram.
