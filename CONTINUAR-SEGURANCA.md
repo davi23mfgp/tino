@@ -127,3 +127,7 @@ Verificação desta rodada: tipos e 614 testes aprovados, incluindo bloqueio de 
 ### Primeiro cartão e ordenação por uso — 01/10/2026
 
 Usuário relata que primeiro cartão nunca levanta e pede mais usado primeiro. Elevação agora acionada por eventos reais de mouse/caneta ou foco, sem depender da classificação de ponteiro fino do dispositivo; CSS da classe elevada vence estilo do cartão selecionado. Mouse sair da carteira encerra elevação. Consulta agregada por lar conta DESPESAS dos últimos 90 dias por cartão; maior frequência fica inicialmente aberto na frente, empates preservam ordem de criação. Sem troca de camada no hover. Não confundir frequência de lançamentos com volume financeiro.
+
+### Nota e etiqueta da saúde — 01/10/2026
+
+Aplicada a mudança anteriormente só sugerida: nota em destaque, / 100 menor e neutro e etiqueta discreta de status na mesma linha. Verde para saudável, amarelo para atenção/cuidado, vermelho para crítico; cálculo da nota preservado. Substitui texto de 100 · pede atenção. Usuário cobrou porque sugestão anterior não havia sido implementada.

@@ -253,3 +253,11 @@
 .reguaIndicador { order:2; position:relative; height:4px; margin:2px 4px; border-radius:999px; background:linear-gradient(to right,var(--primeira-cor) 0 var(--primeiro-limite),var(--amarelo) var(--primeiro-limite) var(--segundo-limite),var(--ultima-cor) var(--segundo-limite) 100%); }
 .reguaIndicador span { position:absolute; left:var(--posicao); top:50%; width:8px; height:8px; border:2px solid var(--foreground); border-radius:50%; background:var(--papel-1); transform:translate(-50%,-50%); box-shadow:0 0 0 2px var(--papel-1); }
 .proximaAcao { padding:10px 12px; }
+
+/* Nota, escala e status têm hierarquias distintas; evita a frase amarela
+   corrida que o usuário pediu substituir por uma etiqueta discreta. */
+.anelNota[data-situacao=CRITICO] { --cor-nota:var(--negativo); }
+.anelNota .notaLinha { align-items:center; gap:6px; flex-wrap:wrap; }
+.anelNota .notaMaximo { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
+.notaEstado { display:inline-flex; align-items:center; gap:6px; margin-left:10px; padding:5px 9px; border:1px solid color-mix(in oklab,var(--cor-nota),transparent 80%); border-radius:999px; color:var(--cor-nota); background:color-mix(in oklab,var(--cor-nota),transparent 94%); font-style:normal; font-size:calc(11px * var(--escala-letra)); font-weight:500; line-height:1; }
+.notaEstado::before { content:""; width:5px; height:5px; border-radius:50%; background:currentColor; }
