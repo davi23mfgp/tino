@@ -242,3 +242,8 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Fita contínua com duas cópias, segunda oculta da acessibilidade; botão de pausa/retomada e modo estático rolável para preferência de movimento reduzido. Ativos pessoais identificados por ponto discreto, tickers repetidos deduplicados; sem cotação diária indicado explicitamente.
 - API fornece série diária separada para fita, preservando séries do período selecionado nos cartões e gráfico. Indicadores só aparecem quando fonte responde; limite existente de 20 tickers cotados preservado.
 - Tipos e 618 testes passaram. Fontes externas e animação no Preview precisam de verificação visual após deploy.
+
+## 01/10/2026: projeções sem pontilhado
+- Pedido explícito: remover contornos pontilhados das barras futuras de fluxo de caixa; usar apenas cor transparente.
+- Barras futuras positivas e negativas agora têm preenchimento da cor original a 35%, sem borda. Legenda de projeção acompanha o mesmo preenchimento; realizados preservados.
+- Tipos e 618 testes passaram; visual no Preview ainda requer conferência após deploy.
