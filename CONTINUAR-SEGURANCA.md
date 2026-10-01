@@ -109,3 +109,7 @@ Pedido do usuário: manter tamanho atual e, com dois ou mais cartões, mostrar u
 ### Carteira em escadinha — correção do pedido em 01/10/2026
 
 Usuário esclareceu que deseja sobreposição, não cartões inteiros em coluna. Desktop agora usa a mesma pilha medida do celular: fresta de 64px por cartão, último à frente, proporção e largura máxima 360px preservadas. Hover/foco eleva e traz o cartão apontado à frente sem alterar a altura do bloco; Novo cartão fica fora da pilha, abaixo dela. Fluxo de caixa continua ao lado. A orientação anterior sobre cartões inteiros em coluna está substituída por esta.
+
+### Hover sem troca de camada — 01/10/2026
+
+Usuário aprovou a escadinha, mas corrigiu que hover deve somente elevar em animação, sem trazer cartão à frente. Removido z-index forçado de hover/foco. Mantidos translateY(-12px), transição de 300ms, sobreposição original e preferência de movimento reduzido. Esta decisão substitui a indicação anterior de trazer à frente no hover.
