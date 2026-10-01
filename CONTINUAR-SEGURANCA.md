@@ -105,3 +105,7 @@ Usuário relata tremor na abertura. Ajuste dirigido ao menu da conta: animação
 ### Cartões na mesma coluna — 01/10/2026
 
 Pedido do usuário: manter tamanho atual e, com dois ou mais cartões, mostrar um abaixo do outro com elevação no hover. Carteira desktop agora coluna vertical de cartões inteiros, largura máxima 360px, ação Novo cartão ao final. Removida expansão para linha inteira quando existem múltiplos; fluxo permanece ao lado. Pilha do celular e animação reduzida preservadas.
+
+### Carteira em escadinha — correção do pedido em 01/10/2026
+
+Usuário esclareceu que deseja sobreposição, não cartões inteiros em coluna. Desktop agora usa a mesma pilha medida do celular: fresta de 64px por cartão, último à frente, proporção e largura máxima 360px preservadas. Hover/foco eleva e traz o cartão apontado à frente sem alterar a altura do bloco; Novo cartão fica fora da pilha, abaixo dela. Fluxo de caixa continua ao lado. A orientação anterior sobre cartões inteiros em coluna está substituída por esta.

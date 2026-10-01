@@ -111,8 +111,8 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
           </button>
         )
       })}
-      <button type="button" className={estilos.novoCartao} onClick={() => setNovoAberto(true)} aria-label="Adicionar cartão"><Plus aria-hidden /><span>Novo cartão</span></button>
     </div>
+    <button type="button" className={estilos.novoCartao} onClick={() => setNovoAberto(true)} aria-label="Adicionar cartão"><Plus aria-hidden /><span>Novo cartão</span></button>
     <Dialog open={novoAberto} onOpenChange={(valor) => { if (!salvandoNovo) setNovoAberto(valor) }}><DialogContent><DialogHeader><DialogTitle>Novo cartão</DialogTitle></DialogHeader><DialogBody>
       <CadastroDeConta tipoInicial="CARTAO_CREDITO" nomesExistentes={cartoes.map((cartao) => cartao.instituicao || "")} aoMudarSalvando={setSalvandoNovo} aoCancelar={() => setNovoAberto(false)} aoCriar={() => { setNovoAberto(false); router.refresh() }} />
     </DialogBody></DialogContent></Dialog></>

@@ -40,20 +40,20 @@
 .vencimento { text-align:right; }
 .vencimento b { color:#fff; font-weight:700; font-variant-numeric:tabular-nums; }
 
-/* No computador, largura limitada e proporção física impedem que um cartão
-   sozinho vire uma faixa. A pilha do celular permanece igual. */
+/* A mesma carteira sobreposta no desktop e no celular: uma fresta mostra
+   banco e logo, e hover/foco trazem o cartão de trás inteiro para a frente. */
 .novoCartao { display:none; }
 @media (min-width:900px) {
-  .carteira { display:flex; flex-direction:column; align-items:stretch; gap:14px; max-width:360px; height:auto !important; }
-  .cartao { position:relative; top:auto !important; left:auto; right:auto; width:360px; height:auto; aspect-ratio:1.586; max-width:100%; flex:0 0 auto; min-width:0; padding:18px 20px; }
-  .novoCartao { display:flex; flex:0 0 auto; width:100%; max-width:360px; min-height:44px; flex-direction:row; align-items:center; justify-content:center; gap:8px; border:1px dashed var(--pauta); border-radius:18px; color:var(--texto-3); font-size:13px; }
+  .carteira { max-width:360px; }
+  .cartao { width:100%; height:auto; aspect-ratio:1.586; min-width:0; padding:18px 20px; }
+  .novoCartao { display:flex; flex:0 0 auto; width:100%; max-width:360px; margin-top:14px; min-height:44px; flex-direction:row; align-items:center; justify-content:center; gap:8px; border:1px dashed var(--pauta); border-radius:18px; color:var(--texto-3); font-size:13px; }
   .novoCartao svg { width:24px; height:24px; }
   .novoCartao:hover { color:var(--foreground); border-color:var(--foreground); }
   .logo { width:42px; height:42px; }
   .banco strong { font-size:calc(18px * var(--escala-letra)); }
   .banco small,.base small { font-size:calc(13px * var(--escala-letra)); }
   .base strong { font-size:calc(22px * var(--escala-letra)); }
-  .cartao:hover, .cartao:focus-visible { transform:translateY(-8px); box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 30px 45px -18px rgb(0 0 0/.9); }
+  .cartao:hover, .cartao:focus-visible { z-index:100 !important; transform:translateY(-12px); box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 30px 45px -18px rgb(0 0 0/.9); }
   .levantado { transform:none; outline:1px solid rgb(255 255 255/.3); outline-offset:3px; }
 }
 @media (min-width:900px) and (prefers-reduced-motion:reduce) {
