@@ -100,20 +100,20 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start gap-2">
-                      <h2 className={"flex min-w-0 flex-1 items-center gap-1.5 text-[calc(15px*var(--escala-letra))] leading-snug " + (a.lido ? "font-normal text-muted-fg" : "font-medium text-foreground")}>{!a.lido && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-acao" />}<span className="min-w-0 flex-1 truncate">{a.titulo}</span></h2>
+                      <h2 className={"flex min-w-0 flex-1 items-center gap-1.5 text-[calc(15px*var(--escala-letra))] leading-snug " + (a.lido ? "font-normal text-muted-fg" : "font-medium text-foreground")}><span className="min-w-0 flex-1 truncate">{a.titulo}</span></h2>
                       <span className="shrink-0 pt-0.5 text-xs text-muted-fg">{new Date(a.criadoEm ?? Date.now()).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</span>
                     </div>
                     <p className="mt-0.5 line-clamp-2 text-[calc(13px*var(--escala-letra))] leading-snug text-muted-fg">{a.texto}</p>
-                    {a.acaoRota && <Link href={a.acaoRota} onClick={()=>setAberto(false)} className="mt-1 inline-flex min-h-9 items-center text-[calc(13px*var(--escala-letra))] text-acao">Ver detalhes</Link>}
+                    <div className={notificacoes.acoes}>
+                      {a.acaoRota && <Link href={a.acaoRota} onClick={()=>setAberto(false)}>Abrir detalhes →</Link>}
+                      <button
+                        disabled={salvando || a.lido}
+                        aria-label={a.lido ? `Lida: ${a.titulo}` : `Marcar como lida: ${a.titulo}`}
+                        onClick={()=>void marcar([a.id])}
+                        className={notificacoes.ler}
+                      ><Check className="size-[15px]" aria-hidden /><span>{a.lido ? "Lida" : "Marcar lida"}</span></button>
+                    </div>
                   </div>
-                  <button
-                    disabled={salvando || a.lido}
-                    aria-label={a.lido ? `Lida: ${a.titulo}` : `Marcar como lida: ${a.titulo}`}
-                    onClick={()=>void marcar([a.id])}
-                    className={"mt-0.5 grid size-11 shrink-0 place-items-center rounded-full transition-colors " + (a.lido ? "bg-papel-solido text-[color:var(--texto-3)]" : "bg-acao/15 text-acao hover:bg-acao/25")}
-                  >
-                    <Check className="size-[15px]" aria-hidden />
-                  </button>
                 </article>
               ))}
             </>}

@@ -268,3 +268,8 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 ## 01/10/2026: opções de conta no filtro
 - Pedido: organizar “Conta ou cartão”. Grade de duas colunas com botões de largura igual, altura mínima de 48px e cantos discretos. Nomes podem quebrar linha sem corte; seleção e filtro imediato preservados.
 - Tipos e 618 testes passaram; aparência a conferir no Preview.
+
+## 01/10/2026: notificações conforme referência enviada
+- Pedido: cartões suaves e arredondados como no exemplo enviado. Painel de até 460px, cartões com raio de 24px e sombra suave; ícone neutro em quadrado arredondado à esquerda, título e texto com espaço maior, data pequena à direita.
+- Removido ponto verde junto ao título. Marcar lida passou para ação textual discreta na base, liberando largura para a mensagem. Links, filtros, marcação e arquivamento preservados; foco e alvos de 44px mantidos.
+- Cores acompanham tema claro/escuro; urgência crítica permanece identificada no ícone. Tipos e 618 testes passaram; visual no Preview pendente.
