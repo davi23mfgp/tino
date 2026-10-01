@@ -217,7 +217,7 @@ function OndePorODinheiro({
 
   return (
     <div className={estilos.onde}>
-      <p className={estilos.pergunta}>Quanto vai investir?</p>
+      <div className={estilos.aporteTopo}><p className={estilos.pergunta}>Próximo aporte</p>
       <div className={estilos.chips} role="group" aria-label="Quanto vai investir">
         {opcoes.map((opcao) => (
           <button key={opcao} type="button" aria-pressed={!digitando && valor === opcao} onClick={() => { setDigitando(false); setValor(opcao) }}>
@@ -226,6 +226,7 @@ function OndePorODinheiro({
           </button>
         ))}
         <button type="button" aria-pressed={digitando} onClick={() => setDigitando(true)}>Outro</button>
+      </div>
       </div>
       {digitando && (
         <label className={estilos.linhaValor}>
@@ -248,15 +249,16 @@ function OndePorODinheiro({
               <span className={estilos.parteTopo}>
                 <i aria-hidden />
                 <b>{letra.rotulo}</b>
-                <small>{atual}% de {alvo}%</small>
+                <small>{atual}%</small>
               </span>
+              <div className={estilos.aporteDaParte}><small>Destinar neste aporte</small><strong className="valor-sensivel">{formatarMoeda(parte)}</strong></div>
               <span className={estilos.regua} role="img" aria-label={`${letra.rotulo}: ${atual}% da carteira, alvo ${alvo}%`}>
                 <span style={{ width: `${Math.min(100, (atual / topoDaRegua) * 100)}%` }} />
                 <em style={{ left: `${(alvo / topoDaRegua) * 100}%` }} />
               </span>
               <span className={estilos.parteBase}>
-                <small>{distancia > 0 ? `falta ${distancia} ${distancia === 1 ? "ponto" : "pontos"}` : distancia < 0 ? `passou ${-distancia} ${distancia === -1 ? "ponto" : "pontos"}` : "no alvo"}</small>
-                {aporte > 0 && <b data-zero={parte === 0 || undefined}>{parte > 0 ? `+${formatarMoeda(parte)}` : "não recebe"}</b>}
+                <small>{distancia > 0 ? `${distancia} p.p. abaixo` : distancia < 0 ? `${-distancia} p.p. acima` : "No alvo"}</small>
+                <small>Alvo {alvo}%</small>
               </span>
             </li>
           )

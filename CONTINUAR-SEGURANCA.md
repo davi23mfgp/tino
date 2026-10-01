@@ -231,3 +231,8 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Removido o acordeão do desempenho: indicadores visíveis de rentabilidade, CDI, comparação e ganho sobre aportes. Grade de quatro colunas, duas em telas menores, tipografia leve e bordas discretas.
 - Ausência de histórico aparece como “A calcular” com orientação curta; explicação completa recolhida em “Como calculamos”. Ganho de zero passa a mostrar R$ 0,00, pois zero é um resultado calculável. Ganho respeita ocultação de valores.
 - Fórmulas e gráfico histórico mantidos. Tipos e 618 testes passaram; aparência no Preview ainda depende de conferência visual.
+
+## 01/10/2026: distribuição do próximo aporte
+- Pedido: modernizar “Onde pôr o próximo dinheiro”. Quatro cartões compactos destacam o valor destinado a cada classe, participação atual e distância do alvo, com réguas de 4px e cores discretas sem brilho.
+- Atalhos de aporte agrupados em controle segmentado; grade de quatro colunas, duas em telas médias e uma em celular. Valores destinados respeitam ocultação de valores; cálculos ARCA e gravação do objetivo mensal preservados.
+- Tipos, 618 testes e diff sem erros passaram. Conferência visual no Preview pendente.
