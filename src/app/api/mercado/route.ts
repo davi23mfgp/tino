@@ -17,12 +17,12 @@ export const GET = comSessao(async (_sessao, requisicao) => {
   const periodo: Periodo = PERIODOS.some((item) => item.periodo === pedido) ? pedido! : "1mo"
   const tickers = (parametros.get("tickers") ?? "").split(",")
 
-  const [ativos, indices] = await Promise.all([seriesDosAtivos(tickers, periodo), indicadoresDoMercado()])
+  const [ativos, indices, ativosDoDia] = await Promise.all([seriesDosAtivos(tickers, periodo), indicadoresDoMercado(), periodo === "1d" ? Promise.resolve(null) : seriesDosAtivos(tickers, "1d")])
   // O dólar do painel serve para converter; sem ele, a AwesomeAPI (que o
   // cartão internacional já usa). Sem nenhum dos dois, ativo em dólar fica
   // sem valor em reais — a tela diz isso em vez de supor um câmbio.
   const dolarDoPainel = indices.find((indice) => indice.chave === "dolar")?.valor
   const dolar = dolarDoPainel ?? (await cotacaoDoDolar())?.valor ?? null
 
-  return ok({ periodo, ativos, indices, dolar, atualizadoEm: new Date().toISOString() })
+  return ok({ periodo, ativos, ativosDoDia: ativosDoDia ?? ativos, indices, dolar, atualizadoEm: new Date().toISOString() })
 })

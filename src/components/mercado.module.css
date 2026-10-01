@@ -7,8 +7,8 @@
 
 /* --- fita do mercado --- */
 /* Uma linha só, rolando de lado, como a barra de cotações das corretoras. */
-.fita { border-radius:var(--raio-pilula); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 95%); backdrop-filter:blur(var(--desfoque)); }
-.fita ul { display:flex; gap:18px; padding:10px 16px; overflow-x:auto; scrollbar-width:none; list-style:none; white-space:nowrap; }
+.fita { display:flex; align-items:center; min-width:0; overflow:hidden; border-radius:var(--raio-pilula); border:1px solid var(--vidro-borda); background:color-mix(in oklab, var(--foreground), transparent 95%); backdrop-filter:blur(var(--desfoque)); }
+.fita ul { display:flex; align-items:center; gap:24px; padding:10px 12px; list-style:none; white-space:nowrap; flex-shrink:0; }
 .fita ul::-webkit-scrollbar { display:none; }
 .fita li { display:flex; align-items:baseline; gap:6px; flex-shrink:0; font-size:max(10px, calc(12px * var(--escala-letra))); font-variant-numeric:tabular-nums; }
 .fita li b { font-weight:700; }
@@ -74,3 +74,13 @@
 .base { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
 .base strong { display:block; margin-top:2px; font-size:calc(17px * var(--escala-letra)); font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .direita { text-align:right; }
+
+/* Duas cópias iguais mantêm a passagem contínua sem salto no fim da lista. */
+.janelaFita { flex:1; min-width:0; overflow:hidden; }
+.trilhoFita { display:flex; width:max-content; animation:passarCotacoes var(--duracao-fita,60s) linear infinite !important; }
+.trilhoFita[data-pausado="true"] { animation-play-state:paused !important; }
+.controleFita { display:grid; place-items:center; flex-shrink:0; width:44px; height:44px; color:var(--texto-3); border-left:1px solid var(--vidro-borda); }
+.controleFita:focus-visible { outline:2px solid var(--acao); outline-offset:-4px; border-radius:10px; }
+.marcadorCarteira { width:4px; height:4px; border-radius:50%; background:var(--acao); align-self:center; }
+@keyframes passarCotacoes { to { transform:translateX(-50%); } }
+@media(prefers-reduced-motion:reduce) { .trilhoFita { animation:none !important; } .janelaFita { overflow-x:auto; } .trilhoFita ul[aria-hidden="true"] { display:none; } .controleFita { display:none; } }

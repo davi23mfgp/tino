@@ -1,6 +1,7 @@
 "use client"
 
-import { Bitcoin, Building2, CandlestickChart, Globe, Landmark, Wallet, type LucideIcon } from "lucide-react"
+import { useState } from "react"
+import { Pause, Play, Bitcoin, Building2, CandlestickChart, Globe, Landmark, Wallet, type LucideIcon } from "lucide-react"
 
 import { formatarMoeda } from "@/lib/dinheiro"
 import type { IndicadorDoMercado, Periodo, SerieDeAtivo } from "@/lib/mercado"
@@ -45,27 +46,38 @@ const SIGLA: Record<string, string> = { ibov: "IBOV", dolar: "USD", sp500: "S&P"
  * trouxe; sem nada, a fita diz que o mercado está indisponível em vez de
  * mostrar zeros, que pareceriam uma queda de 100%.
  */
-export function FitaDoMercado({ indices, atualizadoEm, carregando }: { indices: IndicadorDoMercado[]; atualizadoEm: string | null; carregando: boolean }) {
+export function FitaDoMercado({ indices, ativos, series, atualizadoEm, carregando }: { indices: IndicadorDoMercado[]; ativos: { id: string; nome: string; ticker?: string | null }[]; series: SerieDeAtivo[]; atualizadoEm: string | null; carregando: boolean }) {
+  const [pausado, setPausado] = useState(false)
   const hora = atualizadoEm ? new Date(atualizadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }) : null
-  const fontes = [...new Set(indices.map((indice) => indice.fonte))].join(", ")
+  const itens = [
+    ...indices.map((indice) => ({ chave: indice.chave, nome: SIGLA[indice.chave] ?? indice.rotulo, valor: indice.unidade === "%a.a." ? `${numero(indice.valor, 2)}% a.a.` : `${indice.unidade === "USD" ? "US$ " : indice.unidade === "BRL" ? "R$ " : ""}${numero(indice.valor, indice.unidade === "pontos" ? 0 : 2)}`, variacao: indice.variacaoPercentual, pessoal: false })),
+    ...ativos.filter((ativo, indice, lista) => !ativo.ticker || lista.findIndex((outro) => outro.ticker?.trim().toUpperCase() === ativo.ticker?.trim().toUpperCase()) === indice).map((ativo) => {
+      const serie = series.find((item) => item.ticker === ativo.ticker?.trim().toUpperCase())
+      return { chave: `ativo-${ativo.id}`, nome: ativo.ticker?.toUpperCase() ?? ativo.nome, valor: serie ? `${serie.moeda === "USD" ? "US$ " : serie.moeda === "BRL" ? "R$ " : `${serie.moeda} `}${numero(serie.preco, 2)}` : "Sem cotação diária", variacao: serie?.variacaoPercentual ?? null, pessoal: true }
+    }),
+  ]
   return (
-    <div className={estilos.fita} aria-busy={carregando} title={fontes ? `Fontes: ${fontes}. Atraso de até 15 minutos.` : undefined}>
-      {indices.length > 0 ? (
-        <ul aria-label={`Mercado agora${hora ? `, atualizado às ${hora}` : ""}`}>
-          {indices.map((indice) => (
-            <li key={indice.chave}>
-              <b>{SIGLA[indice.chave] ?? indice.rotulo}</b>
-              <span>{indice.unidade === "%a.a." ? `${numero(indice.valor, 2)}%` : numero(indice.valor, indice.unidade === "BRL" ? 2 : 0)}</span>
-              {indice.variacaoPercentual !== null && (
-                <em data-sinal={indice.variacaoPercentual >= 0 ? "alta" : "baixa"}>{porcentagem(indice.variacaoPercentual)}</em>
-              )}
-            </li>
-          ))}
-          {hora && <li className={estilos.hora}>{hora}</li>}
-        </ul>
-      ) : (
-        <p>{carregando ? "Buscando o mercado…" : "Mercado indisponível agora. Os valores abaixo são os cadastrados."}</p>
-      )}
+    <div className={estilos.fita} aria-busy={carregando} title={`Cotações do dia, com atraso de até 15 minutos.${hora ? ` Consultadas às ${hora}.` : ""}`}>
+      {itens.length > 0 ? (
+        <>
+          <div className={estilos.janelaFita}>
+            <div className={estilos.trilhoFita} data-pausado={pausado} style={{ "--duracao-fita": `${Math.max(30, itens.length * 5)}s` } as React.CSSProperties}>
+              {[0, 1].map((copia) => (
+                <ul key={copia} aria-hidden={copia === 1 || undefined} aria-label={copia === 0 ? "Mercado e seus investimentos, variação do dia" : undefined}>
+                  {itens.map((item) => (
+                    <li key={item.chave}>
+                      {item.pessoal && <i className={estilos.marcadorCarteira} aria-hidden />}
+                      <b>{item.nome}</b><span>{item.valor}</span>
+                      {item.variacao !== null && <em data-sinal={item.variacao >= 0 ? "alta" : "baixa"}>{porcentagem(item.variacao)}</em>}
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
+          <button className={estilos.controleFita} type="button" onClick={() => setPausado(!pausado)} aria-label={pausado ? "Retomar cotações" : "Pausar cotações"} aria-pressed={pausado}>{pausado ? <Play size={14} /> : <Pause size={14} />}</button>
+        </>
+      ) : <p>{carregando ? "Buscando o mercado…" : "Mercado indisponível agora. Os valores abaixo são os cadastrados."}</p>}
     </div>
   )
 }

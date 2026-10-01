@@ -236,3 +236,9 @@ Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/p
 - Pedido: modernizar “Onde pôr o próximo dinheiro”. Quatro cartões compactos destacam o valor destinado a cada classe, participação atual e distância do alvo, com réguas de 4px e cores discretas sem brilho.
 - Atalhos de aporte agrupados em controle segmentado; grade de quatro colunas, duas em telas médias e uma em celular. Valores destinados respeitam ocultação de valores; cálculos ARCA e gravação do objetivo mensal preservados.
 - Tipos, 618 testes e diff sem erros passaram. Conferência visual no Preview pendente.
+
+## 01/10/2026: fita contínua de mercado e carteira
+- Pedido: principais indicadores e ativos dos investimentos rolando sem parar. Incluídos Nasdaq, Dow Jones, EUR/BRL, Ethereum, ouro e Brent além de IBOV, dólar, S&P, Bitcoin e Selic.
+- Fita contínua com duas cópias, segunda oculta da acessibilidade; botão de pausa/retomada e modo estático rolável para preferência de movimento reduzido. Ativos pessoais identificados por ponto discreto, tickers repetidos deduplicados; sem cotação diária indicado explicitamente.
+- API fornece série diária separada para fita, preservando séries do período selecionado nos cartões e gráfico. Indicadores só aparecem quando fonte responde; limite existente de 20 tickers cotados preservado.
+- Tipos e 618 testes passaram. Fontes externas e animação no Preview precisam de verificação visual após deploy.

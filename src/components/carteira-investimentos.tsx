@@ -15,6 +15,7 @@ import { CartoesDeAtivos, FitaDoMercado, PatrimonioInvestido } from "@/component
 
 interface RespostaDoMercado {
   ativos: SerieDeAtivo[]
+  ativosDoDia: SerieDeAtivo[]
   indices: IndicadorDoMercado[]
   dolar: number | null
   atualizadoEm: string
@@ -184,7 +185,7 @@ export function CarteiraInvestimentos() {
     // `min-w-0` nos filhos: a fita não quebra linha, e sem isso ela alargava a
     // coluna do grid e a página inteira rolava de lado no celular.
     <div className="grid items-start gap-3 [&>*]:min-w-0">
-      <FitaDoMercado indices={mercado?.indices ?? []} atualizadoEm={mercado?.atualizadoEm ?? null} carregando={atualizando} />
+      <FitaDoMercado ativos={ativos} series={mercado?.ativosDoDia ?? []} indices={mercado?.indices ?? []} atualizadoEm={mercado?.atualizadoEm ?? null} carregando={atualizando} />
 
       {ativos.length > 0 ? (
         <PainelDaCarteira

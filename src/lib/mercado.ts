@@ -187,6 +187,12 @@ const INDICES: { chave: string; rotulo: string; simbolo: string; unidade: Indica
   { chave: "dolar", rotulo: "Dólar", simbolo: "USDBRL=X", unidade: "BRL" },
   { chave: "sp500", rotulo: "S&P 500", simbolo: "^GSPC", unidade: "pontos" },
   { chave: "bitcoin", rotulo: "Bitcoin", simbolo: "BTC-USD", unidade: "USD" },
+  { chave: "nasdaq", rotulo: "Nasdaq", simbolo: "^IXIC", unidade: "pontos" },
+  { chave: "dow", rotulo: "Dow Jones", simbolo: "^DJI", unidade: "pontos" },
+  { chave: "euro", rotulo: "EUR/BRL", simbolo: "EURBRL=X", unidade: "BRL" },
+  { chave: "ethereum", rotulo: "ETH", simbolo: "ETH-USD", unidade: "USD" },
+  { chave: "ouro", rotulo: "Ouro", simbolo: "GC=F", unidade: "USD" },
+  { chave: "petroleo", rotulo: "Brent", simbolo: "BZ=F", unidade: "USD" },
 ]
 
 let selicEmCache: { em: number; valor: number } | null = null
