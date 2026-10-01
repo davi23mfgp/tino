@@ -213,3 +213,7 @@ Categorias distribuídas em largura completa (3 colunas desktop), barras finas, 
 ### Ícones discretos e identidade bancária nas configurações — 01/10/2026
 
 Ícones das opções agora neutros com traço fino, sem quadrados saturados. Miniaturas de contas/cartões mostram identidade visual do banco e bandeira cadastrada (sem inventar quando ausente), mantendo cor institucional com contraste. Bandeira também na lista de gerenciamento. Seletor de cores de tema mantém amostras funcionais. Visual pendente do Preview.
+
+### Novo desenho das dívidas no painel — 01/10/2026
+
+Usuário rejeitou novamente a faixa de dívidas. Substituída por cabeçalho com total e cartões verticais: nome completo, saldo destacado, juros, vencimento e parcelas pagas quando existentes. Cores restritas a pontos finos no juro; cálculos e rota preservados. Layout responsivo ocupa a largura sem coluna exclusiva de total. Visual pendente de Preview.

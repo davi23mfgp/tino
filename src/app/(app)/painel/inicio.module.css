@@ -285,3 +285,25 @@
   .dividasBloco .reais[data-tamanho=grande] { font-size:calc(24px * var(--escala-letra)); }
 }
 @media(max-width:640px) { .conferirBloco .botoesConferir button { flex:1; } }
+
+/* Dívidas do painel: cartões de leitura vertical, sem nomes truncados. */
+.grade .dividasBloco { display:flex; flex-direction:column; gap:16px; }
+.cabecaDividas { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.cabecaDividas > div { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 18px; }
+.cabecaDividas h2 { font-size:calc(16px * var(--escala-letra)); font-weight:550; }
+.cabecaDividas a { min-height:44px; display:inline-flex; align-items:center; font-size:calc(11px * var(--escala-letra)); color:var(--texto-2); }
+.totalDividas .reais[data-tamanho=grande] { font-size:calc(24px * var(--escala-letra)); }
+.cartoesDividas { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)); gap:12px; }
+.cartaoDivida { display:flex; flex-direction:column; gap:16px; height:100%; padding:16px; border-radius:16px; border:1px solid var(--pauta); background:color-mix(in oklab,var(--foreground),transparent 98%); transition:border-color .2s ease,background .2s ease; }
+.cartaoDivida:hover { border-color:color-mix(in oklab,var(--acao),transparent 65%); background:color-mix(in oklab,var(--foreground),transparent 96%); }
+.nomeDivida { display:flex; align-items:flex-start; gap:16px; }
+.nomeDivida strong { flex:1; font-size:calc(13px * var(--escala-letra)); font-weight:500; line-height:1.5; }
+.nomeDivida svg { width:14px; height:14px; margin-top:3px; color:var(--texto-3); }
+.saldoDivida { display:grid; gap:4px; }
+.saldoDivida small,.detalhesDivida small { font-size:calc(10px * var(--escala-letra)); color:var(--texto-3); }
+.saldoDivida b { font-size:calc(25px * var(--escala-letra)); font-weight:400; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+.detalhesDivida { display:flex; flex-wrap:wrap; gap:12px 20px; margin-top:auto; padding-top:12px; border-top:1px solid var(--pauta); }
+.detalhesDivida > span { display:grid; gap:4px; }
+.detalhesDivida b { display:inline-flex; align-items:center; gap:5px; font-size:calc(12px * var(--escala-letra)); font-weight:450; }
+.dividasBloco .detalhesDivida .corDivida { display:inline-block; width:4px; height:4px; border-radius:50%; }
+@media(max-width:520px) { .cabecaDividas { align-items:flex-start; } .cabecaDividas > div { display:grid; gap:4px; } .cabecaDividas a { font-size:calc(10px * var(--escala-letra)); } }

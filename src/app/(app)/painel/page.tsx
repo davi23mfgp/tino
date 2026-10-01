@@ -276,13 +276,19 @@ export default async function Painel() {
         </section>
 
         {panorama.dividas.lista.length > 0 && <section className={cn(e.bloco, e.dividasBloco)} data-area="dividas" aria-labelledby="dividas-titulo">
-          <Cabeca id="dividas-titulo" titulo="Dívidas" href="/dividas" acao="Plano" />
-          <div><small className={e.rotulo}>Você deve</small><Reais centavos={panorama.dividas.totalCentavos} tamanho="grande" /></div>
-          <ul className={e.lista}>{panorama.dividas.lista.slice(0, 4).map((divida) => (
-            <li key={divida.id}><Link href="/dividas">
-              <i className={e.corDivida} data-peso={pesoDoJuro(divida.jurosMensalBps)} />
-              <span className="min-w-0"><strong>{divida.credor}</strong><small>{formatarPercentual(divida.jurosMensalBps, 2)} ao mês · {pesoDoJuro(divida.jurosMensalBps)}</small></span>
-              <b className="valor-sensivel">{formatarMoeda(divida.saldoDevedorCentavos)}</b>
+          <header className={e.cabecaDividas}>
+            <div><h2 id="dividas-titulo">Dívidas</h2><span className={e.totalDividas}><Reais centavos={panorama.dividas.totalCentavos} tamanho="grande" /></span></div>
+            <Link href="/dividas">{panorama.dividas.lista.length} em aberto · Ver todas →</Link>
+          </header>
+          <ul className={e.cartoesDividas}>{panorama.dividas.lista.slice(0, 4).map((divida) => (
+            <li key={divida.id}><Link href="/dividas" className={e.cartaoDivida}>
+              <div className={e.nomeDivida}><strong>{divida.credor}</strong><ArrowRight aria-hidden /></div>
+              <div className={e.saldoDivida}><small>Saldo devedor</small><b className="valor-sensivel">{formatarMoeda(divida.saldoDevedorCentavos)}</b></div>
+              <div className={e.detalhesDivida}>
+                <span><small>Juros ao mês</small><b><i data-peso={pesoDoJuro(divida.jurosMensalBps)} className={e.corDivida} />{formatarPercentual(divida.jurosMensalBps, 2)}</b></span>
+                <span><small>Vencimento</small><b>Dia {divida.diaVencimento}</b></span>
+                {divida.parcelasTotal !== null && divida.parcelasTotal > 0 && <span><small>Parcelas pagas</small><b>{divida.parcelasPagas}/{divida.parcelasTotal}</b></span>}
+              </div>
             </Link></li>
           ))}</ul>
         </section>}
