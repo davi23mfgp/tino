@@ -139,3 +139,7 @@ Usuário rejeitou a etiqueta de status: removida, mantendo somente nota / 100. C
 ### Publicação autorizada — 01/10/2026
 
 Usuário disse pode subir. Integrada origin/main à branch de trabalho, preservando o checkpoint mais recente no único conflito (documentação). Tipos e testes conferidos antes do envio à main. A autorização permite publicação; não comprova o deploy. Configuração das chaves MFA/monitoramento foi guiada somente para Preview nesta conversa: Production e Secrets de backup/monitor GitHub continuam sem comprovação. O build recusa ausência da chave MFA antes de migrations. Não declarar os 20 controles completos nem o site atualizado sem evidência da Vercel.
+
+### Regra final confirmada da carteira — 01/10/2026
+
+Usuário confirmou explicitamente: o cartão da frente fica parado; somente os de trás levantam ao passar o mouse. O mais utilizado começa à frente (frequência de compras em 90 dias, já implementada). Movimento agora exclui o cartão aberto/selecionado. Esta regra substitui os pedidos anteriores de animar todos os cartões.

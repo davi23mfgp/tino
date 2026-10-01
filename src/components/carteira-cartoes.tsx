@@ -87,7 +87,7 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
             onFocus={() => setCartaoElevado(cartao.id)}
             onBlur={() => setCartaoElevado(null)}
             className={cn(estilos.cartao, estaAberto && estilos.levantado)}
-            style={{ "--cor-banco": cartao.cor, top: lugar * FRESTA, zIndex: lugar + 1, transform: cartaoElevado === cartao.id ? "translateY(-40px)" : "translateY(0)" } as CSSProperties}
+            style={{ "--cor-banco": cartao.cor, top: lugar * FRESTA, zIndex: lugar + 1, transform: !estaAberto && cartaoElevado === cartao.id ? "translateY(-40px)" : "translateY(0)" } as CSSProperties}
           >
             <span className={estilos.topo}>
               <IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.logo} />
