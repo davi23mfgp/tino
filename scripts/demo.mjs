@@ -82,6 +82,13 @@ async function main() {
     return
   }
 
+  // Redeploy da prévia não deve apagar os testes feitos na conta demo.
+  // Só o pedido explícito de recriação SEMEAR_DEMO=1 mantém o comportamento antigo.
+  const previaDeSeguranca = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "codex/continuacao-tino"
+  if (previaDeSeguranca && process.env.SEMEAR_DEMO !== "1") {
+    const existente = await prisma.usuario.findUnique({ where: { email: EMAIL }, select: { id: true } })
+    if (existente) { console.log("Demonstracao existente preservada."); return }
+  }
   await limpar()
 
   const hoje = new Date()

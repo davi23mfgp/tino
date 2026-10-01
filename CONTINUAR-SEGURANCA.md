@@ -117,3 +117,9 @@ Usuário aprovou a escadinha, mas corrigiu que hover deve somente elevar em anim
 ### Subida perceptível da carteira — 01/10/2026
 
 Usuário repetiu que deseja subida animada no hover. Movimento desktop ampliado de 12px para 40px, com transição de 450ms e retorno suave; 32px de espaço reservado acima da pilha evita atingir o cabeçalho sem deslocar o layout durante hover. Ordem de camadas preservada. Movimento reduzido continua sem animação. Confirmar visualmente no Preview atualizado.
+
+### Animação explícita e conta demo em Preview — 01/10/2026
+
+Removido bloqueio de movimento da carteira para mouse/teclado: usuário insiste que quer subida animada. Transição local tem prioridade sobre regra global que reduz duração; restante do app preservado. Usuário pediu conta demo com dados fictícios: build de Preview da branch codex/continuacao-tino agora cria a demonstração existente (demo@tino.local / demo12345) se ela não existir, usando banco de Preview configurado. Redeploy preserva demo existente; nenhuma ativação automática em Production/outras branches. Dados incluem dois cartões, faturas, lançamentos, parcelas, dívidas, metas e investimentos. Criação efetiva deve ser comprovada pelo log Conta de demonstração criada e login no Preview após deploy; ainda não executada daqui.
+
+Verificação desta rodada: tipos e 614 testes aprovados, incluindo bloqueio de criação automática da demo em Production/outras branches/local. CLI Chromium não completou inicialização neste ambiente; não tratar testes unitários como prova da animação no navegador.

@@ -20,8 +20,10 @@
  * `demo@tino.local`. Nenhuma conta real é tocada.
  */
 
-if (process.env.SEMEAR_DEMO === "1") {
-  console.log("SEMEAR_DEMO=1 — recriando a conta de demonstracao…")
+const previaDeSeguranca = process.env.VERCEL_ENV === "preview" && process.env.VERCEL_GIT_COMMIT_REF === "codex/continuacao-tino"
+
+if (process.env.SEMEAR_DEMO === "1" || previaDeSeguranca) {
+  console.log(previaDeSeguranca ? "Preview de seguranca — preparando demonstracao ficticia…" : "SEMEAR_DEMO=1 — recriando a conta de demonstracao…")
   await import("./demo.mjs")
 } else {
   console.log("SEMEAR_DEMO ausente — seed de demonstracao pulado.")

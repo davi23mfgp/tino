@@ -56,7 +56,9 @@
   .cartao:hover, .cartao:focus-visible { transform:translateY(-40px); box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 30px 45px -18px rgb(0 0 0/.9); }
   .levantado { transform:none; outline:1px solid rgb(255 255 255/.3); outline-offset:3px; }
 }
-@media (min-width:900px) and (prefers-reduced-motion:reduce) {
-  .cartao { transition:none; }
-  .cartao:hover, .cartao:focus-visible { transform:none; }
+/* O usuário pediu explicitamente este movimento na carteira. A exceção fica
+   restrita a mouse/teclado: não muda animações nem preferências do restante do app. */
+@media (hover:hover) and (pointer:fine) {
+  .cartao { transition:top .45s var(--curva),transform .45s cubic-bezier(.22,.68,0,1),box-shadow .45s ease !important; }
+  .cartao:hover, .cartao:focus-visible { transform:translateY(-40px); }
 }
