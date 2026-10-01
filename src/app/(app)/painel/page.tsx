@@ -231,7 +231,7 @@ export default async function Painel() {
           </div>
           <div className={e.saudeCorpo}>
             <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}>
-              <span><strong>{diagnostico.nota}</strong><small>{diagnostico.situacao === "SAUDAVEL" ? "saudável" : "pede atenção"}</small></span>
+              <span><strong>{diagnostico.nota}</strong><small>de 100 · {diagnostico.situacao === "SAUDAVEL" ? "saudável" : "pede atenção"}</small></span>
             </div>
             <div className={e.indicadores}>{indicadores.map((linha) => (
               <div key={linha.chave} className={e.indicador} data-faixa={linha.faixa}>

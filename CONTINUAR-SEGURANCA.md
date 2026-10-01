@@ -85,3 +85,7 @@ Usuário pediu retirar a escolha Meu dinheiro / Meu dinheiro e minha loja do in�
 ### Refinamento do menu da conta — 01/10/2026
 
 Usuário autorizou modernizar especificamente o menu do avatar. Cabeçalho com avatar/nome, linhas com ícones e alvos de pelo menos 44px, aparência em seleção explícita Claro/Escuro, largura limitada no celular. Preservadas permissões de funcionário/admin, navegação, sessão e cores existentes. Alternador de tema fora do menu continua igual. Resultado visual ainda deve ser conferido no Preview.
+
+### Refinamentos visuais solicitados — 01/10/2026
+
+Saúde do dinheiro: nota compacta, quatro indicadores sem anéis, prioridade menor; cálculo e referências preservados. Menu da conta reduzido. Notificações: painel flutuante compacto no desktop, estado vazio ilustrado, ações de rodapé somente quando existem avisos; filtros/ações existentes preservados. Cadastro com superfície igual ao app, rótulos, mostrar senha e escolhas em três blocos; configuração inicial dentro de superfície consistente e centralizada. Alterações só em Preview; evidência visual final e 20 controles continuam pendentes.

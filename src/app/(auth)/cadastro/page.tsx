@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ArrowLeft, UserRound, Users, Heart, Eye, EyeOff } from "lucide-react"
+import { TinoMarca } from "@/components/tino-mascote"
 
 import { enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
@@ -23,6 +25,7 @@ export default function Cadastro() {
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
   const [senha, setSenha] = useState("")
+  const [mostrarSenha, setMostrarSenha] = useState(false)
   const [tipoLar, setTipoLar] = useState<"SOLO" | "CASAL" | "FAMILIA">("SOLO")
   const [aceite, setAceite] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
@@ -46,20 +49,22 @@ export default function Cadastro() {
   // ── Passo 2: os dados ─────────────────────────────────
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <Link href="/" className="text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground">Voltar</Link>
+      <div className="w-full max-w-md rounded-[24px] border border-pauta bg-papel-1 p-6 shadow-xl sm:p-8">
+        <Link href="/" className="text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground inline-flex min-h-11 items-center gap-2"><ArrowLeft className="size-4" />Voltar</Link>
+        <div className="mt-3 flex items-center gap-2"><TinoMarca className="size-8" /><span className="text-lg font-semibold">tino.</span></div>
         <h1 className="font-display mt-4 text-3xl font-bold tracking-tight">Criar sua conta</h1>
         <p className="mt-1.5 text-[calc(13px*var(--escala-letra))] text-muted-fg">Contas, cartões, dívidas e metas em um lugar só.</p>
 
-        <form onSubmit={criar} className="mt-7 space-y-3">
-          <input
+        <form onSubmit={criar} className="mt-6 space-y-4">
+          <label className="block space-y-2 text-sm"><span>Seu nome</span><input
+            autoComplete="name"
             value={nome}
             onChange={(evento) => setNome(evento.target.value)}
             placeholder="seu nome"
             required
             className={campo}
-          />
-          <input
+          /></label>
+          <label className="block space-y-2 text-sm"><span>E-mail</span><input
             type="email"
             value={email}
             onChange={(evento) => setEmail(evento.target.value)}
@@ -67,34 +72,35 @@ export default function Cadastro() {
             autoComplete="email"
             required
             className={campo}
-          />
-          <input
-            type="password"
+          /></label>
+          <label className="block space-y-2 text-sm"><span>Senha</span><div className="relative"><input
+            type={mostrarSenha ? "text" : "password"}
             value={senha}
             onChange={(evento) => setSenha(evento.target.value)}
             placeholder="senha (mínimo 8 caracteres)"
             autoComplete="new-password"
             minLength={8}
             required
-            className={campo}
-          />
+            className={campo + " pr-12"}
+          /><button type="button" onClick={() => setMostrarSenha(!mostrarSenha)} aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"} className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center text-muted-fg">{mostrarSenha ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></div><span className="block text-xs text-muted-fg">Use pelo menos 8 caracteres.</span></label>
 
           <div className="space-y-2 pt-2">
             <p className="text-xs uppercase tracking-widest text-muted-fg">Em casa, o dinheiro é de</p>
-            {TIPOS.map((tipo) => (
+            <div className="grid grid-cols-3 gap-2">{TIPOS.map((tipo) => (
               <button
                 key={tipo.valor}
                 type="button"
                 onClick={() => setTipoLar(tipo.valor)}
+                aria-pressed={tipoLar === tipo.valor}
                 className={cn(
-                  "w-full rounded-2xl border px-4 py-3 text-left text-sm transition",
+                  "flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border px-2 py-3 text-center text-sm transition",
                   tipoLar === tipo.valor ? "border-positivo/50 bg-positivo/10" : "border-pauta hover:border-border",
                 )}
               >
-                <span className="font-medium">{tipo.rotulo}</span>
-                <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">{tipo.texto}</span>
+                {tipo.valor === "SOLO" ? <UserRound className="size-5" /> : tipo.valor === "CASAL" ? <Heart className="size-5" /> : <Users className="size-5" />}<span className="font-medium">{tipo.rotulo}</span>
+
               </button>
-            ))}
+            ))}</div>
           </div>
 
           {/* Caixa desmarcada por padrão: aceite pré-marcado não é consentimento

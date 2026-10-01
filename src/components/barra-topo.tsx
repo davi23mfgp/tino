@@ -76,10 +76,10 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
             urgência agora é uma barra de 3px na lateral esquerda — cor
             moderada, como o prompt pede, em vez de fundo vermelho no cartão
             inteiro. */}
-        <SheetContent className="flex w-full max-w-[440px] flex-col overflow-hidden p-0">
+        <SheetContent className="flex w-full max-w-[400px] flex-col overflow-hidden p-0 sm:inset-y-auto sm:right-4 sm:top-20 sm:h-[min(560px,calc(100dvh-100px))] sm:rounded-2xl sm:border">
           <SheetHeader className="mb-0 px-5 pb-3 pr-16 pt-6">
-            <SheetTitle className="text-[calc(26px*var(--escala-letra))] font-bold tracking-tight">Notificações</SheetTitle>
-            <SheetDescription className="sr-only">Vencimentos, pendências e próximos passos.</SheetDescription>
+            <SheetTitle className="text-[calc(20px*var(--escala-letra))] font-bold tracking-tight">Notificações</SheetTitle>
+            <SheetDescription className="text-xs">Vencimentos e próximos passos, em um lugar só.</SheetDescription>
           </SheetHeader>
 
           <div className="px-5 pb-3">
@@ -90,7 +90,7 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
                   role="tab"
                   aria-selected={soNovas === soNaoLidas}
                   onClick={() => setSoNovas(soNaoLidas)}
-                  className={"min-h-9 rounded-[9px] px-3 text-sm transition-colors " + (soNovas === soNaoLidas ? "bg-papel-solido font-semibold text-foreground shadow-[0_1px_2px_rgb(0_0_0/.25)]" : "text-muted-fg hover:text-foreground")}
+                  className={"min-h-11 rounded-[9px] px-3 text-sm transition-colors " + (soNovas === soNaoLidas ? "bg-papel-solido font-semibold text-foreground shadow-[0_1px_2px_rgb(0_0_0/.25)]" : "text-muted-fg hover:text-foreground")}
                 >
                   {soNaoLidas ? `Não lidas · ${novas.length}` : "Todas"}
                 </button>
@@ -100,7 +100,7 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
             {carregando ? <p role="status" className="py-6 text-sm text-muted-fg">Carregando avisos…</p> : erro ? <div role="alert" className="py-6"><p className="text-sm">Não foi possível carregar os avisos.</p><button className="mt-2 min-h-11 text-sm underline" onClick={()=>void recarregar()}>Tentar novamente</button></div> : <>
-              {!lista.length && <p className="py-10 text-center text-sm text-muted-fg">{soNovas ? "Nenhum aviso não lido." : "Nenhum aviso por aqui."}</p>}
+              {!lista.length && <div className="flex min-h-52 flex-col items-center justify-center gap-3 py-8 text-center"><span className="grid size-14 place-items-center rounded-2xl border border-pauta bg-papel-2 text-muted-fg"><Bell className="size-6" aria-hidden /></span><p className="text-sm font-medium">{soNovas ? "Tudo em dia" : "Sem novidades por enquanto"}</p><p className="max-w-60 text-xs leading-relaxed text-muted-fg">{soNovas ? "Você já leu todos os seus avisos." : "Seus lembretes e pendências aparecem aqui quando houver algo para acompanhar."}</p></div>}
               {lista.map(a=>(
                 <article key={a.id} className={"relative mb-2 flex items-start gap-3 overflow-hidden rounded-[14px] py-3 pl-4 pr-3 last:mb-0 " + (a.lido ? "border border-pauta bg-transparent" : "bg-papel-2")}>
                   {a.severidade !== "INFO" && !a.lido && <span aria-hidden className={"absolute inset-y-0 left-0 w-[3px] " + (a.severidade === "CRITICO" ? "bg-negativo" : "bg-atencao")} />}
@@ -128,24 +128,24 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
             </>}
           </div>
 
-          <footer className="flex items-center justify-between gap-2 border-t border-pauta px-3 py-2">
+          {alertas.length > 0 && <footer className="flex items-center justify-between gap-2 border-t border-pauta px-3 py-2">
             <button disabled={salvando || !novas.length} onClick={()=>void marcar()} className="min-h-11 rounded-[10px] px-3 text-sm font-medium text-acao disabled:opacity-40">Marcar todas lidas</button>
             <button disabled={salvando || !alertas.length} onClick={()=>void limparTudo()} className="min-h-11 rounded-[10px] px-3 text-sm font-medium text-negativo disabled:opacity-40">Limpar tudo</button>
-          </footer>
+          </footer>}
         </SheetContent>
       </Sheet>}
       <DropdownMenu><DropdownMenuTrigger asChild><button aria-label="Minha conta" className={"grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Avatar className="size-8 sm:size-7">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={10} className="w-72 max-w-[calc(100vw-24px)] rounded-2xl border border-pauta p-2 shadow-xl">
-          <div className="flex items-center gap-3 px-3 py-3">
-            <Avatar className="size-11 shrink-0 border border-pauta">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+        <DropdownMenuContent align="end" sideOffset={10} className="w-64 max-w-[calc(100vw-24px)] rounded-2xl border border-pauta p-2 shadow-xl">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <Avatar className="size-9 shrink-0 border border-pauta">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
             <div className="min-w-0"><p className="truncate text-sm font-semibold">{nome}</p><p className="mt-0.5 text-xs text-muted-fg">{apenasLoja ? "Sua loja" : "Seu espaço pessoal"}</p></div>
           </div>
           <DropdownMenuSeparator className="mx-2" />
-          {!apenasLoja && <DropdownMenuItem asChild className="min-h-12 rounded-xl px-3"><Link href="/configuracoes"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><Settings aria-hidden /></span><span className="flex-1">Minha conta</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
-          {admin && !apenasLoja && <DropdownMenuItem asChild className="min-h-12 rounded-xl px-3"><Link href="/admin"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><ShieldCheck aria-hidden /></span><span className="flex-1">Administração</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
-          <div className="space-y-2 px-3 py-3"><p className="text-xs font-medium text-muted-fg">Aparência</p><ThemeToggle variante="menu" /></div>
+          {!apenasLoja && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/configuracoes"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><Settings aria-hidden /></span><span className="flex-1">Minha conta</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          {admin && !apenasLoja && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/admin"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><ShieldCheck aria-hidden /></span><span className="flex-1">Administração</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          <div className="space-y-2 px-3 py-2"><p className="text-xs font-medium text-muted-fg">Aparência</p><ThemeToggle variante="menu" /></div>
           <DropdownMenuSeparator className="mx-2" />
-          <DropdownMenuItem className="min-h-12 rounded-xl px-3 text-muted-fg" onClick={()=>void sair()}><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><LogOut aria-hidden /></span>Sair da conta</DropdownMenuItem>
+          <DropdownMenuItem className="min-h-11 rounded-xl px-3 text-muted-fg" onClick={()=>void sair()}><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><LogOut aria-hidden /></span>Sair da conta</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
   </>
