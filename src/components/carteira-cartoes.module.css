@@ -44,8 +44,8 @@
    banco e logo. Hover/foco elevam suavemente sem trocar a ordem das camadas. */
 .novoCartao { display:none; }
 @media (min-width:900px) {
-  .carteira { max-width:360px; }
-  .cartao { width:100%; height:auto; aspect-ratio:1.586; min-width:0; padding:18px 20px; }
+  .carteira { max-width:360px; margin-top:32px; }
+  .cartao { width:100%; height:auto; aspect-ratio:1.586; min-width:0; padding:18px 20px; transition:top .45s var(--curva),transform .45s cubic-bezier(.22,.68,0,1),box-shadow .45s ease; }
   .novoCartao { display:flex; flex:0 0 auto; width:100%; max-width:360px; margin-top:14px; min-height:44px; flex-direction:row; align-items:center; justify-content:center; gap:8px; border:1px dashed var(--pauta); border-radius:18px; color:var(--texto-3); font-size:13px; }
   .novoCartao svg { width:24px; height:24px; }
   .novoCartao:hover { color:var(--foreground); border-color:var(--foreground); }
@@ -53,9 +53,10 @@
   .banco strong { font-size:calc(18px * var(--escala-letra)); }
   .banco small,.base small { font-size:calc(13px * var(--escala-letra)); }
   .base strong { font-size:calc(22px * var(--escala-letra)); }
-  .cartao:hover, .cartao:focus-visible { transform:translateY(-12px); box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 30px 45px -18px rgb(0 0 0/.9); }
+  .cartao:hover, .cartao:focus-visible { transform:translateY(-40px); box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 30px 45px -18px rgb(0 0 0/.9); }
   .levantado { transform:none; outline:1px solid rgb(255 255 255/.3); outline-offset:3px; }
 }
 @media (min-width:900px) and (prefers-reduced-motion:reduce) {
+  .cartao { transition:none; }
   .cartao:hover, .cartao:focus-visible { transform:none; }
 }

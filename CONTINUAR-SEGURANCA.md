@@ -113,3 +113,7 @@ Usuário esclareceu que deseja sobreposição, não cartões inteiros em coluna.
 ### Hover sem troca de camada — 01/10/2026
 
 Usuário aprovou a escadinha, mas corrigiu que hover deve somente elevar em animação, sem trazer cartão à frente. Removido z-index forçado de hover/foco. Mantidos translateY(-12px), transição de 300ms, sobreposição original e preferência de movimento reduzido. Esta decisão substitui a indicação anterior de trazer à frente no hover.
+
+### Subida perceptível da carteira — 01/10/2026
+
+Usuário repetiu que deseja subida animada no hover. Movimento desktop ampliado de 12px para 40px, com transição de 450ms e retorno suave; 32px de espaço reservado acima da pilha evita atingir o cabeçalho sem deslocar o layout durante hover. Ordem de camadas preservada. Movimento reduzido continua sem animação. Confirmar visualmente no Preview atualizado.
