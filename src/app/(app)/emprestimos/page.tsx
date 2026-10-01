@@ -3,7 +3,7 @@
 import estilos from "../analise/avancadas.module.css"
 import local from "./emprestimos.module.css"
 import { Button } from "@/components/ui/button"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
 import { Cartao } from "@/components/ui/painel"
@@ -253,6 +253,9 @@ export default function Emprestimos() {
 
       {/* 2. Os controles — mexeu, o topo muda. */}
       <Cartao estatico className={local.controles}>
+        <header className={local.cabecalhoControles}><h2>Simular empréstimo</h2><p>Ajuste o valor e as condições da proposta.</p></header>
+        <div className={local.configuracao}>
+        <div className={local.valorPrazo}>
         <label className={local.linhaValor}>
           <span>Quanto você precisa</span>
           <span className={local.valorDigitado}>R$ <input value={valorDigitado} onChange={(e) => mudarValorDigitado(e.target.value)} inputMode="decimal" aria-label="Valor do empréstimo em reais" /></span>
@@ -267,6 +270,7 @@ export default function Emprestimos() {
           value={Math.min(valorCentavos, tetoRegua)}
           onChange={(e) => mudarValorNaRegua(Number(e.target.value))}
           className={local.regua}
+          style={{ "--preenchimento": `${Math.max(0, Math.min(100, (valorCentavos - 50000) / Math.max(1, tetoRegua - 50000) * 100))}%` } as CSSProperties}
         />
 
         <p className={local.rotulo}>Em quantas vezes</p>
@@ -276,13 +280,15 @@ export default function Emprestimos() {
           ))}
         </div>
 
+        </div>
         <div className={local.duasColunas}>
           <label><span className={local.rotulo}>Juros % ao mês</span><input value={juros} onChange={(e) => setJuros(e.target.value)} placeholder="2,5" className={campo} inputMode="decimal" /></label>
           <label><span className={local.rotulo}>IOF e tarifas (R$)</span><input value={custos} onChange={(e) => setCustos(e.target.value)} placeholder="0,00" className={campo} inputMode="decimal" /></label>
         </div>
 
+        </div>
         <div className={local.guardar}>
-          <input value={titulo} onChange={(e) => setTitulo(e.target.value)} aria-label="Nome da proposta" placeholder="Nome (ex.: Banco X)" className={campo} />
+          <label className={local.nomeProposta}><span>Nome da proposta</span><input value={titulo} onChange={(e) => setTitulo(e.target.value)} aria-label="Nome da proposta" placeholder="Ex.: Banco X" className={campo} /></label>
           <Button onClick={() => void guardar()} disabled={guardando || !analise}>{guardando ? "Guardando…" : "Guardar proposta"}</Button>
         </div>
         {erro && <p role="alert" className="mt-3 text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}

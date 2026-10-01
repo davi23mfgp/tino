@@ -58,3 +58,31 @@
 :global(.light) .seloProposta[data-cor="atencao"] { --cor:oklch(0.55 0.13 65); }
 .seloProposta[data-cor="negativo"] { --cor:var(--negativo); }
 .seloProposta i { width:8px; height:8px; border-radius:999px; background:var(--cor); }
+
+/* Simulação em grupos: valor e prazo juntos, custos e salvamento alinhados. */
+.controles { padding:22px; border-radius:20px; }
+.cabecalhoControles { margin-bottom:18px; }
+.cabecalhoControles h2 { font-size:calc(15px * var(--escala-letra)); font-weight:550; letter-spacing:-.02em; }
+.cabecalhoControles p { margin-top:4px; font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.configuracao { display:grid; gap:24px; }
+.valorPrazo { min-width:0; }
+.controles .linhaValor { font-size:calc(12px * var(--escala-letra)); font-weight:450; }
+.controles .valorDigitado { border:1px solid var(--pauta); border-radius:12px; padding-left:12px; font-size:calc(11px * var(--escala-letra)); font-weight:450; color:var(--texto-3); }
+.controles .valorDigitado input { min-height:44px; border:0; font-size:calc(23px * var(--escala-letra)); font-weight:400; letter-spacing:-.035em; color:var(--foreground); }
+.controles .regua { appearance:none; -webkit-appearance:none; background:transparent; height:44px; min-height:44px; cursor:pointer; margin:8px 0; }
+.controles .regua::-webkit-slider-runnable-track { height:3px; border-radius:99px; background:linear-gradient(to right,var(--acao) var(--preenchimento),var(--pauta) var(--preenchimento)); }
+.controles .regua::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:16px; height:16px; margin-top:-6.5px; border:3px solid var(--papel-1); border-radius:50%; background:var(--acao); box-shadow:0 0 0 1px color-mix(in oklab,var(--acao),transparent 50%); }
+.controles .regua::-moz-range-track { height:3px; border-radius:99px; background:var(--pauta); }
+.controles .regua::-moz-range-progress { height:3px; background:var(--acao); }
+.controles .regua::-moz-range-thumb { width:10px; height:10px; border:3px solid var(--papel-1); border-radius:50%; background:var(--acao); }
+.controles .rotulo { margin:0 0 8px; font-size:calc(11px * var(--escala-letra)); font-weight:450; }
+.controles .prazos { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; padding:3px; border:1px solid var(--pauta); border-radius:13px; overflow:visible; }
+.controles .prazos button { min-width:0; min-height:44px; border:0; border-radius:10px; background:transparent; font-size:calc(12px * var(--escala-letra)); font-weight:450; }
+.controles .prazos button[aria-pressed=true] { background:color-mix(in oklab,var(--acao),transparent 88%); color:var(--acao); font-weight:550; }
+.controles .duasColunas { align-content:center; gap:16px; }
+.controles .duasColunas input,.controles .guardar input { min-height:44px; border:1px solid var(--pauta); border-radius:12px; background:var(--papel-1); font-size:calc(14px * var(--escala-letra)); }
+.controles .guardar { align-items:end; margin-top:20px; padding-top:16px; border-top:1px solid var(--pauta); }
+.nomeProposta { display:grid; gap:8px; font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.controles .guardar button { min-height:44px; border-radius:12px; font-size:calc(12px * var(--escala-letra)); font-weight:500; background:color-mix(in oklab,var(--acao),transparent 88%); border:1px solid color-mix(in oklab,var(--acao),transparent 75%); color:var(--acao); }
+@media(min-width:1000px) { .configuracao { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); } .controles .duasColunas { padding-left:24px; border-left:1px solid var(--pauta); } }
+@media(max-width:520px) { .controles { padding:16px; } .controles .prazos { grid-template-columns:repeat(4,minmax(0,1fr)); } .controles .guardar { grid-template-columns:1fr; } .controles .valorDigitado input { width:9ch; font-size:calc(20px * var(--escala-letra)); } }

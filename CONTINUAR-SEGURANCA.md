@@ -193,3 +193,7 @@ Prioridade de pagamento em faixa discreta; dívidas em lista única com separado
 ### Mês a mês do plano refinado — 01/10/2026
 
 Roteiro de dívidas com colunas mês/pagamento/dívidas/saldo restante, seleção de ano segmentada e acento fino no mês selecionado. Valores alinhados e sem repetição de rótulos em desktop; celular reorganiza linhas com rótulos locais. Quitações e interação com o mês preservadas, sem mudança nos cálculos. Visual pendente de conferência no Preview.
+
+### Controles de empréstimo modernos e organizados — 01/10/2026
+
+Valor/prazo agrupados; juros/IOF ao lado em desktop; nome e salvamento com área própria. Campo monetário refinado, régua fina, parcelas segmentadas discretas e responsividade. Cálculos de empréstimo, CET e gravação da proposta preservados. Visual requer conferência no Preview.
