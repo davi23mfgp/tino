@@ -3,12 +3,12 @@
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
-import { AlertTriangle, Bell, Check, Clock, Info, LogOut, Settings, ShieldCheck } from "lucide-react"
+import { AlertTriangle, ChevronRight, Bell, Check, Clock, Info, LogOut, Settings, ShieldCheck } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { tituloDaRota, todosOsGrupos, GRUPO_LOJA_FUNCIONARIO } from "@/lib/navegacao-grupos"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { FabAdicionar } from "@/components/fab-adicionar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
@@ -135,11 +135,17 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
         </SheetContent>
       </Sheet>}
       <DropdownMenu><DropdownMenuTrigger asChild><button aria-label="Minha conta" className={"grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Avatar className="size-8 sm:size-7">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-60"><DropdownMenuLabel>{nome}</DropdownMenuLabel><DropdownMenuSeparator/>
-          {!apenasLoja && <DropdownMenuItem asChild><Link href="/configuracoes"><Settings className="mr-2 size-4"/>Minha conta</Link></DropdownMenuItem>}
-          {admin && !apenasLoja && <DropdownMenuItem asChild><Link href="/admin"><ShieldCheck className="mr-2 size-4"/>Administração</Link></DropdownMenuItem>}
-          <div className="flex items-center justify-between px-2 py-2 text-sm"><span>Aparência</span><ThemeToggle/></div>
-          <DropdownMenuSeparator/><DropdownMenuItem onClick={()=>void sair()}><LogOut className="mr-2 size-4"/>Sair</DropdownMenuItem>
+        <DropdownMenuContent align="end" sideOffset={10} className="w-72 max-w-[calc(100vw-24px)] rounded-2xl border border-pauta p-2 shadow-xl">
+          <div className="flex items-center gap-3 px-3 py-3">
+            <Avatar className="size-11 shrink-0 border border-pauta">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+            <div className="min-w-0"><p className="truncate text-sm font-semibold">{nome}</p><p className="mt-0.5 text-xs text-muted-fg">{apenasLoja ? "Sua loja" : "Seu espaço pessoal"}</p></div>
+          </div>
+          <DropdownMenuSeparator className="mx-2" />
+          {!apenasLoja && <DropdownMenuItem asChild className="min-h-12 rounded-xl px-3"><Link href="/configuracoes"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><Settings aria-hidden /></span><span className="flex-1">Minha conta</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          {admin && !apenasLoja && <DropdownMenuItem asChild className="min-h-12 rounded-xl px-3"><Link href="/admin"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><ShieldCheck aria-hidden /></span><span className="flex-1">Administração</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          <div className="space-y-2 px-3 py-3"><p className="text-xs font-medium text-muted-fg">Aparência</p><ThemeToggle variante="menu" /></div>
+          <DropdownMenuSeparator className="mx-2" />
+          <DropdownMenuItem className="min-h-12 rounded-xl px-3 text-muted-fg" onClick={()=>void sair()}><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><LogOut aria-hidden /></span>Sair da conta</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
   </>

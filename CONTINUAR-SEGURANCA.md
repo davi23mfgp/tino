@@ -81,3 +81,7 @@ Removido flex-grow do cartão desktop; largura máxima 360px e proporção 1.586
 ### Separação do cadastro pessoal e MEI — 01/10/2026
 
 Usuário pediu retirar a escolha Meu dinheiro / Meu dinheiro e minha loja do início, manter a mesma landing e ter outro login MEI. Cadastro pessoal agora abre diretamente o formulário e envia modoMei=false. Perguntado se o acesso MEI já possui endereço ou deve ser criado dentro do Tino; implementação do destino separado aguarda essa informação, sem presumir isolamento por simples troca de URL. Não remover dados ou acessos empresariais existentes.
+
+### Refinamento do menu da conta — 01/10/2026
+
+Usuário autorizou modernizar especificamente o menu do avatar. Cabeçalho com avatar/nome, linhas com ícones e alvos de pelo menos 44px, aparência em seleção explícita Claro/Escuro, largura limitada no celular. Preservadas permissões de funcionário/admin, navegação, sessão e cores existentes. Alternador de tema fora do menu continua igual. Resultado visual ainda deve ser conferido no Preview.
