@@ -82,11 +82,12 @@ export function CarteiraCartoes({ cartoes }: { cartoes: CartaoDaCarteira[] }) {
             aria-expanded={estaAberto}
             aria-label={estaAberto ? `${cartao.nome}: abrir a tela de cartões` : `Mostrar ${cartao.nome}`}
             onClick={() => (estaAberto ? router.push("/cartoes") : setAberto(indice))}
-            onPointerEnter={(evento) => { if (evento.pointerType === "mouse" || evento.pointerType === "pen") setCartaoElevado(cartao.id) }}
+            onMouseEnter={() => setCartaoElevado(cartao.id)}
+            onMouseLeave={() => setCartaoElevado(null)}
             onFocus={() => setCartaoElevado(cartao.id)}
             onBlur={() => setCartaoElevado(null)}
-            className={cn(estilos.cartao, estaAberto && estilos.levantado, cartaoElevado === cartao.id && estilos.elevado)}
-            style={{ "--cor-banco": cartao.cor, top: lugar * FRESTA, zIndex: lugar + 1 } as CSSProperties}
+            className={cn(estilos.cartao, estaAberto && estilos.levantado)}
+            style={{ "--cor-banco": cartao.cor, top: lugar * FRESTA, zIndex: lugar + 1, transform: cartaoElevado === cartao.id ? "translateY(-40px)" : "translateY(0)" } as CSSProperties}
           >
             <span className={estilos.topo}>
               <IdentidadeBanco instituicao={cartao.instituicao} nome={cartao.nome} className={estilos.logo} />

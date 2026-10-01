@@ -131,3 +131,7 @@ Usuário relata que primeiro cartão nunca levanta e pede mais usado primeiro. E
 ### Nota e etiqueta da saúde — 01/10/2026
 
 Aplicada a mudança anteriormente só sugerida: nota em destaque, / 100 menor e neutro e etiqueta discreta de status na mesma linha. Verde para saudável, amarelo para atenção/cuidado, vermelho para crítico; cálculo da nota preservado. Substitui texto de 100 · pede atenção. Usuário cobrou porque sugestão anterior não havia sido implementada.
+
+### Sem etiqueta na nota e movimento do cartão à frente — 01/10/2026
+
+Usuário rejeitou a etiqueta de status: removida, mantendo somente nota / 100. Cartão da frente relatado travado: seleção agora não define transform; mouse/foco aplica deslocamento inline explícito igual a todos, com retorno ao sair. Ordem/critério de maior uso preservados. Não afirmar animação comprovada visualmente até testar Preview atualizado.

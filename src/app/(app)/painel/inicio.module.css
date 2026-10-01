@@ -259,5 +259,3 @@
 .anelNota[data-situacao=CRITICO] { --cor-nota:var(--negativo); }
 .anelNota .notaLinha { align-items:center; gap:6px; flex-wrap:wrap; }
 .anelNota .notaMaximo { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
-.notaEstado { display:inline-flex; align-items:center; gap:6px; margin-left:10px; padding:5px 9px; border:1px solid color-mix(in oklab,var(--cor-nota),transparent 80%); border-radius:999px; color:var(--cor-nota); background:color-mix(in oklab,var(--cor-nota),transparent 94%); font-style:normal; font-size:calc(11px * var(--escala-letra)); font-weight:500; line-height:1; }
-.notaEstado::before { content:""; width:5px; height:5px; border-radius:50%; background:currentColor; }
