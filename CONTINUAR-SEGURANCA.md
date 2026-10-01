@@ -4,7 +4,7 @@ Leia este arquivo antes de editar. Repositório `davi23mfgp/tino`; branch com im
 
 ## Pedido vigente
 
-Concluir os 20 controles de segurança antes de voltar ao design. Preparar e testar o que for possível no projeto; fazer os ajustes e somente depois publicar. **Não publicar agora.** Preservar funções e layout. Não declarar os 20 concluídos: dependências de infraestrutura ainda estão abertas. Confirmar a sigla PMP; até aqui foi interpretada como princípio do menor privilégio.
+Concluir os 20 controles de segurança antes de voltar ao design. Preparar e testar o que for possível no projeto; fazer os ajustes e somente depois publicar. **Publicação autorizada pelo usuário em 01/10/2026 após os ajustes.** Preservar funções e layout. Não declarar os 20 concluídos: dependências de infraestrutura ainda estão abertas. Confirmar a sigla PMP; até aqui foi interpretada como princípio do menor privilégio.
 
 ## Onde continuar
 
@@ -135,3 +135,7 @@ Aplicada a mudança anteriormente só sugerida: nota em destaque, / 100 menor e 
 ### Sem etiqueta na nota e movimento do cartão à frente — 01/10/2026
 
 Usuário rejeitou a etiqueta de status: removida, mantendo somente nota / 100. Cartão da frente relatado travado: seleção agora não define transform; mouse/foco aplica deslocamento inline explícito igual a todos, com retorno ao sair. Ordem/critério de maior uso preservados. Não afirmar animação comprovada visualmente até testar Preview atualizado.
+
+### Publicação autorizada — 01/10/2026
+
+Usuário disse pode subir. Integrada origin/main à branch de trabalho, preservando o checkpoint mais recente no único conflito (documentação). Tipos e testes conferidos antes do envio à main. A autorização permite publicação; não comprova o deploy. Configuração das chaves MFA/monitoramento foi guiada somente para Preview nesta conversa: Production e Secrets de backup/monitor GitHub continuam sem comprovação. O build recusa ausência da chave MFA antes de migrations. Não declarar os 20 controles completos nem o site atualizado sem evidência da Vercel.

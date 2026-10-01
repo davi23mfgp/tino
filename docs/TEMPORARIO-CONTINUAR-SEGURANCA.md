@@ -1,6 +1,6 @@
 # TEMPORÁRIO — continuar segurança do Tino em outro notebook
 
-**Checkpoint mais recente:** leia primeiro [`../CONTINUAR-SEGURANCA.md`](../CONTINUAR-SEGURANCA.md). A continuação no Windows chegou a 605 testes aprovados, backup/restauração reais locais e alerta de atraso. As limitações antigas de engine/dump deste documento foram superadas localmente. As configurações externas continuam pendentes e o usuário adiou a publicação até os ajustes.
+**Checkpoint mais recente:** leia primeiro [`../CONTINUAR-SEGURANCA.md`](../CONTINUAR-SEGURANCA.md). A continuação no Windows chegou a 605 testes aprovados, backup/restauração reais locais e alerta de atraso. As limitações antigas de engine/dump deste documento foram superadas localmente. As configurações externas continuam pendentes e o usuário autorizou a publicação em 01/10/2026; comprovação do deploy e infraestrutura continua pendente.
 
 Último checkpoint: 30/09/2026, após commit de implementação `c704d7a`. Projeto: `davi23mfgp/tino`. Este arquivo registra o pedido do Davi e deve ser lido antes de continuar. Não confundir com o Fixa.
 
