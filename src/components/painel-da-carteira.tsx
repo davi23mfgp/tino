@@ -23,8 +23,8 @@ import estilos from "./painel-da-carteira.module.css"
  * retrato do mês corrente (`/api/carteira/retrato`), e a linha é desenhada com
  * o que foi de fato registrado. Nenhum mês é calculado para trás: a série
  * começa no primeiro mês em que alguém abriu esta tela, e a tela diz isso em
- * vez de desenhar um passado que ninguém viveu. Fica recolhida junto com o
- * desempenho, que só tem número a partir do segundo mês.
+ * vez de desenhar um passado que ninguém viveu. O desempenho fica visível, e a evolução aparece a partir de dois
+ * registros. A rentabilidade mensal exige uma posição anterior.
  */
 
 export interface PosicaoDaCarteira {
@@ -127,18 +127,14 @@ export function PainelDaCarteira({ posicoes, topo, depoisDoResumo }: { posicoes:
         </div>
       </details>
 
-      <details className={cn("ficha", estilos.recolhido)}>
-        <summary>
-          <span>
-            <b>Desempenho e evolução</b>
-            <small>{historico.length >= 2 ? `${historico.length} meses registrados` : "começa a contar este mês"}</small>
-          </span>
-        </summary>
-        <div className={estilos.recolhidoCorpo}>
-          <Desempenho historico={historico} total={total} aportado={aportado} cdi={cdi} />
-          {historico.length >= 2 && <EvolucaoDaCarteira serie={historico} />}
-        </div>
-      </details>
+      <section className={cn("ficha", estilos.desempenho)} aria-label="Desempenho da carteira">
+        <header className={estilos.desempenhoTopo}>
+          <h2>Desempenho</h2>
+          <span>{historico.length >= 2 ? `${historico.length} meses registrados` : "Histórico em formação"}</span>
+        </header>
+        <Desempenho historico={historico} total={total} aportado={aportado} cdi={cdi} />
+        {historico.length >= 2 && <EvolucaoDaCarteira serie={historico} />}
+      </section>
     </>
   )
 }
@@ -422,37 +418,34 @@ function Desempenho({
     },
     {
       rotulo: "Ganho sobre o aportado",
-      valor: ganho === 0 ? "sem dado" : `${ganho > 0 ? "+" : "−"}${formatarMoeda(Math.abs(ganho))}`,
+      valor: `${ganho > 0 ? "+" : ganho < 0 ? "−" : ""}${formatarMoeda(Math.abs(ganho))}`,
       tom: ganho === 0 ? undefined : ganho > 0 ? "positivo" : "negativo",
     },
   ]
 
   return (
-    <div>
-      <dl className="space-y-2.5">
-        {linhas.map((linha) => (
-          <div key={linha.rotulo} className="flex items-baseline justify-between gap-3">
-            <dt className="text-[calc(13px*var(--escala-letra))] text-[color:var(--texto-2)]">{linha.rotulo}</dt>
-            <dd
-              className={cn(
-                "numero text-[calc(14px*var(--escala-letra))] font-medium tabular-nums",
-                linha.tom === "positivo" && "text-positivo",
-                linha.tom === "negativo" && "text-negativo",
-                !linha.tom && "text-[color:var(--texto-3)]",
-              )}
-            >
-              {linha.valor}
+    <div className={estilos.desempenhoCorpo}>
+      <dl className={estilos.indicadores}>
+        {linhas.map((linha, indice) => (
+          <div key={linha.rotulo} className={estilos.indicador}>
+            <dt>{linha.rotulo}</dt>
+            <dd className={cn("numero", indice === 3 && "valor-sensivel", linha.tom === "positivo" && "text-positivo", linha.tom === "negativo" && "text-negativo")} data-pendente={linha.valor === "sem dado" || undefined}>
+              {linha.valor === "sem dado" ? "A calcular" : linha.valor}
             </dd>
+            <small>{indice === 0 ? "Aportes descontados" : indice === 1 ? "Referência do Banco Central" : indice === 2 ? "100% = desempenho do CDI" : "Valor atual menos aportes"}</small>
           </div>
         ))}
       </dl>
-
       {rendimento === null && (
-        <p className="mt-3 text-[calc(11.5px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
-          A rentabilidade do mês aparece quando houver dois retratos da carteira: o deste mês e o do mês passado. O
-          cálculo desconta o que você aportou: dinheiro guardado não é rendimento.
+        <p className={estilos.historicoPendente}>
+          <span aria-hidden="true">◷</span>
+          <span><b>Primeiro mês de acompanhamento</b><small>A rentabilidade aparece com os registros deste mês e do anterior.</small></span>
         </p>
       )}
+      <details className={estilos.calculo}>
+        <summary>Como calculamos</summary>
+        <p>A rentabilidade mensal desconta a diferença dos aportes entre os dois últimos registros e divide o resultado pelo valor da carteira anterior. O ganho sobre o aportado compara a posição atual com o total investido; ele não é a rentabilidade do mês. O histórico começa no primeiro registro, sem estimar meses anteriores.</p>
+      </details>
     </div>
   )
 }

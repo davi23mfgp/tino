@@ -47,3 +47,25 @@
 .parteBase small { font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); }
 .parteBase b { font-size:calc(14px * var(--escala-letra)); font-weight:750; color:var(--positivo); font-variant-numeric:tabular-nums; }
 .parteBase b[data-zero] { font-weight:500; color:var(--texto-3); }
+
+/* O desempenho fica visível: quatro leituras alinhadas, sem abrir acordeão. */
+.desempenho { display:grid; gap:18px; padding:20px; }
+.desempenhoTopo { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.desempenhoTopo h2 { font-size:calc(15px * var(--escala-letra)); font-weight:650; }
+.desempenhoTopo > span { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.desempenhoCorpo { display:grid; gap:14px; }
+.indicadores { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.indicador { display:grid; align-content:start; gap:9px; padding:16px; border:1px solid var(--vidro-borda); border-radius:14px; background:color-mix(in oklab,var(--foreground),transparent 98%); min-width:0; }
+.indicador dt { font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.indicador dd { font-size:clamp(20px,2.2vw,30px); font-weight:450; line-height:1.2; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.indicador dd[data-pendente] { font-size:calc(20px * var(--escala-letra)); color:var(--texto-3); }
+.indicador small { font-size:calc(10px * var(--escala-letra)); color:var(--texto-3); }
+.historicoPendente { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--vidro-borda); }
+.historicoPendente > span:first-child { font-size:23px; color:var(--texto-3); }
+.historicoPendente b { display:block; font-size:calc(12px * var(--escala-letra)); font-weight:500; }
+.historicoPendente small { display:block; margin-top:3px; color:var(--texto-3); font-size:calc(11px * var(--escala-letra)); }
+.calculo { color:var(--texto-3); font-size:calc(11px * var(--escala-letra)); }
+.calculo summary { min-height:44px; display:flex; align-items:center; cursor:pointer; }
+.calculo p { line-height:1.6; padding-bottom:8px; }
+@media(max-width:900px) { .indicadores { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:450px) { .desempenho { padding:16px; } .indicador { padding:12px; } .indicador dd { font-size:22px; } }

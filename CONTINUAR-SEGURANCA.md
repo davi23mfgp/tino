@@ -225,3 +225,9 @@ Pedido explícito para restaurar formato anterior de Conferir. Restaurado cartã
 ### Detalhamento mensal do simulador refinado — 01/10/2026
 
 Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/parcelas/dívidas/juros/saldo, valores exatos e eventos preservados. Indicadores do topo compactos; rótulos tornam explícito o período simulado. Tabela pode rolar horizontalmente em telas estreitas, com região focável por teclado. Cálculos e dados preservados; visual pendente de Preview.
+
+## 01/10/2026: desempenho de investimentos em destaque
+- Pedido: desempenho evidente, moderno e objetivo.
+- Removido o acordeão do desempenho: indicadores visíveis de rentabilidade, CDI, comparação e ganho sobre aportes. Grade de quatro colunas, duas em telas menores, tipografia leve e bordas discretas.
+- Ausência de histórico aparece como “A calcular” com orientação curta; explicação completa recolhida em “Como calculamos”. Ganho de zero passa a mostrar R$ 0,00, pois zero é um resultado calculável. Ganho respeita ocultação de valores.
+- Fórmulas e gráfico histórico mantidos. Tipos e 618 testes passaram; aparência no Preview ainda depende de conferência visual.
