@@ -492,6 +492,9 @@ model Membro {
 // ============================================================
 
 model Conta {
+  /// Regra de acúmulo e saldo informado pelo usuário, por cartão.
+  pontosConfiguracao Json?
+
   orcamentoMensalCentavos Int?
   id                      String    @id @default(cuid())
   larId                   String

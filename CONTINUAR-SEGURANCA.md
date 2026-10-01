@@ -163,3 +163,9 @@ Painel translúcido com desfoque, bordas suaves, tipografia menor, títulos sem 
 ### Dívidas e conferência mais compactas — 01/10/2026
 
 Usuário rejeitou faixa de dívidas espaçosa e conferência esticada. Conferência passa a faixa no topo em desktop, com descrição, valor, categoria e ações em linha; retirada pilha decorativa. Dívidas unem total lateral e itens compactos com bordas finas. Celular mantém empilhamento responsivo. Mesmas operações de confirmação/descarte; categoria ausente oferece link para fila. Conferência visual pendente de deploy.
+
+### Pontos e milhas persistidos por cartão — 01/10/2026
+
+Pedido do usuário: acompanhar saldo e previsões usando regras configuradas. Nova configuração salva no banco por cartão (JSON validado e APIs com sessão/escopo lar): programa, unidade pontos/milhas, taxa por real/dólar, saldo informado e câmbio manual opcional. Saldo real depende de informação do usuário; sem integração com programas. Previsão da fatura desconta créditos; previsão de três meses mostra somente parcelas futuras separadamente, sem somar transações e parcelas duplicadas. Migração aditiva `pontosConfiguracao` não altera lançamentos. Testes cobrem regras, créditos, câmbio e validação. Execução da migração no deploy e visual externo ainda precisam de comprovação.
+
+Validação desta entrega: 618 testes passaram. Cliente Prisma gerado sem engine apenas para checagem de tipos neste ambiente, pois o download de engines em binaries.prisma.sh recebeu HTTP 403. A migração foi escrita, mas não executada em Neon nesta sessão; build da Vercel deve gerar o cliente normal e aplicar a migração com os segredos configurados.

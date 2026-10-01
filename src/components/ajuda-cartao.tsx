@@ -1,17 +1,16 @@
 "use client"
 
-import { useEffect, useState, type CSSProperties } from "react"
+import { useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowRight, CircleDollarSign, ListChecks, PiggyBank } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { buscar, enviar } from "@/lib/cliente"
+import { enviar } from "@/lib/cliente"
 import estilos from "./ajuda-cartao.module.css"
 import { resumoDoMes, type DadosCartao } from "@/lib/cartoes"
 import { formatarMoeda } from "@/lib/dinheiro"
-import type { Cotacao } from "@/lib/cambio"
+import { PontosCartao } from "@/components/pontos-cartao"
 
-const PROGRAMAS = ["Manual", "Livelo", "Esfera", "Smiles", "LATAM Pass", "Azul Fidelidade"]
 
 const OBJETIVOS = [
   { id: "economia", nome: "Economizar", Icone: PiggyBank },
@@ -28,29 +27,9 @@ const OBJETIVOS = [
 export function AjudaCartao({ cartao, mes, aoAbrir, objetivos = ["economia", "pontos", "fatura"], semCabecalho = false }: { cartao: DadosCartao; mes: string; aoAbrir: (aba: string) => void; objetivos?: string[]; semCabecalho?: boolean }) {
   const router = useRouter()
   const [objetivo, setObjetivo] = useState(objetivos[0])
-  const [programa, setPrograma] = useState("Manual")
-  const [moeda, setMoeda] = useState("real")
-  const [taxa, setTaxa] = useState("")
   const [reducao, setReducao] = useState(10)
   const [categoriaId, setCategoriaId] = useState("")
   const [estado, setEstado] = useState("")
-
-  // O câmbio vem do dia, sozinho. Antes a tela pedia o valor e a data à mão —
-  // duas perguntas para as quais a pessoa teria que abrir outra aba.
-  const [cotacao, setCotacao] = useState<Cotacao | null>(null)
-  const [cambioManual, setCambioManual] = useState("")
-  const [buscandoCambio, setBuscandoCambio] = useState(false)
-
-  useEffect(() => {
-    if (moeda !== "dolar" || cotacao) return
-    let ativo = true
-    setBuscandoCambio(true)
-    buscar<Cotacao | null>("/api/cambio")
-      .then((resposta) => { if (ativo) setCotacao(resposta) })
-      .catch(() => { if (ativo) setCotacao(null) })
-      .finally(() => { if (ativo) setBuscandoCambio(false) })
-    return () => { ativo = false }
-  }, [moeda, cotacao])
 
   const resumo = resumoDoMes(cartao, mes)
   const categoria = resumo.categorias.find((linha) => linha.id === categoriaId) ?? resumo.categorias[0]
@@ -66,14 +45,6 @@ export function AjudaCartao({ cartao, mes, aoAbrir, objetivos = ["economia", "po
   const gastoDaCategoria = categoria?.totalCentavos ?? 0
   const usoDoTeto = tetoSalvo && tetoSalvo > 0 ? Math.min(100, Math.round((gastoDaCategoria / tetoSalvo) * 100)) : null
 
-  const taxaNumero = Number(taxa.replace(",", "."))
-  const manualNumero = Number(cambioManual.replace(",", "."))
-  const cambioUsado = cambioManual.trim() !== "" && Number.isFinite(manualNumero) && manualNumero > 0 ? manualNumero : cotacao?.valor ?? null
-  const baseReais = Math.max(0, resumo.gastos - resumo.creditos) / 100
-  const taxaValida = taxa.trim() !== "" && Number.isFinite(taxaNumero) && taxaNumero >= 0
-  const pontos = taxaValida && (moeda === "real" || cambioUsado)
-    ? Math.floor((moeda === "real" ? baseReais : baseReais / (cambioUsado as number)) * taxaNumero)
-    : null
   const semCategoria = resumo.compras.filter((compra) => !compra.categoriaId).length
   const categorizadas = resumo.compras.length - semCategoria
 
@@ -154,63 +125,7 @@ export function AjudaCartao({ cartao, mes, aoAbrir, objetivos = ["economia", "po
         </div>
       )}
 
-      {objetivo === "pontos" && (
-        <div className={estilos.resultado}>
-          <div className={estilos.campos}>
-            <label>
-              Programa
-              <Select value={programa} onValueChange={setPrograma}>
-                <SelectTrigger aria-label="Programa de pontos"><SelectValue /></SelectTrigger>
-                <SelectContent>{PROGRAMAS.map((nome) => <SelectItem key={nome} value={nome}>{nome}</SelectItem>)}</SelectContent>
-              </Select>
-            </label>
-            <label>
-              Regra do cartão
-              <Select value={moeda} onValueChange={setMoeda}>
-                <SelectTrigger aria-label="Regra de acúmulo"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="real">Pontos por real</SelectItem>
-                  <SelectItem value="dolar">Pontos por dólar</SelectItem>
-                </SelectContent>
-              </Select>
-            </label>
-            <label className={estilos.campoLargo}>
-              Pontos por {moeda === "real" ? "R$ 1" : "US$ 1"}
-              <input inputMode="decimal" placeholder="Ex.: 2,2" value={taxa} onChange={(evento) => setTaxa(evento.target.value)} />
-            </label>
-            {moeda === "dolar" && (
-              <div className={estilos.cambio}>
-                {buscandoCambio && <p role="status">Buscando o dólar de hoje…</p>}
-                {!buscandoCambio && cotacao && (
-                  <p>
-                    Dólar de hoje: <b>R$ {cotacao.valor.toFixed(4).replace(".", ",")}</b>
-                    <small>{cotacao.fonte}{cotacao.data ? ` · ${cotacao.data.split("-").reverse().join("/")}` : ""}</small>
-                  </p>
-                )}
-                {!buscandoCambio && !cotacao && <p role="alert">Não consegui buscar o câmbio agora. Informe abaixo para calcular.</p>}
-                <label>
-                  Usar outro câmbio
-                  <input inputMode="decimal" placeholder={cotacao ? "opcional" : "R$ por US$ 1"} value={cambioManual} onChange={(evento) => setCambioManual(evento.target.value)} />
-                </label>
-              </div>
-            )}
-          </div>
-          <div className={estilos.meta}>
-            <small>Estimativa · {programa}</small>
-            <strong>{pontos === null ? "sem dado" : pontos.toLocaleString("pt-BR")}</strong>
-            <p>{pontos === null ? "Informe quantos pontos seu cartão dá." : "pontos com as compras deste mês"}</p>
-            <small>Base: {formatarMoeda(Math.max(0, resumo.gastos - resumo.creditos))}, já sem os créditos.</small>
-            <details>
-              <summary>Como calculamos</summary>
-              <p>
-                Compras menos créditos registrados. Elegibilidade individual não informada, então o valor não representa
-                o saldo real do programa.
-                {moeda === "dolar" && cambioUsado ? ` Câmbio usado: R$ ${cambioUsado.toFixed(4).replace(".", ",")}${cambioManual.trim() ? " (informado por você)" : ` (${cotacao?.fonte})`}.` : ""}
-              </p>
-            </details>
-          </div>
-        </div>
-      )}
+      {objetivo === "pontos" && <PontosCartao key={cartao.id} cartao={cartao} mes={mes} />}
 
       {objetivo === "fatura" && (
         <div className={estilos.resultado}>

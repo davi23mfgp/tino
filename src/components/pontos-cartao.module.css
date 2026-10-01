@@ -1,0 +1,19 @@
+.painel { display:grid; gap:16px; margin-top:16px; }
+.painel h3 { font-size:calc(16px * var(--escala-letra)); font-weight:550; }
+.painel header p,.apoio { font-size:calc(12px * var(--escala-letra)); line-height:1.6; color:var(--texto-3); }
+.resumo { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.resumo > div { display:flex; flex-direction:column; gap:6px; padding:18px; border:1px solid var(--pauta); border-radius:18px; background:var(--papel-1); }
+.resumo small,.resumo span { font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.resumo strong { font-size:calc(32px * var(--escala-letra)); font-weight:350; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+.configuracao { border:1px solid var(--pauta); border-radius:16px; padding:0 16px; }
+.configuracao summary { min-height:44px; padding:12px 0; cursor:pointer; font-size:calc(13px * var(--escala-letra)); }
+.campos { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-bottom:16px; }
+.campos label { display:grid; gap:6px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); min-width:0; }
+.campos input,.campos select { min-height:44px; width:100%; border:1px solid var(--pauta); border-radius:12px; padding:8px 12px; background:var(--papel-1); color:var(--foreground); }
+.campos button { min-height:44px; border-radius:12px; border:1px solid var(--pauta); color:var(--acao); font-size:calc(13px * var(--escala-letra)); }
+.campos:disabled { opacity:.6; }
+.projecao h4 { font-size:calc(13px * var(--escala-letra)); font-weight:500; margin-bottom:8px; }
+.projecao > div { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; padding:12px 0; border-bottom:1px solid var(--pauta); font-size:calc(12px * var(--escala-letra)); }
+.projecao small { color:var(--texto-3); }
+.projecao b { font-weight:500; font-variant-numeric:tabular-nums; }
+@media(max-width:520px) { .campos,.resumo { grid-template-columns:1fr; } .projecao > div { grid-template-columns:1fr auto; } .projecao small { grid-row:2; } }
