@@ -108,3 +108,22 @@
 .resultado :global(details) { padding-block:0; }
 .resultado :global(details) summary { display:flex; align-items:center; }
 .resultado :global(details[open]) { padding-bottom:10px; }
+
+/* Leitura mensal em colunas: números exatos, sem frases repetidas. */
+.numeros { gap:12px; padding-top:16px; }
+.numeros > div { padding:12px 14px; border:1px solid var(--pauta); border-radius:12px; background:color-mix(in oklab,var(--foreground),transparent 98%); }
+.numeros dt { font-size:calc(10px * var(--escala-letra)); }
+.numeros dd { margin-top:6px; font-size:calc(16px * var(--escala-letra)); font-weight:450; letter-spacing:-.02em; }
+.resultado :global(details) { background:transparent; border:1px solid var(--pauta); border-radius:14px; }
+.resultado :global(details) summary { min-height:44px; font-size:calc(12px * var(--escala-letra)); font-weight:450; }
+.tabelaMeses { overflow-x:auto; scrollbar-width:thin; scrollbar-color:var(--pauta) transparent; margin-top:4px; }
+.tabelaMeses table { width:100%; min-width:780px; border-collapse:collapse; text-align:right; font-size:calc(11px * var(--escala-letra)); font-variant-numeric:tabular-nums; }
+.tabelaMeses thead th { padding:10px 12px; font-weight:450; color:var(--texto-3); border-bottom:1px solid var(--pauta); }
+.tabelaMeses tbody th,.tabelaMeses tbody td { padding:14px 12px; border-bottom:1px solid color-mix(in oklab,var(--foreground),transparent 94%); font-weight:450; white-space:nowrap; }
+.tabelaMeses th:first-child { text-align:left; }
+.tabelaMeses tbody th { font-weight:550; }
+.tabelaMeses tbody tr:hover { background:color-mix(in oklab,var(--foreground),transparent 98%); }
+.tabelaMeses .saldoTabela { font-size:calc(13px * var(--escala-letra)); color:var(--foreground); border-left:1px solid var(--pauta); }
+.tabelaMeses .saldoTabela[data-piora] { color:var(--negativo); }
+.tabelaMeses .eventoTabela td { text-align:left; padding-top:0; font-size:calc(10px * var(--escala-letra)); color:var(--acao); white-space:normal; }
+@media(max-width:520px) { .numeros { grid-template-columns:1fr; gap:6px; } .numeros > div { display:flex; justify-content:space-between; align-items:center; gap:16px; } .numeros dd { margin:0; font-size:calc(13px * var(--escala-letra)); } }

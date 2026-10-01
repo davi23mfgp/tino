@@ -221,3 +221,7 @@ Usuário rejeitou novamente a faixa de dívidas. Substituída por cabeçalho com
 ### Conferir volta ao cartão entre compras e categorias — 01/10/2026
 
 Pedido explícito para restaurar formato anterior de Conferir. Restaurado cartão vertical com pilha e ações originais; em desktop ocupa coluna central, com Compras recentes à esquerda e Para onde foi à direita. Retirada faixa no topo. Sem pendências, Compras recentes continua usando espaço maior. Fluxos de confirmação/descarte e desenho recente das dívidas preservados. Visual pendente de Preview.
+
+### Detalhamento mensal do simulador refinado — 01/10/2026
+
+Trocadas frases repetidas por tabela acessível com colunas mês/entradas/vida/parcelas/dívidas/juros/saldo, valores exatos e eventos preservados. Indicadores do topo compactos; rótulos tornam explícito o período simulado. Tabela pode rolar horizontalmente em telas estreitas, com região focável por teclado. Cálculos e dados preservados; visual pendente de Preview.

@@ -2,7 +2,7 @@
 
 import avancadas from "../analise/avancadas.module.css"
 import estilos from "./simulador.module.css"
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { ArrowDownToLine, ArrowRight, ArrowUp, Check, CreditCard, Plus, PlusCircle, TrendingUp, X } from "lucide-react"
 
@@ -433,19 +433,19 @@ export default function Simulador() {
               dívida nenhuma soaria como problema, e é o oposto. */}
           <dl className={estilos.numeros}>
             <div>
-              <dt>Conta no vermelho</dt>
+              <dt>Saldo negativo no período</dt>
               <dd data-tom={(simulando ? cenario : base).primeiroMesNegativo ? "negativo" : "positivo"}>
-                {(simulando ? cenario : base).primeiroMesNegativo ? rotuloCompetencia((simulando ? cenario : base).primeiroMesNegativo!, true) : "não chega lá"}
+                {(simulando ? cenario : base).primeiroMesNegativo ? rotuloCompetencia((simulando ? cenario : base).primeiroMesNegativo!, true) : "Não previsto"}
               </dd>
             </div>
             <div>
-              <dt>Juros no caminho</dt>
+              <dt>Juros previstos</dt>
               <dd>{formatarMoedaCurta((simulando ? cenario : base).totalJurosCentavos)}</dd>
             </div>
             <div>
-              <dt>Dívidas acabam</dt>
+              <dt>Quitação no período</dt>
               <dd data-tom={!temDivida || (simulando ? cenario : base).mesQuitacao ? "positivo" : undefined}>
-                {temDivida ? ((simulando ? cenario : base).mesQuitacao ? rotuloCompetencia((simulando ? cenario : base).mesQuitacao!, true) : "não no período") : "sem dívidas"}
+                {temDivida ? ((simulando ? cenario : base).mesQuitacao ? rotuloCompetencia((simulando ? cenario : base).mesQuitacao!, true) : "Não prevista") : "sem dívidas"}
               </dd>
             </div>
           </dl>
@@ -468,26 +468,23 @@ export default function Simulador() {
           )}
 
           <Detalhe titulo="Ver mês a mês">
-            <ul className={estilos.meses}>
-              {(simulando ? cenario : base).meses.map((mes) => (
-                <li key={mes.competencia}>
-                  <span>
-                    <b>{rotuloCompetencia(mes.competencia, true)}</b>
-                    <small>
-                      entra {formatarMoedaCurta(mes.receitasCentavos)} · vida {formatarMoedaCurta(mes.custoDeVidaCentavos)}
-                      {mes.parcelasCentavos > 0 && ` · parcelas ${formatarMoedaCurta(mes.parcelasCentavos)}`}
-                      {mes.parcelasDividaCentavos + mes.pagamentoExtraCentavos > 0 && ` · dívida ${formatarMoedaCurta(mes.parcelasDividaCentavos + mes.pagamentoExtraCentavos)}`}
-                      {mes.jurosCentavos > 0 && ` · juros ${formatarMoedaCurta(mes.jurosCentavos)}`}
-                    </small>
-                    {mes.eventos.length > 0 && <small className={estilos.evento}>{mes.eventos.join(" · ")}</small>}
-                  </span>
-                  <span className={estilos.saldoMes} data-piora={mes.saldoAcumuladoCentavos < 0 || undefined}>
-                    <small>em conta</small>
-                    {formatarMoeda(mes.saldoAcumuladoCentavos)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div className={estilos.tabelaMeses} role="region" aria-label="Detalhamento mensal da simulação" tabIndex={0}>
+              <table>
+                <thead><tr>{["Mês", "Entradas", "Custo de vida", "Parcelas", "Dívidas", "Juros", "Saldo em conta"].map((rotulo) => <th key={rotulo} scope="col">{rotulo}</th>)}</tr></thead>
+                <tbody>{(simulando ? cenario : base).meses.map((mes) => <Fragment key={mes.competencia}>
+                  <tr>
+                    <th scope="row">{rotuloCompetencia(mes.competencia, true)}</th>
+                    <td className="valor-sensivel">{formatarMoeda(mes.receitasCentavos)}</td>
+                    <td className="valor-sensivel">{formatarMoeda(mes.custoDeVidaCentavos)}</td>
+                    <td className="valor-sensivel">{formatarMoeda(mes.parcelasCentavos)}</td>
+                    <td className="valor-sensivel">{formatarMoeda(mes.parcelasDividaCentavos + mes.pagamentoExtraCentavos)}</td>
+                    <td className="valor-sensivel">{formatarMoeda(mes.jurosCentavos)}</td>
+                    <td className={`${estilos.saldoTabela} valor-sensivel`} data-piora={mes.saldoAcumuladoCentavos < 0 || undefined}>{formatarMoeda(mes.saldoAcumuladoCentavos)}</td>
+                  </tr>
+                  {mes.eventos.length > 0 && <tr className={estilos.eventoTabela}><td colSpan={7}>{mes.eventos.join(" · ")}</td></tr>}
+                </Fragment>)}</tbody>
+              </table>
+            </div>
           </Detalhe>
         </section>
       )}
