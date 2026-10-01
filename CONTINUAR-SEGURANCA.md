@@ -4,6 +4,10 @@ Leia este arquivo antes de editar. Repositório `davi23mfgp/tino`; branch com im
 
 ## Pedido vigente
 
+**Atualização desta conversa em 01/10/2026:** o usuário determinou fazer os 20 controles primeiro na versão de teste e subir para produção depois. Essa instrução substitui a autorização anterior de publicação imediata. Preview confirmado pelo usuário e pela CLI: `https://tino-2scjxltop-davi-pereiras-projects-0e1004d7.vercel.app`, deployment `dpl_8zymzTjXPF1b51aphAjQyVBL595y`, commit `cbf5b11`, branch `codex/continuacao-tino`, estado Ready. Alias da branch: `https://tino-git-codex-continuacao-tino-davi-pereiras-projects-0e1004d7.vercel.app`.
+
+Conferência somente leitura da Vercel nesta continuação: Preview desta branch possui DATABASE_URL, DIRECT_URL, JWT_SECRET, MFA_CHAVE_CRIPTOGRAFIA, MONITORAMENTO_SEGREDO e as três variáveis Google. Os valores estão ocultos e não foram exportados. Produção respondeu HTTPS/HSTS/CSP, mas `/api/saude` respondeu 404; não considerar os controles novos ativos ali. GitHub CLI continua sem autenticação; fluxo de autorização por dispositivo foi iniciado para permitir configurar automações de teste. Não registrar o código temporário nem tokens no Git. Workflows atuais de backup/monitor usam configuração da branch principal: antes de executá-los, separar explicitamente ambiente/banco/Secrets de teste para não acessar produção.
+
 Concluir os 20 controles de segurança antes de voltar ao design. Preparar e testar o que for possível no projeto; fazer os ajustes e somente depois publicar. **Publicação autorizada pelo usuário em 01/10/2026 após os ajustes.** Preservar funções e layout. Não declarar os 20 concluídos: dependências de infraestrutura ainda estão abertas. Confirmar a sigla PMP; até aqui foi interpretada como princípio do menor privilégio.
 
 ## Onde continuar
