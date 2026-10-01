@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type CSSProperties } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
@@ -356,14 +356,14 @@ function FormasDeJuntar({
   }
 
   return (
-    <section className={cn("ficha", estilos.bloco)}>
+    <section className={cn("ficha", estilos.bloco, estilos.planejador)}>
       <header>
         <h2>Para chegar aos {mesesAlvo} meses</h2>
-        <small>falta {formatarMoeda(falta)}</small>
+        <small>Faltam <b>{formatarMoeda(falta)}</b></small>
       </header>
       {porQue}
 
-      <p className={estilos.pergunta}>Como você quer juntar?</p>
+      <p className={estilos.pergunta}>Escolha seu ritmo</p>
       <div className={estilos.formas} role="group" aria-label="Forma de juntar">
         {FORMAS.map((item) => (
           <button key={item.forma} type="button" aria-pressed={forma === item.forma} onClick={() => { setForma(item.forma); setSalvo(false) }}>
@@ -390,6 +390,7 @@ function FormasDeJuntar({
               onChange={(evento) => setPorMes(evento.target.value)}
               aria-label="Guardar por mês"
               className={estilos.regua}
+              style={{ "--preenchimento": `${Math.max(0, Math.min(100, paraCentavos(porMes || "0") / 3000))}%` } as CSSProperties}
             />
           </>
         )}

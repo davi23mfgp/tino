@@ -181,3 +181,7 @@ Tipo de movimento em controle segmentado próprio; conta, categoria e sem catego
 ### Limite do orçamento em pop-up — 01/10/2026
 
 A etiqueta de limite de categoria e o botão + limite abrem diálogo para editar valor, escolher meses de validade, salvar ou cancelar. Salvamento usa API existente e mantém demais limites; cancelamento não altera rascunho. Validação de valor e erro no diálogo, estados de envio e toque mínimo 44px. Pedido refere-se ao orçamento por categoria, identificado pela imagem, e não ao limite de crédito do cartão.
+
+### Planejamento da reserva refinado — 01/10/2026
+
+Pedido visual: bloco de chegada ao alvo mais moderno. Opções em controle segmentado suave, aporte com campo delicado, slider próprio fino, previsão em linha com acento lateral e ajuda secundária. Escopo CSS restrito ao planejador; cálculos, formas de juntar e gravação de meta preservados. Alvos 44px e layout responsivo. Visual ainda requer conferência no Preview.
