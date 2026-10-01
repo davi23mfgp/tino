@@ -101,3 +101,7 @@ Usuário pediu saúde mais fina/moderna e parâmetros verde/amarelo/vermelho. In
 ### Estabilidade ao abrir menu do avatar — 01/10/2026
 
 Usuário relata tremor na abertura. Ajuste dirigido ao menu da conta: animação somente de opacidade, sem zoom/deslocamento; modo não modal evita mudança de largura por bloqueio de rolagem; reserva do seletor de tema corrigida de 48 para 54px para não mudar altura ao montar. Outros dropdowns preservados. Correção estrutural verificada por tipos/testes; confirmar suavidade no navegador do usuário em Preview.
+
+### Cartões na mesma coluna — 01/10/2026
+
+Pedido do usuário: manter tamanho atual e, com dois ou mais cartões, mostrar um abaixo do outro com elevação no hover. Carteira desktop agora coluna vertical de cartões inteiros, largura máxima 360px, ação Novo cartão ao final. Removida expansão para linha inteira quando existem múltiplos; fluxo permanece ao lado. Pilha do celular e animação reduzida preservadas.

@@ -210,14 +210,13 @@
 }
 
 /* Cartão e fluxo dividem a primeira linha sem deformar o cartão para preencher
-   a tela. Com vários cartões, a carteira ganha a linha inteira. */
+   a tela. Mesmo com vários cartões, a carteira fica na mesma coluna. */
 @media (min-width:1024px) {
   .grade [data-area=cartoes] { order:-1; min-width:0; }
-  .grade [data-area=cartoes][data-multiplos=sim] { grid-column:1/-1; }
-  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])):has([data-area=cartoes][data-multiplos=nao]) {
+  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])):has([data-area=cartoes]) {
     grid-template-columns:minmax(0,420px) minmax(0,1fr);
   }
-  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])):has([data-area=cartoes][data-multiplos=nao]) [data-area=fluxo] { grid-column:auto; }
+  .grade:not(:has([data-area=dividas])):not(:has([data-area=conferir])):has([data-area=cartoes]) [data-area=fluxo] { grid-column:auto; }
 }
 
 /* Saúde: leitura por números e faixas discretas, sem cinco círculos competindo. */
