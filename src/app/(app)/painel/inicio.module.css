@@ -256,35 +256,19 @@
 .anelNota .notaLinha { align-items:center; gap:6px; flex-wrap:wrap; }
 .anelNota .notaMaximo { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
 
-/* Conferência em faixa compacta: informação e decisão sem uma pilha vazia. */
-.conferirBloco .pilha { padding:0; }
-.conferirBloco .pilha::before,.conferirBloco .pilha::after { display:none; }
-.conferirBloco .compraConferir { border:0; border-radius:0; background:transparent; padding:0; gap:10px; }
-.conferirBloco .iconeConferir { width:34px; height:34px; background:transparent; border:1px solid var(--pauta); border-radius:10px; }
-.conferirBloco .iconeConferir svg { width:16px; height:16px; stroke-width:1.5; }
-.conferirBloco .linhaConferir strong { font-size:calc(13px * var(--escala-letra)); font-weight:550; }
-.conferirBloco .valorConferir { font-size:calc(23px * var(--escala-letra)); }
-.conferirBloco .botoesConferir { display:flex; justify-content:flex-end; }
-.conferirBloco .botoesConferir button { font-size:calc(12px * var(--escala-letra)); font-weight:500; border-radius:12px; }
-.conferirBloco .botoesConferir button[data-principal] { background:color-mix(in oklab,var(--acao),transparent 90%); border:1px solid color-mix(in oklab,var(--acao),transparent 75%); color:var(--acao); }
-.conferirBloco .categoriaConferir a { display:inline-flex; align-items:center; min-height:44px; color:var(--texto-2); }
 .dividasBloco .corDivida { width:4px; height:24px; border-radius:999px; }
 .dividasBloco .lista li { border:0; }
 .dividasBloco .lista a { padding:10px 12px; border:1px solid var(--pauta); border-radius:12px; gap:10px; }
 .dividasBloco .lista strong { font-weight:500; }
 .dividasBloco .lista b { font-weight:550; }
 @media(min-width:1024px) {
-  .grade [data-area=conferir] { grid-column:1/-1; order:-2; }
-  .grade [data-area=recentes] { grid-column:span 2; }
-  .conferirBloco { gap:6px; }
-  .conferirBloco .compraConferir { display:grid; grid-template-columns:minmax(180px,1fr) auto minmax(140px,auto) auto; align-items:center; gap:20px; }
-  .conferirBloco .cabeca p { display:none; }
+  .grade [data-area=conferir] { grid-column:auto; order:2; }
+  .grade [data-area=recentes] { grid-column:auto; }
   .dividasBloco { display:grid; grid-template-columns:160px minmax(0,1fr); gap:8px 24px; }
   .dividasBloco .cabeca { grid-column:1/-1; }
   .dividasBloco .lista { align-items:center; gap:10px !important; }
   .dividasBloco .reais[data-tamanho=grande] { font-size:calc(24px * var(--escala-letra)); }
 }
-@media(max-width:640px) { .conferirBloco .botoesConferir button { flex:1; } }
 
 /* Dívidas do painel: cartões de leitura vertical, sem nomes truncados. */
 .grade .dividasBloco { display:flex; flex-direction:column; gap:16px; }

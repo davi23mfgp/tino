@@ -217,3 +217,7 @@ Categorias distribuídas em largura completa (3 colunas desktop), barras finas, 
 ### Novo desenho das dívidas no painel — 01/10/2026
 
 Usuário rejeitou novamente a faixa de dívidas. Substituída por cabeçalho com total e cartões verticais: nome completo, saldo destacado, juros, vencimento e parcelas pagas quando existentes. Cores restritas a pontos finos no juro; cálculos e rota preservados. Layout responsivo ocupa a largura sem coluna exclusiva de total. Visual pendente de Preview.
+
+### Conferir volta ao cartão entre compras e categorias — 01/10/2026
+
+Pedido explícito para restaurar formato anterior de Conferir. Restaurado cartão vertical com pilha e ações originais; em desktop ocupa coluna central, com Compras recentes à esquerda e Para onde foi à direita. Retirada faixa no topo. Sem pendências, Compras recentes continua usando espaço maior. Fluxos de confirmação/descarte e desenho recente das dívidas preservados. Visual pendente de Preview.
