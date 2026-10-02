@@ -14,7 +14,7 @@ import { TinoDock } from "@/components/tino-dock"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA_FUNCIONARIO, NUCLEO, todosOsGrupos, type GrupoNav } from "@/lib/navegacao-grupos"
+import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA, GRUPO_LOJA_FUNCIONARIO, NUCLEO, todosOsGrupos, type GrupoNav } from "@/lib/navegacao-grupos"
 
 /**
  * Abas do grupo em que a tela está (Análise, Fluxo, Simulador, Investir).
@@ -30,7 +30,7 @@ import { estaAtivo, grupoDoCaminho, gruposPara, GRUPO_LOJA_FUNCIONARIO, NUCLEO, 
 export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boolean }) {
   const caminho = usePathname()
   const grupo = grupoDoCaminho(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei)), caminho)
-  if (!grupo || grupo.itens.length < 2 || grupo.chave === "movimento" || apenasLoja) return null
+  if (!grupo || grupo.itens.length < 2 || grupo.chave === "movimento" || apenasLoja || mei) return null
   return (
     <nav aria-label={grupo.titulo} className="app-subabas mb-4">
       {grupo.itens.map(({ rota, rotulo }) => {
@@ -84,28 +84,29 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
   const caminho = usePathname()
   const router = useRouter()
   // Entrada por texto, arquivo e banco continua acessivel sem abas permanentes.
-  const extras = [NUCLEO[1], ...gruposPara(Boolean(mei))]
-  const principais = apenasLoja ? GRUPO_LOJA_FUNCIONARIO.itens.map(item => ({chave:item.rota, titulo:item.rotulo, itens:[item], pergunta:""})) : NUCLEO.slice(0,3)
+  const extras = mei ? [] : [NUCLEO[1], ...gruposPara(false)]
+  const principais = (apenasLoja ? GRUPO_LOJA_FUNCIONARIO.itens : mei ? GRUPO_LOJA.itens : null)?.map(item => ({chave:item.rota, titulo:item.rotulo, itens:[item], pergunta:""})) ?? NUCLEO.slice(0,3)
   // A barra lateral mostrava "Extrato" duas vezes: uma no trilho de cima e
   // outra logo abaixo, como grupo recolhido com Anotar, Importar e Entrada
   // automática dentro. O trilho de baixo do celular precisa dos três itens
   // (é ele que sustenta o polegar), então a remoção vale só no desktop, onde
   // o grupo já mostra tudo o que o atalho mostrava.
   const trilhoLateral = principais.filter(grupo => !extras.includes(grupo))
-  const secundario = !principais.some(grupo => grupo.itens.some(item => estaAtivo(caminho,item.rota)))
+  const principaisNoCelular = mei && !apenasLoja ? principais.slice(0, 3) : principais
+  const secundario = !principaisNoCelular.some(grupo => grupo.itens.some(item => estaAtivo(caminho,item.rota)))
   async function sair() { await enviar("/api/auth/logout", {}); router.push("/login"); router.refresh() }
   return <>
-    {!apenasLoja && <div className="fixed bottom-[104px] right-3 z-40 lg:hidden"><TinoDock /></div>}
+    {!apenasLoja && !mei && <div className="fixed bottom-[104px] right-3 z-40 lg:hidden"><TinoDock /></div>}
     <aside className="app-sidebar">
-      <Link href={apenasLoja ? "/loja" : "/painel"} className="app-brand" aria-label="Início do Tino"><TinoMarca className="size-9" /><span>tino.</span></Link>
-      <p className="app-sidebar-caption">{apenasLoja ? "Sua loja" : "Seu dia a dia"}</p>
+      <Link href={apenasLoja || mei ? "/loja" : "/painel"} className="app-brand" aria-label="Início do Tino"><TinoMarca className="size-9" /><span>tino.</span></Link>
+      <p className="app-sidebar-caption">{apenasLoja || mei ? "Seu negócio" : "Seu dia a dia"}</p>
       <nav aria-label="Navegação principal" className="space-y-1">
         {trilhoLateral.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}
       </nav>
       {/* Os grupos ficam recolhidos, como eram dentro do "Mais": a barra
           mostra o app inteiro sem virar uma lista de vinte linhas. O grupo da
           tela aberta já vem expandido. */}
-      {!apenasLoja && <div className="mt-4 space-y-1">
+      {!apenasLoja && !mei && <div className="mt-4 space-y-1">
         {extras.map(grupo => {
           const dentro = grupo.itens.some(item => estaAtivo(caminho, item.rota))
           return <details key={grupo.chave} open={dentro} className="app-nav-grupo">
@@ -121,22 +122,23 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
           </details>
         })}
       </div>}
-      {!apenasLoja && <div className="mt-4"><TinoDock comoItem /></div>}
+      {!apenasLoja && !mei && <div className="mt-4"><TinoDock comoItem /></div>}
       <div className="mt-auto space-y-2 pt-6">
         <div className="border-t border-pauta pt-3"><p className="truncate px-3 text-sm font-medium">{nome}</p>
-        {!apenasLoja && <Link href="/configuracoes" className="app-nav-item"><Settings className="size-4" aria-hidden /><span>Minha conta</span></Link>}
+        {mei && !apenasLoja && <Link href="/loja/minha-conta" className="app-nav-item"><Settings className="size-4" aria-hidden /><span>Minha conta</span></Link>}
+        {!apenasLoja && !mei && <Link href="/configuracoes" className="app-nav-item"><Settings className="size-4" aria-hidden /><span>Minha conta</span></Link>}
         <button onClick={sair} className="app-nav-item"><LogOut className="size-4" aria-hidden /><span>Sair</span></button></div>
       </div>
     </aside>
     <nav aria-label="Navegação principal no celular" className="app-bottom-nav">
-      {principais.map((grupo,indice) => {
+      {principaisNoCelular.map((grupo,indice) => {
         const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item=>estaAtivo(caminho,item.rota))
         return <Fragment key={grupo.chave}>
-          {!apenasLoja && indice===2 && <div className="app-bottom-add"><FabAdicionar ancorado /></div>}
+          {!apenasLoja && !mei && indice===2 && <div className="app-bottom-add"><FabAdicionar ancorado /></div>}
           <Link href={rota} aria-current={ativo ? "page" : undefined} className={cn("app-bottom-item",ativo && "is-active")}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>
         </Fragment>
       })}
-      {!apenasLoja && <Mais grupos={extras} ativo={secundario} />}
+      {!apenasLoja && <Mais grupos={mei ? [{...GRUPO_LOJA, itens:GRUPO_LOJA.itens.slice(3)}] : extras} ativo={secundario} />}
     </nav>
   </>
 }

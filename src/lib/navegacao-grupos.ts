@@ -198,13 +198,13 @@ export const GRUPO_LOJA_FUNCIONARIO: GrupoNav = {
 
 /** As seções do menu "Mais" (nível 2), com Loja anexada só pra quem é MEI. */
 export function gruposPara(mei: boolean): GrupoNav[] {
-  return mei ? [...GRUPOS_NAV, GRUPO_LOJA] : GRUPOS_NAV
+  return mei ? [GRUPO_LOJA] : GRUPOS_NAV
 }
 
 /** Todo grupo que existe pra essa pessoa — núcleo + nível 2 — usado por
     `estaAtivo`/`grupoDoCaminho`/busca, que não distinguem camada. */
 export function todosOsGrupos(mei: boolean): GrupoNav[] {
-  return [...NUCLEO, ...gruposPara(mei)]
+  return mei ? [GRUPO_LOJA] : [...NUCLEO, ...GRUPOS_NAV]
 }
 
 /** startsWith cobre subrota (/transacoes/123) sem marcar tudo em "/". */

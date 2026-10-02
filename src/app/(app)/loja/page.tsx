@@ -461,12 +461,14 @@ export default function Balcao() {
           )}
         </section>
 
-        <section className={`${estilos.bloco} ${estilos.dia}`} aria-labelledby="titulo-ultimas">
+      </div>
+
+        <section className={`${estilos.bloco} ${estilos.dia} ${estilos.ultimas}`} aria-labelledby="titulo-ultimas">
           <h2 id="titulo-ultimas">Últimas vendas</h2>
           {!dados || dados.ultimasVendas.length === 0 ? (
             <p className={estilos.vazio}>Nenhuma venda ainda. Cada venda aparece aqui, com a nota para emitir ao lado.</p>
           ) : (
-            <div>
+            <div className={estilos.listaVendas}>
               {dados.ultimasVendas.map((venda) => (
                 <div key={venda.id} className={estilos.venda}>
                   <span>#{venda.numero}</span>
@@ -495,7 +497,6 @@ export default function Balcao() {
           )}
           {notaErro && <p className={estilos.erro}>{notaErro}</p>}
         </section>
-      </div>
 
       <FecharCaixa aberto={fechandoCaixa} resumo={caixa ? { ...caixa.resumo, aberturaCentavos: caixa.aberturaCentavos } : null} aoFechar={() => setFechandoCaixa(false)} aoConcluir={carregar} />
       <TirarDinheiro aberto={tirando} aoFechar={() => setTirando(false)} aoConcluir={carregar} />

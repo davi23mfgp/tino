@@ -2,7 +2,8 @@ import { IdentidadesProvider } from "@/components/identidades-visuais"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
+import { rotaPermitidaNoMei } from "@/lib/acesso"
 import { COOKIE_CONVITE, tokenDeConviteValido } from "@/lib/convites"
 import { getSessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -51,6 +52,8 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   const acesso = await estadoDoAcesso(sessao.usuarioId)
 
   const apenasLoja = sessao.papel === "FUNCIONARIO_LOJA"
+  const mei = Boolean(lar.meiPerfil)
+  if (mei && !rotaPermitidaNoMei((await headers()).get("x-caminho") ?? "")) redirect("/loja")
 
   // Painel vazio não diz nada a quem acabou de chegar. Antes de mostrar
   // qualquer tela, o Tino pergunta o essencial — e o usuário pode pular.
@@ -59,19 +62,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   // pessoal do dono, e `middleware.ts` barra `/bem-vindo` para esse papel —
   // sem a exceção abaixo, um lar sem onboarding feito entraria em loop de
   // redirecionamento (layout manda para lá, middleware manda de volta).
-  if (!lar.onboardingEm && !apenasLoja) redirect("/bem-vindo")
+  if (!lar.onboardingEm && !apenasLoja && !mei) redirect("/bem-vindo")
 
-  return (
-    // O diálogo de busca (Ctrl+K) e o gatilho compacto do trilho/cabeçalho
-    // móvel, além do campo "Buscar..." da BarraTopo, dividem UM Provider —
-    // ver comentário completo em `buscar-paginas.tsx` sobre o diálogo
-    // duplicado que existia antes dele.
-    <BuscaPaginasProvider mei={false} apenasLoja={apenasLoja}>
-      <OuvidoDeErros />
-      {/* Uma busca de alertas para a tela inteira: barra do topo, faixa
-          crítica, recado do Tino e dock liam a mesma lista separados. */}
-      <AlertasProvider><IdentidadesProvider><div className="area-do-app min-h-screen">
-        {/* Alertas pessoais não são consultados pela conta do funcionário da loja. */}
+  const area = <div className="area-do-app min-h-screen">
         <div className="app-content mx-auto w-full max-w-6xl px-4">
           {/* O trilho fixo (fora do fluxo) e as abas do topo (dentro dele,
               por isso moram no mesmo container de largura da página) — ver
@@ -80,7 +73,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
               menu pessoal — mesmo corte que `middleware.ts` já aplica por
               URL, aqui é só o menu não oferecer o que a rota recusaria. */}
           <Navegacao
-            mei={false}
+            mei={mei}
             apenasLoja={apenasLoja}
             nome={sessao.nome}
             avatarUrl={usuario?.avatarUrl ?? null}
@@ -95,8 +88,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             avatarUrl={usuario?.avatarUrl ?? null}
             competencia={rotuloCompetencia(competenciaAtual())}
             apenasLoja={apenasLoja}
+            mei={mei}
           />
-          <SubAbas mei={false} apenasLoja={apenasLoja} />
+          <SubAbas mei={mei} apenasLoja={apenasLoja} />
 
           {/* A parede da assinatura embrulha só o conteúdo: o menu, a busca e
               a barra do topo continuam de pé, porque sair e ir para
@@ -105,10 +99,10 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             {/* O funcionário da loja não tem acesso a /api/usuario (ver
                 `@/lib/acesso`): o aviso é para o titular da conta. */}
             {!apenasLoja && precisaVerTermos(usuario?.termosVersao) && <AvisoDeTermos mudancas={MUDANCAS_DA_VERSAO} />}
-            <ParedeDeAssinatura acesso={acesso}>{children}</ParedeDeAssinatura>
+            <ParedeDeAssinatura acesso={acesso} mei={mei}>{children}</ParedeDeAssinatura>
           </main>
           {/* Renova o atalho na barra de notificações de quem já o ligou. */}
-          <RenovarAtalhoDeLancar />
+          {!mei && !apenasLoja && <RenovarAtalhoDeLancar />}
         </div>
 
         {/* O "+" agora mora no meio da barra do polegar (`navegacao.tsx`),
@@ -116,7 +110,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
 
         <Toaster />
       </div>
-      </IdentidadesProvider></AlertasProvider>
-    </BuscaPaginasProvider>
-  )
+
+  return <BuscaPaginasProvider mei={mei} apenasLoja={apenasLoja}>
+    <OuvidoDeErros />
+    {mei || apenasLoja ? area : <AlertasProvider><IdentidadesProvider>{area}</IdentidadesProvider></AlertasProvider>}
+  </BuscaPaginasProvider>
 }

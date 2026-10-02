@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { rotaPermitida } from "@/lib/acesso"
+import { rotaPermitida, rotaPermitidaNoMei } from "@/lib/acesso"
 
 describe("rota permitida por papel", () => {
   it("titular abre qualquer rota", () => {
@@ -56,5 +56,22 @@ describe("rota permitida por papel", () => {
 
   it("gerenciar quem tem acesso também fica fora — funcionário não cria outro funcionário", () => {
     assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/api/loja/funcionario"), false)
+  })
+})
+
+// A conta MEI nunca deve cair no app pessoal, mesmo por link guardado.
+describe("rotas da conta MEI", () => {
+  it("mantém as telas e APIs do negócio acessíveis", () => {
+    for (const caminho of ["/loja", "/loja/estoque", "/loja/minha-conta", "/mei", "/api/loja/vendas", "/api/mei", "/api/usuario/dados"]) {
+      assert.equal(rotaPermitidaNoMei(caminho), true, caminho)
+    }
+  })
+  it("recusa telas e APIs pessoais", () => {
+    for (const caminho of ["/painel", "/cartoes", "/configuracoes", "/api/panorama", "/api/transacoes", "/lojas-vizinhas"]) {
+      assert.equal(rotaPermitidaNoMei(caminho), false, caminho)
+    }
+  })
+  it("funcionário não abre a conta do dono", () => {
+    assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/loja/minha-conta"), false)
   })
 })

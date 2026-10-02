@@ -89,3 +89,9 @@
 .acoes { display:flex; gap:8px; }
 .acoes button { flex:1; min-height:44px !important; padding:0 12px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); font-size:calc(13.5px * var(--escala-letra)); font-weight:600; }
 .acoes button[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
+
+/* A lista ocupa a largura disponível: quando ficava na coluna direita,
+   dez vendas alongavam a página e deixavam um vazio sob o teclado. */
+.ultimas { grid-column:1 / -1; }
+.listaVendas { display:grid; gap:0 22px; }
+@media (min-width:1024px) { .listaVendas { grid-template-columns:repeat(2,minmax(0,1fr)); } }

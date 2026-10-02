@@ -24,7 +24,7 @@ import { showToast } from "@/components/ui/toast"
  * bloco branco do topo. `sobreClaro` troca a borda e a cor para o fundo
  * branco daquele bloco — a borda do tema escuro é branca e sumia ali.
  */
-export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:string;admin?:boolean;avatarUrl?:string|null;apenasLoja?:boolean;sobreClaro?:boolean}) {
+export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{nome:string;admin?:boolean;avatarUrl?:string|null;apenasLoja?:boolean;mei?:boolean;sobreClaro?:boolean}) {
   const router=useRouter()
   const [aberto,setAberto]=useState(false)
   // Os avisos vêm do provedor: quatro componentes desta mesma tela pediam a
@@ -63,7 +63,7 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
   const lista=[...(soNovas ? novas : alertas)].sort((a,b)=>(prioridade[a.severidade]??3)-(prioridade[b.severidade]??3))
   const borda=sobreClaro ? "border-[oklch(0_0_0/0.12)] text-[oklch(0.17_0.02_145)]" : "border-pauta"
   return <>
-      {!apenasLoja && <Sheet open={aberto} onOpenChange={setAberto}>
+      {!apenasLoja && !mei && <Sheet open={aberto} onOpenChange={setAberto}>
         <SheetTrigger asChild><button aria-label="Notificações" className={"relative grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{/* Ponto vermelho quando há alerta crítico sem ler: a faixa que o
             repetia no topo de toda tela saiu (Davi, 25/09), e o sino passou a
             ser o único aviso fora do Início. */}
@@ -129,11 +129,12 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
         <DropdownMenuContent align="end" sideOffset={10} className={menuConta.menu + " w-64 max-w-[calc(100vw-24px)] rounded-2xl border border-pauta p-2 shadow-xl"}>
           <div className="flex items-center gap-3 px-3 py-2">
             <Avatar className="size-9 shrink-0 border border-pauta">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-            <div className="min-w-0"><p className="truncate text-sm font-semibold">{nome}</p><p className="mt-0.5 text-xs text-muted-fg">{apenasLoja ? "Sua loja" : "Seu espaço pessoal"}</p></div>
+            <div className="min-w-0"><p className="truncate text-sm font-semibold">{nome}</p><p className="mt-0.5 text-xs text-muted-fg">{apenasLoja || mei ? "Seu negócio" : "Seu espaço pessoal"}</p></div>
           </div>
           <DropdownMenuSeparator className="mx-2" />
-          {!apenasLoja && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/configuracoes"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><Settings aria-hidden /></span><span className="flex-1">Minha conta</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
-          {admin && !apenasLoja && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/admin"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><ShieldCheck aria-hidden /></span><span className="flex-1">Administração</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          {mei && !apenasLoja && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/loja/minha-conta"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><Settings aria-hidden /></span><span className="flex-1">Minha conta</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          {!apenasLoja && !mei && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/configuracoes"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><Settings aria-hidden /></span><span className="flex-1">Minha conta</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
+          {admin && !apenasLoja && !mei && <DropdownMenuItem asChild className="min-h-11 rounded-xl px-3"><Link href="/admin"><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><ShieldCheck aria-hidden /></span><span className="flex-1">Administração</span><ChevronRight className="text-muted-fg" aria-hidden /></Link></DropdownMenuItem>}
           <div className="space-y-2 px-3 py-2"><p className="text-xs font-medium text-muted-fg">Aparência</p><ThemeToggle variante="menu" /></div>
           <DropdownMenuSeparator className="mx-2" />
           <DropdownMenuItem className="min-h-11 rounded-xl px-3 text-muted-fg" onClick={()=>void sair()}><span className="grid size-8 place-items-center rounded-lg bg-papel-3"><LogOut aria-hidden /></span>Sair da conta</DropdownMenuItem>
@@ -142,20 +143,20 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,sobreClaro}:{nome:
   </>
 }
 
-export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean}) {
+export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja,mei}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean;mei?:boolean}) {
   const caminho=usePathname()
-  const titulo=tituloDaRota(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(true),caminho) ?? "Tino"
+  const titulo=tituloDaRota(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei)),caminho) ?? "Tino"
   // No celular o Início traz o sino e a conta dentro do bloco branco do topo
   // (Davi, 23/09); a barra ali repetiria os dois e o título "Início".
   return <header className={caminho==="/painel" ? "app-header app-header-inicio" : "app-header"}>
-    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1><p>{apenasLoja ? "Sua loja, organizada." : competencia}</p></div>
+    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1><p>{apenasLoja || mei ? "Seu negócio, organizado." : competencia}</p></div>
     <div className="app-header-actions">
       {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
           que existe atalho. A forma de barra e a mesma do resto do app e ja
           carrega o rotulo e a pista `Ctrl K`. */}
       {!apenasLoja && <div className="hidden sm:block"><GatilhoBuscaPaginas variant="barra" /></div>}
-      {!apenasLoja && <FabAdicionar ancorado />}
-      <AcoesDaConta nome={nome} admin={admin} avatarUrl={avatarUrl} apenasLoja={apenasLoja} />
+      {!apenasLoja && !mei && <FabAdicionar ancorado />}
+      <AcoesDaConta nome={nome} admin={admin} avatarUrl={avatarUrl} apenasLoja={apenasLoja} mei={mei} />
     </div>
   </header>
 }

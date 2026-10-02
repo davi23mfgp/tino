@@ -215,3 +215,6 @@ Pedido do usuário implementado na estrutura principal: abas Agora/Futuro/Catego
 
 ## Retomada em 10/09/2026
 Notificações migradas para Sheet à direita com rolagem interna, títulos fortes e destaque por severidade. Busca e adicionar no cabeçalho; assistente na lateral no desktop e canto inferior direito no celular. Navegação pessoal não oferece módulos MEI; dados preservados. Permissions-Policy corrigida para permitir pedido de microfone na própria origem; reconhecimento de voz ainda precisa de validação no aparelho. Os demais pedidos de docs/PEDIDOS-REDESIGN-53.md continuam em andamento.
+
+### 02/10/2026 — separação visual e de rotas do MEI
+A conta com `meiPerfil` usa navegação própria de negócio, sem links, busca, sino ou atalho de lançamento pessoal. O layout redireciona páginas pessoais para `/loja`, e `comSessao` bloqueia as APIs pessoais. `/loja/minha-conta` concentra segurança, assinatura e direitos sobre os dados sem expor a página pessoal de configurações. No balcão, últimas vendas ocupam a largura toda abaixo do caixa e do resumo; a lista na coluna estreita deixava um vazio alto sob o teclado.

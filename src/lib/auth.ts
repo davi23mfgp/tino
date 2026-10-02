@@ -28,6 +28,7 @@ export interface Sessao {
   /// campo só cai no default "TITULAR" num estado que a criação de conta não
   /// deveria permitir, e é o default que não tranca ninguém fora por engano.
   papel: string
+  modoMei?: boolean
   /// A versão invalida tokens anteriores à ativação/desativação do MFA.
   mfaVersao?: number
   mfaConfirmadoEm?: number
@@ -70,7 +71,7 @@ export const getSessao = cache(async (): Promise<Sessao | null> => {
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: doToken.usuarioId },
-    select: { larId: true, membroId: true, sessoesValidasDesde: true, mfaVersao: true, mfaSegredo: true, membro: { select: { papel: true } } },
+    select: { larId: true, membroId: true, sessoesValidasDesde: true, mfaVersao: true, mfaSegredo: true, membro: { select: { papel: true } }, lar: { select: { meiPerfil: { select: { id: true } } } } },
   })
   if (!usuario || usuario.larId !== doToken.larId) return null
   if (usuario.sessoesValidasDesde && (doToken.iat ?? 0) * 1000 < usuario.sessoesValidasDesde.getTime()) return null
@@ -84,6 +85,7 @@ export const getSessao = cache(async (): Promise<Sessao | null> => {
     larId: usuario.larId,
     membroId: usuario.membroId,
     papel: usuario.membro?.papel ?? "TITULAR",
+    modoMei: Boolean(usuario.lar.meiPerfil),
     mfaVersao: usuario.mfaVersao,
     mfaConfirmadoEm: doToken.mfaConfirmadoEm,
     autenticadoEm: doToken.autenticadoEm ?? doToken.iat,

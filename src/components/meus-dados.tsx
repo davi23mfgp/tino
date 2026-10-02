@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation"
  * A palavra existe pelo mesmo motivo que existe em repositório de código: é a
  * única confirmação que não se acerta sem querer.
  */
-export function MeusDados() {
+export function MeusDados({ mei = false }: { mei?: boolean }) {
   const router = useRouter()
   const [abrindo, setAbrindo] = useState(false)
   const [senha, setSenha] = useState("")
@@ -61,7 +61,7 @@ export function MeusDados() {
 
       <div className="border-t border-pauta pt-4">
         <p className="text-[calc(13px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-2)]">
-          Apagar a conta tira do banco seus lançamentos, contas, cartões, dívidas, metas e conversas. Não tem desfazer.
+          {mei ? "Apagar a conta remove os dados do negócio, incluindo vendas, estoque, fiado e registros do MEI. Não tem desfazer. " : "Apagar a conta tira do banco seus lançamentos, contas, cartões, dívidas, metas e conversas. Não tem desfazer."}
           Cobranças já emitidas ficam com o gateway de pagamento, que tem obrigação fiscal própria.
         </p>
 

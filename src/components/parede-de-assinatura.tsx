@@ -45,13 +45,15 @@ const RECADO: Record<string, { titulo: string; texto: string }> = {
 export function ParedeDeAssinatura({
   acesso,
   children,
+  mei = false,
 }: {
+  mei?: boolean
   acesso: EstadoDoAcesso
   children: React.ReactNode
 }) {
   const caminho = usePathname()
 
-  if (acesso.liberado || LIVRES.some((livre) => caminho.startsWith(livre))) {
+  if (acesso.liberado || LIVRES.some((livre) => caminho.startsWith(livre)) || (mei && caminho.startsWith("/loja/minha-conta"))) {
     return <>{children}</>
   }
 
@@ -86,7 +88,7 @@ export function ParedeDeAssinatura({
 
         <p className="mt-5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-[color:var(--texto-3)]">
           Seus dados continuam seus:{" "}
-          <Link href="/configuracoes" className="text-acao underline-offset-4 hover:underline">
+          <Link href={mei ? "/loja/minha-conta" : "/configuracoes"} className="text-acao underline-offset-4 hover:underline">
             baixar tudo ou apagar a conta
           </Link>
           .

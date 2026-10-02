@@ -24,6 +24,7 @@ export async function proxy(requisicao: NextRequest) {
   const politica = politicaDeConteudo(nonce, process.env.NODE_ENV !== "production")
   const cabecalhos = new Headers(requisicao.headers)
   cabecalhos.set("x-nonce", nonce)
+  cabecalhos.set("x-caminho", requisicao.nextUrl.pathname)
   cabecalhos.set("Content-Security-Policy", politica)
   const resposta = await decidirAcesso(requisicao, cabecalhos)
   resposta.headers.set("Content-Security-Policy", politica)

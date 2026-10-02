@@ -10,7 +10,7 @@ import { NextResponse } from "next/server"
 
 import { getSessao, type Sessao } from "@/lib/auth"
 import { estadoDoAcesso } from "@/lib/acesso-assinatura"
-import { rotaPermitida, type PapelDeAcesso } from "@/lib/acesso"
+import { rotaPermitida, rotaPermitidaNoMei, type PapelDeAcesso } from "@/lib/acesso"
 import { origemPermitida } from "@/lib/origem-segura"
 import { ErroDeUso } from "@/lib/erro-de-uso"
 export { ErroDeUso } from "@/lib/erro-de-uso"
@@ -64,7 +64,7 @@ export function comSessao<T>(handler: (sessao: Sessao, requisicao: Request, cont
 
     // Controle de acesso por papel, no servidor. O proxy já barra a URL, mas
     // regra de acesso que só existe numa camada é regra que um dia some.
-    if (!rotaPermitida(sessao.papel as PapelDeAcesso, caminhoDaRota)) return erro("Não encontrado.", 404)
+    if (!rotaPermitida(sessao.papel as PapelDeAcesso, caminhoDaRota) || (sessao.modoMei && !rotaPermitidaNoMei(caminhoDaRota))) return erro("Não encontrado.", 404)
     if (sessao.papel === "CONVIDADO" && escrita && !CONVIDADO_PODE_ESCREVER.some((p) => caminhoDaRota.startsWith(p))) {
       return erro("Seu acesso a este lar é só de leitura.", 403)
     }
