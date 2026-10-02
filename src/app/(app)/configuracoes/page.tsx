@@ -128,6 +128,7 @@ export default function Configuracoes() {
   const router = useRouter()
   const { theme, setTheme, cor, setCor } = useTheme()
   const [oculto, alternarOculto] = useValoresOcultos()
+  const [coresAbertas, mostrarCores] = useState(false)
 
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [contas, setContas] = useState<Conta[] | null>(null)
@@ -338,8 +339,8 @@ export default function Configuracoes() {
             </div>
           </div>
 
-          <details className={estilos.seletorCor}>
-            <summary className={estilos.linha}>
+          <div className={estilos.seletorCor}>
+            <button type="button" className={estilos.linha} aria-expanded={coresAbertas} aria-controls="opcoes-cor-tema" onClick={() => mostrarCores((abertas) => !abertas)}>
               <Quadro cor="oklch(var(--lch-brilho))">
                 <Palette />
               </Quadro>
@@ -349,17 +350,19 @@ export default function Configuracoes() {
               </span>
               <i className={estilos.corAtual} style={{ background: `oklch(${AMOSTRA[cor]})` }} aria-hidden />
               <ChevronRight aria-hidden />
-            </summary>
+            </button>
+            {coresAbertas && <div id="opcoes-cor-tema">
             <p className={estilos.avisoCor}>Entradas verdes e saídas vermelhas em qualquer tema.</p>
             <div className={estilos.cores} role="group" aria-label="Cor do tema">
               {CORES_DE_TEMA.map((opcao) => (
-                <button key={opcao.valor} type="button" aria-pressed={cor === opcao.valor} onClick={(evento) => { setCor(opcao.valor); evento.currentTarget.closest("details")?.removeAttribute("open") }}>
+                <button key={opcao.valor} type="button" aria-pressed={cor === opcao.valor} onClick={() => { setCor(opcao.valor); mostrarCores(false) }}>
                   <i style={{ "--bolinha": `oklch(${AMOSTRA[opcao.valor]})` } as React.CSSProperties} />
                   {opcao.nome}
                 </button>
               ))}
             </div>
-          </details>
+            </div>}
+          </div>
           <div className={estilos.linha}>
             <Quadro cor="oklch(0.55 0.02 250)">
               <EyeOff />
