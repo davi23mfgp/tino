@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Delete, Package, X } from "lucide-react"
+import { Delete, Minus, Package, Plus, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
@@ -109,6 +109,11 @@ export default function Balcao() {
   const [forma, setForma] = useState<FormaPagamento>("DINHEIRO")
   const [recebido, setRecebido] = useState("")
   const [cliente, setCliente] = useState("")
+  const [telefoneCliente, setTelefoneCliente] = useState("")
+  const [observacao, setObservacao] = useState("")
+  const [desconto, setDesconto] = useState("")
+  const [parcelas, setParcelas] = useState(2)
+  const [detalhesAbertos, setDetalhesAbertos] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
@@ -142,14 +147,16 @@ export default function Balcao() {
         : carrinho,
     [carrinho, digitado, descricaoAvulso],
   )
-  const total = useMemo(() => totalDaVenda(itens), [itens])
+  const bruto = useMemo(() => totalDaVenda(itens), [itens])
+  const descontoCentavos = desconto ? paraCentavos(desconto) : 0
+  const total = useMemo(() => totalDaVenda(itens, descontoCentavos), [itens, descontoCentavos])
 
   // Em dinheiro o lojista digita o que recebeu para ver o troco. Nas outras
   // formas o valor é sempre o total: passar diferente no cartão é erro.
   const pagamentos: PagamentoInformado[] = useMemo(() => {
     const valorCentavos = forma === "DINHEIRO" && recebido ? paraCentavos(recebido) : total
-    return [{ forma, valorCentavos }]
-  }, [forma, recebido, total])
+    return [{ forma, valorCentavos, ...(forma === "CREDITO_PARCELADO" ? { parcelas } : {}) }]
+  }, [forma, recebido, total, parcelas])
 
   const conferencia = useMemo(() => conferirVenda(total, pagamentos), [total, pagamentos])
 
@@ -191,6 +198,14 @@ export default function Balcao() {
     })
   }
 
+  function alterarQuantidade(indice: number, passo: number) {
+    setCarrinho((atual) => atual.flatMap((item, posicao) => {
+      if (posicao !== indice) return [item]
+      const quantidade = item.quantidade + passo
+      return quantidade > 0 ? [{ ...item, quantidade }] : []
+    }))
+  }
+
   /** Guarda o valor do visor como item e libera o visor para o próximo. */
   function guardarDigitado() {
     if (digitado <= 0) return
@@ -214,6 +229,14 @@ export default function Balcao() {
 
   async function cobrar() {
     if (ocupado || total <= 0) return
+    if (descontoCentavos < 0) {
+      setErro("O desconto não pode ser negativo.")
+      return
+    }
+    if (descontoCentavos >= bruto) {
+      setErro("O desconto precisa ser menor que o valor dos itens.")
+      return
+    }
     if (forma === "FIADO" && !cliente.trim()) {
       setErro("No fiado, diga quem levou.")
       return
@@ -225,7 +248,10 @@ export default function Balcao() {
       const resposta = await enviar<{ troco: number; venda: { numero: number } }>("/api/loja/vendas", {
         itens,
         pagamentos,
+        descontoCentavos,
         clienteNome: cliente.trim() || undefined,
+        clienteTelefone: telefoneCliente.trim() || undefined,
+        observacao: observacao.trim() || undefined,
       })
       setAviso(
         resposta.troco > 0
@@ -237,6 +263,11 @@ export default function Balcao() {
       setDescricaoAvulso("")
       setRecebido("")
       setCliente("")
+      setTelefoneCliente("")
+      setObservacao("")
+      setDesconto("")
+      setParcelas(2)
+      setDetalhesAbertos(false)
       await carregar()
     } catch (falha) {
       setErro(falha instanceof Error ? falha.message : "Não consegui fechar a venda.")
@@ -300,9 +331,12 @@ export default function Balcao() {
           <div className={estilos.itens}>
             {carrinho.map((item, indice) => (
               <div key={`${item.descricao}-${indice}`} className={estilos.item}>
-                <span>
-                  {item.quantidade}× {item.descricao}
-                </span>
+                <span>{item.descricao}</span>
+                <div className={estilos.quantidade} aria-label={`Quantidade de ${item.descricao}`}>
+                  <button type="button" onClick={() => alterarQuantidade(indice, -1)} aria-label={`Diminuir ${item.descricao}`}><Minus aria-hidden /></button>
+                  <b>{item.quantidade}</b>
+                  <button type="button" onClick={() => alterarQuantidade(indice, 1)} aria-label={`Aumentar ${item.descricao}`}><Plus aria-hidden /></button>
+                </div>
                 <b>{formatarMoeda(item.quantidade * item.precoUnitarioCentavos)}</b>
                 <button type="button" onClick={() => setCarrinho((atual) => atual.filter((_, i) => i !== indice))} aria-label={`Tirar ${item.descricao}`}>
                   <X aria-hidden />
@@ -378,6 +412,24 @@ export default function Balcao() {
                 Quem levou
                 <Input value={cliente} onChange={(evento) => setCliente(evento.target.value)} placeholder="Nome do cliente" maxLength={80} />
               </label>
+            )}
+            {forma === "CREDITO_PARCELADO" && (
+              <label className={estilos.campo}>
+                Parcelas
+                <Input type="number" min={2} max={24} value={parcelas} onChange={(evento) => setParcelas(Math.max(2, Math.min(24, Number(evento.target.value) || 2)))} />
+              </label>
+            )}
+            <button type="button" className={estilos.detalhesBotao} aria-expanded={detalhesAbertos} onClick={() => setDetalhesAbertos((atual) => !atual)}>
+              {detalhesAbertos ? "Ocultar detalhes" : "Adicionar desconto ou cliente"}
+            </button>
+            {detalhesAbertos && (
+              <div className={estilos.detalhes}>
+                <label className={estilos.campo}>Desconto em R$<Input inputMode="decimal" value={desconto} onChange={(evento) => setDesconto(evento.target.value)} placeholder="0,00" /></label>
+                {forma !== "FIADO" && <label className={estilos.campo}>Cliente (opcional)<Input value={cliente} onChange={(evento) => setCliente(evento.target.value)} maxLength={80} placeholder="Nome" /></label>}
+                <label className={estilos.campo}>Telefone (opcional)<Input type="tel" value={telefoneCliente} onChange={(evento) => setTelefoneCliente(evento.target.value)} maxLength={20} placeholder="Telefone do cliente" /></label>
+                <label className={estilos.campo}>Observação (opcional)<Input value={observacao} onChange={(evento) => setObservacao(evento.target.value)} maxLength={500} placeholder="Nota sobre a venda" /></label>
+                {descontoCentavos > 0 && <p className={estilos.resumoDesconto}>Itens {formatarMoeda(bruto)} · desconto {formatarMoeda(descontoCentavos)}</p>}
+              </div>
             )}
             {conferencia.trocoCentavos > 0 && <p className={estilos.troco}>Troco de {formatarMoeda(conferencia.trocoCentavos)}</p>}
 

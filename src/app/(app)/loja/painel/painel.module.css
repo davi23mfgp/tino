@@ -46,3 +46,11 @@
 .aviso b { font-size:calc(14px * var(--escala-letra)); }
 .aviso small { color:var(--texto-2); font-size:calc(12px * var(--escala-letra)); }
 .aviso a { min-height:44px; display:inline-flex; align-items:center; padding:0 16px; border-radius:99px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(13px * var(--escala-letra)); font-weight:650; }
+
+.metaCompacta { display:block; }
+.metaCompacta .metaConteudo { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+.metaCompacta .vazio { min-height:0; display:block; text-align:left; }
+.metaCompacta .metaNumero { margin-top:8px; }
+.metaCompacta .progresso { display:block; max-width:430px; margin-top:10px; }
+
+.metaTexto { display:grid; gap:5px; flex:1; min-width:220px; }

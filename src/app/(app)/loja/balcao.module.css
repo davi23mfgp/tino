@@ -27,6 +27,9 @@
 .item b { font-variant-numeric:tabular-nums; }
 .item button { display:grid; place-items:center; width:36px; height:36px; min-height:36px !important; padding:0 !important; border-radius:99px; color:var(--texto-3); }
 .item button svg { width:16px; height:16px; }
+.quantidade { display:flex; align-items:center; gap:2px; flex-shrink:0; }
+.quantidade b { min-width:20px; text-align:center; }
+.quantidade button { width:44px; height:44px; min-height:44px !important; }
 
 .digitado { display:flex; gap:8px; align-items:center; }
 .digitado input { flex:1; min-width:0; }
@@ -55,6 +58,9 @@
 .formas button { min-height:40px !important; padding:0 14px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%) !important; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
 .formas button[aria-pressed="true"] { border-color:transparent !important; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
 .campo { display:grid; gap:6px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.detalhesBotao { justify-self:start; min-height:44px !important; padding:0 !important; color:var(--acao); font-size:calc(12.5px * var(--escala-letra)); font-weight:650; }
+.detalhes { display:grid; gap:10px; padding:12px; border-radius:14px; background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.resumoDesconto { font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
 .troco { font-size:calc(14px * var(--escala-letra)); font-weight:650; color:var(--bom); }
 .cobrar { display:flex; align-items:center; justify-content:center; min-height:56px !important; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(16px * var(--escala-letra)); font-weight:750; font-variant-numeric:tabular-nums; }
 .cobrar:disabled { opacity:.45; }
