@@ -1,6 +1,6 @@
 # Conferência dos 20 controles — 01/10/2026
 
-O trabalho continua na branch `codex/continuacao-tino`. Publicação autorizada pelo usuário; código enviado ao GitHub. Deploy de Production ainda precisa de comprovação. Implementação e evidência em produção são etapas distintas.
+O trabalho continua na branch `codex/continuacao-tino`. Código enviado ao GitHub. A continuação remota registrou deploy Production Ready de `7a09873`; isso não comprova todos os controles operacionais. Retomada e escopo de teste em [ESTADO-2026-10-02.md](ESTADO-2026-10-02.md). Implementação e evidência em produção são etapas distintas.
 
 | Item | Preparado no projeto | Comprovação externa pendente |
 | --- | --- | --- |

@@ -1,5 +1,7 @@
 # Continuação do Tino — sessão de 30/09/2026
 
+> **Retomada atual:** [Estado de 02/10/2026](docs/ESTADO-2026-10-02.md). Leia antes dos checkpoints anteriores.
+
 > **Checkpoint atual de 01/10/2026:** [docs/ESTADO-2026-10-01.md](docs/ESTADO-2026-10-01.md). Leia primeiro; ele prevalece sobre estados históricos e decisões revertidas abaixo.
 
 Leia este arquivo antes de editar. Repositório `davi23mfgp/tino`; branch com implementação e validações: **`codex/continuacao-tino`**. O usuário pediu documentar tudo para o próximo Codex ou Claude não repetir o trabalho.

@@ -1,5 +1,7 @@
 # Tino — contador pessoal (PF e MEI)
 
+> **Retomada atual:** [Estado de 02/10/2026](docs/ESTADO-2026-10-02.md). Leia antes dos checkpoints anteriores.
+
 App de finanças pessoais para quem cuida do dinheiro sozinho, em casal ou em família, com modo MEI.
 Feito sobre a mesma stack do ERP Controllares: Next.js (App Router), Prisma + PostgreSQL, Tailwind,
 Radix e autenticação por JWT em cookie `httpOnly`.
