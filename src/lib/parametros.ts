@@ -14,7 +14,7 @@
 import type { CicloCobranca } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { PLANOS, type Plano } from "@/lib/planos"
+import { PLANOS, precoAnualComDescontoCentavos, type Plano } from "@/lib/planos"
 
 export type UnidadeParametro = "centavos" | "bps" | "dias"
 
@@ -61,16 +61,9 @@ export const PARAMETROS: DefinicaoParametro[] = [
     {
       chave: `plano.${linha.codigo}.mensalCentavos`,
       rotulo: `Preço mensal: ${linha.nome}`,
-      descricao: "Cobrado todo mês. Quem já assinou continua no valor que contratou.",
+      descricao: "Cobrado todo mês. O anual é calculado como doze mensalidades com 10% de desconto; quem já assinou continua no valor que contratou.",
       unidade: "centavos",
       padrao: linha.mensalCentavos,
-    },
-    {
-      chave: `plano.${linha.codigo}.anualCentavos`,
-      rotulo: `Preço anual: ${linha.nome}`,
-      descricao: "Cobrado de uma vez, por doze meses.",
-      unidade: "centavos",
-      padrao: linha.anualCentavos,
     },
   ]),
 ]
@@ -111,10 +104,10 @@ export async function valorVigente(chave: string): Promise<number> {
 
 /** Preço em vigor de um plano, já considerando o que o admin editou. */
 export function precoVigenteCentavos(linha: Plano, ciclo: CicloCobranca, valores?: Record<string, number>): number {
-  const campo = ciclo === "ANUAL" ? "anualCentavos" : "mensalCentavos"
-  const chave = `plano.${linha.codigo}.${campo}`
-  if (valores) return valores[chave] ?? linha[campo]
-  return linha[campo]
+  const mensalCentavos = valores?.[`plano.${linha.codigo}.mensalCentavos`] ?? linha.mensalCentavos
+  // O preço anual antigo podia divergir do desconto anunciado quando o mensal
+  // era editado no admin. Uma única conta serve a landing e o checkout.
+  return ciclo === "ANUAL" ? precoAnualComDescontoCentavos(mensalCentavos) : mensalCentavos
 }
 
 export interface PlanoVigente extends Plano {
@@ -134,13 +127,13 @@ export async function planosVigentes(): Promise<PlanoVigente[]> {
 
   return PLANOS.map((linha) => {
     const mensalCentavos = valores[`plano.${linha.codigo}.mensalCentavos`] ?? linha.mensalCentavos
-    const anualCentavos = valores[`plano.${linha.codigo}.anualCentavos`] ?? linha.anualCentavos
+    const anualCentavos = precoAnualComDescontoCentavos(mensalCentavos)
 
     return {
       ...linha,
       mensalCentavos,
       anualCentavos,
-      precoEditado: mensalCentavos !== linha.mensalCentavos || anualCentavos !== linha.anualCentavos,
+      precoEditado: mensalCentavos !== linha.mensalCentavos,
     }
   })
 }

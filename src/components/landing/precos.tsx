@@ -14,7 +14,7 @@ export function Precos({ planos, dias, modoMei = false }: { planos: Plano[]; dia
       <span className="lp-tag">{modoMei ? "Seu negócio organizado" : "Sua vida financeira"}</span>
       <h3>{modoMei ? "Tino MEI" : plano.nome}</h3><p>{plano.chamada}</p>
       <div className="lp-preco">{formatarMoeda(anual ? plano.anualCentavos : plano.mensalCentavos)}<small>/{anual ? "ano" : "mês"}</small></div>
-      <p className="lp-cobranca">{anual ? "Cobrança única por 12 meses." : "Cobrança mensal."}</p>
+      <p className="lp-cobranca">{anual ? "10% de desconto sobre 12 mensalidades. Cobrança única." : "Cobrança mensal."}</p>
       <Link href={modoMei ? "/cadastro/mei" : "/cadastro"} className="lp-botao">Testar {dias} dias <ArrowRight size={16} /></Link>
       <ul>{plano.inclui.map(item => <li key={item}><Check size={16} aria-hidden />{item}</li>)}</ul>
       <p className="lp-exclusoes">Não inclui: {plano.naoInclui.join(", ")}.</p>

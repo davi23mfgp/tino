@@ -29,12 +29,17 @@ export interface Plano {
 /** Dias de teste antes de precisar pagar. */
 export const DIAS_DE_TESTE = 14
 
+/** Doze mensalidades com 10% de desconto, arredondadas ao centavo. */
+export function precoAnualComDescontoCentavos(mensalCentavos: number): number {
+  return Math.round((mensalCentavos * 12 * 90) / 100)
+}
+
 export const PLANOS: Plano[] = [
   {
     codigo: "pessoal",
     nome: "Meu dinheiro",
     mensalCentavos: 1990,
-    anualCentavos: 19900,
+    anualCentavos: precoAnualComDescontoCentavos(1990),
     chamada: "Para quem quer saber onde o dinheiro está indo e o que fazer com o que sobra.",
     inclui: [
       "Contas, cartões e faturas em um lugar",
@@ -50,7 +55,7 @@ export const PLANOS: Plano[] = [
     codigo: "loja",
     nome: "Meu dinheiro e minha loja",
     mensalCentavos: 4990,
-    anualCentavos: 49900,
+    anualCentavos: precoAnualComDescontoCentavos(4990),
     chamada: "Para o MEI que atende no balcão e precisa saber quanto sobra de verdade.",
     inclui: [
       "Tudo do plano Meu dinheiro",

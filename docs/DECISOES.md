@@ -3,6 +3,10 @@
 Cada uma custou uma discussão ou um defeito. Mudar qualquer uma sem entender o
 motivo reintroduz o problema.
 
+## 02/10/2026 — Desconto anual de 10%
+
+O plano anual dos dois produtos custa doze mensalidades vigentes com 10% de desconto, arredondadas ao centavo: R$ 214,92 no pessoal e R$ 538,92 no MEI com os preços mensais padrão. O admin edita o mensal; o anual passa a ser calculado automaticamente para que landing, tela de assinatura e checkout cobrem o mesmo valor. Parâmetros anuais gravados antes desta decisão deixam de ser usados; assinaturas existentes conservam o valor contratado.
+
 ## Dinheiro e taxas
 
 **Centavos inteiros, sempre.** Float em dinheiro acumula erro de arredondamento
