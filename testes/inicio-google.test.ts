@@ -21,6 +21,11 @@ test("início Google preserva cookies no domínio do retorno e não reutiliza es
     assert.match(primeira.headers.get("set-cookie")!, /google_estado=/)
     assert.match(primeira.headers.get("set-cookie")!, /google_manter=0/)
     assert.equal(primeira.headers.get("cache-control"), "no-store")
+    const meiAlias = await GET(new Request("https://alias.example/api/auth/google?produto=mei&manter=0"))
+    assert.equal(meiAlias.headers.get("location"), "https://principal.example/api/auth/google?produto=mei&manter=0")
+    const mei = await GET(new Request("https://principal.example/api/auth/google?produto=mei"))
+    assert.match(mei.headers.get("set-cookie")!, /google_produto=mei/)
+    assert.match(segunda.headers.get("set-cookie")!, /google_produto=pessoal/)
   } finally {
     for (const [chave, valor] of Object.entries({ GOOGLE_CLIENT_ID: anterior.id, GOOGLE_CLIENT_SECRET: anterior.segredo, GOOGLE_REDIRECT_URI: anterior.retorno })) {
       if (valor === undefined) delete process.env[chave]; else process.env[chave] = valor

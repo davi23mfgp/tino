@@ -32,7 +32,7 @@ export async function POST(requisicao: Request) {
   if (!nome || nome.length > 80) return erro("Informe seu nome (até 80 caracteres).")
   if (identidade.email.length > 254) return erro("E-mail longo demais.")
   if (dados.tipoLar !== "SOLO" && dados.tipoLar !== "CASAL" && dados.tipoLar !== "FAMILIA") return erro("Escolha como organiza o dinheiro em casa.")
-  if (typeof dados.modoMei !== "boolean") return erro("Escolha o tipo de conta.")
+  if (typeof dados.modoMei !== "boolean" || dados.modoMei !== identidade.modoMei) return erro("Continue pelo cadastro do produto escolhido.")
   if (dados.aceiteTermos !== true) return erro("Para criar a conta, aceite os Termos de Uso e a Política de Privacidade.")
 
   const existente = await prisma.usuario.findFirst({
@@ -54,7 +54,7 @@ export async function POST(requisicao: Request) {
     })
 
     await semearLar(lar.id, { modoMei: dados.modoMei })
-    await abrirTeste(usuario.id)
+    await abrirTeste(usuario.id, dados.modoMei ? "loja" : "pessoal")
     await registrarAcesso(requisicao, usuario.id, "CADASTRO")
     await gravarCookieSessao(await criarToken({
       usuarioId: usuario.id, email: usuario.email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel,

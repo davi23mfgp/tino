@@ -8,5 +8,5 @@ export default async function CadastroGoogle() {
   const jar = await cookies()
   const identidade = await lerCadastroGoogle(jar.get(COOKIE_CADASTRO_GOOGLE)?.value)
   if (!identidade) redirect("/login?erro=google-expirado")
-  return <FormularioCadastroGoogle email={identidade.email} nomeInicial={identidade.nome} />
+  return <FormularioCadastroGoogle email={identidade.email} nomeInicial={identidade.nome} modoMei={identidade.modoMei} />
 }

@@ -17,7 +17,7 @@ const mensagensGoogle: Record<string, string> = {
   "google-vinculo": "Para proteger sua conta, entre com sua senha antes de vincular este e-mail Google.",
 }
 
-export default function FormularioLogin({ googleDisponivel }: { googleDisponivel: boolean }) {
+export default function FormularioLogin({ googleDisponivel, modoMei = false }: { googleDisponivel: boolean; modoMei?: boolean }) {
   const router = useRouter()
   const parametros = useSearchParams()
   const [email, setEmail] = useState("")
@@ -34,7 +34,7 @@ export default function FormularioLogin({ googleDisponivel }: { googleDisponivel
     setErro(null)
     try {
       const resposta = await enviar<{ precisaMfa?: boolean }>("/api/auth/login", { email, senha, manterConectado })
-      router.push(resposta.precisaMfa ? "/login/mfa" : "/painel")
+      router.push(resposta.precisaMfa ? (modoMei ? "/login/mei/mfa" : "/login/mfa") : (modoMei ? "/loja" : "/painel"))
       router.refresh()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui entrar.")
@@ -49,8 +49,8 @@ export default function FormularioLogin({ googleDisponivel }: { googleDisponivel
         <section className={estilos.cartao} aria-labelledby="titulo-login">
           <div className={estilos.marca}><img src="/mascote/leao-login.png" alt="" className={estilos.marcaIcone} /><span>tino<span className={estilos.ponto}>.</span></span></div>
           <header className={estilos.cabecalho}>
-            <h1 id="titulo-login">Entrar</h1>
-            <p>Seu dinheiro te espera.</p>
+            <h1 id="titulo-login">{modoMei ? "Entrar no Tino MEI" : "Entrar"}</h1>
+            <p>{modoMei ? "Seu negócio, em um só lugar." : "Seu dinheiro te espera."}</p>
           </header>
 
           <form onSubmit={entrar} className={estilos.formulario}>
@@ -69,8 +69,8 @@ export default function FormularioLogin({ googleDisponivel }: { googleDisponivel
           </form>
 
           <div className={estilos.divisor}><span>ou</span></div>
-          {googleDisponivel ? <a className={estilos.google} href={`/api/auth/google${manterConectado ? "" : "?manter=0"}`}><span className={estilos.googleIcone} aria-hidden="true">G</span>Continuar com Google</a> : <Link className={estilos.google} href="/login?erro=google-indisponivel"><span className={estilos.googleIcone} aria-hidden="true">G</span>Continuar com Google</Link>}
-          <p className={estilos.cadastro}>Ainda não tem conta? <Link href="/cadastro">Criar conta grátis por 14 dias</Link></p>
+          {googleDisponivel ? <a className={estilos.google} href={`/api/auth/google?produto=${modoMei ? "mei" : "pessoal"}&manter=${manterConectado ? "1" : "0"}`}><span className={estilos.googleIcone} aria-hidden="true">G</span>Continuar com Google</a> : <Link className={estilos.google} href={modoMei ? "/login/mei?erro=google-indisponivel" : "/login?erro=google-indisponivel"}><span className={estilos.googleIcone} aria-hidden="true">G</span>Continuar com Google</Link>}
+          <p className={estilos.cadastro}>Ainda não tem conta? <Link href={modoMei ? "/cadastro/mei" : "/cadastro"}>Criar conta grátis por 14 dias</Link></p>
         </section>
         <p className={estilos.rodape}><LockKeyhole size={12} aria-hidden="true" /> Conexão segura · seus dados seguem a <Link href="/privacidade">LGPD</Link></p>
       </div>

@@ -4,8 +4,9 @@ import { NextResponse } from "next/server"
 import { configuracaoGoogle } from "@/lib/google-login"
 
 export async function GET(requisicao: Request) {
+  const modoMei = new URL(requisicao.url).searchParams.get("produto") === "mei"
   const configuracao = configuracaoGoogle()
-  if (!configuracao) return NextResponse.redirect(new URL("/login?erro=google-indisponivel", requisicao.url))
+  if (!configuracao) return NextResponse.redirect(new URL(modoMei ? "/login/mei?erro=google-indisponivel" : "/login?erro=google-indisponivel", requisicao.url))
 
   // Cookies de segurança precisam nascer no mesmo domínio do retorno. Entrar
   // por um alias e voltar ao domínio configurado perdia a primeira tentativa.
@@ -35,6 +36,7 @@ export async function GET(requisicao: Request) {
   const opcoes = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/api/auth/google", maxAge: 600 }
   resposta.cookies.set("google_estado", estado, opcoes)
   resposta.cookies.set("google_nonce", nonce, opcoes)
+  resposta.cookies.set("google_produto", modoMei ? "mei" : "pessoal", opcoes)
   resposta.cookies.set("google_manter", new URL(requisicao.url).searchParams.get("manter") === "0" ? "0" : "1", opcoes)
   return resposta
 }

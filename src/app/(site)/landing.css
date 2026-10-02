@@ -335,3 +335,16 @@
   .vitrine .lp-cena-motion .lp-flutuante { animation:none; }
   .vitrine .lp-tela-real { transition:none; }
 }
+/* Landings separadas, cada uma com seu plano e demonstração atual. */
+.vitrine .lp-previa-secao { min-width:0; width:100%; }
+.vitrine .lp-painel-claro .lp-previa-secao { padding:24px; }
+.vitrine .lp-produto-grande .lp-previa-secao { margin:32px 0 0; }
+.vitrine .lp-planos:has(> :only-child) { grid-template-columns:minmax(0,540px); justify-content:center; }
+.vitrine .lp-passos-mei { grid-template-columns:repeat(4,minmax(0,1fr)); }
+@media(max-width:800px) { .vitrine .lp-passos-mei { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:520px) { .vitrine .lp-menu nav > a:first-child { display:flex; } .vitrine .lp-painel-claro .lp-previa-secao { padding:12px; } }
+.vitrine .lp-produto-grande:has(.lp-previa-secao) { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:32px; min-height:0; }
+.vitrine .lp-produto-grande:has(.lp-previa-secao) .lp-previa-secao { margin:0; }
+.vitrine .lp-painel-claro .lp-previa-secao p { margin:0; max-width:none; }
+@media(max-width:800px) { .vitrine .lp-produto-grande:has(.lp-previa-secao) { grid-template-columns:1fr; } }
+@media(max-width:520px) { .vitrine .lp-menu { gap:10px; padding:8px 12px; } .vitrine .lp-menu nav { margin:0; } .vitrine .lp-menu nav > a { display:none; } .vitrine .lp-menu nav > a:first-child { display:flex; } .vitrine .lp-entrar { padding:8px 12px; min-height:44px; font-size:12px; } }

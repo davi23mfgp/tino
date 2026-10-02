@@ -34,7 +34,7 @@ function segredoCadastro() {
   return new TextEncoder().encode(segredo)
 }
 
-export async function criarCadastroGoogle(dados: { googleId: string; email: string; nome: string }) {
+export async function criarCadastroGoogle(dados: { googleId: string; email: string; nome: string; modoMei?: boolean }) {
   return new SignJWT({ ...dados })
     .setProtectedHeader({ alg: "HS256" })
     .setAudience("google-cadastro")
@@ -48,6 +48,6 @@ export async function lerCadastroGoogle(token: string | undefined) {
   try {
     const { payload } = await jwtVerify(token, segredoCadastro(), { algorithms: ["HS256"], audience: "google-cadastro" })
     if (typeof payload.googleId !== "string" || typeof payload.email !== "string" || typeof payload.nome !== "string") return null
-    return { googleId: payload.googleId, email: payload.email, nome: payload.nome }
+    return { googleId: payload.googleId, email: payload.email, nome: payload.nome, modoMei: payload.modoMei === true }
   } catch { return null }
 }

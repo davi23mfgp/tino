@@ -80,7 +80,7 @@ export const POST = comPublica(async (requisicao: Request) => {
   // O teste começa aqui e tem data de fim gravada. Antes a tela dizia "você
   // está no teste de 14 dias" e nada criava a assinatura: não havia data para
   // vencer, e o teste nunca terminava.
-  await abrirTeste(usuario.id)
+  await abrirTeste(usuario.id, dados.modoMei ? "loja" : "pessoal")
   await registrarAcesso(requisicao, usuario.id, "CADASTRO")
 
   await gravarCookieSessao(

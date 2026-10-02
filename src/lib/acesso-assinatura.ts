@@ -1,3 +1,4 @@
+import type { CodigoDoPlano } from "@/lib/planos"
 import type { StatusAssinatura } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
@@ -79,7 +80,7 @@ export async function estadoDoAcesso(usuarioId: string): Promise<EstadoDoAcesso>
  * usuário, porque o prazo é um parâmetro que o Davi muda no painel: quem
  * entrou com 14 dias tem 14, mesmo que amanhã o padrão vire 7.
  */
-export async function abrirTeste(usuarioId: string) {
+export async function abrirTeste(usuarioId: string, planoId: CodigoDoPlano = "pessoal") {
   const dias = await diasDeTesteVigentes()
   const ate = new Date(Date.now() + dias * 86_400_000)
 
@@ -92,7 +93,7 @@ export async function abrirTeste(usuarioId: string) {
       // a pessoa contratar.
       provedor: "MERCADO_PAGO",
       status: "TESTE",
-      planoId: "pessoal",
+      planoId,
       valorCentavos: 0,
       testeAteEm: ate,
     },
