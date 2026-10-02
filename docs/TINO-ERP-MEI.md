@@ -40,6 +40,20 @@ O usuário pode registrar pagamentos de qualquer maquininha manualmente, informa
 
 A experiência pode seguir a clareza operacional do Olist: status da nota, pendências, motivo de rejeição e ação para corrigir. A emissão efetiva exige separar NF-e (mercadoria), NFC-e (varejo presencial) e NFS-e (serviço), conforme atividade, município/UF e provedor. Certificado, credenciamento e regras fiscais são tratados como requisitos de configuração, não inferidos pelo Tino. DAS e faturamento MEI permanecem visíveis mesmo sem emissor fiscal. Regras e limites devem ser datados/configuráveis; o produto não deve afirmar elegibilidade profissional ou tributária sem validação.
 
+**DAS e emissão de notas são partes permanentes do escopo**, inclusive quando o Tino evoluir de loja para ERP de serviços. O painel fiscal deve mostrar competência, vencimento e baixa do DAS; faturamento usado e disponível do limite MEI; notas pendentes, emitidas e rejeitadas com a correção exigida. Não esconder essas funções atrás de uma futura integração de vendas.
+
+## Catálogo e categorias, a partir do Controllares
+
+O Davi pediu que o catálogo e a organização por categorias sigam a profundidade funcional do ERP Controllares. Lá, a categoria tem nome, imagem, produtos vinculados e serviços pré-definidos que podem entrar numa proposta por valor fixo ou percentual. O produto tem SKU, nome, marca, fornecedor, preço, custo, imagem, ficha técnica, composição e dados fiscais. O Tino deve preservar essas relações, com apresentação e cálculos próprios.
+
+**Categoria** é cadastro real, não texto solto: criar, renomear, arquivar e selecionar; imagem opcional; produtos e serviços vinculados; busca e filtro. Uma categoria pode sugerir serviço em orçamento (por exemplo, “instalação” junto de “iluminação”), mas o valor é confirmado antes da proposta. Alterar a regra hoje não reescreve propostas antigas.
+
+**Ficha de produto** começa com nome e preço. Campos adicionais: SKU/código de barras, categoria, marca e fornecedor separados, custo, estoque mínimo, foto, descrição e especificações, unidade e dados fiscais relevantes à nota. Produto composto/kit pode reunir componentes e baixar as quantidades certas do estoque. Importação/exportação CSV deve mostrar prévia, erros por linha e quantidade de registros criados/atualizados antes de gravar.
+
+**Ficha de serviço** compartilha categoria, imagem, descrição, preço e custo estimado; não gera baixa de estoque por si. Pode consumir materiais explicitamente na ordem de serviço, com a quantidade registrada. O catálogo serve ao balcão, pedido digital, orçamento, ordem de serviço e documento fiscal, sem recadastrar o item em cada módulo.
+
+**Primeira entrega do catálogo ampliado:** categoria com nome e imagem opcional, vínculo de produto e filtro na Prateleira; cadastro de serviço simples e uso em orçamento/pedido. Fornecedor, importação CSV, kits e serviços sugeridos por categoria entram em incrementos seguintes, mantendo as referências históricas de preço e composição.
+
 ## Segmentos sem criar quatro ERPs
 
 Na entrada, o usuário escolhe o que vende: **produtos**, **serviços** ou **ambos**. Isso define exemplos, atalho inicial e campos sugeridos:
