@@ -62,17 +62,9 @@ export function TopoDaAnalise({ diagnostico, mes }: { diagnostico: Diagnostico; 
 }
 
 /** Grade uniforme ocupa a largura e mantém referências acessíveis sob demanda. */
-export function IndicadoresDaAnalise({ indicadores, resumo }: { indicadores: Indicador[]; resumo?: Pick<Diagnostico, "dre" | "balanco"> }) {
+export function IndicadoresDaAnalise({ indicadores }: { indicadores: Indicador[] }) {
   const ordem = { CRITICO: 0, ATENCAO: 1, BOM: 2, SEM_DADO: 3 }
   const ordenados = [...indicadores].sort((a, b) => ordem[a.faixa] - ordem[b.faixa])
-  const extras = resumo ? [
-    { nome: "Entradas", valor: resumo.dre.receitasCentavos, apoio: "Registradas no mês" },
-    { nome: "Saídas", valor: resumo.dre.despesasCentavos, apoio: "Registradas no mês" },
-    { nome: "Resultado do mês", valor: resumo.dre.resultadoCentavos, apoio: "Entradas menos saídas" },
-    { nome: "Ativos totais", valor: resumo.balanco.ativoTotalCentavos, apoio: "O que você tem" },
-    { nome: "Dívidas totais", valor: resumo.balanco.passivoTotalCentavos, apoio: "Passivos do balanço" },
-    { nome: "Patrimônio líquido", valor: resumo.balanco.patrimonioLiquidoCentavos, apoio: "Ativos menos dívidas" },
-  ] : []
   return <div className={`${estilos.cartoes} ${estilos.gradeIndicadores}`}>
     {ordenados.map((indicador) => {
       const destino = ONDE_RESOLVER_INDICADOR[indicador.chave]
@@ -91,12 +83,7 @@ export function IndicadoresDaAnalise({ indicadores, resumo }: { indicadores: Ind
         </footer>
       </article>
     })}
-    {extras.map((linha) => <article key={linha.nome} className={`${estilos.cartao} ${estilos.metricaExtra}`}>
-      <header><h3>{linha.nome}</h3><span className={estilos.estadoCompacto}>Registrado</span></header>
-      <b className={`${estilos.valor} valor-sensivel`}>{formatarMoeda(linha.valor)}</b>
-      <p className={estilos.referenciaCurta}>{linha.apoio}</p>
-      <footer className={estilos.rodapeIndicador}><details><summary>Como calculamos</summary><p className="valor-sensivel">{linha.apoio}. {linha.nome === "Ativos totais" ? `Disponível: ${formatarMoeda(resumo!.balanco.ativoCirculanteCentavos)}. Aplicado: ${formatarMoeda(resumo!.balanco.ativoAplicadoCentavos)}.` : linha.nome === "Dívidas totais" ? `Curto prazo: ${formatarMoeda(resumo!.balanco.passivoCurtoPrazoCentavos)}. Longo prazo: ${formatarMoeda(resumo!.balanco.passivoLongoPrazoCentavos)}.` : linha.nome === "Patrimônio líquido" ? "Total de ativos menos total de passivos do balanço." : "Considera os lançamentos registrados no mês selecionado."}</p></details></footer>
-    </article>)}
+
   </div>
 }
 

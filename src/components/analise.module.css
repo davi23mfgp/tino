@@ -108,9 +108,9 @@
 .nota { padding:0 4px; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.5; color:var(--texto-3); }
 
 /* Indicadores em grade uniforme: contexto curto e detalhes sob demanda. */
-.gradeIndicadores { grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); align-items:stretch; }
-.gradeIndicadores .cartao { padding:18px; border-radius:18px; background:var(--papel-1); backdrop-filter:none; gap:8px; }
-.gradeIndicadores .cartao header { flex-direction:column; align-items:flex-start; gap:5px; }
+.gradeIndicadores { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:12px; }
+.gradeIndicadores .cartao { padding:16px; border-radius:16px; background:var(--papel-1); backdrop-filter:none; gap:6px; }
+.gradeIndicadores .cartao header { flex-direction:row; flex-wrap:wrap; align-items:baseline; gap:6px 12px; }
 .gradeIndicadores .cartao h3 { font-size:calc(12px * var(--escala-letra)); font-weight:500; }
 .estadoCompacto { display:inline-flex; align-items:center; gap:5px; font-size:calc(10px * var(--escala-letra)); color:var(--cor,var(--texto-3)); }
 .estadoCompacto i { width:4px; height:4px; border-radius:50%; background:currentColor; }
@@ -126,9 +126,8 @@
 .rodapeIndicador summary::after { content:" +"; margin-left:6px; }
 .rodapeIndicador details[open] summary::after { content:" −"; }
 .rodapeIndicador details p { line-height:1.6; margin-bottom:8px; }
-.gradeIndicadores .metricaExtra { --cor:var(--foreground); }
-.metricaExtra .estadoCompacto { color:var(--texto-3); }
-@media(min-width:1100px) { .gradeIndicadores { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media(min-width:1100px) { .gradeIndicadores { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:600px) { .gradeIndicadores { grid-template-columns:1fr; } }
 
 .leituraObjetiva { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:12px; }
 .leituraObjetiva h2 { font-size:calc(14px * var(--escala-letra)); font-weight:550; }
