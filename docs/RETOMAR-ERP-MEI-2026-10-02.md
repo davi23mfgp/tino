@@ -26,14 +26,14 @@ Finanças é prioridade de produto: separar evento da venda, recebível, liquida
 
 ## Estado publicado
 
-- Projeto: `/workspace/tino`, branch `work`; `origin` aponta para `davi23mfgp/tino`. Ao parar, último commit de código/documentação publicado: `79df05e` (`Detalha catálogo e fiscal no ERP MEI`). Confirmar `git log` ao retomar.
+- Projeto: `/workspace/tino`, branch `work`; `origin` aponta para `davi23mfgp/tino`. Último commit com produto antes da parada: `79df05e` (`Detalha catálogo e fiscal no ERP MEI`). O commit `f3e64ab` publicou somente documentação e os ZIPs de referência. Confirmar `git log` ao retomar.
 - Produção: `https://tino-kappa.vercel.app`; banco Neon e deploy Vercel. Conta de demonstração MEI: `demo-mei@tino.local` / `demo12345`.
 - Já publicados: painel mensal/diário da loja, dados da empresa, Balcão com quantidade/desconto, telefone/observação de cliente, parcelas, produtos/estoque, fiado e caixa existentes. O Balcão ampliado foi conferido em desktop e celular; testes e build passaram antes da nova rodada local.
 - **Nenhum código de catálogo/serviços descrito abaixo foi enviado à produção nesta parada.** Banco de produção não recebeu as duas migrations locais.
 
 ## Trabalho local interrompido, ainda não publicado
 
-O `git status --short` mostra alterações em `prisma/schema.prisma`, migrations `20261002200000_catalogo_erp_mei` e `20261002210000_servico_na_venda`, API `/api/loja/catalogo`, APIs de produtos e venda, página `/loja/catalogo`, Balcão `/loja`, navegação, auxiliares de loja, testes e atualizações em `docs/ESTADO.md` e `docs/TINO-ERP-MEI.md`. **Essas alterações de código não foram commitadas nem enviadas.** Se o trabalho continuar em outra máquina, recuperar esta árvore local antes de prosseguir; os arquivos de referência e esta documentação são preservados no repositório, mas o código local interrompido só existe neste workspace até que seja retomado e validado.
+O `git status --short` mostra alterações em `prisma/schema.prisma`, migrations `20261002200000_catalogo_erp_mei` e `20261002210000_servico_na_venda`, API `/api/loja/catalogo`, APIs de produtos e venda, página `/loja/catalogo`, Balcão `/loja`, navegação, auxiliares de loja e testes. **Essas alterações de código não foram commitadas nem enviadas.** As atualizações de `docs/ESTADO.md` e `docs/TINO-ERP-MEI.md` foram preservadas no commit de documentação. Se o trabalho continuar em outra máquina, recuperar esta árvore local antes de prosseguir; os arquivos de referência e esta documentação estão no repositório, mas o código local interrompido só existe neste workspace até que seja retomado e validado.
 
 O recorte local iniciou categorias, fornecedores e serviços reais; campos de catálogo no produto (SKU, imagem URL, marca, unidade, categoria, fornecedor); serviço como item de venda; rateio da receita mista produto/serviço para faturamento MEI. A página do catálogo cria e consulta esses registros, e o Balcão lista serviços. É **parcial**: a última edição de categoria ainda não foi retestada; faltam acabamento de edição de serviço/fornecedor/produto, mídia própria, categoria sugerindo serviço, kits, CSV, propostas e pedidos digitais. Não assumir que tudo isso foi entregue.
 
