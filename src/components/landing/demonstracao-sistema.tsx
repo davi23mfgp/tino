@@ -38,7 +38,7 @@ export function DemonstracaoSistema({ modoMei = false }: { modoMei?: boolean }) 
     window.scrollTo({ top: topo + altura * (indice + 0.12) / telas.length, behavior: "smooth" })
   }
   const tela = telas[ativa]
-  return <section id="demonstracao" ref={trilho} className={estilos.trilho} data-manual={manual} aria-label={modoMei ? "Visita ao Tino MEI" : "Visita ao Tino pessoal"}>
+  return <section id="demonstracao" ref={trilho} className={estilos.trilho} data-manual={Boolean(reduzido)} aria-label={modoMei ? "Visita ao Tino MEI" : "Visita ao Tino pessoal"}>
     <div className={estilos.fixo}>
       <header className={estilos.narrativa}><div><span>{modoMei ? "Dentro do seu negócio" : "Dentro do seu dinheiro"} · {ativa + 1}/{telas.length}</span><h2>{tela.chamada}</h2><p>{tela.apoio}</p></div><span className={estilos.dica}><ArrowDown size={16} />{manual ? "Escolha uma tela abaixo" : "Role para explorar"}</span></header>
       <div className={estilos.janela}>
