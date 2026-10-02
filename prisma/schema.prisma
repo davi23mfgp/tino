@@ -922,6 +922,7 @@ model MeiPerfil {
   lar          Lar          @relation(fields: [larId], references: [id], onDelete: Cascade)
   cnpj         String?
   razaoSocial  String?
+  dadosConfirmadosEm DateTime?
   atividade    AtividadeMei @default(SERVICOS)
   dataAbertura DateTime?
 
@@ -1229,6 +1230,8 @@ model Loja {
   /// Sem eles a nota não sai — a tela de emissão pede antes de deixar tentar.
   cnpj                     String?
   inscricaoEstadual        String?
+  inscricaoEstadualIsenta  Boolean @default(false)
+  telefoneContato          String?
   /// Não é o certificado em si — isso não é guardado no nosso banco. Marca
   /// que o provedor de emissão confirmou o certificado configurado do lado
   /// dele, para a tela saber se já dá para tentar emitir.
@@ -1243,8 +1246,23 @@ model Loja {
   recebimento FormaRecebimento[]
   clientes    ClienteLoja[]
   contas      ContaDaLoja[]
+  metas       MetaDaLoja[]
 
   @@index([larId])
+}
+
+/// Meta de vendas do mês. Uma por loja e competência, para o painel mostrar
+/// o avanço real sem confundir com as metas pessoais do lar.
+model MetaDaLoja {
+  id String @id @default(cuid())
+  lojaId String
+  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  competencia String
+  valorCentavos Int
+  criadoEm DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([lojaId, competencia])
 }
 
 /// Taxa e prazo de cada forma de pagamento, cadastrados uma vez.

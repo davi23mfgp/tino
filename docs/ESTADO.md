@@ -218,3 +218,6 @@ Notificações migradas para Sheet à direita com rolagem interna, títulos fort
 
 ### 02/10/2026 — separação visual e de rotas do MEI
 A conta com `meiPerfil` usa navegação própria de negócio, sem links, busca, sino ou atalho de lançamento pessoal. O layout redireciona páginas pessoais para `/loja`, e `comSessao` bloqueia as APIs pessoais. `/loja/minha-conta` concentra segurança, assinatura e direitos sobre os dados sem expor a página pessoal de configurações. No balcão, últimas vendas ocupam a largura toda abaixo do caixa e do resumo; a lista na coluna estreita deixava um vazio alto sob o teclado.
+
+### 02/10/2026 — referência Bling no MEI
+Os prints do Bling servem de referência funcional: confirmação cadastral, painel mensal e diário, evolução de vendas, produtos mais vendidos e canais de recebimento. A interface continua Tino; os números vêm exclusivamente de VendaLoja, ItemVenda e PagamentoVenda. Não haverá alegação de integrações externas, emissão automática de nota ou previsão inteligente sem serviço real. A confirmação grava CNPJ/razão social no perfil MEI, sincroniza CNPJ/inscrição estadual com a loja e acrescenta telefone de contato e declaração de isenção da inscrição estadual.

@@ -171,6 +171,7 @@ export const GRUPO_LOJA: GrupoNav = {
   titulo: "Loja",
   pergunta: "Balcao, prateleira, fiado e MEI",
   itens: [
+    { rota: "/loja/painel", rotulo: "Visão geral", Icone: BarChart3 },
     { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
     { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
     { rota: "/loja/fiado", rotulo: "Fiado", Icone: NotebookPen },

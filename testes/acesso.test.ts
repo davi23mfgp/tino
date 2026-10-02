@@ -73,5 +73,8 @@ describe("rotas da conta MEI", () => {
   })
   it("funcionário não abre a conta do dono", () => {
     assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/loja/minha-conta"), false)
+    assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/loja/painel"), false)
+    assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/loja/dados"), false)
+    assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/api/loja/cadastro"), false)
   })
 })

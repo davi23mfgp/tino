@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Check, Plus } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
@@ -233,6 +234,7 @@ export default function Mei() {
         <p>
           {perfil.razaoSocial ?? "Seu MEI"} · {ATIVIDADE[perfil.atividade] ?? perfil.atividade.toLowerCase()} · {ano}
         </p>
+        <Link href="/loja/dados" className={estilos.dadosEmpresa}>Dados da empresa</Link>
         <button type="button" className={estilos.botao} onClick={() => setLancar("novo")}>
           <Plus aria-hidden />
           Lançar mês

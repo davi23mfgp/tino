@@ -22,7 +22,7 @@ const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/login", "/seguranca",
 
 /// Vive sob "/loja" mas é resultado/lucro do negócio, não operação de balcão —
 /// checado antes do prefixo geral, senão "começa com /loja" liberaria sozinho.
-const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta"]
+const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta"]
 
 function combinaAlgumPrefixo(caminho: string, prefixos: string[]): boolean {
   return prefixos.some((prefixo) => caminho === prefixo || caminho.startsWith(`${prefixo}/`))

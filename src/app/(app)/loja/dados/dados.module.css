@@ -1,0 +1,19 @@
+.pagina { display:grid; gap:18px; max-width:900px; margin:0 auto; }
+.pagina h2 { font-size:calc(28px * var(--escala-letra)); font-weight:600; letter-spacing:-.04em; }
+.pagina header p { margin-top:6px; font-size:calc(14px * var(--escala-letra)); color:var(--texto-2); }
+.pagina header small { display:block; margin-top:10px; color:var(--texto-3); }
+.form { display:grid; gap:18px; padding:22px; border:1px solid var(--vidro-borda); border-radius:var(--raio-bloco); background:var(--papel-1); }
+.form label { display:grid; gap:7px; min-width:0; font-size:calc(13px * var(--escala-letra)); font-weight:500; }
+.form input:not([type=checkbox]),.form select { width:100%; min-height:44px; padding:0 12px; border:1px solid var(--vidro-borda); border-radius:12px; background:var(--background); color:var(--foreground); font-size:calc(14px * var(--escala-letra)); }
+.form input:disabled { opacity:.45; }
+.dois { display:grid; gap:16px; }
+@media(min-width:680px){.dois{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.inscricao { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:16px; }
+.form .check { display:flex; align-items:center; gap:8px; min-height:44px; white-space:nowrap; }
+.check input { width:18px; height:18px; accent-color:var(--acao); }
+.nota { color:var(--texto-3); font-size:calc(12px * var(--escala-letra)); }
+.erro { color:var(--negativo); font-size:calc(13px * var(--escala-letra)); }
+.acoes { display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:14px; margin-top:4px; }
+.acoes a { min-height:44px; display:inline-flex; align-items:center; color:var(--texto-2); font-size:calc(13px * var(--escala-letra)); }
+.acoes button { min-height:44px; padding:0 20px; border-radius:99px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(13px * var(--escala-letra)); font-weight:650; }
+.acoes button:disabled { opacity:.5; }

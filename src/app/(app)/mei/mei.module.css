@@ -76,3 +76,5 @@
 .repete { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:calc(14px * var(--escala-letra)); }
 .limite { color:var(--negativo) !important; }
 .meses12 { display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); text-align:center; font-size:max(10px, calc(10.5px * var(--escala-letra))); color:var(--texto-3); }
+
+.dadosEmpresa { display:inline-flex; align-items:center; min-height:44px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); text-decoration:underline; text-underline-offset:3px; }
