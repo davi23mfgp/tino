@@ -168,3 +168,18 @@
 .categorias .escala { font-size:calc(10px * var(--escala-letra)); margin-top:4px; }
 .categorias .escala i { width:8px; height:8px; border-radius:3px; }
 @media(min-width:1024px) { .categoriasCompactas { grid-column:1/-1; } .categoriasCompactas .lista { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+
+/* Cada leitura contém número, referência e destino, sem altura artificial. */
+.leituraObjetiva { align-items:start; }
+.leituraObjetiva > section { gap:16px; background:var(--papel-1); padding:20px; }
+.leituraObjetiva h2 { font-size:calc(17px * var(--escala-letra)); font-weight:650; }
+.leituraObjetiva ul { gap:12px; }
+.leituraObjetiva li { display:grid; gap:8px; padding:14px; border:1px solid color-mix(in oklab,var(--cor),transparent 80%); border-radius:12px; background:color-mix(in oklab,var(--cor),transparent 96%); }
+.indicadorCabecalho { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.indicadorCabecalho span { font-size:calc(13px * var(--escala-letra)); font-weight:550; }
+.leituraObjetiva .indicadorCabecalho b { font-size:calc(26px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; }
+.medidaObjetiva { position:relative; height:5px; border-radius:99px; background:var(--pauta); }
+.medidaObjetiva span { display:block; height:100%; background:var(--cor); border-radius:99px; }
+.medidaObjetiva i { position:absolute; top:-3px; width:2px; height:11px; background:var(--foreground); }
+.leituraObjetiva li small { color:var(--texto-2); font-size:calc(11px * var(--escala-letra)); }
+.leituraObjetiva li a { display:flex; align-items:center; min-height:44px; font-size:calc(12px * var(--escala-letra)); color:var(--acao); font-weight:550; }

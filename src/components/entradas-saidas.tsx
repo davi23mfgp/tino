@@ -1,3 +1,4 @@
+import Link from "next/link"
 import estilos from "./entradas-saidas.module.css"
 
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
@@ -82,19 +83,19 @@ export function EntradasESaidas({
   const fixoBps = temRenda ? Math.round((custoFixoCentavos / receitasCentavos) * 10_000) : 0
   const tomDoFixo =
     fixoBps <= REFERENCIA_CUSTO_FIXO.bom ? "bom" : fixoBps <= REFERENCIA_CUSTO_FIXO.atencao ? "atencao" : "critico"
-  const somaFixoVariavel = Math.max(1, custoFixoCentavos + custoVariavelCentavos)
+  const excessoFixo = Math.max(0, custoFixoCentavos - Math.round(receitasCentavos * REFERENCIA_CUSTO_FIXO.bom / 10_000))
 
   const percentualDe = (grupo: GrupoDoMes) =>
     temRenda ? grupo.percentualDaReceita : Math.round((grupo.totalCentavos / Math.max(1, despesasCentavos)) * 10_000)
 
-  const linha = (grupo: GrupoDoMes) => (
-    <li key={grupo.grupo}>
-      <i style={{ background: COR_DO_GRUPO[grupo.grupo] ?? COR_SEM_GRUPO }} aria-hidden />
-      <span>{grupo.nome}</span>
-      <small>{formatarPercentual(percentualDe(grupo), 0)}</small>
-      <b className="valor-sensivel">{formatarMoeda(grupo.totalCentavos)}</b>
+  const linha = (grupo: GrupoDoMes) => {
+    const participacao = Math.round(grupo.totalCentavos / Math.max(1, despesasCentavos) * 10_000)
+    return <li key={grupo.grupo}>
+      <div className={estilos.linhaGrupo}><i style={{ background: COR_DO_GRUPO[grupo.grupo] ?? COR_SEM_GRUPO }} aria-hidden /><span>{grupo.nome}</span><b className="valor-sensivel">{formatarMoeda(grupo.totalCentavos)}</b></div>
+      <div className={estilos.medidaGrupo}><div><span style={{ width: `${Math.min(100, participacao / 100)}%`, background: COR_DO_GRUPO[grupo.grupo] ?? COR_SEM_GRUPO }} /></div><strong>{formatarPercentual(participacao, 0)} dos gastos</strong></div>
+      <small>{formatarPercentual(percentualDe(grupo), 0)} {temRenda ? "da renda" : "dos gastos registrados"}</small>
     </li>
-  )
+  }
 
   return (
     <div className={estilos.aba}>
@@ -139,7 +140,7 @@ export function EntradasESaidas({
         <section className={cn("ficha", estilos.bloco)}>
           <header>
             <h2>Para onde foi</h2>
-            <small>{temRenda ? "% da renda" : "% dos gastos"}</small>
+            <small className="valor-sensivel">{formatarMoeda(despesasCentavos)} no mês</small>
           </header>
           <ul className={estilos.lista}>{grupos.slice(0, GRUPOS_A_VISTA).map(linha)}</ul>
           {grupos.length > GRUPOS_A_VISTA && (
@@ -159,25 +160,20 @@ export function EntradasESaidas({
           <header>
             <h2>Custos mensais</h2>
           </header>
-          <div className={estilos.duas} aria-hidden>
-            <span data-parte="fixo" style={{ width: `${(custoFixoCentavos / somaFixoVariavel) * 100}%` }} />
-            <span data-parte="variavel" style={{ width: `${(custoVariavelCentavos / somaFixoVariavel) * 100}%` }} />
+          <div className={estilos.destaqueFixo} data-tom={tomDoFixo}>
+            <span>Renda comprometida com fixos estimados</span>
+            <b className="valor-sensivel">{temRenda ? formatarPercentual(fixoBps, 1) : "Sem renda"}</b>
+            <div className={estilos.reguaFixo} role="img" aria-label={`Fixos ${formatarPercentual(fixoBps, 1)} da renda; referência até 50%`}>
+              <span style={{ width: `${Math.min(100, fixoBps / 100)}%` }} /><i aria-hidden />
+            </div>
+            <small>Referência: até 50% da renda</small>
           </div>
           <div className={estilos.legenda}>
-            <span>
-              <i data-parte="fixo" aria-hidden />
-              <b className="valor-sensivel">{formatarMoeda(custoFixoCentavos)}</b> fixo estimado
-            </span>
-            <span>
-              <i data-parte="variavel" aria-hidden />
-              <b className="valor-sensivel">{formatarMoeda(custoVariavelCentavos)}</b> variável registrado
-            </span>
+            <span>Fixos + parcelas estimados<b className="valor-sensivel">{formatarMoeda(custoFixoCentavos)}</b></span>
+            <span>Gastos acima da estimativa<b className="valor-sensivel">{formatarMoeda(custoVariavelCentavos)}</b></span>
           </div>
-          {temRenda && (
-            <p className={estilos.leitura}>
-              Fixos: <b data-tom={tomDoFixo}>{formatarPercentual(fixoBps, 1)}</b> da renda. Referência: até {formatarPercentual(REFERENCIA_CUSTO_FIXO.bom, 0)}.
-            </p>
-          )}
+          {temRenda && excessoFixo > 0 && <p className={estilos.leitura}><b className="valor-sensivel" data-tom={tomDoFixo}>{formatarMoeda(excessoFixo)}</b> acima da referência mensal.</p>}
+          <Link className={estilos.acao} href="/recorrencias">Rever contas fixas →</Link>
           <details className={estilos.explicacao}><summary>Como calculamos</summary><p>Fixos estimados e parcelas mensais. O variável considera os gastos do mês que excedem esses fixos; não é a classificação individual de cada compra.</p></details>
         </section>
       )}

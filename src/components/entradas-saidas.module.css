@@ -107,3 +107,32 @@
 .patrimonio summary > div { flex:1; }
 .patrimonio summary b span { font-size:calc(22px * var(--escala-letra)); letter-spacing:-.03em; }
 @media(max-width:520px) { .tres { gap:8px; } .tres > div + div { padding-left:8px; } .topo,.bloco,.patrimonio { padding:16px; } .legenda b { font-size:calc(17px * var(--escala-letra)); } }
+
+/* A comparação usa a despesa registrada; a estimativa de fixos permanece separada. */
+.aba { align-items:start; }
+.bloco { gap:16px; background:var(--papel-1); }
+.bloco h2 { font-size:calc(17px * var(--escala-letra)); font-weight:650; }
+.bloco .lista { display:grid; gap:0; }
+.lista li { display:grid; grid-template-columns:1fr; gap:7px; padding:14px 0; }
+.linhaGrupo { display:grid; grid-template-columns:10px minmax(0,1fr) auto; gap:10px; align-items:center; }
+.linhaGrupo i { width:8px; height:8px; }
+.linhaGrupo span { font-size:calc(14px * var(--escala-letra)); font-weight:550; }
+.linhaGrupo b { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.medidaGrupo { display:flex; gap:12px; align-items:center; }
+.medidaGrupo > div { height:6px; border-radius:99px; background:var(--pauta); overflow:hidden; flex:1; }
+.medidaGrupo > div > span { display:block; height:100%; border-radius:99px; }
+.medidaGrupo strong { font-size:calc(11px * var(--escala-letra)); font-weight:500; color:var(--texto-2); min-width:90px; text-align:right; }
+.lista li > small { font-size:calc(11px * var(--escala-letra)); }
+.destaqueFixo { display:grid; gap:10px; padding:18px; border-radius:14px; background:color-mix(in oklab,var(--foreground),transparent 95%); }
+.destaqueFixo > span { font-size:calc(12px * var(--escala-letra)); color:var(--texto-2); }
+.destaqueFixo > b { font-size:calc(42px * var(--escala-letra)); line-height:1.05; font-weight:650; letter-spacing:-.04em; }
+.destaqueFixo small { color:var(--texto-2); font-size:calc(11px * var(--escala-letra)); }
+.reguaFixo { position:relative; height:8px; background:var(--pauta); border-radius:99px; }
+.reguaFixo span { display:block; height:100%; border-radius:99px; background:currentColor; }
+.reguaFixo i { position:absolute; left:50%; top:-4px; height:16px; width:2px; background:var(--foreground); }
+.legenda { padding:12px 0; border-bottom:1px solid var(--pauta); }
+.legenda b { font-weight:600; font-size:calc(22px * var(--escala-letra)); }
+.acao { display:flex; align-items:center; justify-content:center; min-height:44px; border-radius:10px; background:color-mix(in oklab,var(--acao),transparent 88%); color:var(--acao); font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+.explicacao { margin-top:0; }
+.patrimonio summary b span { font-weight:650; font-size:calc(28px * var(--escala-letra)); }
+@media(max-width:520px) { .linhaGrupo b { font-size:calc(14px * var(--escala-letra)); } .legenda b { font-size:calc(18px * var(--escala-letra)); } }

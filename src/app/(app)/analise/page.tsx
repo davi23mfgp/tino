@@ -1,3 +1,5 @@
+import Link from "next/link"
+import { ONDE_RESOLVER_INDICADOR } from "@/lib/tino/onde-resolver"
 import estilos from "./avancadas.module.css"
 import analise from "@/components/analise.module.css"
 import { ArrowDownRight, ArrowUpRight } from "lucide-react"
@@ -172,7 +174,11 @@ export default async function Analise() {
       <div className={analise.leituraObjetiva}>
         {[{ titulo: "Pede atenção", faixas: ["ATENCAO", "CRITICO"], textos: diagnostico.riscos }, { titulo: "Pontos fortes", faixas: ["BOM"], textos: diagnostico.pontosFortes }].filter((grupo) => grupo.textos.length > 0).map((grupo) => <section key={grupo.titulo} className={analise.bloco}>
           <h2>{grupo.titulo}</h2>
-          <ul>{diagnostico.indicadores.filter((indicador) => grupo.faixas.includes(indicador.faixa)).map((indicador) => <li key={indicador.chave} data-faixa={indicador.faixa}><span>{indicador.nome}</span><b className="valor-sensivel">{indicador.valor}</b></li>)}</ul>
+          <ul>{diagnostico.indicadores.filter((indicador) => grupo.faixas.includes(indicador.faixa)).map((indicador) => <li key={indicador.chave} data-faixa={indicador.faixa}>
+                        <div className={analise.indicadorCabecalho}><span>{indicador.nome}</span><b className="valor-sensivel">{indicador.valor}</b></div>
+                        {indicador.escala && <><div className={analise.medidaObjetiva}><span style={{ width: `${Math.max(0, Math.min(100, indicador.numero / indicador.escala.maximo * 100))}%` }} /><i style={{ left: `${indicador.escala.bom / indicador.escala.maximo * 100}%` }} /></div><small>{indicador.escala.menorMelhor ? "Até" : "Meta"} {indicador.chave === "liquidez" ? `${indicador.escala.bom} meses` : `${indicador.escala.bom / 100}%`}</small></>}
+                        {ONDE_RESOLVER_INDICADOR[indicador.chave] && <Link href={ONDE_RESOLVER_INDICADOR[indicador.chave].href}>{ONDE_RESOLVER_INDICADOR[indicador.chave].texto} →</Link>}
+                      </li>)}</ul>
           <details><summary>Entender a leitura</summary>{grupo.textos.map((texto) => <p key={texto}>{texto}</p>)}</details>
         </section>)}
       </div>
