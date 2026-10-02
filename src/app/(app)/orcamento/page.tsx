@@ -6,7 +6,6 @@ import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "luc
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
-import { Vazio } from "@/components/ui/painel"
 import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
 import { DivisaoDaRenda } from "@/components/divisao-da-renda"
@@ -217,7 +216,7 @@ export default function OrcamentoPagina() {
             <div className={estilos.linhaResumo}>
               <div>
                 <small>Nenhum limite definido para {rotuloCompetencia(competencia).split(" ")[0]}</small>
-                <b>Defina quanto quer gastar em cada categoria</b>
+                <b className={estilos.tituloSemLimite}>Defina seus limites</b>
               </div>
             </div>
           )}
@@ -263,7 +262,7 @@ export default function OrcamentoPagina() {
       )}
 
       {dados && ordenadas.length === 0 && novas.length === 0 && semLimite.length === 0 && (
-        <Vazio titulo="Nenhum gasto nem limite neste mês" texto="Use seu histórico ou repita os limites do mês passado." />
+        <div className={estilos.vazioCompacto}><Sparkles aria-hidden /><div><strong>Comece seu orçamento</strong><p>Use os atalhos acima para trazer limites ou histórico.</p></div></div>
       )}
 
       {semLimite.length > 0 && (

@@ -118,3 +118,18 @@
 .ajusteLimite button[type=submit] { background:var(--acao); color:var(--background); }
 .ajusteLimite button:disabled { opacity:.5; }
 .ajusteLimite p { color:var(--negativo); font-size:calc(12px * var(--escala-letra)); }
+
+/* Sem limites, a mensagem é curta e não força largura maior que o celular. */
+.linhaResumo .tituloSemLimite { white-space:normal; font-size:calc(21px * var(--escala-letra)); font-weight:550; margin-top:4px; }
+.vazioCompacto { display:flex; align-items:center; gap:12px; padding:18px 16px; border:1px solid var(--pauta); border-radius:16px; }
+.vazioCompacto > svg { width:22px; height:22px; flex-shrink:0; color:var(--texto-3); stroke-width:1.5; }
+.vazioCompacto strong { font-size:13px; font-weight:550; }
+.vazioCompacto p { font-size:12px; color:var(--texto-3); margin-top:4px; line-height:1.45; }
+@media(max-width:639px) {
+  .pagina { gap:10px; padding-bottom:16px; }
+  .resumo { padding:14px 16px; }
+  .mes b { font-size:14px; font-weight:550; }
+  .atalhos button { min-height:44px; padding:0 8px; font-size:12px; white-space:normal; }
+  .recolhido { padding:0 14px; }
+  .recolhido > summary { min-height:48px; font-size:12px; }
+}

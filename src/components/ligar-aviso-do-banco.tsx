@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Copy, Plus, Smartphone } from "lucide-react"
+import { Check, Copy, Plus, Smartphone, Download, Bell, Filter, Send, ListChecks } from "lucide-react"
+
+import estilos from "./ligar-aviso-do-banco.module.css"
 
 /**
  * Ligar o aviso do banco.
@@ -76,15 +78,14 @@ export function LigarAvisoDoBanco({
   }
 
   return (
-    <div className={semCabecalho ? undefined : "rounded-[var(--raio-cartao)] border border-pauta p-4"}>
+    <div className={semCabecalho ? estilos.guia : `${estilos.guia} rounded-[var(--raio-cartao)] border border-pauta p-4`}>
       {!semCabecalho && (
         <p className="flex items-center gap-2 text-[calc(14px*var(--escala-letra))] font-medium">
           <Smartphone className="size-4" /> Compras pelo aviso do banco
         </p>
       )}
       <p className="mt-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-        O aviso que o banco já manda vira lançamento sozinho, na hora da compra. É o mais perto do automático, e o
-        Tino recusa compra negada, estorno e pré-autorização de posto.
+        Configure no Android. O aviso da compra chega ao Tino para você conferir.
       </p>
 
       {!url ? (
@@ -126,24 +127,13 @@ export function LigarAvisoDoBanco({
         </>
       )}
 
-      <ol className="mt-3 space-y-1.5 text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">
-        <li>
-          1. No Android, instale um encaminhador de notificação (MacroDroid e Tasker fazem isso) e dê a ele a
-          permissão de <b>acesso às notificações</b>.
-        </li>
-        <li>
-          2. Gatilho: <b>notificação recebida</b>, filtrando só o app do seu banco e o da carteira. Filtrar importa:
-          sem filtro, promoção e mensagem de aniversário também viriam para cá.
-        </li>
-        <li>
-          3. Ação: <b>requisição HTTP POST</b> para o endereço acima, com corpo JSON{" "}
-          <code className="rounded bg-papel-2 px-1.5 py-0.5">{`{"titulo":"[app]","texto":"[texto]"}`}</code>, onde{" "}
-          <code className="rounded bg-papel-2 px-1.5 py-0.5">[app]</code> e{" "}
-          <code className="rounded bg-papel-2 px-1.5 py-0.5">[texto]</code> são as variáveis do encaminhador.
-        </li>
-        <li>4. Faça uma compra pequena e veja se ela aparece na fila aqui em cima.</li>
+      <ol className={estilos.passos}>
+        <li><div className={estilos.figura}><Download aria-hidden /><span>1</span></div><div><h3>Instale o MacroDroid</h3><p>Abra a loja oficial, instale e toque em <b>Adicionar macro</b>.</p><a href="https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid" target="_blank" rel="noopener noreferrer">Instalar pelo Google Play →</a></div></li>
+        <li><div className={estilos.figura}><Bell aria-hidden /><span>2</span></div><div><h3>Escolha o aviso do banco</h3><p>Em <b>Gatilhos → Notificação → Notificação recebida</b>, selecione apenas o app do banco. Quando o Android pedir, habilite <b>Acesso às notificações</b> para o MacroDroid.</p><div className={estilos.exemplo}><Bell size={16} aria-hidden /><span>Notificação recebida</span><small>App: seu banco</small></div></div></li>
+        <li><div className={estilos.figura}><Filter aria-hidden /><span>3</span></div><div><h3>Filtre as compras</h3><p>Use o filtro de texto do gatilho com uma expressão que o seu banco usa, como <b>compra aprovada</b>. Confira o texto de um aviso real para não enviar promoções.</p><div className={estilos.exemplo}><Filter size={16} aria-hidden /><span>Texto contém</span><small>compra aprovada</small></div></div></li>
+        <li><div className={estilos.figura}><Send aria-hidden /><span>4</span></div><div><h3>Envie ao Tino</h3><p>Em <b>Ações</b>, procure <b>Requisição HTTP</b>. Selecione POST e cole o endereço gerado acima.</p><dl className={estilos.http}><div><dt>Método</dt><dd>POST</dd></div><div><dt>Content-Type</dt><dd>application/json</dd></div><div><dt>Corpo</dt><dd><code>{'{"titulo":"TÍTULO_DO_AVISO","texto":"TEXTO_DO_AVISO"}'}</code></dd></div></dl><p>No corpo, substitua TÍTULO_DO_AVISO e TEXTO_DO_AVISO pelo <b>Texto mágico</b> do MacroDroid: título e texto da notificação do gatilho. Use o seletor de variáveis do app; não envie os nomes de exemplo como texto literal.</p></div></li>
+        <li><div className={estilos.figura}><ListChecks aria-hidden /><span>5</span></div><div><h3>Salve e confira</h3><p>Dê um nome à macro, salve e deixe ativada. Use o aviso de teste acima para conferir a conexão com o Tino; ele não testa a macro. Na próxima compra, confirme se o aviso real chegou à fila.</p><div className={estilos.exemplo}><Check size={16} aria-hidden /><span>Aviso recebido</span><small>Conferir no Tino</small></div></div></li>
       </ol>
-
       <p className="mt-2 text-[max(10px,calc(12px*var(--escala-letra)))] leading-relaxed text-[color:var(--texto-3)]">
         Isto é Android. No iPhone o sistema não deixa nenhum app ler a notificação de outro. Ali o caminho é
         compartilhar o aviso com o Tino, ou falar pelo Telegram.

@@ -370,7 +370,7 @@ export default function Capturas() {
           <DialogHeader>
             <DialogTitle>{jeito === "compartilhar" ? "Compartilhar do celular" : jeito === "aviso" ? "Compras pelo aviso do banco" : "Telegram"}</DialogTitle>
             <DialogDescription>
-              {jeito === "compartilhar" ? "Android. Não precisa de chave nem de programa: um toque por compra." : jeito === "aviso" ? "Um aplicativo de automação no celular lê o aviso do banco e repassa para cá. Você escolhe quais apps podem ser lidos e revoga quando quiser." : "Mande a compra numa mensagem para o Tino no Telegram, por escrito, em áudio ou o arquivo da fatura, e ela cai na fila."}
+              {jeito === "compartilhar" ? "Android. Não precisa de chave nem de programa: um toque por compra." : jeito === "aviso" ? "Android: configure o MacroDroid em 5 passos. Você escolhe qual banco pode enviar avisos." : "Mande a compra numa mensagem para o Tino no Telegram, por escrito, em áudio ou o arquivo da fatura, e ela cai na fila."}
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
