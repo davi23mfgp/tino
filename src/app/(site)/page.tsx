@@ -5,7 +5,7 @@ import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
 import { Leao } from "./leao"
 import { Revelar } from "@/components/landing/movimento"
 import { Abertura, BotaoVivo, EmSequencia } from "@/components/landing/entrada"
-import { DemonstracaoSistema, PreviaAtual } from "@/components/landing/demonstracao-sistema"
+import { DemonstracaoReal } from "@/components/landing/demonstracao-real"
 import { Precos } from "@/components/landing/precos"
 import { VitrineRecursos } from "@/components/landing/vitrine-recursos"
 
@@ -36,8 +36,8 @@ const FAQ = [
   ["Como funciona pelo Telegram?", "Você liga o Telegram em Anotar e passa a mandar a compra numa mensagem: por escrito, em áudio ou o arquivo da fatura. Ela cai na fila de conferência do app."],
   ["O assistente decide por mim?", "Não. O assistente Tino responde com os seus números: quanto sobrou, qual dívida pagar primeiro, se um empréstimo cabe no mês. Ele explica e simula, mas não recomenda qual investimento comprar."],
   ["Funciona no celular e no computador?", "Sim. O Tino funciona pelo navegador e adapta a interface à sua tela. Use a mesma conta para acessar seus dados nos dois."],
-  ["O que aparece nas demonstrações?", "É uma prévia interativa com dados fictícios e componentes atuais do produto. Sua conta mostra seus próprios lançamentos."],
-  ["O Tino também atende MEI?", "Sim. O Tino MEI tem uma página e um acesso próprios, com vendas, estoque, fiado e caixa. Conheça em Para MEI."],
+  ["O que aparece nas demonstrações?", "São capturas da interface real do Tino usando a conta de demonstração. Os valores são exemplos; sua conta mostra os seus próprios lançamentos."],
+  ["Também posso organizar minha loja?", "Sim. O Tino MEI tem uma página própria em /para-mei, com cadastro e acesso separados para organizar o negócio."],
   ["O Tino substitui um contador?", "O Tino ajuda a organizar suas finanças e acompanhar o negócio. Obrigações que exigem um profissional continuam com seu contador."],
 ]
 function Comecar({ texto = "Começar agora" }: { texto?: string }) {
@@ -54,13 +54,8 @@ export default async function Vitrine() {
     </header>
     <main id="conteudo">
       <section className="lp-hero">
-        <div className="lp-hero-texto">
-          <Abertura><span className="lp-hero-selo"><span aria-hidden /> Um pouco de tino muda tudo.</span></Abertura>
-          <Abertura atraso={0.08}><h1>Seu dinheiro.<br /><span>Uma nova perspectiva.</span></h1></Abertura>
-          <Abertura atraso={0.16}><p>Contas, cartões e planos juntos.<br />Clareza para hoje. Espaço para o que vem depois.</p></Abertura>
-          <Abertura atraso={0.24}><div className="lp-hero-acoes"><Comecar texto="Começar meu plano" /><a href="#demonstracao" className="lp-hero-ver">Conhecer o Tino <ArrowRight size={16} aria-hidden /></a></div></Abertura>
-        </div>
-        <DemonstracaoSistema />
+        <div className="lp-hero-texto"><Abertura><h1>Seu dinheiro organizado.<br />Sua vida com espaço<br />para acontecer.</h1></Abertura><Abertura atraso={0.08}><p>Contas, cartões e planos em um só lugar.<br />Entenda como você está e o que fazer a seguir.</p></Abertura><Abertura atraso={0.16}><Comecar /></Abertura></div>
+        <DemonstracaoReal />
         <EmSequencia className="lp-confianca" passo={0.09}>
           {[<span key="contas"><Wallet size={18} /> Contas e cartões juntos</span>,
             <span key="extratos"><ScanLine size={18} /> Importação de extratos</span>,
@@ -68,11 +63,11 @@ export default async function Vitrine() {
             <span key="telas"><Smartphone size={18} /> No celular e no computador</span>]}
         </EmSequencia>
       </section>
-      <section className="lp-secao" id="planejamento"><Revelar className="lp-painel-claro"><div><span className="lp-tag">Leia seu mês</span><h2>Seu mês.<br />Mais claro.<br />Mais seu.</h2><p>Veja onde gastou, compare os custos e encontre espaço para os seus planos.</p><Comecar texto="Começar meu plano" /></div><div className="lp-previa-secao"><PreviaAtual tela="analise" /></div></Revelar></section>
-      <section className="lp-secao lp-faixa-produto" id="vantagens"><Revelar className="lp-produto-grande"><div className="lp-produto-texto"><h2>O dinheiro é seu.<br />A clareza também.</h2><p>Saldo, gastos e compromissos.<br />Uma visão completa para decidir melhor.</p><Comecar /></div><div className="lp-previa-secao"><PreviaAtual tela="inicio" /></div></Revelar></section>
-      <section className="lp-secao lp-alternada" id="visao"><Revelar className="lp-secao-texto"><h2>Encontre cada gasto.<br />Entenda o todo.</h2><p>Busque lançamentos, filtre por conta ou categoria e veja os totais do período. O detalhe aparece quando você precisa.</p><Comecar texto="Organizar meu dinheiro" /></Revelar><Revelar className="lp-moldura-recurso"><PreviaAtual tela="extrato" /></Revelar></section>
-      <section className="lp-secao lp-alternada lp-invertida" id="cartoes"><Revelar className="lp-secao-texto"><h2>A próxima fatura<br />já está no radar.</h2><p>Alterne entre seus cartões, confira compras e acompanhe as parcelas dos próximos meses. Defina seu orçamento total e por categoria.</p><Comecar texto="Conhecer meus cartões" /></Revelar><Revelar className="lp-moldura-recurso lp-cartoes-visual"><PreviaAtual tela="cartoes" /></Revelar></section>
-      <section className="lp-secao lp-alternada" id="dividas"><Revelar className="lp-secao-texto"><h2>Dívida com<br />data para acabar.</h2><p>Veja quanto cada dívida cobra por mês, qual atacar primeiro e quando fica livre. Antes de pegar um empréstimo, o Tino mostra o custo de verdade e se a parcela cabe no mês.</p><Comecar texto="Organizar minhas dívidas" /></Revelar><Revelar className="lp-moldura-recurso"><PreviaAtual tela="dividas" /></Revelar></section>
+      <section className="lp-secao" id="planejamento"><Revelar className="lp-painel-claro"><div><span className="lp-tag">Planeje o próximo passo</span><h2>Hoje, um plano.<br />Amanhã, mais<br />possibilidades.</h2><p>Veja a projeção do seu saldo. Ajuste o orçamento, acompanhe metas e entenda o efeito das suas escolhas.</p><Comecar texto="Começar meu plano" /></div><div className="lp-tela-projecao"><img src="/demonstracao/projecao-desktop.webp" alt="Projeção real do Tino com cenários e evolução do saldo" width={1265} height={712} loading="lazy" /></div></Revelar></section>
+      <section className="lp-secao lp-faixa-produto" id="vantagens"><Revelar className="lp-produto-grande"><div className="lp-produto-texto"><h2>O dinheiro é seu.<br />A clareza também.</h2><p>Saldo, gastos e compromissos.<br />Uma visão completa para decidir melhor.</p><Comecar /></div><div className="lp-desktop lp-desktop-inclinado"><img src="/demonstracao/inicio-desktop.webp" alt="Painel real do Tino: resultado do mês, cartões e compras para conferir" width={1265} height={712} loading="lazy" /></div></Revelar></section>
+      <section className="lp-secao lp-alternada" id="visao"><Revelar className="lp-secao-texto"><h2>Encontre cada gasto.<br />Entenda o todo.</h2><p>Busque lançamentos, filtre por conta ou categoria e veja os totais do período. O detalhe aparece quando você precisa.</p><Comecar texto="Organizar meu dinheiro" /></Revelar><Revelar className="lp-moldura-recurso"><img src="/demonstracao/extrato-desktop.webp" alt="Extrato real do Tino com busca, filtros e totais" width={1265} height={712} loading="lazy" /></Revelar></section>
+      <section className="lp-secao lp-alternada lp-invertida" id="cartoes"><Revelar className="lp-secao-texto"><h2>A próxima fatura<br />já está no radar.</h2><p>Alterne entre seus cartões, confira compras e acompanhe as parcelas dos próximos meses. Defina seu orçamento total e por categoria.</p><Comecar texto="Conhecer meus cartões" /></Revelar><Revelar className="lp-moldura-recurso lp-cartoes-visual"><img src="/demonstracao/cartoes-desktop.webp" alt="Tela real de cartões do Tino: cartões empilhados, fatura e previsão mensal" width={1265} height={712} loading="lazy" /></Revelar></section>
+      <section className="lp-secao lp-alternada" id="dividas"><Revelar className="lp-secao-texto"><h2>Dívida com<br />data para acabar.</h2><p>Veja quanto cada dívida cobra por mês, qual atacar primeiro e quando fica livre. Antes de pegar um empréstimo, o Tino mostra o custo de verdade e se a parcela cabe no mês.</p><Comecar texto="Organizar minhas dívidas" /></Revelar><Revelar className="lp-moldura-recurso"><img src="/demonstracao/dividas-desktop.webp" alt="Tela real de dívidas do Tino: total, ordem de ataque e quando cada uma acaba" width={1265} height={712} loading="lazy" /></Revelar></section>
       <section className="lp-secao lp-comecar" id="anotar"><Revelar className="lp-central"><h2>Anote do jeito<br />mais fácil para você.</h2><p>Nada entra no saldo sem você conferir: aviso de banco erra, e o Tino sabe disso.</p></Revelar><EmSequencia className="lp-passos" passo={0.1}>
         {ANOTAR.map(({ Icone, titulo, texto }) => (
           <div key={titulo}><Icone size={26} strokeWidth={1.5} /><h3>{titulo}</h3><p>{texto}</p></div>
@@ -94,6 +89,6 @@ export default async function Vitrine() {
       <section className="lp-secao lp-duvidas" id="duvidas"><div><span className="lp-tag">Ficou alguma dúvida?</span><h2>Vamos simplificar.</h2></div><EmSequencia passo={0.05}>{FAQ.map(([pergunta,resposta]) => <details key={pergunta}><summary>{pergunta}<Plus size={19} aria-hidden /></summary><p>{resposta}</p></details>)}</EmSequencia></section>
       <section className="lp-secao lp-final"><Revelar><Leao tamanho={136} /><h2>Mais tino no dinheiro.<br />Mais espaço para a vida.</h2><Comecar texto={`Experimentar por ${dias} dias`} /></Revelar></section>
     </main>
-    <footer className="lp-secao lp-rodape"><Link href="/" className="lp-marca"><Leao tamanho={38} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><a href="#recursos">Recursos</a><a href="#planos">Preços</a><Link href="/termos">Termos</Link><Link href="/privacidade">Privacidade</Link><Link href="/login">Entrar</Link><Link href="/para-mei">Tino MEI</Link></nav><small>© {new Date().getFullYear()} Tino</small></footer>
+    <footer className="lp-secao lp-rodape"><Link href="/" className="lp-marca"><Leao tamanho={38} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><Link href="/para-mei">Para MEI</Link><a href="#recursos">Recursos</a><a href="#planos">Preços</a><Link href="/termos">Termos</Link><Link href="/privacidade">Privacidade</Link><Link href="/login">Entrar</Link></nav><small>© {new Date().getFullYear()} Tino</small></footer>
   </div>
 }

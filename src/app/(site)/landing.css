@@ -273,78 +273,11 @@
   .vitrine .lp-legal section { margin-top:36px}
 }
 
-/* Hero motion: perspectiva na captura real, luz suave e cartões em planos diferentes. */
-.vitrine .lp-hero { position:relative; padding-top:154px; background:radial-gradient(ellipse at 50% 40%,#14372b45,transparent 60%); }
-.vitrine .lp-hero-texto { position:relative; z-index:3; animation:none; }
-.vitrine .lp-hero-selo { display:inline-flex; gap:8px; align-items:center; padding:7px 13px; margin-bottom:24px; border:1px solid #bce8cf26; border-radius:99px; background:#bce8cf08; color:#c4dbcc; font-size:12px; letter-spacing:.02em; }
-.vitrine .lp-hero-selo > span { width:6px; height:6px; border-radius:50%; background:#9ae6ba; box-shadow:0 0 12px #9ae6ba55; }
-.vitrine .lp-hero h1 { max-width:1000px; font-size:clamp(44px,6.7vw,88px); letter-spacing:-.065em; line-height:1.04; }
-.vitrine .lp-hero h1 span { background:linear-gradient(110deg,#f2faf5 10%,#a8e8be 65%,#80baa4); background-clip:text; -webkit-background-clip:text; color:transparent; }
-.vitrine .lp-hero-texto p { font-size:18px; margin:22px auto 26px; }
-.vitrine .lp-hero-acoes { display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap; }
-.vitrine .lp-hero-acoes .lp-botao { background:#b8f2cd; color:#102019; box-shadow:0 5px 28px #99e5b71a,inset 0 1px 0 #ffffff80; min-height:50px; }
-.vitrine .lp-hero-ver { display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px; font-size:14px; color:#d8dfdb; }
-.vitrine .lp-demonstracao { max-width:1180px; margin-top:60px; padding:0 46px 24px; scroll-margin-top:120px; perspective:1400px; }
-.vitrine .lp-halo-demo { position:absolute; inset:0 -12% 15%; z-index:-1; background:radial-gradient(ellipse,#64db9830,transparent 64%); filter:blur(40px); pointer-events:none; }
-.vitrine .lp-cena-motion { position:relative; transform-style:preserve-3d; }
-.vitrine .lp-cena-motion .lp-janela { width:100%; border-radius:22px; border-color:#b9e3c82e; box-shadow:0 40px 90px #0009,0 0 60px #70ce9e0d,inset 0 1px 0 #fff2; animation:none; }
-.vitrine .lp-cena-motion .lp-janela-barra { background:linear-gradient(90deg,#1a2420,#111714); }
-.vitrine .lp-cena-motion .lp-flutuante { border-radius:18px; background:linear-gradient(145deg,#242e29f5,#101713f5); border:1px solid #d2f6df30; box-shadow:0 20px 55px #0008,inset 0 1px 0 #ffffff16; padding:18px 20px; font-size:14px; }
-.vitrine .lp-cena-motion .lp-flutuante strong { font-size:25px; margin-top:7px; font-weight:500; }
-.vitrine .lp-cena-motion .lp-flutuante-um { left:-38px; top:9%; transform:translateZ(55px) rotate(-5deg); }
-.vitrine .lp-cena-motion .lp-flutuante-dois { right:-38px; top:26%; width:256px; transform:translateZ(70px) rotate(3deg); }
-.vitrine .lp-cena-motion .lp-flutuante-tres { left:-26px; top:auto; bottom:8%; width:248px; transform:translateZ(45px) rotate(-2deg); }
-.vitrine .lp-float-icone { display:inline-grid; place-items:center; width:28px; height:28px; margin-right:8px; border-radius:9px; color:#a5e6be; background:#a5e6be15; vertical-align:middle; }
-.vitrine .lp-float-titulo { font-weight:550; }
-.vitrine .lp-float-etiqueta { display:flex; align-items:center; gap:6px; color:#a5e6be; font-size:10px; margin-bottom:12px; }
-.vitrine .lp-cena-motion .lp-flutuante-dois > .lp-float-etiqueta { color:#a5e6be; font-size:10px; }
-.vitrine .lp-demo-controles { margin-top:26px; background:#141c17; }
-.vitrine .lp-demo-controles button[aria-pressed=true] { color:#d7fbe4; background:#b8f2cd15; box-shadow:inset 0 0 0 1px #b8f2cd24; }
-.vitrine .lp-confianca { padding-top:30px; gap:28px; font-size:12px; }
-@media(max-width:800px) {
-  .vitrine .lp-hero { padding-top:130px; }
-  .vitrine .lp-demonstracao { padding:0 24px 20px; margin-top:46px; }
-  .vitrine .lp-cena-motion .lp-flutuante { padding:12px; }
-  .vitrine .lp-cena-motion .lp-flutuante-um { left:-8px; top:-18px; max-width:190px; }
-  .vitrine .lp-cena-motion .lp-flutuante-dois { right:-8px; top:auto; bottom:18px; width:205px; }
-  .vitrine .lp-cena-motion .lp-flutuante strong { font-size:19px; }
-  .vitrine .lp-cena-motion .lp-flutuante-tres { display:none; }
-}
-@media(max-width:520px) {
-  .vitrine .lp-hero { padding-top:112px; }
-  .vitrine .lp-hero h1 { font-size:clamp(38px,10vw,52px); }
-  .vitrine .lp-hero-texto p { font-size:15px; margin:18px auto 22px; }
-  .vitrine .lp-hero-selo { font-size:10px; margin-bottom:20px; }
-  .vitrine .lp-hero-acoes { gap:8px 18px; }
-  .vitrine .lp-demonstracao { padding:0 16px 20px; margin-top:32px; }
-  .vitrine .lp-cena-motion { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .vitrine .lp-cena-motion .lp-janela { grid-column:1/-1; grid-row:1; border-radius:12px; }
-  .vitrine .lp-cena-motion .lp-flutuante { position:relative; inset:auto; width:auto; max-width:none; transform:none; animation:none; font-size:11px; padding:12px; border-radius:12px; }
-  .vitrine .lp-cena-motion .lp-flutuante-um { grid-row:2; }
-  .vitrine .lp-cena-motion .lp-flutuante-dois { grid-row:2; }
-  .vitrine .lp-cena-motion .lp-flutuante strong { font-size:18px; }
-  .vitrine .lp-cena-motion .lp-flutuante small { font-size:10px; }
-  .vitrine .lp-mini-bancos { margin-top:10px; }
-  .vitrine .lp-mini-bancos small { font-size:9px; }
-  .vitrine .lp-float-icone { display:none; }
-  .vitrine .lp-demo-controles { max-width:100%; gap:0; }
-  .vitrine .lp-demo-controles button { padding:8px 10px; font-size:11px; }
-  .vitrine .lp-confianca { display:grid; grid-template-columns:1fr 1fr; gap:14px; text-align:left; }
-}
-@media(prefers-reduced-motion:reduce) {
-  .vitrine .lp-cena-motion .lp-flutuante { animation:none; }
-  .vitrine .lp-tela-real { transition:none; }
-}
-/* Landings separadas, cada uma com seu plano e demonstração atual. */
-.vitrine .lp-previa-secao { min-width:0; width:100%; }
-.vitrine .lp-painel-claro .lp-previa-secao { padding:24px; }
-.vitrine .lp-produto-grande .lp-previa-secao { margin:32px 0 0; }
+/* O MEI usa a mesma moldura e controles da landing original, com conteúdo do negócio. */
+.vitrine .lp-visor-mei { aspect-ratio:1265/712; }
+.vitrine .lp-visor-mei .lp-tela-real { overflow-y:auto; scrollbar-width:thin; }
+.vitrine .lp-visor-mei .lp-tela-real[aria-hidden=true] { visibility:hidden; pointer-events:none; }
 .vitrine .lp-planos:has(> :only-child) { grid-template-columns:minmax(0,540px); justify-content:center; }
 .vitrine .lp-passos-mei { grid-template-columns:repeat(4,minmax(0,1fr)); }
 @media(max-width:800px) { .vitrine .lp-passos-mei { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media(max-width:520px) { .vitrine .lp-menu nav > a:first-child { display:flex; } .vitrine .lp-painel-claro .lp-previa-secao { padding:12px; } }
-.vitrine .lp-produto-grande:has(.lp-previa-secao) { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:32px; min-height:0; }
-.vitrine .lp-produto-grande:has(.lp-previa-secao) .lp-previa-secao { margin:0; }
-.vitrine .lp-painel-claro .lp-previa-secao p { margin:0; max-width:none; }
-@media(max-width:800px) { .vitrine .lp-produto-grande:has(.lp-previa-secao) { grid-template-columns:1fr; } }
 @media(max-width:520px) { .vitrine .lp-menu { gap:10px; padding:8px 12px; } .vitrine .lp-menu nav { margin:0; } .vitrine .lp-menu nav > a { display:none; } .vitrine .lp-menu nav > a:first-child { display:flex; } .vitrine .lp-entrar { padding:8px 12px; min-height:44px; font-size:12px; } }
