@@ -280,7 +280,11 @@
 .vitrine .lp-visor-mei .lp-tela-real { overflow:hidden; }
 .vitrine .lp-visor-mei .lp-tela-real > div { max-height:none; overflow:hidden; }
 .vitrine .lp-visor-mei .lp-tela-real[aria-hidden=true] { pointer-events:none; }
-@media(max-width:700px) { .vitrine .lp-mei .lp-demonstracao-conteudo { top:78px; } }
+@media(max-width:700px) {
+  .vitrine .lp-mei .lp-demonstracao-conteudo { top:78px; }
+  /* No visor estreito, os cartões de contexto cobriam as etapas e a pausa. */
+  .vitrine .lp-mei .lp-demonstracao .lp-flutuante { display:none; }
+}
 @media(prefers-reduced-motion:reduce) { .vitrine .lp-mei .lp-demonstracao { height:auto; } .vitrine .lp-mei .lp-demonstracao-conteudo { position:relative; top:auto; } }
 .vitrine .lp-planos:has(> :only-child) { grid-template-columns:minmax(0,540px); justify-content:center; }
 .vitrine .lp-passos-mei { grid-template-columns:repeat(4,minmax(0,1fr)); }
