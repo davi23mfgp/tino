@@ -83,3 +83,13 @@
 .mini .logoMini { width:28px; height:28px; min-width:28px; border-radius:8px; background:white; color:var(--texto-3); text-shadow:none; }
 .identidadeMini em { font-style:normal; font-size:calc(10px * var(--escala-letra)); font-weight:650; color:#fff; }
 .verTodas { min-height:44px; font-size:calc(12px * var(--escala-letra)); font-weight:500; }
+
+/* A paleta só ocupa espaço enquanto a pessoa está escolhendo uma cor. */
+.seletorCor { border-top:1px solid var(--pauta); }
+.seletorCor > summary { list-style:none; cursor:pointer; min-height:56px; }
+.seletorCor > summary::-webkit-details-marker { display:none; }
+.seletorCor > summary:focus-visible { outline:2px solid var(--acao); outline-offset:2px; border-radius:8px; }
+.corAtual { width:18px; height:18px; border-radius:50%; flex-shrink:0; border:1px solid var(--vidro-borda); }
+.seletorCor[open] > summary > svg:last-child { transform:rotate(90deg); }
+.avisoCor { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); padding:4px 0 10px; }
+.seletorCor .cores { margin-bottom:10px; }

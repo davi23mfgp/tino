@@ -338,24 +338,28 @@ export default function Configuracoes() {
             </div>
           </div>
 
-          <div className={estilos.linha}>
-            <Quadro cor="oklch(var(--lch-brilho))">
-              <Palette />
-            </Quadro>
-            <span>
-              <strong>Cor do tema</strong>
-              <small>Entrada continua verde e gasto vermelho em qualquer cor</small>
-            </span>
-          </div>
-          <div className={estilos.cores} role="group" aria-label="Cor do tema">
-            {CORES_DE_TEMA.map((opcao) => (
-              <button key={opcao.valor} type="button" aria-pressed={cor === opcao.valor} onClick={() => setCor(opcao.valor)}>
-                <i style={{ "--bolinha": `oklch(${AMOSTRA[opcao.valor]})` } as React.CSSProperties} />
-                {opcao.nome}
-              </button>
-            ))}
-          </div>
-
+          <details className={estilos.seletorCor}>
+            <summary className={estilos.linha}>
+              <Quadro cor="oklch(var(--lch-brilho))">
+                <Palette />
+              </Quadro>
+              <span>
+                <strong>Cor do tema</strong>
+                <small>{CORES_DE_TEMA.find((opcao) => opcao.valor === cor)?.nome ?? "Verde"}</small>
+              </span>
+              <i className={estilos.corAtual} style={{ background: `oklch(${AMOSTRA[cor]})` }} aria-hidden />
+              <ChevronRight aria-hidden />
+            </summary>
+            <p className={estilos.avisoCor}>Entradas verdes e saídas vermelhas em qualquer tema.</p>
+            <div className={estilos.cores} role="group" aria-label="Cor do tema">
+              {CORES_DE_TEMA.map((opcao) => (
+                <button key={opcao.valor} type="button" aria-pressed={cor === opcao.valor} onClick={(evento) => { setCor(opcao.valor); evento.currentTarget.closest("details")?.removeAttribute("open") }}>
+                  <i style={{ "--bolinha": `oklch(${AMOSTRA[opcao.valor]})` } as React.CSSProperties} />
+                  {opcao.nome}
+                </button>
+              ))}
+            </div>
+          </details>
           <div className={estilos.linha}>
             <Quadro cor="oklch(0.55 0.02 250)">
               <EyeOff />
