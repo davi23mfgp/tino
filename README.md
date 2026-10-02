@@ -7,6 +7,8 @@ Radix e autenticação por JWT em cookie `httpOnly`.
 **Retomando o projeto?** Leia `docs/COMECAR-AQUI.md` — em cinco minutos você sabe
 tanto quanto a última sessão.
 
+**Estado atualizado em 01/10/2026:** [entregas, decisões finais e próximos passos](docs/ESTADO-2026-10-01.md).
+
 ## O que ele faz
 
 - **Contas e cartões** — saldo derivado dos lançamentos (nunca um campo gravado que desatualiza).

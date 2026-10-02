@@ -1,5 +1,7 @@
 # Começar aqui
 
+> **Checkpoint atual de 01/10/2026:** [ESTADO-2026-10-01.md](ESTADO-2026-10-01.md). Leia primeiro; ele prevalece sobre estados históricos e decisões revertidas abaixo.
+
 Se você é uma sessão nova do Claude (outra conta, outro dia, outra máquina),
 leia isto primeiro. Em cinco minutos você sabe tanto quanto a sessão anterior.
 
