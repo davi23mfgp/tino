@@ -52,17 +52,30 @@ export function CarteiraInvestimentos() {
   const origens = contas.filter((conta) => !["CARTAO_CREDITO", "INVESTIMENTO"].includes(conta.tipo))
   const tickers = ativos.map((conta) => conta.ticker?.trim().toUpperCase()).filter(Boolean).join(",")
 
-  // Cotações, histórico do período e o mercado do dia numa chamada só. Chega
-  // sozinha ao abrir a tela e ao trocar o período; a resposta de um período
-  // antigo que chegue atrasada é descartada.
+  // Atualiza ao abrir, a cada dez minutos e ao voltar à aba. O intervalo
+  // acompanha o cache da fonte; não promete cotação em tempo real.
   useEffect(() => {
     let valendo = true
-    setAtualizando(true)
-    buscar<RespostaDoMercado>(`/api/mercado?tickers=${encodeURIComponent(tickers)}&periodo=${periodo}`)
-      .then((resposta) => { if (valendo) setMercado(resposta) })
-      .catch(() => { /* sem mercado a tela mostra os valores cadastrados */ })
-      .finally(() => { if (valendo) setAtualizando(false) })
-    return () => { valendo = false }
+    let buscando = false
+    const atualizarMercado = async () => {
+      if (buscando || document.visibilityState === "hidden") return
+      buscando = true
+      setAtualizando(true)
+      try {
+        const resposta = await buscar<RespostaDoMercado>(`/api/mercado?tickers=${encodeURIComponent(tickers)}&periodo=${periodo}`)
+        if (valendo) setMercado(resposta)
+      } catch { /* Preserva a última cotação recebida quando a fonte falha. */ }
+      finally { buscando = false; if (valendo) setAtualizando(false) }
+    }
+    void atualizarMercado()
+    const intervalo = window.setInterval(() => { void atualizarMercado() }, 10 * 60 * 1000)
+    const aoVoltar = () => { if (document.visibilityState === "visible") void atualizarMercado() }
+    document.addEventListener("visibilitychange", aoVoltar)
+    return () => {
+      valendo = false
+      window.clearInterval(intervalo)
+      document.removeEventListener("visibilitychange", aoVoltar)
+    }
   }, [tickers, periodo])
 
   const series = mercado?.ativos ?? []

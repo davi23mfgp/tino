@@ -83,4 +83,5 @@
 .controleFita:focus-visible { outline:2px solid var(--acao); outline-offset:-4px; border-radius:10px; }
 .marcadorCarteira { width:4px; height:4px; border-radius:50%; background:var(--acao); align-self:center; }
 @keyframes passarCotacoes { to { transform:translateX(-50%); } }
-@media(prefers-reduced-motion:reduce) { .trilhoFita { animation:none !important; } .janelaFita { overflow-x:auto; } .trilhoFita ul[aria-hidden="true"] { display:none; } .controleFita { display:none; } }
+/* Movimento contínuo solicitado para a fita; o controle de pausa permanece disponível.
+   Não trocar por rolagem manual nem ocultar o controle neste componente. */
