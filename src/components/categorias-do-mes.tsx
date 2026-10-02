@@ -41,6 +41,8 @@ export function CategoriasDoMes({ linhas, mesAnterior, dias, maiorGasto, mediaDi
   hoje: number
 }) {
   const [todas, setTodas] = useState(false)
+  const [diaSelecionado, selecionarDia] = useState<number | null>(maiorGasto?.dia ?? null)
+  const diaEmDestaque = dias.find((dia) => dia.dia === diaSelecionado)
   const total = linhas.reduce((soma, linha) => soma + linha.totalCentavos, 0)
   // O que mais subiu em reais, não em percentual: R$ 10 que viram R$ 30 são
   // +200% e não mudam o mês; R$ 1.200 que viram R$ 1.400 mudam.
@@ -60,21 +62,27 @@ export function CategoriasDoMes({ linhas, mesAnterior, dias, maiorGasto, mediaDi
         <header className={estilos.cabecalho}><h2>Maiores aumentos</h2><small>vs. {mesAnterior} · mesmo período</small></header>
         {subiram.length === 0 ? <p className={estilos.vazio}>Nenhuma categoria subiu contra o mesmo período de {mesAnterior}.</p> : (
           <ul className={estilos.subiu}>
-            {subiram.map((linha) => <li key={linha.categoriaId ?? linha.nome}>
-              <span>{linha.nome}</span>
-              <b className="valor-sensivel">{formatarMoeda(linha.totalCentavos)}<Variacao linha={linha} /></b>
+            {subiram.map((linha, indice) => <li key={linha.categoriaId ?? linha.nome}>
+              <span className={estilos.posicaoAumento}>{indice + 1}</span>
+              <div className={estilos.dadosAumento}><strong>{linha.nome}</strong><small>{linha.anteriorCentavos === 0 ? "Sem gasto no período anterior" : <>Antes: <span className="valor-sensivel">{formatarMoeda(linha.anteriorCentavos)}</span></>}</small><div className={estilos.barraAumento}><span style={{ width: `${(linha.totalCentavos - linha.anteriorCentavos) / Math.max(1, ...subiram.map((item) => item.totalCentavos - item.anteriorCentavos)) * 100}%` }} /></div></div>
+              <div className={estilos.valorAumento}><b className="valor-sensivel">+{formatarMoeda(linha.totalCentavos - linha.anteriorCentavos)}</b><Variacao linha={linha} /></div>
             </li>)}
           </ul>
         )}
       </section>
 
-      <section className={estilos.bloco}>
+      <section className={`${estilos.bloco} ${estilos.blocoDias}`}>
         <header className={estilos.cabecalho}><h2>Gastos por dia</h2><small>Mês atual</small></header>
+        {maiorGasto && maiorGasto.totalCentavos > 0 && <div className={estilos.destaqueDia}><span>Pico de gastos · dia {maiorGasto.dia}</span><b className="valor-sensivel">{formatarMoeda(maiorGasto.totalCentavos)}</b><small>{total > 0 ? Math.round(maiorGasto.totalCentavos / total * 100) : 0}% dos gastos do mês</small></div>}
         <div className={estilos.calendario}>
           {INICIAIS.map((inicial, indice) => <abbr key={indice} title={NOMES_DIA[indice]}>{inicial}</abbr>)}
           {/* Casas vazias até o dia da semana do dia 1º, para a grade alinhar. */}
           {Array.from({ length: dias[0]?.diaDaSemana ?? 0 }, (_, indice) => <span key={`v${indice}`} aria-hidden style={{ background: "transparent" }} />)}
-          {dias.map((dia) => <span
+          {dias.map((dia) => <button
+            type="button"
+            onClick={() => selecionarDia(dia.dia)}
+            aria-pressed={diaSelecionado === dia.dia}
+            aria-label={`Dia ${dia.dia}: ${formatarMoeda(dia.totalCentavos)}${dia.dia === hoje ? ", hoje" : ""}`}
             key={dia.dia}
             title={`Dia ${dia.dia}: ${formatarMoeda(dia.totalCentavos)}`}
             data-gasto={dia.totalCentavos > 0 || undefined}
@@ -84,14 +92,10 @@ export function CategoriasDoMes({ linhas, mesAnterior, dias, maiorGasto, mediaDi
             // numa ordem de grandeza, e escala fixa deixaria o mapa todo claro
             // para uns e todo escuro para outros.
             style={{ "--forca": 0.18 + (dia.totalCentavos / maiorDia) * 0.72 } as CSSProperties}
-          >{dia.dia}</span>)}
+          >{dia.dia}</button>)}
         </div>
-        <div className={estilos.legenda}>
-          {maiorGasto && maiorGasto.totalCentavos > 0
-            ? <div className={estilos.resumoDias}><span>Maior gasto · dia {maiorGasto.dia}<b className="valor-sensivel">{formatarMoeda(maiorGasto.totalCentavos)}</b></span><span>Média por dia com gasto<b className="valor-sensivel">{formatarMoeda(mediaDiariaCentavos)}</b></span></div>
-            : <span>Nenhum gasto no mês ainda.</span>}
-          <span className={estilos.escala} aria-hidden>menos {[0.18, 0.4, 0.62, 0.9].map((forca) => <i key={forca} style={{ "--forca": forca } as CSSProperties} />)} mais</span>
-        </div>
+        <div className={estilos.resumoSelecao} aria-live="polite"><span>{diaEmDestaque ? `Dia ${diaEmDestaque.dia} · ${NOMES_DIA[diaEmDestaque.diaDaSemana]}` : "Selecione um dia"}<b className="valor-sensivel">{diaEmDestaque ? formatarMoeda(diaEmDestaque.totalCentavos) : "Selecione"}</b></span><span>Média dos dias com gasto<b className="valor-sensivel">{formatarMoeda(mediaDiariaCentavos)}</b></span></div>
+        <div className={estilos.rodapeCalendario}><small>Toque em um dia para consultar</small><span className={estilos.escala} aria-hidden>menos {[0.18, 0.4, 0.62, 0.9].map((forca) => <i key={forca} style={{ "--forca": forca } as CSSProperties} />)} mais</span></div>
       </section>
     </div>
 

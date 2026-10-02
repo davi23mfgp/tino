@@ -183,3 +183,35 @@
 .medidaObjetiva i { position:absolute; top:-3px; width:2px; height:11px; background:var(--foreground); }
 .leituraObjetiva li small { color:var(--texto-2); font-size:calc(11px * var(--escala-letra)); }
 .leituraObjetiva li a { display:flex; align-items:center; min-height:44px; font-size:calc(12px * var(--escala-letra)); color:var(--acao); font-weight:550; }
+
+/* Aumento em reais é a diferença entre períodos, não o total da categoria. */
+.categorias { align-items:start; }
+.categorias .comparacaoCompacta,.categorias .blocoDias { align-content:start; gap:16px; padding:20px; }
+.categorias .cabecalho h2 { font-size:calc(17px * var(--escala-letra)); font-weight:650; }
+.comparacaoCompacta .subiu li { display:grid; grid-template-columns:32px minmax(0,1fr) auto; gap:12px; padding:18px 0; min-height:0; }
+.posicaoAumento { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:var(--pauta); color:var(--texto-2); font-weight:600; }
+.dadosAumento { display:grid; gap:7px; min-width:0; }
+.dadosAumento strong { font-size:calc(14px * var(--escala-letra)); font-weight:600; }
+.dadosAumento small { font-size:calc(11px * var(--escala-letra)); color:var(--texto-3); }
+.barraAumento { height:4px; background:var(--pauta); border-radius:99px; }
+.barraAumento span { display:block; height:100%; border-radius:99px; background:var(--ambar); }
+.valorAumento { display:grid; gap:5px; text-align:right; justify-items:end; }
+.comparacaoCompacta .valorAumento b { font-size:calc(21px * var(--escala-letra)); font-weight:650; letter-spacing:-.03em; }
+.valorAumento .variacao { margin:0; font-size:calc(11px * var(--escala-letra)); }
+.destaqueDia { display:grid; gap:5px; padding:16px; border-radius:12px; background:color-mix(in oklab,var(--negativo),transparent 91%); border:1px solid color-mix(in oklab,var(--negativo),transparent 77%); }
+.destaqueDia span,.destaqueDia small { color:var(--texto-2); font-size:calc(12px * var(--escala-letra)); }
+.destaqueDia b { font-size:calc(30px * var(--escala-letra)); font-weight:650; letter-spacing:-.035em; }
+.categorias .calendario { gap:4px; }
+.calendario button { display:grid; place-items:center; min-height:44px; min-width:0; width:100%; border:1px solid transparent; border-radius:9px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); background:color-mix(in oklab,var(--foreground),transparent 97%); cursor:pointer; }
+.calendario button[data-gasto] { color:var(--foreground); background:color-mix(in oklab,var(--negativo),transparent calc((1 - var(--forca)) * 100%)); font-weight:650; }
+.calendario button[data-hoje] { border-color:var(--vidro-borda); }
+.calendario button[aria-pressed="true"] { box-shadow:inset 0 0 0 2px var(--foreground); color:var(--foreground); }
+.calendario button:focus-visible { outline:2px solid var(--acao); outline-offset:2px; }
+.resumoSelecao { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; border-radius:12px; background:var(--pauta); }
+.resumoSelecao span { font-size:calc(11px * var(--escala-letra)); color:var(--texto-2); }
+.resumoSelecao b { display:block; margin-top:6px; font-size:calc(20px * var(--escala-letra)); font-weight:600; color:var(--foreground); }
+.rodapeCalendario { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:center; color:var(--texto-3); }
+.rodapeCalendario small { font-size:calc(11px * var(--escala-letra)); }
+@media(max-width:420px) { .comparacaoCompacta .subiu li { grid-template-columns:24px minmax(0,1fr) auto; gap:8px; } .posicaoAumento { width:24px; height:28px; } .comparacaoCompacta .valorAumento b { font-size:calc(17px * var(--escala-letra)); } }
+.categorias .calendario { grid-template-columns:repeat(7,minmax(44px,1fr)); overflow-x:auto; padding:3px; }
+.calendario button[data-futuro]:not([data-gasto]) { background:transparent; }
