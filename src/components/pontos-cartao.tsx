@@ -10,7 +10,7 @@ import type { Cotacao } from "@/lib/cambio"
 import estilos from "./pontos-cartao.module.css"
 
 const INICIAL: ConfiguracaoPontos = { programa: "Manual", unidade: "pontos", moeda: "real", taxaMilesimos: 0, saldoAtual: null, cambioMilesimos: null }
-export function PontosCartao({ cartao, mes }: { cartao: DadosCartao; mes: string }) {
+export function PontosCartao({ cartao, mes, exemplo = false }: { cartao: DadosCartao; mes: string; exemplo?: boolean }) {
   const [regra, setRegra] = useState(INICIAL)
   const [carregando, setCarregando] = useState(true)
   const [falhou, setFalhou] = useState(false)
@@ -19,6 +19,11 @@ export function PontosCartao({ cartao, mes }: { cartao: DadosCartao; mes: string
   const [cotacao, setCotacao] = useState<Cotacao | null>(null)
   const [buscandoCambio, setBuscandoCambio] = useState(false)
   useEffect(() => {
+    if (exemplo) {
+      setRegra({ programa: "Livelo", unidade: "pontos", moeda: "dolar", taxaMilesimos: 2200, saldoAtual: 32500, cambioMilesimos: 5200 })
+      setCarregando(false); setFalhou(false)
+      return
+    }
     let ativo = true
     setCarregando(true); setFalhou(false)
     buscar<unknown>(`/api/cartoes/${cartao.id}/pontos`).then((dados) => {
@@ -28,18 +33,19 @@ export function PontosCartao({ cartao, mes }: { cartao: DadosCartao; mes: string
     }).catch(() => { if (ativo) { setFalhou(true); setEstado("Não consegui carregar a configuração. Reabra para tentar novamente.") } })
       .finally(() => { if (ativo) setCarregando(false) })
     return () => { ativo = false }
-  }, [cartao.id])
+  }, [cartao.id, exemplo])
   useEffect(() => {
-    if (regra.moeda !== "dolar") return
+    if (regra.moeda !== "dolar" || exemplo) return
     let ativo = true
     setBuscandoCambio(true)
     buscar<Cotacao | null>("/api/cambio").then((valor) => { if (ativo) setCotacao(valor) }).catch(() => { if (ativo) setCotacao(null) }).finally(() => { if (ativo) setBuscandoCambio(false) })
     return () => { ativo = false }
-  }, [regra.moeda])
+  }, [regra.moeda, exemplo])
   function alterar<K extends keyof ConfiguracaoPontos>(campo: K, valor: ConfiguracaoPontos[K]) {
     setRegra((atual) => ({ ...atual, [campo]: valor })); setEstado("")
   }
   async function salvar() {
+    if (exemplo) { setEstado("Exemplo atualizado apenas nesta tela. Seus dados permanecem iguais."); return }
     if (!configuracaoPontos.safeParse(regra).success) { setEstado("Revise os valores da configuração."); return }
     setSalvando(true)
     try { await enviar(`/api/cartoes/${cartao.id}/pontos`, regra, "PUT"); setEstado("Configuração salva para este cartão.") }
@@ -66,7 +72,7 @@ export function PontosCartao({ cartao, mes }: { cartao: DadosCartao; mes: string
         <label>{regra.unidade} por {regra.moeda === "real" ? "R$ 1" : "US$ 1"}<input type="number" min="0" max="1000" step="0.001" value={regra.taxaMilesimos / 1000 || ""} placeholder="Ex.: 2,2" onChange={(e) => alterar("taxaMilesimos", Math.round(Number(e.target.value) * 1000))} /></label>
         <label>Saldo atual no programa<input type="number" min="0" max="2147483647" step="1" placeholder="Informe o saldo" value={regra.saldoAtual ?? ""} onChange={(e) => alterar("saldoAtual", e.target.value === "" ? null : Number(e.target.value))} /></label>
         {regra.moeda === "dolar" && <label>Câmbio manual · R$ por US$ 1<input type="number" min="0.001" step="0.001" placeholder="Usar cotação automática" value={regra.cambioMilesimos === null ? "" : regra.cambioMilesimos / 1000} onChange={(e) => alterar("cambioMilesimos", e.target.value === "" ? null : Math.round(Number(e.target.value) * 1000))} /></label>}
-        <button type="button" onClick={() => void salvar()}>{salvando ? "Salvando…" : "Salvar configuração"}</button>
+        <button type="button" onClick={() => void salvar()}>{salvando ? "Salvando…" : exemplo ? "Aplicar no exemplo" : "Salvar configuração"}</button>
       </fieldset>
     </details>
     <p role="status" className={estilos.apoio}>{estado}</p>

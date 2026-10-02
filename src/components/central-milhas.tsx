@@ -5,16 +5,18 @@ import { ArrowUpRight, Plane } from "lucide-react"
 import { PontosCartao } from "./pontos-cartao"
 import { PROGRAMAS_MILHAS } from "@/lib/programas-milhas"
 import type { DadosCartao } from "@/lib/cartoes"
+import { competenciaMaisMeses } from "@/lib/datas"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
 import estilos from "./central-milhas.module.css"
 
 export function LogoPrograma({ nome }: { nome: string }) {
   const [falhou, setFalhou] = useState(false)
   const programa = PROGRAMAS_MILHAS.find((item) => item.nome.toLowerCase() === nome.toLowerCase())
-  return <span className={estilos.logo}>{programa && !falhou ? <img src={`${programa.site}/favicon.ico`} alt={programa.nome} onError={() => setFalhou(true)} /> : <Plane size={20} strokeWidth={1.5} aria-hidden />}</span>
+  return <span className={estilos.logo}>{programa?.logo && !falhou ? <img src={programa.logo} alt={programa.nome} onError={() => setFalhou(true)} /> : <Plane size={20} strokeWidth={1.5} aria-hidden />}</span>
 }
 
 export function CentralMilhas({ cartoes, mes }: { cartoes: DadosCartao[]; mes: string }) {
+  const [exemplo, setExemplo] = useState(false)
   const [selecionado, setSelecionado] = useState(cartoes[0]?.id ?? "")
   const [quantidade, setQuantidade] = useState("10000")
   const [bonus, setBonus] = useState("0")
@@ -23,14 +25,23 @@ export function CentralMilhas({ cartoes, mes }: { cartoes: DadosCartao[]; mes: s
   const recebidos = Math.floor(pontos * (1 + Math.max(0, Number(bonus) || 0) / 100))
   const custoCentavos = paraCentavos(custo || "0")
   const cartao = cartoes.find((item) => item.id === selecionado)
+  const cartaoExemplo: DadosCartao = {
+    id: "simulacao-milhas", nome: "Platinum de exemplo", instituicao: "Banco fictício", limiteCentavos: 1200000, diaFechamento: 28, diaVencimento: 6,
+    compras: [{ id: "compra-exemplo", descricao: "Compras fictícias do mês", data: `${mes}-01`, competencia: mes, valorCentavos: 400000, tipo: "DESPESA", categoriaId: null, categoria: null }],
+    parcelamentos: [{ id: "parcelas-exemplo", descricao: "Viagem fictícia", categoriaId: null, parcelasTotal: 3, parcelasPagas: 0, valorTotalCentavos: 264000, parcelaCentavos: 88000, parcelas: [1,2,3].map((indice) => ({ id: `parcela-exemplo-${indice}`, numero: indice, competencia: competenciaMaisMeses(mes, indice), valorCentavos: 88000, paga: false })) }],
+  }
+  function preencherExemplo() {
+    setExemplo(true); setQuantidade("10000"); setBonus("80"); setCusto("350,00")
+  }
   return <div className={estilos.pagina}>
     <header><h1>Pontos e milhas</h1><p>Seus programas, acúmulo e próximos movimentos.</p></header>
     <div className={estilos.programas}>{PROGRAMAS_MILHAS.map((programa) => <a key={programa.nome} href={programa.site} target="_blank" rel="noopener noreferrer" style={{ "--cor-programa": programa.cor } as React.CSSProperties}>
       <LogoPrograma nome={programa.nome} /><strong>{programa.nome}</strong><span>Comprar, transferir ou resgatar <ArrowUpRight size={14} aria-hidden /></span>
     </a>)}</div>
+    <div className={estilos.demonstracao}><div><strong>{exemplo ? "Simulação com dados fictícios" : "Quer ver como funciona?"}</strong><p>{exemplo ? "Livelo: 32.500 pontos, 2,2 por dólar e R$ 4.000 em compras. Experimente os campos." : "Abra um exemplo de saldo, acúmulo e transferência preenchidos."}</p></div><button type="button" onClick={exemplo ? () => setExemplo(false) : preencherExemplo}>{exemplo ? "Voltar aos meus dados" : "Preencher exemplo"}</button></div>
     <section className={estilos.secao}>
       <header><h2>Acúmulo dos seus cartões</h2><p>Selecione um cartão para administrar a regra, o saldo informado e a previsão.</p></header>
-      {cartoes.length > 0 ? <><div className={estilos.seletor} role="group" aria-label="Cartão para acompanhar milhas">{cartoes.map((item) => <button type="button" key={item.id} aria-pressed={item.id === selecionado} onClick={() => setSelecionado(item.id)}>{item.nome}</button>)}</div>{cartao && <PontosCartao key={cartao.id} cartao={cartao} mes={mes} />}</> : <p>Cadastre um cartão para configurar seu acúmulo.</p>}
+      {exemplo ? <PontosCartao key="exemplo" cartao={cartaoExemplo} mes={mes} exemplo /> : cartoes.length > 0 ? <><div className={estilos.seletor} role="group" aria-label="Cartão para acompanhar milhas">{cartoes.map((item) => <button type="button" key={item.id} aria-pressed={item.id === selecionado} onClick={() => setSelecionado(item.id)}>{item.nome}</button>)}</div>{cartao && <PontosCartao key={cartao.id} cartao={cartao} mes={mes} />}</> : <p>Cadastre um cartão para configurar seu acúmulo.</p>}
     </section>
     <section className={estilos.secao}>
       <header><h2>Planejar compra ou transferência</h2><p>Compare o bônus e o custo antes de concluir no programa.</p></header>
