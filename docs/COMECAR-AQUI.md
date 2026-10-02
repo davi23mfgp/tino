@@ -1,5 +1,7 @@
 # Começar aqui
 
+> **Resumo consolidado dos pedidos, entregas e próximos passos (02/10):** [documento temporário de continuidade](TEMPORARIO-CONTINUAR-SEGURANCA.md). Este resumo prevalece sobre checkpoints antigos.
+
 > **Retomada atual:** [Estado de 02/10/2026](ESTADO-2026-10-02.md). Leia antes dos checkpoints anteriores.
 
 > **Checkpoint atual de 01/10/2026:** [ESTADO-2026-10-01.md](ESTADO-2026-10-01.md). Leia primeiro; ele prevalece sobre estados históricos e decisões revertidas abaixo.

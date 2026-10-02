@@ -1,5 +1,7 @@
 # Continuação do Tino — sessão de 30/09/2026
 
+> **Resumo consolidado dos pedidos, entregas e próximos passos (02/10):** [documento temporário de continuidade](docs/TEMPORARIO-CONTINUAR-SEGURANCA.md). Este resumo prevalece sobre checkpoints antigos.
+
 > **Retomada atual:** [Estado de 02/10/2026](docs/ESTADO-2026-10-02.md). Leia antes dos checkpoints anteriores.
 
 > **Checkpoint atual de 01/10/2026:** [docs/ESTADO-2026-10-01.md](docs/ESTADO-2026-10-01.md). Leia primeiro; ele prevalece sobre estados históricos e decisões revertidas abaixo.

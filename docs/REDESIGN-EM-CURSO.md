@@ -1,3 +1,5 @@
+> 02/10/2026: hero das landings pessoal e MEI conduzido pela rolagem com perspectiva, aproximação, troca de telas e progresso. Visor automático deixa o gesto continuar na página; pausa libera rolagem interna. Estado consolidado em [documento temporário](TEMPORARIO-CONTINUAR-SEGURANCA.md). Validação visual pós-deploy pendente.
+
 > Atualização de 09/09/2026: veja [continuidade do Tino](CONTINUAR-NO-OUTRO-NOTEBOOK.md). A rodada atual remodelou navegação e telas principais, substituiu mockups por capturas reais e corrigiu a migração fiscal. As seções antigas abaixo são histórico.
 
 # Redesign do Tino — estado em 05/09/2026, noite

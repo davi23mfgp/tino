@@ -1,5 +1,7 @@
 # Tino — contador pessoal (PF e MEI)
 
+> **Resumo consolidado dos pedidos, entregas e próximos passos (02/10):** [documento temporário de continuidade](docs/TEMPORARIO-CONTINUAR-SEGURANCA.md). Este resumo prevalece sobre checkpoints antigos.
+
 > **Retomada atual:** [Estado de 02/10/2026](docs/ESTADO-2026-10-02.md). Leia antes dos checkpoints anteriores.
 
 App de finanças pessoais para quem cuida do dinheiro sozinho, em casal ou em família, com modo MEI.

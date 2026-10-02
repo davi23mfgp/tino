@@ -1,3 +1,97 @@
+> **Complemento solicitado em 02/10:** hero com animações acompanhando o scroll down. Implementado nas duas landings: aproximação e perspectiva da janela vinculadas ao progresso da rolagem, passagem pelas telas, rolagem interna guiada e barra de progresso. O visor não captura a rolagem durante a visita automática; pausa e movimento reduzido permitem rolagem manual. Área visível do sistema ampliada no desktop e mobile. Pendente: conferir o resultado visual em navegador após o deploy; tipos e testes não comprovam aparência.
+
+# TEMPORÁRIO — pedidos, entregas e continuidade do Tino
+
+**Atualizado em 02/10/2026, horário de São Paulo.** Este é o documento temporário solicitado pelo usuário para qualquer pessoa retomar sem pedir o histórico novamente. O resumo atual abaixo prevalece sobre os checkpoints antigos. **Manter este documento:** o pedido mais recente foi atualizá-lo e disponibilizá-lo no GitHub; não executar a instrução antiga de exclusão no final do histórico sem novo pedido.
+
+## Onde estamos agora
+
+- Repositório: [davi23mfgp/tino](https://github.com/davi23mfgp/tino). Branch de continuidade: `codex/continuacao-tino`; alterações funcionais também promovidas à `main` por autorização explícita do usuário em 02/10.
+- Último código funcional: `b787888` (landings separadas e refinamento da pausa do hero). Registro pós-publicação: `a307e56`, apenas documentação.
+- O projeto principal Vercel é `davi-pereiras-projects-0e1004d7`. Os dois deploys de b787888 concluíram: [43DYYZREv5u8fgqeqpyBT4qhL6WE](https://vercel.com/davi-pereiras-projects-0e1004d7/tino/43DYYZREv5u8fgqeqpyBT4qhL6WE), às 10:20:21, e [6ypcBvWC2ePEG42obfujvs6gSYGj](https://vercel.com/davi-pereiras-projects-0e1004d7/tino/6ypcBvWC2ePEG42obfujvs6gSYGj), às 10:21:32. CI de main e continuidade passaram. Tipos e **618 testes / 136 suítes** passaram localmente; novas rotas passaram no `next typegen`.
+- Existe outro projeto conectado ao GitHub, `davi-pereiras-projects-24f2ce83`, com deploys falhando. Conferir status por projeto e deployment; o status combinado do commit pode misturar os destinos. Não remover essa integração sem identificar sua finalidade.
+- Deploy concluído comprova publicação, **não** aprovação visual, login Google real, backup real nem conclusão dos 20 controles. O agente desta sessão não conseguiu inspeção visual no navegador; acesso HTTP direto à Vercel foi bloqueado com CONNECT 403. Os status puderam ser consultados pela conexão GitHub.
+
+| Área | Landing | Cadastro | Login | Destino após acesso |
+| --- | --- | --- | --- | --- |
+| Finanças pessoais | [Raiz](https://tino-kappa.vercel.app/) | `/cadastro` | `/login` | `/painel` |
+| MEI | [Para MEI](https://tino-kappa.vercel.app/para-mei) | `/cadastro/mei` | `/login/mei` | `/loja` |
+
+MEI também tem `/login/mei/mfa`. São entradas e apresentações separadas; a autenticação e a identidade continuam comuns ao Tino, sem banco ou senha independentes por produto.
+
+## O que o usuário pediu e o que foi feito
+
+| Pedido | Entrega atual | O que ainda conferir ou completar |
+| --- | --- | --- |
+| Visual fino, moderno, objetivo e organizado; aproveitar espaço | Revisões no painel, filtros, reserva, dívidas, simulador, análise, investimentos e configurações | Conferência visual desktop/mobile, sem usar testes de cálculo como aprovação da aparência |
+| Pontos e milhas como área própria, fora de Conferir fatura | `/milhas`, regras por cartão, saldo manual, previsão mensal, parcelas futuras separadas, links dos programas e calculadora de bônus/custo | Administração persistente e saldo único por programa ainda pendentes |
+| Logos das principais marcas e exemplo preenchido | Assets locais Livelo, Smiles, LATAM Pass e Azul; botão de exemplo com saldo 32.500, previsão 1.692 pontos e parcelas de 372 | Logo oficial verificável da Esfera; não afirmar que os cinco estão prontos |
+| Preencher milhas para entender os cálculos | Modo de exemplo em memória, sem gravar configuração ou saldo reais; bônus de transferência simulado | Não há compra, transferência ou resgate executados nos programas externos |
+| Parcelas/projeção com marcação discreta | Projeção mantém **hachura diagonal**, restaurada na última continuação remota; marcações e preenchimento refinados | O estado de 01/10 que diz pontilhado prevalecente foi substituído; conferir aparência publicada antes de alterar novamente |
+| Extrato e escolha de conta/cartão organizados | Filtros agrupados; contas/cartões em colunas equilibradas, seleção imediata | Conferir telas estreitas e nomes grandes |
+| Ajustar limite clicando com popup | Limite por categoria com salvar/cancelar e repetição por meses | Não confundir com limite de crédito do cartão |
+| Reserva mais objetiva | Modos agrupados, valor editável, régua fina e previsão | Conferir os cinco modos na interface publicada |
+| Dívidas com mais destaque e simulação intuitiva | Cartões individuais, saldo/juros/parcela, plano mensal, valor extra digitável, atalhos e estratégias lado a lado | Conferir interação e respostas reais da simulação; fórmulas preservadas |
+| Calendário mensal de dívidas e empréstimos organizados | Colunas por mês/ano e formulário por valor, prazo, juros e tarifas | Conferência móvel e salvar proposta |
+| Remover cartões monetários extras da análise | Retirados seis resumos rejeitados da aba Indicadores; permanecem os diagnósticos ordenados por criticidade | Não restaurar grade de 12 indicadores sem novo pedido |
+| Análise com dados evidentes e menos vazios | Barras por grupo, participação dos gastos separada da renda, fixos estimados destacados, régua de referência e ações | Fixos são estimativa com parcelas; “gastos acima da estimativa” não classifica cada compra como variável |
+| Aumentos e gastos por dia mais claros | Ranking de crescimento **em reais**, valor anterior, barras; calendário clicável, pico e total por dia | Comparação é com mesmo período anterior; categoria nova não recebe percentual inventado |
+| Ícones discretos e identidade de bancos/cartões | Ícones do sistema neutros; logos dos bancos e bandeiras quando disponíveis | Não trocar marca verificada por emoji decorativo |
+| Conferir no meio e preencher com anotar/ditar | Cartão vertical entre compras e distribuição; bloco de anotação abaixo | A fila continua exigindo conferência; nada confirmado automaticamente |
+| Notificações com contraste e relevo | Cartões opacos, sombra, borda/ícones discretos e controles de leitura | Conferir temas claro/escuro e mobile |
+| Minimizar cor do tema | Linha com cor atual; paleta só montada ao abrir e recolhida após seleção | Não deixar todas as cores expostas permanentemente; seleção persiste pelo provedor existente |
+| Desempenho e próximo aporte evidentes | Resumo da carteira, histórico quando disponível e distribuição do aporte | Não inventar rentabilidade sem posição anterior |
+| Fita de mercado contínua e ativos pessoais | Índices e ativos da carteira; pausa/retomada; consulta a cada dez minutos e ao voltar à aba | Não chamar tempo real: cache de dez minutos e fonte com atraso possível de quinze minutos |
+| Landing atual e hero motion entrando nas telas | Capturas antigas retiradas das seções da landing pessoal; visita em HTML guiada pela rolagem, com troca de telas, pausa, seleção manual e adaptação móvel | É prévia com dados fictícios, não vídeo, sessão autenticada nem reprodução integral de toda a interface; conferir visual e rolagem reais |
+| Landing pessoal e MEI diferentes, inclusive login | Raiz pessoal e `/para-mei`, planos filtrados por área, cadastros/logins próprios; MEI abre loja | Preços comerciais e escopo dos planos existentes preservados |
+| Retirar escolha MEI da entrada pessoal | Removida também no cadastro **Google**, onde ainda existia; cadastro MEI não pergunta casal/família | Testar Google e MFA reais nas duas entradas; contexto é mantido em cookie e identidade assinada, com divergência recusada pela API |
+| Publicar tudo e registrar continuidade | Código atual integrado à main, deploys concluídos e este documento consolidado | Novos controles de segurança ainda devem ser preparados e comprovados em teste antes de produção |
+
+Detalhes cronológicos e commits: [estado de 02/10](ESTADO-2026-10-02.md). Entregas anteriores: [estado de 01/10](ESTADO-2026-10-01.md), que é histórico e contém decisões posteriormente revertidas.
+
+## O que falta, em ordem de trabalho
+
+### 1. Conferir o que acabou de ser publicado
+
+- Abrir as duas landings, desktop e mobile: rolagem do hero, troca de telas, pausa, seleção manual, movimento reduzido, navegação e ausência de overflow.
+- Conferir cadastro/login pessoal e MEI; Google, erros, contexto após retorno, MFA e destino correto. O erro anterior de Google não configurado não tem resolução real comprovada apenas por existir variável no projeto.
+- Conferir paleta minimizada, notificações, dívidas, calendário, limites e modo de exemplo de milhas. Registrar defeitos concretos antes de nova revisão visual.
+- Investigar a segunda integração Vercel com falhas e confirmar qual alias aponta para qual target. Alias da branch foi associado a Production em publicação anterior; **não presumir que seu nome garante ambiente de teste**.
+
+### 2. Fechar os 20 controles de segurança com evidência
+
+A fonte individual é [CONTROLES-SEGURANCA.md](CONTROLES-SEGURANCA.md), com procedimentos em [SEGURANCA-OPERACAO.md](SEGURANCA-OPERACAO.md). **Não anunciar 20/20 nem reutilizar a contagem antiga 12/8.** Há implementação no código e testes locais, mas infraestrutura e fluxos publicados seguem pendentes.
+
+- Confirmar Preview e banco isolados antes de escrever. Preparado workflow manual `.github/workflows/backup-teste.yml`, sem agendamento ou fallback para produção. Precisa exclusivamente `BACKUP_TESTE_DATABASE_URL` e `BACKUP_TESTE_CHAVE_CRIPTOGRAFIA`. Ainda não foi executado.
+- Depois executar backup de teste, comprovar cifra, restauração em destino vazio e comparação dos dados. Preparar monitor de teste com configuração independente.
+- Conferir MFA administrativo, sessões/revogação, CSP/hidratação, origens, permissões por lar e Google no ambiente publicado.
+- Configurar/verificar roles mínimos no Neon, secrets/URL dos workflows operacionais, primeira execução de backup e monitor, retenção, acesso a logs, alertas e rollback.
+- Confirmar criptografia em repouso e proteção das contas dos provedores. Medir restauração real no provedor: RPO 24h e RTO 4h são objetivos, ainda não medições.
+- Custodiar chaves fora do Git/chat. A cópia de MFA Production cifrada com DPAPI depende do perfil Windows; precisa de custódia segura independente. Não rotacionar sem recifragem.
+- Confirmar significado de PMP; interpretação atual é princípio do menor privilégio.
+
+### 3. Completar administração de milhas
+
+Programas independentes dos cartões; saldo único por programa sem duplicidade; histórico persistente de compra, transferência e resgate; lotes/validade e alertas de expiração; conversão configurável entre programas. Obter arte oficial verificável da Esfera. Os links externos e a calculadora existentes não executam essas operações nem sincronizam saldos.
+
+### 4. Planejamento futuro, sem iniciar automaticamente
+
+Cofre de ponta a ponta dos valores financeiros **adiado pelo usuário**. Não prometer que o operador técnico não pode ler valores: hoje servidor/banco processam dados legíveis. Revisão jurídica e confirmação dos contratos/retenção de fornecedores continuam pendentes. Não ampliar o escopo para reconstruir autenticação, cálculos ou integrações sem pedido.
+
+## Como retomar
+
+1. Ler AGENTS.md, este resumo e o estado de 02/10; fazer `git status` e `git fetch` antes de editar. Preservar alterações externas e histórico.
+2. Distinguir implementado, testado localmente, publicado e conferido visualmente. Usar commit/projeto/deployment exatos como evidência.
+3. Continuar as pendências acima sem pedir ao usuário que repita os pedidos. Se ele enviar um ajuste novo, incorporá-lo sem perder a fila de segurança e milhas.
+4. Não compartilhar segredos, resemear produção, executar backup em banco real por engano ou mudar funções financeiras para melhorar o visual. Dinheiro permanece em centavos.
+5. Atualizar este documento na próxima entrega. Publicação de UI atual foi autorizada; mudanças de segurança continuam primeiro em teste, com evidência operacional antes da promoção.
+
+---
+
+# Histórico anterior: segurança de 30/09 e checkpoints iniciais
+
+Os trechos abaixo são preservados para consulta. Não interpretar “a implementar”, contagens antigas, restrições antigas de publicação ou instrução de exclusão como estado vigente quando contradisserem o resumo acima.
+
 # TEMPORÁRIO — continuar segurança do Tino em outro notebook
 
 **Checkpoint mais recente:** leia primeiro [`../CONTINUAR-SEGURANCA.md`](../CONTINUAR-SEGURANCA.md). A continuação no Windows chegou a 605 testes aprovados, backup/restauração reais locais e alerta de atraso. As limitações antigas de engine/dump deste documento foram superadas localmente. As configurações externas continuam pendentes e o usuário autorizou a publicação em 01/10/2026; comprovação do deploy e infraestrutura continua pendente.
