@@ -28,3 +28,11 @@ if (process.env.SEMEAR_DEMO === "1" || previaDeSeguranca) {
 } else {
   console.log("SEMEAR_DEMO ausente — seed de demonstracao pulado.")
 }
+
+// A demo MEI é criada uma única vez no primeiro build de produção que traz o
+// script. Nas publicações seguintes, o próprio script detecta o e-mail e não
+// mexe nas vendas feitas por visitantes. Nenhum segredo do Neon precisa sair
+// da Vercel, e a demo pessoal continua sob a chave SEMEAR_DEMO.
+if (process.env.VERCEL_ENV === "production") {
+  await import("./demo-mei.mjs")
+}

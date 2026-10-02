@@ -1,3 +1,7 @@
+## 02/10/2026 — Demonstração MEI
+
+Conta reservada `demo-mei@tino.local` / `demo12345`, com lar, loja, perfil MEI, produtos, entradas e saídas de estoque, vendas, três fiados, caixa, contas a pagar e competências de faturamento fictícios. `scripts/demo-mei.mjs` é chamado no build de produção e só cria quando o e-mail ainda não existe; redeploy não apaga alterações de visitantes. Não recebe teste de 14 dias, como a demo pessoal, para continuar acessível. Conferir login e APIs da loja após o deploy.
+
 > Atualização de 09/09/2026: veja [continuidade do Tino](CONTINUAR-NO-OUTRO-NOTEBOOK.md). A rodada atual remodelou navegação e telas principais, substituiu mockups por capturas reais e corrigiu a migração fiscal. As seções antigas abaixo são histórico.
 
 # Onde o projeto está
