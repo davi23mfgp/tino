@@ -5,9 +5,8 @@ import estilos from "../analise/avancadas.module.css"
 import topo from "./dividas.module.css"
 import pesos from "@/components/peso-do-juro.module.css"
 import { Button } from "@/components/ui/button"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Landmark, ArrowUpRight } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
@@ -435,14 +434,15 @@ export default function Dividas() {
             ].filter(Boolean)
             return (
               <div key={divida.id} className={cn("ficha", topo.divida, pesos.peso)} data-peso={pesoDoJuro(divida.jurosMensalBps)}>
-                <i aria-hidden />
+                <span className={topo.iconeDivida}><Landmark size={19} strokeWidth={1.5} aria-hidden /></span>
                 <div className="min-w-0">
                   <strong>{divida.credor}</strong>
                   <p className={topo.meta}>{detalhes.map((detalhe, indice) => <span key={indice}>{detalhe}</span>)}</p>
                 </div>
                 <div className={topo.saldo}>
+                  <span>Saldo a quitar</span>
                   <b className="valor-inteiro">{formatarMoeda(divida.saldoDevedorCentavos)}</b>
-                  <small>{divida.jurosMensalBps > 0 ? `${formatarPercentual(divida.jurosMensalBps)} a.m.` : "sem juro"}</small>
+                  <small>{divida.jurosMensalBps > 0 ? `${formatarPercentual(divida.jurosMensalBps)} a.m. de juros` : "Sem juros"}</small>
                 </div>
                 {divida.parcelasTotal ? (
                   <div className={topo.progresso} role="img" aria-label={`${divida.parcelasPagas} de ${divida.parcelasTotal} parcelas pagas`}>
@@ -450,6 +450,7 @@ export default function Dividas() {
                   </div>
                 ) : null}
                 {divida.observacao && <p className={topo.observacao}>{divida.observacao}</p>}
+                <Link href="/plano" className={topo.acaoDivida}>Ver plano de pagamento <ArrowUpRight size={14} aria-hidden /></Link>
               </div>
             )
           })}
@@ -466,7 +467,7 @@ export default function Dividas() {
         <Cartao estatico className={topo.simulacao}>
           <header>
             <h2 id="titulo-extra">Antecipe sua quitação</h2>
-            <output htmlFor="pagamento-extra">+{formatarMoeda(extraCentavos)}/mês</output>
+            <label className={topo.valorExtra}>Extra por mês (R$)<input type="number" inputMode="decimal" min={0} max={tetoExtra / 100} step={PASSO_EXTRA / 100} value={extraCentavos / 100} onChange={(evento) => { const valor = Number(evento.target.value); if (Number.isFinite(valor)) setExtraCentavos(Math.min(tetoExtra, Math.max(0, Math.round(valor * 100 / PASSO_EXTRA) * PASSO_EXTRA))) }} /></label>
           </header>
           <input
             id="pagamento-extra"
@@ -482,10 +483,7 @@ export default function Dividas() {
           />
           <div className={topo.atalhosExtra} role="group" aria-label="Pagamento extra mensal">{[0, 10000, 25000, 50000].filter((valor) => valor <= tetoExtra).map((valor) => <button key={valor} type="button" aria-pressed={extraCentavos === valor} onClick={() => setExtraCentavos(valor)}>{valor === 0 ? "Sem extra" : `+ ${formatarMoeda(valor)}`}</button>)}</div>
           {extraCentavos === 0 ? (
-            <p className={topo.dica}>
-              Arraste para ver quanto antes você fica livre. Sem extra, são{" "}
-              {formatarMoeda(base.plano.totalJurosCentavos)} de juros até o fim.
-            </p>
+            <><p className={topo.dica}>Escolha um valor extra para comparar prazo e juros.</p><div className={topo.resultado}><div><span>Prazo atual</span><b>{mesesHoje !== null ? `${mesesHoje} meses` : "Além de 50 anos"}</b></div><div><span>Juros previstos</span><b className="valor-sensivel">{formatarMoeda(base.plano.totalJurosCentavos)}</b></div></div></>
           ) : (
             <div className={topo.resultado} aria-live="polite" aria-busy={!simulacaoEmDia}>
               <div>
@@ -510,26 +508,18 @@ export default function Dividas() {
       )}
 
       {comparativo && abertas.length > 1 && (
-        <Cartao titulo="Compare formas de pagar">
-          <Accordion type="single" collapsible><AccordionItem value="estrategias"><AccordionTrigger>Maior juro ou menor saldo?</AccordionTrigger><AccordionContent><div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-acao/40 bg-acao/10 p-4">
-              <p className="text-[calc(13px*var(--escala-letra))] font-medium text-acao">Maior juro primeiro</p>
-              <p className="mt-1.5 text-[calc(20px*var(--escala-letra))] font-semibold">{comparativo.avalanche.meses} meses</p>
-              <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                <span className="valor-inteiro">{formatarMoeda(comparativo.avalanche.totalJurosCentavos)}</span> de juros
-              </p>
-            </div>
-
-            <div className="rounded-[var(--raio-cartao)] border border-pauta p-4">
-              <p className="text-[calc(13px*var(--escala-letra))] font-medium">Menor saldo primeiro</p>
-              <p className="mt-1.5 text-[calc(20px*var(--escala-letra))] font-semibold">{comparativo.bolaDeNeve.meses} meses</p>
-              <p className="text-[calc(12px*var(--escala-letra))] text-muted-fg">
-                <span className="valor-inteiro">{formatarMoeda(comparativo.bolaDeNeve.totalJurosCentavos)}</span> de juros
-              </p>
-            </div>
+        <Cartao estatico className={topo.comparacao} titulo="Compare formas de pagar">
+          <p className={topo.dica}>Duas estratégias, os mesmos valores de pagamento.</p>
+          <div className={topo.estrategias}>
+            {[
+              { nome: "Maior juro primeiro", descricao: "Prioriza reduzir o custo dos juros.", plano: comparativo.avalanche },
+              { nome: "Menor saldo primeiro", descricao: "Prioriza encerrar as dívidas menores.", plano: comparativo.bolaDeNeve },
+            ].map((estrategia) => <section key={estrategia.nome}>
+              <h3>{estrategia.nome}</h3><p>{estrategia.descricao}</p>
+              <dl><div><dt>Prazo</dt><dd>{estrategia.plano.meses}<small>meses</small></dd></div><div><dt>Juros totais</dt><dd className="valor-sensivel">{formatarMoeda(estrategia.plano.totalJurosCentavos)}</dd></div></dl>
+            </section>)}
           </div>
-
-          <p className="mt-3 text-sm">Maior juro prioriza economia. Menor saldo prioriza quitar uma dívida.</p></AccordionContent></AccordionItem></Accordion>
+          <p className={topo.conclusaoComparacao}>{comparativo.avalanche.totalJurosCentavos === comparativo.bolaDeNeve.totalJurosCentavos ? "Neste cenário, as duas estratégias têm o mesmo custo de juros." : `Neste cenário, ${comparativo.avalanche.totalJurosCentavos < comparativo.bolaDeNeve.totalJurosCentavos ? "maior juro primeiro" : "menor saldo primeiro"} economiza ${formatarMoeda(Math.abs(comparativo.avalanche.totalJurosCentavos - comparativo.bolaDeNeve.totalJurosCentavos))} em juros.`}</p>
         </Cartao>
       )}
     </div>
