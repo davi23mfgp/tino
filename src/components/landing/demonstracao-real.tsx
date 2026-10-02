@@ -29,6 +29,7 @@ export function DemonstracaoReal({ modoMei = false }: { modoMei?: boolean }) {
   const [reduzido, definirReduzido] = useState(false)
   const [visivel, definirVisivel] = useState(false)
   const palco = useRef<HTMLDivElement>(null)
+  const cena = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const consulta = matchMedia("(prefers-reduced-motion: reduce)")
     const atualizar = () => definirReduzido(consulta.matches)
@@ -38,13 +39,40 @@ export function DemonstracaoReal({ modoMei = false }: { modoMei?: boolean }) {
     return () => { consulta.removeEventListener("change", atualizar); observador.disconnect() }
   }, [])
   useEffect(() => {
-    if (pausada || reduzido || !visivel) return
+    if (modoMei || pausada || reduzido || !visivel) return
     const intervalo = setInterval(() => {
       if (!document.hidden) definirAtiva(atual => (atual + 1) % telas.length)
     }, 5500)
     return () => clearInterval(intervalo)
-  }, [pausada, reduzido, visivel])
+  }, [modoMei, pausada, reduzido, visivel, telas.length])
+  // No MEI, a etapa acompanha a rolagem da página. O observador do carrossel
+  // pessoal continua independente, pois sua demonstração avança pelo tempo.
+  useEffect(() => {
+    if (!modoMei || reduzido || pausada) return
+    const atualizar = () => {
+      if (!palco.current || !cena.current) return
+      const inicio = palco.current.getBoundingClientRect().top + window.scrollY
+      const percurso = Math.max(1, palco.current.offsetHeight - cena.current.offsetHeight)
+      const progresso = Math.max(0, Math.min(1, (window.scrollY - inicio) / percurso))
+      definirAtiva(Math.min(telas.length - 1, Math.floor(progresso * telas.length)))
+    }
+    atualizar()
+    window.addEventListener("scroll", atualizar, { passive: true })
+    window.addEventListener("resize", atualizar)
+    return () => { window.removeEventListener("scroll", atualizar); window.removeEventListener("resize", atualizar) }
+  }, [modoMei, pausada, reduzido, telas.length])
+  const escolher = (indice: number) => {
+    definirAtiva(indice)
+    if (!modoMei || pausada || reduzido || !palco.current || !cena.current) {
+      definirPausada(true)
+      return
+    }
+    const inicio = palco.current.getBoundingClientRect().top + window.scrollY
+    const percurso = palco.current.offsetHeight - cena.current.offsetHeight
+    window.scrollTo({ top: inicio + percurso * (indice + 0.1) / telas.length, behavior: "smooth" })
+  }
   return <div className="lp-demonstracao" ref={palco} data-pausada={pausada || reduzido}>
+    <div className="lp-demonstracao-conteudo" ref={cena}>
     <div className="lp-flutuante lp-flutuante-um"><span className="lp-ponto" /> {modoMei ? "Vendas do dia" : "Escola do Téo"}<small>{modoMei ? "Balcão · dados de exemplo" : "Educação · 10 de setembro"}</small><strong>{modoMei ? "R$ 1.240,00" : "R$ 795,00"}</strong></div>
     <div className="lp-flutuante lp-flutuante-dois">{modoMei ? <><span>Caixa conferido</span><strong>R$ 560,00</strong><small>Dinheiro · dados de exemplo</small></> : <><span>Fatura atual · Platinum</span><strong>R$ 579,00</strong><div className="lp-mini-bancos"><img src="/bancos/bb.png" alt="Banco do Brasil" /><small>Fecha dia 28 · vence dia 6</small></div></>}</div>
     <div className="lp-janela" role="group" aria-label={modoMei ? "Prévia do Tino MEI com dados fictícios" : "Telas reais do aplicativo Tino com dados de demonstração"}>
@@ -57,7 +85,8 @@ export function DemonstracaoReal({ modoMei = false }: { modoMei?: boolean }) {
       </div>
     </div>
     <div className="lp-flutuante lp-flutuante-tres"><span>{modoMei ? "Recebimentos a acompanhar" : "Antes de entrar no saldo"}</span><strong>{modoMei ? "3 clientes no fiado" : "3 compras para conferir"}</strong><small>{modoMei ? "Total de R$ 360,00" : "Total de R$ 326,80"}</small></div>
-    <div className="lp-demo-controles" aria-label="Escolher tela da demonstração">{telas.map((tela, indice) => <button key={tela.arquivo} aria-pressed={ativa === indice} onClick={() => { definirAtiva(indice); definirPausada(true) }}>{tela.nome}</button>)}<button aria-label={pausada || reduzido ? "Reproduzir demonstração" : "Pausar demonstração"} disabled={reduzido} onClick={() => definirPausada(!pausada)}>{pausada || reduzido ? <Play size={16} /> : <Pause size={16} />}</button></div>
+    <div className="lp-demo-controles" aria-label="Escolher tela da demonstração">{telas.map((tela, indice) => <button key={tela.arquivo} aria-pressed={ativa === indice} onClick={() => escolher(indice)}>{tela.nome}</button>)}<button aria-label={pausada || reduzido ? "Reproduzir demonstração" : "Pausar demonstração"} disabled={reduzido} onClick={() => definirPausada(!pausada)}>{pausada || reduzido ? <Play size={16} /> : <Pause size={16} />}</button></div>
     <p className="lp-legenda-demo">{modoMei ? "Prévia do Tino MEI · dados fictícios" : "Interface real do Tino · dados de demonstração"}</p>
+    </div>
   </div>
 }
