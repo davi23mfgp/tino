@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { Metadata } from "next"
 import { VERSAO_TERMOS } from "@/lib/termos"
+import estilos from "./privacidade.module.css"
 
 export const metadata: Metadata = {
   title: "Privacidade · Tino",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
 
 const SECOES = [
   {
-    titulo: "Sua vida financeira é privada",
+    titulo: "Como protegemos seus dados financeiros",
     conteudo: [
       "O Tino organiza as informações que você cadastra para mostrar suas contas, projeções e metas. O painel administrativo não oferece consulta aos seus saldos, gastos, dívidas, investimentos ou conversas com o assistente.",
       "O suporte acessa cadastro, situação da assinatura, mensagens que você envia ao atendimento e informações técnicas necessárias para resolver problemas. Abrir a ficha de atendimento gera um registro de auditoria. Os valores da assinatura são cobranças pelo uso do Tino, não os valores da sua vida financeira.",
@@ -36,7 +37,7 @@ const SECOES = [
   {
     titulo: "Quem é responsável pelos seus dados",
     conteudo: [
-      "O Tino é operado pelo responsável inscrito no CNPJ 63.443.755/0001-80. O encarregado pelo tratamento de dados pessoais (DPO) atende pelo e-mail davi23mfgp@gmail.com.",
+      "O responsável pelo Tino está inscrito no CNPJ 63.443.755/0001-80. Solicitações sobre dados pessoais podem ser enviadas ao canal de privacidade: davi23mfgp@gmail.com.",
       "A Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018) chama isso de controlador: quem decide o que é feito com seus dados. Para qualquer pedido sobre privacidade, é com esse contato que você fala.",
     ],
   },
@@ -126,6 +127,18 @@ export default function Privacidade() {
           {new Date(`${VERSAO_TERMOS}T12:00:00Z`).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}.
         </small>
       </header>
+
+      <section className={estilos.resumo} aria-labelledby="resumo-protecao">
+        <h2 id="resumo-protecao">Seus dados. Proteção e transparência.</h2>
+        <ul>
+          <li><strong>Acesso restrito.</strong> Saldos, gastos, dívidas e conversas não aparecem no painel administrativo. Pessoas convidadas para o seu lar acessam os registros compartilhados conforme suas permissões.</li>
+          <li><strong>Conta protegida.</strong> A senha é armazenada como hash. Você pode ativar autenticação em dois fatores nas configurações de segurança; ela também protege o acesso pelo Google.</li>
+          <li><strong>Uso necessário.</strong> Os dados são processados para executar o serviço. Não vendemos seus dados nem os usamos para publicidade. Recursos de IA e integrações podem enviar informações aos fornecedores descritos abaixo.</li>
+          <li><strong>Limite atual.</strong> Os dados financeiros não têm criptografia de ponta a ponta. Acesso técnico privilegiado à infraestrutura pode permitir sua leitura.</li>
+          <li><strong>Você tem direitos.</strong> Consulte, corrija, exporte ou solicite exclusão dos seus dados. Veja abaixo como pedir e quais registros podem precisar ser conservados.</li>
+        </ul>
+        <a href="mailto:davi23mfgp@gmail.com">Falar com o canal de privacidade →</a>
+      </section>
 
       {SECOES.map((secao) => (
         <section key={secao.titulo}>
