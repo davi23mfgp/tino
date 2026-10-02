@@ -68,7 +68,9 @@
 .controles button > span { display:grid; place-items:center; width:18px; height:18px; font-size:10px; border:1px solid #ffffff20; border-radius:50%; }
 .controles button:disabled { opacity:.4; cursor:default; }
 .legenda { display:block; text-align:center; color:#7d9083!important; font-size:10px!important; margin-top:10px!important; }
-.previaEstatica { border:1px solid #c0eccd24; border-radius:18px; overflow:hidden; max-height:520px; overflow-y:auto; }
+/* Nas seções da landing, a prévia acompanha a altura do conteúdo. O limite de
+   520px criava uma segunda barra de rolagem dentro da própria página. */
+.previaEstatica { border:1px solid #c0eccd24; border-radius:18px; overflow:hidden; }
 .previaEstatica .legenda { padding-bottom:12px; }
 .trilho[data-manual=true] { height:auto; }
 .trilho[data-manual=true] .fixo { position:relative; top:auto; }
