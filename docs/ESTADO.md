@@ -4,6 +4,8 @@
 
 Retomado o recorte local: categorias com imagem por URL, fornecedores, serviços, vínculos de produto por categoria/fornecedor e serviço vendável no Balcão. A tela `/loja/catalogo` permite criar, editar e arquivar categoria; criar/editar fornecedor; criar/editar/pausar serviço. Produto continua cadastrado na Prateleira e recebe categoria/fornecedor no Catálogo. A venda mista rateia desconto e receita entre comércio e serviço para a competência do MEI. Venda, baixa de estoque e competência são gravadas na mesma transação, pois falha parcial gerava divergência.
 
+**Publicação pendente:** código enviado ao `main` em `8cdd4b5`; correção da auditoria de dependências em `55e6bab`. A CI do GitHub passou em `55e6bab`, mas os dois deployments da Vercel falharam (`dpl_Eaf1L8kWe3a1GnSng9J19EyRSBzi` e `dpl_9Z5EcVdHAwHsh4CAebieXPxr7z2G`). A causa do build na Vercel ainda exige o log de `npx vercel inspect dpl_9Z5EcVdHAwHsh4CAebieXPxr7z2G --logs`; o CLI pediu autenticação por dispositivo. Até resolver, **a produção continua sem o catálogo novo**. Não afirmar que a rota `/loja/catalogo` está publicada.
+
 Verificação local: migrations aplicadas ao PostgreSQL Docker isolado, edição e venda mista via API, rateio R$ 36,00 = R$ 9,00 comércio + R$ 27,00 serviços, Catálogo móvel em 390px sem rolagem horizontal. A captura local ficou em `/tmp/tino-catalogo-servico-mobile.png`. O trabalho ainda precisa de compra, proposta, agenda, finanças completas e fiscal real descritos em `TINO-ERP-MEI.md`; esta entrega não os representa como prontos.
 
 ## 02/10/2026 — Demonstração MEI
