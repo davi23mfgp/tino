@@ -1241,6 +1241,9 @@ model Loja {
   atualizadoEm DateTime @updatedAt
 
   produtos    ProdutoLoja[]
+  categoriasCatalogo CategoriaLoja[]
+  fornecedores FornecedorLoja[]
+  servicos ServicoLoja[]
   vendas      VendaLoja[]
   caixas      Caixa[]
   recebimento FormaRecebimento[]
@@ -1291,6 +1294,15 @@ model ProdutoLoja {
   loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
 
   nome          String
+  sku           String?
+  descricao     String?
+  imagemUrl     String?
+  marca         String?
+  unidade       String? @default("UN")
+  categoriaId   String?
+  categoria     CategoriaLoja? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  fornecedorId  String?
+  fornecedor    FornecedorLoja? @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
   codigoBarras  String?
   precoCentavos Int     @default(0)
   /// Quanto custou para comprar. Fica em zero até a fase de estoque; sem ele a
@@ -1313,7 +1325,62 @@ model ProdutoLoja {
   movimentos MovimentoEstoque[]
 
   @@unique([lojaId, codigoBarras])
+  @@unique([lojaId, sku])
   @@index([lojaId, nome])
+  @@index([categoriaId])
+  @@index([fornecedorId])
+}
+
+/// Agrupamento reutilizado em produto, serviço, proposta e campanha.
+/// Arquivar preserva os vínculos históricos sem oferecer a categoria em novos cadastros.
+model CategoriaLoja {
+  id String @id @default(cuid())
+  lojaId String
+  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  nome String
+  imagemUrl String?
+  arquivada Boolean @default(false)
+  criadoEm DateTime @default(now())
+  produtos ProdutoLoja[]
+  servicos ServicoLoja[]
+
+  @@unique([lojaId, nome])
+  @@index([lojaId, arquivada])
+}
+
+model FornecedorLoja {
+  id String @id @default(cuid())
+  lojaId String
+  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  nome String
+  telefone String?
+  email String?
+  documento String?
+  criadoEm DateTime @default(now())
+  produtos ProdutoLoja[]
+
+  @@unique([lojaId, nome])
+}
+
+/// Serviço vende tempo e conhecimento; materiais são itens separados na ordem.
+model ServicoLoja {
+  id String @id @default(cuid())
+  lojaId String
+  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  categoriaId String?
+  categoria CategoriaLoja? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  nome String
+  descricao String?
+  precoCentavos Int @default(0)
+  custoEstimadoCentavos Int?
+  duracaoMinutos Int?
+  imagemUrl String?
+  ativo Boolean @default(true)
+  criadoEm DateTime @default(now())
+  itens ItemVenda[]
+
+  @@index([lojaId, nome])
+  @@index([categoriaId])
 }
 
 /// Cliente da loja. Nome e telefone bastam.
@@ -1444,6 +1511,8 @@ model ItemVenda {
 
   produtoId String?
   produto   ProdutoLoja? @relation(fields: [produtoId], references: [id])
+  servicoId String?
+  servico ServicoLoja? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
 
   /// Copiada do produto na hora da venda. Se o produto for renomeado ou
   /// apagado depois, o histórico continua legível.
@@ -1453,6 +1522,7 @@ model ItemVenda {
   totalCentavos         Int
 
   @@index([vendaId])
+  @@index([servicoId])
 }
 
 /// Uma venda pode ser paga em mais de uma forma (metade Pix, metade dinheiro).

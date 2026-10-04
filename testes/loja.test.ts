@@ -5,6 +5,7 @@ import {
   calcularPagamento,
   conferirVenda,
   descontarTroco,
+  dividirFaturamentoMei,
   parcelasDoRecebimento,
   somarMeses,
   previsaoDeRecebimento,
@@ -42,6 +43,21 @@ describe("total da venda", () => {
     const itens = [{ descricao: "Meia", quantidade: 2, precoUnitarioCentavos: 1500 }]
     assert.equal(totalDaVenda(itens, 500), 2500)
     assert.equal(totalDaVenda(itens, 999999), 0)
+  })
+})
+
+describe("faturamento misto do MEI", () => {
+  it("separa comércio e serviço após desconto sem perder centavos", () => {
+    const itens = [
+      { descricao: "Material", quantidade: 1, precoUnitarioCentavos: 3000 },
+      { descricao: "Instalação", quantidade: 1, precoUnitarioCentavos: 7000, servicoId: "servico" },
+    ]
+    assert.deepEqual(dividirFaturamentoMei(itens, totalDaVenda(itens, 999)), { comercioCentavos: 2700, servicosCentavos: 6301 })
+  })
+
+  it("trata venda só de serviço e só de produto", () => {
+    assert.deepEqual(dividirFaturamentoMei([{ descricao: "Corte", quantidade: 1, precoUnitarioCentavos: 5000, servicoId: "corte" }], 5000), { comercioCentavos: 0, servicosCentavos: 5000 })
+    assert.deepEqual(dividirFaturamentoMei([{ descricao: "Pente", quantidade: 1, precoUnitarioCentavos: 1000 }], 1000), { comercioCentavos: 1000, servicosCentavos: 0 })
   })
 })
 

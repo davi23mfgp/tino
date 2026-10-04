@@ -1,4 +1,10 @@
-> **Retomada do ERP MEI (02/10/2026):** leia [o ponto de parada, as referências ZIP e o estado do trabalho local](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
+> **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
+
+## 04/10/2026 — Catálogo e venda de serviços
+
+Retomado o recorte local: categorias com imagem por URL, fornecedores, serviços, vínculos de produto por categoria/fornecedor e serviço vendável no Balcão. A tela `/loja/catalogo` permite criar, editar e arquivar categoria; criar/editar fornecedor; criar/editar/pausar serviço. Produto continua cadastrado na Prateleira e recebe categoria/fornecedor no Catálogo. A venda mista rateia desconto e receita entre comércio e serviço para a competência do MEI. Venda, baixa de estoque e competência são gravadas na mesma transação, pois falha parcial gerava divergência.
+
+Verificação local: migrations aplicadas ao PostgreSQL Docker isolado, edição e venda mista via API, rateio R$ 36,00 = R$ 9,00 comércio + R$ 27,00 serviços, Catálogo móvel em 390px sem rolagem horizontal. A captura local ficou em `/tmp/tino-catalogo-servico-mobile.png`. O trabalho ainda precisa de compra, proposta, agenda, finanças completas e fiscal real descritos em `TINO-ERP-MEI.md`; esta entrega não os representa como prontos.
 
 ## 02/10/2026 — Demonstração MEI
 

@@ -38,6 +38,12 @@ interface Produto {
   precoCentavos: number
 }
 
+interface Servico {
+  id: string
+  nome: string
+  precoCentavos: number
+}
+
 interface Caixa {
   id: string
   abertoEm: string
@@ -53,6 +59,7 @@ interface Caixa {
 interface Estado {
   loja: { id: string; nome: string }
   produtos: Produto[]
+  servicos: Servico[]
   regras: RegraDeRecebimento[]
   caixa: Caixa | null
   ultimasVendas: {
@@ -103,7 +110,7 @@ function Quadro({ rotulo, centavos, apoio, tom }: { rotulo: string; centavos: nu
 
 export default function Balcao() {
   const [dados, setDados] = useState<Estado | null>(null)
-  const [carrinho, setCarrinho] = useState<(ItemDaVenda & { produtoId?: string })[]>([])
+  const [carrinho, setCarrinho] = useState<(ItemDaVenda & { produtoId?: string; servicoId?: string })[]>([])
   const [digitado, setDigitado] = useState(0)
   const [descricaoAvulso, setDescricaoAvulso] = useState("")
   const [forma, setForma] = useState<FormaPagamento>("DINHEIRO")
@@ -195,6 +202,19 @@ export default function Balcao() {
         return copia
       }
       return [...atual, { produtoId: produto.id, descricao: produto.nome, quantidade: 1, precoUnitarioCentavos: produto.precoCentavos }]
+    })
+  }
+
+  function adicionarServico(servico: Servico) {
+    setAviso(null)
+    setCarrinho((atual) => {
+      const existente = atual.findIndex((item) => item.servicoId === servico.id)
+      if (existente >= 0) {
+        const copia = [...atual]
+        copia[existente] = { ...copia[existente], quantidade: copia[existente].quantidade + 1 }
+        return copia
+      }
+      return [...atual, { servicoId: servico.id, descricao: servico.nome, quantidade: 1, precoUnitarioCentavos: servico.precoCentavos }]
     })
   }
 
@@ -298,6 +318,7 @@ export default function Balcao() {
 
   const caixa = dados?.caixa
   const produtos = dados?.produtos ?? []
+  const servicos = dados?.servicos ?? []
 
   const pilulaCaixa = caixa ? (
     <button type="button" className={estilos.caixa} data-aberto onClick={() => setFechandoCaixa(true)}>
@@ -380,6 +401,17 @@ export default function Balcao() {
               <Link href="/loja/estoque">Cadastrar</Link>
             </div>
           )
+        )}
+
+        {servicos.length > 0 && (
+          <div className={estilos.produtos} aria-label="Serviços">
+            {servicos.map((servico) => (
+              <button key={servico.id} type="button" onClick={() => adicionarServico(servico)}>
+                {servico.nome}
+                <span>Serviço · {formatarMoeda(servico.precoCentavos)}</span>
+              </button>
+            ))}
+          </div>
         )}
 
         <div className={estilos.corpo}>

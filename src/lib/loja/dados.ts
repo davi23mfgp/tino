@@ -10,7 +10,6 @@ import { prisma } from "@/lib/prisma"
 import { ErroDeUso } from "@/lib/api"
 
 import type { FormaPagamento, RegraDeRecebimento } from "./venda"
-import { competenciaDaVenda } from "@/lib/loja/contas"
 
 /**
  * A loja do lar, criada na primeira visita.
@@ -59,27 +58,6 @@ export async function proximoNumero(lojaId: string): Promise<number> {
   })
 
   return (ultima?.numero ?? 0) + 1
-}
-
-/**
- * Joga o faturamento da venda na competência do MEI.
- *
- * É o que dispensa a digitação mensal: quem vende no balcão não vai abrir a
- * tela do MEI todo mês para redigitar o que já registrou aqui. Sem perfil MEI
- * ligado não faz nada — o lar pode ter loja sem ser MEI.
- */
-export async function somarNoFaturamentoMei(larId: string, data: Date, valorCentavos: number) {
-  const perfil = await prisma.meiPerfil.findUnique({ where: { larId } })
-  if (!perfil) return
-
-  const lar = await prisma.lar.findUnique({ where: { id: larId }, select: { fusoHorario: true } })
-  const competencia = competenciaDaVenda(data, lar?.fusoHorario)
-
-  await prisma.meiCompetencia.upsert({
-    where: { larId_competencia: { larId, competencia } },
-    update: { receitaComercioCentavos: { increment: valorCentavos } },
-    create: { larId, competencia, receitaComercioCentavos: valorCentavos },
-  })
 }
 
 export function exigirLoja(lojaId: string | null | undefined) {

@@ -65,6 +65,14 @@ export function totalDaVenda(itens: ItemDaVenda[], descontoCentavos = 0): number
   return Math.max(0, bruto - Math.max(0, descontoCentavos))
 }
 
+/** Rateia o desconto de venda mista entre comércio e serviço para o DAS. */
+export function dividirFaturamentoMei(itens: (ItemDaVenda & { servicoId?: string })[], totalCentavos: number) {
+  const bruto = itens.reduce((soma, item) => soma + totalDoItem(item), 0)
+  const brutoServico = itens.filter((item) => item.servicoId).reduce((soma, item) => soma + totalDoItem(item), 0)
+  const servicosCentavos = bruto > 0 ? Math.round(totalCentavos * brutoServico / bruto) : 0
+  return { comercioCentavos: totalCentavos - servicosCentavos, servicosCentavos }
+}
+
 /**
  * Taxa cobrada pela maquininha, em centavos.
  *

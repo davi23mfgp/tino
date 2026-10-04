@@ -14,12 +14,13 @@ import { aCairPorDia, resumirLoja } from "@/lib/loja/resumo"
 export const GET = comSessao(async (sessao) => {
   const loja = await lojaDoLar(sessao.larId)
 
-  const [produtos, regras, caixa, ultimasVendas] = await Promise.all([
+  const [produtos, servicos, regras, caixa, ultimasVendas] = await Promise.all([
     prisma.produtoLoja.findMany({
       where: { lojaId: loja.id, ativo: true },
       orderBy: { nome: "asc" },
       take: 200,
     }),
+    prisma.servicoLoja.findMany({ where: { lojaId: loja.id, ativo: true }, orderBy: { nome: "asc" }, take: 200 }),
     regrasDeRecebimento(loja.id),
     caixaAberto(loja.id),
     prisma.vendaLoja.findMany({
@@ -48,6 +49,7 @@ export const GET = comSessao(async (sessao) => {
   return ok({
     loja,
     produtos,
+    servicos,
     regras,
     caixa: caixa
       ? {

@@ -35,6 +35,13 @@ export const POST = comSessao(async (sessao, requisicao) => {
     /// Quantas peças tem hoje: vira a primeira entrada, com o custo informado.
     quantidadeInicial?: number
     estoqueMinimo?: number | null
+    sku?: string
+    categoriaId?: string | null
+    fornecedorId?: string | null
+    descricao?: string
+    imagemUrl?: string
+    marca?: string
+    unidade?: string
   }>(requisicao)
 
   const inteiro = (valor: unknown, campo: string) => {
@@ -50,6 +57,14 @@ export const POST = comSessao(async (sessao, requisicao) => {
   if (!nome || nome.length > 80) throw new ErroDeUso("Informe um nome de até 80 caracteres.")
 
   const loja = await lojaDoLar(sessao.larId)
+  if (dados.categoriaId && !await prisma.categoriaLoja.findFirst({ where: { id: dados.categoriaId, lojaId: loja.id, arquivada: false } })) throw new ErroDeUso("Categoria não encontrada nesta loja.", 404)
+  if (dados.fornecedorId && !await prisma.fornecedorLoja.findFirst({ where: { id: dados.fornecedorId, lojaId: loja.id } })) throw new ErroDeUso("Fornecedor não encontrado nesta loja.", 404)
+  if (dados.sku && dados.sku.length > 60) throw new ErroDeUso("SKU deve ter até 60 caracteres.")
+  if (dados.sku && await prisma.produtoLoja.findFirst({ where: { lojaId: loja.id, sku: dados.sku.trim() } })) throw new ErroDeUso("Já existe um produto com esse SKU.")
+  if (dados.descricao && dados.descricao.length > 500) throw new ErroDeUso("Descrição deve ter até 500 caracteres.")
+  if (dados.imagemUrl && (!/^https:\/\//.test(dados.imagemUrl) || dados.imagemUrl.length > 500)) throw new ErroDeUso("Use um endereço HTTPS para a imagem.")
+  if (dados.marca && dados.marca.length > 80) throw new ErroDeUso("Marca deve ter até 80 caracteres.")
+  if (dados.unidade && dados.unidade.length > 12) throw new ErroDeUso("Unidade deve ter até 12 caracteres.")
 
   // Produto e primeira entrada juntos: um produto com "tem hoje: 20" que
   // nascesse sem a entrada apareceria com saldo zero, como se tivesse acabado.
@@ -62,6 +77,13 @@ export const POST = comSessao(async (sessao, requisicao) => {
         custoCentavos,
         codigoBarras: dados.codigoBarras?.trim() || null,
         estoqueMinimo,
+        sku: dados.sku?.trim() || null,
+        categoriaId: dados.categoriaId || null,
+        fornecedorId: dados.fornecedorId || null,
+        descricao: dados.descricao?.trim() || null,
+        imagemUrl: dados.imagemUrl?.trim() || null,
+        marca: dados.marca?.trim() || null,
+        unidade: dados.unidade?.trim() || "UN",
       },
     })
     if (quantidadeInicial > 0) {

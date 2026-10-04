@@ -173,6 +173,7 @@ export const GRUPO_LOJA: GrupoNav = {
   itens: [
     { rota: "/loja/painel", rotulo: "Visão geral", Icone: BarChart3 },
     { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
+    { rota: "/loja/catalogo", rotulo: "Catálogo", Icone: Tags },
     { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
     { rota: "/loja/fiado", rotulo: "Fiado", Icone: NotebookPen },
     { rota: "/loja/contas", rotulo: "Contas a pagar", Icone: Receipt },

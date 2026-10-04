@@ -1,5 +1,7 @@
 # Retomada do ERP MEI — 02/10/2026
 
+> **Atualização em 04/10/2026:** Davi autorizou continuar. O recorte do catálogo e da venda de serviços foi concluído e validado localmente; consulte a primeira seção de `docs/ESTADO.md` e o Git para saber o estado publicado. As seções abaixo preservam o retrato da parada de 02/10, não o estado atual.
+
 **Ponto de parada solicitado pelo Davi.** A implementação foi interrompida antes da conclusão do catálogo. Esta página permite continuar em outro Claude ou Codex sem repetir a conversa. Não interpretar o trabalho local como pronto para produção.
 
 ## Leia nesta ordem

@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
-import { caixaAberto, lojaDoLar, proximoNumero, regrasDeRecebimento, somarNoFaturamentoMei } from "@/lib/loja/dados"
-import { calcularPagamento, conferirVenda, descontarTroco, totalDaVenda } from "@/lib/loja/venda"
+import { caixaAberto, lojaDoLar, proximoNumero, regrasDeRecebimento } from "@/lib/loja/dados"
+import { calcularPagamento, conferirVenda, descontarTroco, dividirFaturamentoMei, totalDaVenda } from "@/lib/loja/venda"
 import type { FormaPagamento } from "@/lib/loja/venda"
 import { campo, validar, z } from "@/lib/validar"
+import { competenciaDaVenda } from "@/lib/loja/contas"
 
 export const GET = comSessao(async (sessao, requisicao) => {
   const loja = await lojaDoLar(sessao.larId)
@@ -36,6 +37,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
         .array(
           z.object({
             produtoId: campo.id().optional(),
+            servicoId: campo.id().optional(),
             descricao: campo.textoObrigatorio(120),
             quantidade: campo.inteiro(1, 100_000),
             precoUnitarioCentavos: campo.centavos(),
@@ -66,9 +68,15 @@ export const POST = comSessao(async (sessao, requisicao) => {
   // Produto de outra loja não pode entrar: a baixa de estoque mais abaixo
   // descontaria da prateleira de outra pessoa.
   const idsProduto = [...new Set(dados.itens.flatMap((item) => (item.produtoId ? [item.produtoId] : [])))]
+  const idsServico = [...new Set(dados.itens.flatMap((item) => (item.servicoId ? [item.servicoId] : [])))]
+  if (dados.itens.some((item) => item.produtoId && item.servicoId)) throw new ErroDeUso("Um item não pode ser produto e serviço ao mesmo tempo.")
   if (idsProduto.length > 0) {
     const daLoja = await prisma.produtoLoja.count({ where: { id: { in: idsProduto }, lojaId: loja.id } })
     if (daLoja !== idsProduto.length) throw new ErroDeUso("Produto não encontrado nesta loja.", 404)
+  }
+  if (idsServico.length > 0) {
+    const daLoja = await prisma.servicoLoja.count({ where: { id: { in: idsServico }, lojaId: loja.id, ativo: true } })
+    if (daLoja !== idsServico.length) throw new ErroDeUso("Serviço não encontrado nesta loja.", 404)
   }
   const [regras, caixa] = await Promise.all([regrasDeRecebimento(loja.id), caixaAberto(loja.id)])
 
@@ -115,7 +123,17 @@ export const POST = comSessao(async (sessao, requisicao) => {
     calcularPagamento(pagamento, regras, vendidoEm),
   )
 
-  const venda = await prisma.vendaLoja.create({
+  // Venda, saída do estoque e competência fiscal precisam nascer juntas.
+  // Antes uma falha na segunda ou terceira escrita deixava a venda salva sem
+  // baixa ou sem faturamento MEI, e tentar novamente duplicava a receita.
+  const [perfilMei, lar] = await Promise.all([
+    prisma.meiPerfil.findUnique({ where: { larId: sessao.larId }, select: { larId: true } }),
+    prisma.lar.findUnique({ where: { id: sessao.larId }, select: { fusoHorario: true } }),
+  ])
+  const { servicosCentavos } = dividirFaturamentoMei(dados.itens, totalCentavos)
+  const competencia = competenciaDaVenda(vendidoEm, lar?.fusoHorario)
+  const venda = await prisma.$transaction(async (transacao) => {
+    const criada = await transacao.vendaLoja.create({
     data: {
       lojaId: loja.id,
       caixaId: caixa?.id ?? null,
@@ -128,6 +146,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       itens: {
         create: dados.itens.map((item) => ({
           produtoId: item.produtoId ?? null,
+          servicoId: item.servicoId ?? null,
           descricao: item.descricao,
           quantidade: Math.max(1, Math.trunc(item.quantidade)),
           precoUnitarioCentavos: item.precoUnitarioCentavos,
@@ -146,28 +165,36 @@ export const POST = comSessao(async (sessao, requisicao) => {
       },
     },
     include: { itens: true, pagamentos: true, cliente: true },
-  })
+    })
 
   // Baixa do estoque. Só para item que aponta para produto cadastrado — item
   // avulso não tem prateleira para descontar, e inventar um produto a partir da
   // descrição digitada criaria cadastro duplicado a cada venda.
-  const comProduto = venda.itens.filter((item) => item.produtoId)
-  if (comProduto.length > 0) {
-    await prisma.movimentoEstoque.createMany({
+    const comProduto = criada.itens.filter((item) => item.produtoId)
+    if (comProduto.length > 0) {
+      await transacao.movimentoEstoque.createMany({
       data: comProduto.map((item) => ({
         produtoId: item.produtoId as string,
         tipo: "SAIDA" as const,
         quantidade: item.quantidade,
-        vendaId: venda.id,
-        motivo: `Venda ${venda.numero}`,
+        vendaId: criada.id,
+        motivo: `Venda ${criada.numero}`,
         criadoEm: vendidoEm,
       })),
-    })
-  }
+      })
+    }
 
   // O faturamento do MEI conta a venda, não o recebimento: para o limite anual
   // vale o que foi vendido na competência, mesmo que o cartão caia mês que vem.
-  await somarNoFaturamentoMei(sessao.larId, vendidoEm, totalCentavos)
+  // O desconto de uma venda mista abate as duas atividades proporcionalmente;
+  // lançar tudo como comércio faria o DAS mostrar uma composição falsa.
+    if (perfilMei) await transacao.meiCompetencia.upsert({
+      where: { larId_competencia: { larId: sessao.larId, competencia } },
+      update: { receitaComercioCentavos: { increment: totalCentavos - servicosCentavos }, receitaServicosCentavos: { increment: servicosCentavos } },
+      create: { larId: sessao.larId, competencia, receitaComercioCentavos: totalCentavos - servicosCentavos, receitaServicosCentavos: servicosCentavos },
+    })
+    return criada
+  })
 
   return ok({ venda, troco: conferencia.trocoCentavos }, 201)
 })

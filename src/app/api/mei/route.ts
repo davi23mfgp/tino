@@ -6,7 +6,7 @@ import { diaNoFuso } from "@/lib/loja/contas"
 /**
  * O MEI do ano: limite, faturamento mês a mês e o DAS de cada competência.
  *
- * Cada venda do Balcão já soma na competência do mês (`somarNoFaturamentoMei`),
+ * Cada venda do Balcão já soma na competência do mês, na mesma transação da venda,
  * então o valor gravado é o faturamento. O total do Balcão vai junto só para a
  * tela dizer de onde veio cada parte (Balcão e o que foi lançado à parte) e
  * para cobrir o mês sem competência nenhuma — vendas feitas antes de o modo
