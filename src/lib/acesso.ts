@@ -42,3 +42,36 @@ const LIBERADO_PARA_MEI = ["/loja", "/mei", "/assinatura", "/seguranca", "/termo
 export function rotaPermitidaNoMei(caminho: string): boolean {
   return combinaAlgumPrefixo(caminho, LIBERADO_PARA_MEI)
 }
+
+/**
+ * Qual Tino a sessão abre: o pessoal ou o MEI.
+ *
+ * A mesma conta serve os dois (Davi, 04/10/2026: "o mesmo email pode ser
+ * usado, mas tem que entrar em logins diferentes"). Antes o modo saía do lar:
+ * bastava ter perfil MEI para todo login cair na loja, inclusive o feito pela
+ * tela do Tino pessoal. Agora quem decide é a tela onde a pessoa entrou, e o
+ * token guarda a escolha.
+ *
+ * O perfil MEI continua obrigatório para o modo MEI: sem ele não há loja para
+ * abrir, e a sessão fica no pessoal.
+ *
+ * Token emitido antes desta regra não tem `produto`. Para ele vale o que a
+ * conta indica: com MEI e sem a conversa de boas-vindas do pessoal, a pessoa
+ * só usa a loja, e jogá-la no pessoal a mandaria para um cadastro que ela
+ * nunca pediu. Qualquer outro caso abre o pessoal.
+ */
+export type Produto = "pessoal" | "mei"
+
+export function produtoDaSessao(doToken: unknown, conta: { temMei: boolean; onboardingFeito: boolean }): Produto {
+  if (doToken === "mei" || doToken === "pessoal") return doToken
+  return conta.temMei && !conta.onboardingFeito ? "mei" : "pessoal"
+}
+
+export function sessaoEmModoMei(produto: Produto, temMei: boolean): boolean {
+  return produto === "mei" && temMei
+}
+
+/// A conta existe, mas nunca ligou o MEI. Entrar no modo MEI sem perfil não
+/// teria loja para abrir; e cair no pessoal calado é o defeito que esta regra
+/// corrige, só que ao contrário.
+export const SEM_MEI = "Esta conta ainda não tem o Tino MEI. Entre pelo login do Tino pessoal."

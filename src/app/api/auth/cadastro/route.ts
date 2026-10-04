@@ -103,7 +103,7 @@ export const POST = comPublica(async (requisicao: Request) => {
   await registrarAcesso(requisicao, usuario.id, "CADASTRO")
 
   await gravarCookieSessao(
-    await criarToken({ usuarioId: usuario.id, email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel }),
+    await criarToken({ usuarioId: usuario.id, email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel, produto: dados.modoMei ? "mei" : "pessoal" }),
   )
 
   return ok({ id: usuario.id, nome, email, larId: lar.id }, 201)

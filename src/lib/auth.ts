@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import { cache } from "react"
 
 import { prisma } from "@/lib/prisma"
+import { produtoDaSessao, sessaoEmModoMei, type Produto } from "@/lib/acesso"
 
 // Sem fallback: subir sem JWT_SECRET assinaria token com segredo público, e
 // qualquer pessoa forjaria uma sessão. Falhar na largada é melhor que a brecha.
@@ -28,6 +29,11 @@ export interface Sessao {
   /// campo só cai no default "TITULAR" num estado que a criação de conta não
   /// deveria permitir, e é o default que não tranca ninguém fora por engano.
   papel: string
+  /// A tela de login onde a pessoa entrou (ver `produtoDaSessao`). Vai no
+  /// token para sobreviver às renovações (`{ ...sessao }` em convite, nome, MFA).
+  produto?: Produto
+  /// Calculado a cada requisição a partir de `produto` e do perfil MEI; nunca
+  /// gravado no token, para não valer depois que o perfil sumir.
   modoMei?: boolean
   /// A versão invalida tokens anteriores à ativação/desativação do MFA.
   mfaVersao?: number
@@ -35,7 +41,7 @@ export interface Sessao {
   autenticadoEm?: number
 }
 
-export async function criarToken(sessao: Sessao): Promise<string> {
+export async function criarToken({ modoMei: _calculado, ...sessao }: Sessao): Promise<string> {
   return new SignJWT({ ...sessao, autenticadoEm: sessao.autenticadoEm ?? Math.floor(Date.now() / 1000) })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -71,12 +77,15 @@ export const getSessao = cache(async (): Promise<Sessao | null> => {
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: doToken.usuarioId },
-    select: { larId: true, membroId: true, sessoesValidasDesde: true, mfaVersao: true, mfaSegredo: true, membro: { select: { papel: true } }, lar: { select: { meiPerfil: { select: { id: true } } } } },
+    select: { larId: true, membroId: true, sessoesValidasDesde: true, mfaVersao: true, mfaSegredo: true, membro: { select: { papel: true } }, lar: { select: { onboardingEm: true, meiPerfil: { select: { id: true } } } } },
   })
   if (!usuario || usuario.larId !== doToken.larId) return null
   if (usuario.sessoesValidasDesde && (doToken.iat ?? 0) * 1000 < usuario.sessoesValidasDesde.getTime()) return null
   if ((doToken.mfaVersao ?? 0) !== usuario.mfaVersao) return null
   if (usuario.mfaSegredo && !doToken.mfaConfirmadoEm) return null
+
+  const temMei = Boolean(usuario.lar.meiPerfil)
+  const produto = produtoDaSessao(doToken.produto, { temMei, onboardingFeito: Boolean(usuario.lar.onboardingEm) })
 
   return {
     usuarioId: doToken.usuarioId,
@@ -85,7 +94,8 @@ export const getSessao = cache(async (): Promise<Sessao | null> => {
     larId: usuario.larId,
     membroId: usuario.membroId,
     papel: usuario.membro?.papel ?? "TITULAR",
-    modoMei: Boolean(usuario.lar.meiPerfil),
+    produto,
+    modoMei: sessaoEmModoMei(produto, temMei),
     mfaVersao: usuario.mfaVersao,
     mfaConfirmadoEm: doToken.mfaConfirmadoEm,
     autenticadoEm: doToken.autenticadoEm ?? doToken.iat,

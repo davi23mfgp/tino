@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Check, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react"
 
+import { SEM_MEI } from "@/lib/acesso"
 import { enviar } from "@/lib/cliente"
 import estilos from "./login.module.css"
 
@@ -14,6 +15,7 @@ const mensagensGoogle: Record<string, string> = {
   "google-expirado": "A tentativa expirou. Tente entrar com Google novamente.",
   "google-falhou": "Não foi possível confirmar sua conta Google. Tente novamente.",
   "google-sem-conta": "Esse e-mail ainda não tem conta no Tino. Crie sua conta primeiro.",
+  "sem-mei": SEM_MEI,
   "google-vinculo": "Para proteger sua conta, entre com sua senha antes de vincular este e-mail Google.",
 }
 
@@ -33,7 +35,7 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false }: {
     setEntrando(true)
     setErro(null)
     try {
-      const resposta = await enviar<{ precisaMfa?: boolean }>("/api/auth/login", { email, senha, manterConectado })
+      const resposta = await enviar<{ precisaMfa?: boolean }>("/api/auth/login", { email, senha, manterConectado, produto: modoMei ? "mei" : "pessoal" })
       router.push(resposta.precisaMfa ? (modoMei ? "/login/mei/mfa" : "/login/mfa") : (modoMei ? "/loja" : "/painel"))
       router.refresh()
     } catch (excecao) {

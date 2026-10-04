@@ -58,6 +58,7 @@ export async function POST(requisicao: Request) {
     await registrarAcesso(requisicao, usuario.id, "CADASTRO")
     await gravarCookieSessao(await criarToken({
       usuarioId: usuario.id, email: usuario.email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel,
+      produto: dados.modoMei ? "mei" : "pessoal",
     }))
     jar.delete(COOKIE_CADASTRO_GOOGLE)
     return ok({ id: usuario.id, nome, email: usuario.email, larId: lar.id }, 201)
