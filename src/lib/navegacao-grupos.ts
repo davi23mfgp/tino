@@ -1,4 +1,5 @@
 import {
+  CalendarDays,
   BarChart3,
   CreditCard,
   Flag,
@@ -177,6 +178,7 @@ export const GRUPO_LOJA: GrupoNav = {
     // Terceiro de propósito: na barra do celular aparecem os três primeiros,
     // e o canvas do passo 36 pôs Clientes ali (Catálogo vai para "Mais").
     { rota: "/loja/clientes", rotulo: "Clientes", Icone: Users },
+    { rota: "/loja/agenda", rotulo: "Agenda", Icone: CalendarDays },
     { rota: "/loja/catalogo", rotulo: "Catálogo", Icone: Tags },
     { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
     { rota: "/loja/fiado", rotulo: "Fiado", Icone: NotebookPen },

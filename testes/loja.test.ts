@@ -59,6 +59,11 @@ describe("faturamento misto do MEI", () => {
     assert.deepEqual(dividirFaturamentoMei([{ descricao: "Corte", quantidade: 1, precoUnitarioCentavos: 5000, servicoId: "corte" }], 5000), { comercioCentavos: 0, servicosCentavos: 5000 })
     assert.deepEqual(dividirFaturamentoMei([{ descricao: "Pente", quantidade: 1, precoUnitarioCentavos: 1000 }], 1000), { comercioCentavos: 1000, servicosCentavos: 0 })
   })
+
+  it("mão de obra avulsa de ordem de serviço conta como serviço", () => {
+    const itens = [{ descricao: "Troca de tela (iPhone 11)", quantidade: 1, precoUnitarioCentavos: 9000, servico: true }, { descricao: "Película", quantidade: 1, precoUnitarioCentavos: 3000 }]
+    assert.deepEqual(dividirFaturamentoMei(itens, totalDaVenda(itens)), { comercioCentavos: 3000, servicosCentavos: 9000 })
+  })
 })
 
 describe("taxa da maquininha", () => {

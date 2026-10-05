@@ -29,7 +29,7 @@ export async function POST(requisicao: Request, contexto: { params: Promise<{ to
 
     const orcamento = await prisma.orcamentoLoja.findUnique({
       where: { linkToken: token },
-      include: { loja: { select: { lar: { select: { fusoHorario: true } } } } },
+      include: { loja: { select: { lar: { select: { fusoHorario: true } } } }, cliente: { select: { nome: true } } },
     })
     if (!orcamento || orcamento.status === "RASCUNHO") throw new ErroDeUso("Orçamento não encontrado.", 404)
     const situacao = situacaoDoOrcamento(paraResumoSimples(orcamento), new Date(), orcamento.loja.lar.fusoHorario)
@@ -41,6 +41,18 @@ export async function POST(requisicao: Request, contexto: { params: Promise<{ to
       data: { status: "APROVADO", aprovadoEm: new Date(), aprovadoPeloCliente: true },
     })
     if (feito.count !== 1) throw new ErroDeUso("Este orçamento já foi decidido.", 409)
+    // O sino do dono: a aprovação é o aviso que mais importa, porque é dinheiro
+    // decidido esperando alguém começar o serviço.
+    const numero = String(orcamento.numero).padStart(4, "0")
+    await prisma.avisoLoja.createMany({
+      data: [{
+        lojaId: orcamento.lojaId, chave: `orc-aprovado:${orcamento.id}`, tipo: "orcamento_aprovado",
+        titulo: `${orcamento.cliente.nome} aprovou o orçamento ${numero} pelo link`,
+        texto: "Abra a ordem de serviço ou venda no Balcão.",
+        rota: `/loja/agenda?nova-os=${orcamento.id}`, acao: "Abrir OS",
+      }],
+      skipDuplicates: true,
+    })
     return ok({ aprovado: true })
   })(requisicao)
 }

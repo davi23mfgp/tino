@@ -110,7 +110,7 @@ function Quadro({ rotulo, centavos, apoio, tom }: { rotulo: string; centavos: nu
 
 export default function Balcao() {
   const [dados, setDados] = useState<Estado | null>(null)
-  const [carrinho, setCarrinho] = useState<(ItemDaVenda & { produtoId?: string; servicoId?: string })[]>([])
+  const [carrinho, setCarrinho] = useState<(ItemDaVenda & { produtoId?: string; servicoId?: string; servico?: boolean })[]>([])
   const [digitado, setDigitado] = useState(0)
   const [descricaoAvulso, setDescricaoAvulso] = useState("")
   const [forma, setForma] = useState<FormaPagamento>("DINHEIRO")
@@ -127,6 +127,7 @@ export default function Balcao() {
   const [notaEmOperacao, setNotaEmOperacao] = useState<string | null>(null)
   const [notaErro, setNotaErro] = useState<string | null>(null)
   const [doOrcamento, setDoOrcamento] = useState<{ id: string; numero: number; cliente: string } | null>(null)
+  const [daOrdem, setDaOrdem] = useState<{ id: string; numero: number; cliente: string } | null>(null)
   const [abrindoCaixa, setAbrindoCaixa] = useState(false)
   const [trocoInicial, setTrocoInicial] = useState("")
   const [fechandoCaixa, setFechandoCaixa] = useState(false)
@@ -167,6 +168,27 @@ export default function Balcao() {
         setDoOrcamento({ id: orcamento.id, numero: orcamento.numero, cliente: orcamento.cliente.nome })
       })
       .catch((falha) => setErro(falha instanceof Error ? falha.message : "Não consegui abrir o orçamento."))
+  }, [])
+
+  // "Cobrar no Balcão" na ordem de serviço. Com orçamento, os itens vêm dele
+  // (efeito acima); sem orçamento, a OS entra como um item de mão de obra,
+  // marcado como serviço para o DAS.
+  useEffect(() => {
+    const busca = new URLSearchParams(window.location.search)
+    const id = busca.get("os")
+    if (!id) return
+    buscar<{ ordem: { id: string; numero: number; objeto: string; servico: string; valorCentavos: number | null; cliente: { nome: string; telefone: string | null } } }>(`/api/loja/ordens/${id}`)
+      .then(({ ordem }) => {
+        setDaOrdem({ id: ordem.id, numero: ordem.numero, cliente: ordem.cliente.nome })
+        if (busca.get("orcamento")) return
+        if (ordem.valorCentavos !== null) {
+          setCarrinho([{ descricao: `${ordem.servico} (${ordem.objeto})`.slice(0, 120), quantidade: 1, precoUnitarioCentavos: ordem.valorCentavos, servico: true }])
+        }
+        setCliente(ordem.cliente.nome)
+        setTelefoneCliente(ordem.cliente.telefone ?? "")
+        setDetalhesAbertos(true)
+      })
+      .catch((falha) => setErro(falha instanceof Error ? falha.message : "Não consegui abrir a ordem de serviço."))
   }, [])
 
   // O valor que está no visor e ainda não virou item entra na venda como
@@ -297,15 +319,17 @@ export default function Balcao() {
         clienteTelefone: telefoneCliente.trim() || undefined,
         observacao: observacao.trim() || undefined,
         ...(doOrcamento ? { orcamentoId: doOrcamento.id } : {}),
+        ...(daOrdem ? { ordemId: daOrdem.id } : {}),
       })
-      const doOrcamentoTexto = doOrcamento ? ` O orçamento ${String(doOrcamento.numero).padStart(4, "0")} virou venda.` : ""
+      const doOrcamentoTexto = (doOrcamento ? ` O orçamento ${String(doOrcamento.numero).padStart(4, "0")} virou venda.` : "") + (daOrdem ? ` A OS ${String(daOrdem.numero).padStart(4, "0")} ficou paga.` : "")
       setAviso(
         resposta.troco > 0
           ? `Venda ${resposta.venda.numero} fechada. Troco de ${formatarMoeda(resposta.troco)}.${doOrcamentoTexto}`
           : `Venda ${resposta.venda.numero} fechada.${doOrcamentoTexto}`,
       )
-      if (doOrcamento) {
+      if (doOrcamento || daOrdem) {
         setDoOrcamento(null)
+        setDaOrdem(null)
         window.history.replaceState(null, "", "/loja")
       }
       setCarrinho([])
@@ -378,9 +402,9 @@ export default function Balcao() {
           <span>{itens.length ? `${itens.length} ${itens.length === 1 ? "item" : "itens"}` : "digite o valor ou toque num produto"}</span>
         </div>
 
-        {doOrcamento && (
+        {(doOrcamento || daOrdem) && (
           <p role="status" className={estilos.aviso}>
-            Orçamento {String(doOrcamento.numero).padStart(4, "0")} de {doOrcamento.cliente}: escolha como pagou e cobre.
+            {doOrcamento ? `Orçamento ${String(doOrcamento.numero).padStart(4, "0")}` : `OS ${String(daOrdem!.numero).padStart(4, "0")}`} de {(doOrcamento ?? daOrdem)!.cliente}: escolha como pagou e cobre.
           </p>
         )}
 

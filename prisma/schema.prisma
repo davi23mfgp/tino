@@ -1249,6 +1249,9 @@ model Loja {
   recebimento        FormaRecebimento[]
   clientes           ClienteLoja[]
   orcamentos         OrcamentoLoja[]
+  compromissos       CompromissoLoja[]
+  ordensServico      OrdemServicoLoja[]
+  avisos             AvisoLoja[]
   contas             ContaDaLoja[]
   metas              MetaDaLoja[]
 
@@ -1405,8 +1408,10 @@ model ClienteLoja {
   proximoPassoEm DateTime?
   criadoEm       DateTime  @default(now())
 
-  vendas     VendaLoja[]
-  orcamentos OrcamentoLoja[]
+  vendas        VendaLoja[]
+  orcamentos    OrcamentoLoja[]
+  compromissos  CompromissoLoja[]
+  ordensServico OrdemServicoLoja[]
 
   @@index([lojaId, nome])
 }
@@ -1477,8 +1482,9 @@ model OrcamentoLoja {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  itens   ItemOrcamentoLoja[]
-  versoes VersaoOrcamentoLoja[]
+  itens        ItemOrcamentoLoja[]
+  versoes      VersaoOrcamentoLoja[]
+  ordemServico OrdemServicoLoja?
 
   @@unique([lojaId, numero])
   @@index([lojaId, status])
@@ -1504,6 +1510,104 @@ model ItemOrcamentoLoja {
   ordem                 Int    @default(0)
 
   @@index([orcamentoId])
+}
+
+/// Compromisso da agenda da loja (passo 37, opção A, 05/10/2026). Hora é
+/// opcional: sem ela, é coisa do dia inteiro (ideia do Controllares).
+model CompromissoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  titulo     String
+  detalhe    String?
+  /// Dia e hora. Dia inteiro: meia-noite UTC do dia escolhido.
+  inicioEm   DateTime
+  diaInteiro Boolean   @default(false)
+  feitoEm    DateTime?
+
+  clienteId String?
+  cliente   ClienteLoja?      @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  ordemId   String?
+  ordem     OrdemServicoLoja? @relation(fields: [ordemId], references: [id], onDelete: SetNull)
+
+  criadoEm DateTime @default(now())
+
+  @@index([lojaId, inicioEm])
+}
+
+enum EtapaOrdemServico {
+  RECEBIDO
+  FAZENDO
+  ESPERANDO_PECA
+  PRONTO
+  ENTREGUE
+}
+
+/// Ordem de serviço: o aparelho (ou o trabalho) que está com a loja.
+///
+/// O valor é opcional de propósito: aparelho recebido para diagnóstico ainda
+/// não tem preço, e a tela diz "sem preço ainda" em vez de inventar um.
+model OrdemServicoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  numero    Int
+  clienteId String
+  cliente   ClienteLoja @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  /// O que está com a loja ("iPhone 11") e o que fazer ("troca de tela").
+  objeto    String
+  servico   String
+  /// Como chegou: o registro que evita discussão na entrega.
+  naEntrada String?
+
+  etapa         EtapaOrdemServico @default(RECEBIDO)
+  /// Quando entrou em cada etapa ({ "RECEBIDO": iso, ... }), para a ficha e o
+  /// link do cliente mostrarem as datas.
+  etapasEm      Json              @default("{}")
+  prazoEm       DateTime?
+  valorCentavos Int?
+  /// [{ "texto": string, "feito": boolean }]
+  checklist     Json              @default("[]")
+
+  orcamentoId String?        @unique
+  orcamento   OrcamentoLoja? @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
+  vendaId     String?        @unique
+  venda       VendaLoja?     @relation(fields: [vendaId], references: [id], onDelete: SetNull)
+
+  /// Link de acompanhamento do cliente, só leitura.
+  linkToken String @unique
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  compromissos CompromissoLoja[]
+
+  @@unique([lojaId, numero])
+  @@index([lojaId, etapa])
+}
+
+/// Aviso do sino do MEI. A chave impede o mesmo aviso de nascer duas vezes:
+/// a aprovação do orçamento 0002 é um aviso só, por mais que a tela recarregue.
+model AvisoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  chave    String
+  tipo     String
+  titulo   String
+  texto    String
+  rota     String?
+  /// Rótulo do botão do aviso ("Abrir OS").
+  acao     String?
+  lidoEm   DateTime?
+  criadoEm DateTime  @default(now())
+
+  @@unique([lojaId, chave])
+  @@index([lojaId, criadoEm])
 }
 
 /// Como o orçamento estava antes de cada edição feita depois do envio. Quem
@@ -1575,10 +1679,11 @@ model VendaLoja {
 
   criadoEm DateTime @default(now())
 
-  itens      ItemVenda[]
-  pagamentos PagamentoVenda[]
-  notaFiscal NotaFiscalVenda?
-  orcamento  OrcamentoLoja?
+  itens        ItemVenda[]
+  pagamentos   PagamentoVenda[]
+  notaFiscal   NotaFiscalVenda?
+  orcamento    OrcamentoLoja?
+  ordemServico OrdemServicoLoja?
 
   @@unique([lojaId, numero])
   @@index([lojaId, criadoEm])

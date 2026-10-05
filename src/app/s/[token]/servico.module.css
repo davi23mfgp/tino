@@ -1,0 +1,11 @@
+/* As etapas do serviço no papel claro do link (cores fixas, como o orçamento). */
+.passos { list-style:none; margin:0; padding:0; display:grid; gap:4px; }
+.passos li { display:grid; grid-template-columns:26px minmax(0,1fr) auto; align-items:center; gap:12px; min-height:40px; font-size:15px; color:#8a948d; }
+.passos li > span { width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; border:1px solid #c8cfc9; font-size:13px; font-weight:800; }
+.passos li > b { font-weight:500; }
+.passos li > small { font-size:13px; color:#55605a; }
+.passos li[data-estado="feito"] { color:#1d231e; }
+.passos li[data-estado="feito"] > span { background:#1f6b36; border-color:#1f6b36; color:#fff; }
+.passos li[data-estado="agora"] { color:#1d231e; }
+.passos li[data-estado="agora"] > span { border:2px solid #1f6b36; }
+.passos li[data-estado="agora"] > b { font-weight:700; }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Check, Clock, ExternalLink, FileText, Link2, MessageCircle, Pencil, Phone, Plus, ShoppingBag, X } from "lucide-react"
+import { ArrowLeft, Check, Clock, ExternalLink, FileText, Link2, MessageCircle, Pencil, Phone, Plus, ShoppingBag, Wrench, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -223,6 +223,9 @@ export function FichaDoCliente({
           <div className={estilos.acoes}>
             {(orcamento.situacao === "enviado" || orcamento.situacao === "visto" || orcamento.situacao === "aprovado") && (
               <Link className={estilos.botao} data-principal href={`/loja?orcamento=${orcamento.id}`}><ShoppingBag aria-hidden />Virar venda no Balcão</Link>
+            )}
+            {(orcamento.situacao === "aprovado" || orcamento.situacao === "convertido") && (
+              <Link className={estilos.botao} href={`/loja/agenda?nova-os=${orcamento.id}`}><Wrench aria-hidden />Abrir OS</Link>
             )}
             {orcamento.status === "RASCUNHO" && <button type="button" className={estilos.botao} data-principal disabled={ocupado} onClick={() => void mandarLink(orcamento)}><Link2 aria-hidden />Enviar link</button>}
             {orcamento.status === "ENVIADO" && <button type="button" className={estilos.botao} disabled={ocupado} onClick={() => void mandarLink(orcamento)}><Link2 aria-hidden />{orcamento.situacao === "vencido" ? "Renovar e reenviar" : "Reenviar link"}</button>}

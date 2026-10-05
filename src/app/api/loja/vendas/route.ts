@@ -41,6 +41,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
             descricao: campo.textoObrigatorio(120),
             quantidade: campo.inteiro(1, 100_000),
             precoUnitarioCentavos: campo.centavos(),
+            servico: z.boolean().optional(),
           }),
         )
         .min(1)
@@ -60,6 +61,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       clienteTelefone: campo.texto(20).optional(),
       observacao: campo.texto(500).optional(),
       orcamentoId: campo.id().optional(),
+      ordemId: campo.id().optional(),
     }),
     await corpo(requisicao),
   )
@@ -81,6 +83,21 @@ export const POST = comSessao(async (sessao, requisicao) => {
     if (orcamento.status !== "ENVIADO" && orcamento.status !== "APROVADO") throw new ErroDeUso("Este orçamento já foi vendido, perdido ou ainda é rascunho.", 409)
     dados.clienteNome = orcamento.cliente.nome
     dados.clienteTelefone = dados.clienteTelefone || orcamento.cliente.telefone || undefined
+  }
+
+  // Venda que fecha uma ordem de serviço: a OS fica ligada à venda, e a
+  // ficha dela passa a dizer em que venda foi paga.
+  const ordem = dados.ordemId
+    ? await prisma.ordemServicoLoja.findFirst({ where: { id: dados.ordemId, lojaId: loja.id }, select: { id: true, vendaId: true, cliente: { select: { id: true, nome: true, telefone: true } } } })
+    : null
+  if (dados.ordemId) {
+    if (sessao.papel === "FUNCIONARIO_LOJA") throw new ErroDeUso("Ordem de serviço só o dono cobra.", 403)
+    if (!ordem) throw new ErroDeUso("Ordem de serviço não encontrada.", 404)
+    if (ordem.vendaId) throw new ErroDeUso("Esta ordem de serviço já foi cobrada.", 409)
+    if (!orcamento) {
+      dados.clienteNome = ordem.cliente.nome
+      dados.clienteTelefone = dados.clienteTelefone || ordem.cliente.telefone || undefined
+    }
   }
 
   // Produto de outra loja não pode entrar: a baixa de estoque mais abaixo
@@ -120,8 +137,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
   // "quem deve", cada uma com metade da dívida (achado em 28/09/2026).
   const nomeDoCliente = dados.clienteNome?.trim().replace(/\s+/g, " ")
   // O cliente do orçamento é exatamente aquele, não o primeiro com o mesmo nome.
-  const existente = orcamento
-    ? await prisma.clienteLoja.findUnique({ where: { id: orcamento.cliente.id } })
+  const existente = orcamento || ordem
+    ? await prisma.clienteLoja.findUnique({ where: { id: (orcamento?.cliente.id ?? ordem?.cliente.id)! } })
     : nomeDoCliente
     ? await prisma.clienteLoja.findFirst({
         where: { lojaId: loja.id, nome: { equals: nomeDoCliente, mode: "insensitive" } },
@@ -151,7 +168,12 @@ export const POST = comSessao(async (sessao, requisicao) => {
     prisma.meiPerfil.findUnique({ where: { larId: sessao.larId }, select: { larId: true } }),
     prisma.lar.findUnique({ where: { id: sessao.larId }, select: { fusoHorario: true } }),
   ])
-  const { servicosCentavos } = dividirFaturamentoMei(dados.itens, totalCentavos)
+  // A marca de serviço do item avulso só vale na venda de uma OS: fora dela,
+  // seria um jeito de reclassificar receita do DAS sem passar pelo catálogo.
+  const { servicosCentavos } = dividirFaturamentoMei(
+    dados.itens.map((item) => ({ ...item, servico: Boolean(ordem && item.servico && !item.produtoId) })),
+    totalCentavos,
+  )
   const competencia = competenciaDaVenda(vendidoEm, lar?.fusoHorario)
   const venda = await prisma.$transaction(async (transacao) => {
     const criada = await transacao.vendaLoja.create({
@@ -195,6 +217,11 @@ export const POST = comSessao(async (sessao, requisicao) => {
       })
       // Dois cliques em "Cobrar" não podem vender o mesmo orçamento duas vezes.
       if (convertido.count !== 1) throw new ErroDeUso("Este orçamento acabou de virar venda.", 409)
+    }
+
+    if (ordem) {
+      const ligada = await transacao.ordemServicoLoja.updateMany({ where: { id: ordem.id, vendaId: null }, data: { vendaId: criada.id } })
+      if (ligada.count !== 1) throw new ErroDeUso("Esta ordem de serviço acabou de ser cobrada.", 409)
     }
 
   // Baixa do estoque. Só para item que aponta para produto cadastrado — item

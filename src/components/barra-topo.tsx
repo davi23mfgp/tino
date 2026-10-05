@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { usarAlertas } from "@/components/alertas-provider"
 import notificacoes from "./notificacoes.module.css"
+import { AvisosDaLoja } from "./avisos-da-loja"
 import menuConta from "./menu-da-conta.module.css"
 import { showToast } from "@/components/ui/toast"
 
@@ -125,6 +126,7 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{n
           </footer>}
         </SheetContent>
       </Sheet>}
+      {mei && !apenasLoja && <AvisosDaLoja borda={borda} />}
       <DropdownMenu modal={false}><DropdownMenuTrigger asChild><button aria-label="Minha conta" className={"grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Avatar className="size-8 sm:size-7">{avatarUrl && <AvatarImage src={avatarUrl} alt="" />}<AvatarFallback>{nome.charAt(0).toUpperCase()}</AvatarFallback></Avatar></button></DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={10} className={menuConta.menu + " w-64 max-w-[calc(100vw-24px)] rounded-2xl border border-pauta p-2 shadow-xl"}>
           <div className="flex items-center gap-3 px-3 py-2">
