@@ -225,6 +225,12 @@ export default function Fiado() {
 
       {erro && <p className="text-[calc(13px*var(--escala-letra))] text-negativo">{erro}</p>}
 
+      {/* Sem resposta ainda, a tela não fala de ninguém: "Ninguém com fiado"
+          e R$ 0,00 durante o carregamento eram lidos como fato, e numa rede
+          lenta o dono via a rua vazia com dinheiro a receber. */}
+      {!dados && !erro && <p className={`${estilos.bloco} ${estilos.vazio}`}>Carregando o fiado…</p>}
+
+      {dados && (
       <div className={estilos.grade}>
         <div className={estilos.coluna}>
           <div className={estilos.titulo}>
@@ -272,6 +278,7 @@ export default function Fiado() {
 
         {blocoIdade}
       </div>
+      )}
 
       <Dialog open={Boolean(devedor)} onOpenChange={(abrir) => !abrir && setAberto(null)}>
         <DialogContent className="sm:max-w-[520px]">
