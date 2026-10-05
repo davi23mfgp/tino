@@ -97,6 +97,17 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   foram pedidas e construídas depois (Telegram e assistente Tino, ver
   README; PDF de fatura em `/importar`).
 
+## Visão de produto (Davi, 05/10/2026)
+
+O Tino tem de ser uma plataforma competitiva e escalável onde **vários tipos
+de negócio** administram o grosso da operação **sem sair do app**, sobre a
+**mesma base** (cliente, catálogo, venda, orçamento, OS, agenda, financeiro).
+A mesma pessoa pode ter **vários negócios** ao mesmo tempo. Tem de servir a
+**várias idades** (leitura, toque e linguagem simples). E a decisão de
+**marca própria ou marca branca** (white label) precisa estar coberta. Toda
+tela nova é julgada por isso: serve a mais de um segmento? funciona com mais
+de um negócio na conta? uma pessoa de 65 anos usa sem ajuda?
+
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
 - Trabalhar de forma autônoma: usar as skills disponíveis para decidir a
