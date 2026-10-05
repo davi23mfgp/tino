@@ -4,6 +4,7 @@ import { comPublica, corpo, erro, exigir, ok } from "@/lib/api"
 import { consumirLimite, ipDaRequisicao, liberarLimite, LimiteEstourado, REGRAS } from "@/lib/limite"
 import { registrarAcesso } from "@/lib/registro-acesso"
 import { criarDesafioMfa } from "@/lib/mfa"
+import { SEM_MEI } from "@/lib/acesso"
 import { origemPermitida } from "@/lib/origem-segura"
 import { validar, z, campo } from "@/lib/validar"
 
@@ -14,7 +15,9 @@ const HASH_FALSO = "$2a$12$pUjYLGc.bllSI.9n598Yyu0Xojk4m5altsbg.IDJiYscdr4fI9.c6
 
 export const POST = comPublica(async (requisicao: Request) => {
   if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
-  const dados = validar(z.object({ email: campo.email(), senha: z.string().min(1).max(128), manterConectado: z.boolean().optional() }), await corpo(requisicao))
+  const dados = validar(z.object({ email: campo.email(), senha: z.string().min(1).max(128), manterConectado: z.boolean().optional(), produto: z.enum(["pessoal", "mei"]).optional() }), await corpo(requisicao))
+  // Cliente antigo sem o campo entrava pelo login pessoal: o MEI sempre mandou.
+  const produto = dados.produto ?? "pessoal"
   const email = exigir(dados.email, "Informe o e-mail").trim().toLowerCase()
   const senha = exigir(dados.senha, "Informe a senha")
 
@@ -31,7 +34,7 @@ export const POST = comPublica(async (requisicao: Request) => {
     throw excecao
   }
 
-  const usuario = await prisma.usuario.findUnique({ where: { email }, include: { membro: true } })
+  const usuario = await prisma.usuario.findUnique({ where: { email }, include: { membro: true, lar: { select: { meiPerfil: { select: { id: true } } } } } })
 
   // Mesma mensagem para e-mail inexistente e senha errada: respostas diferentes
   // permitiriam descobrir quais e-mails têm conta no sistema.
@@ -39,8 +42,11 @@ export const POST = comPublica(async (requisicao: Request) => {
   const senhaConfere = await conferirSenha(senha, usuario?.senhaHash ?? HASH_FALSO)
   if (!usuario || !senhaConfere) return invalido
 
+  // Só depois da senha: antes disso a resposta diria quais e-mails têm MEI.
+  if (produto === "mei" && !usuario.lar.meiPerfil) return erro(SEM_MEI, 409)
+
   if (usuario.mfaSegredo) {
-    await criarDesafioMfa(usuario.id, dados.manterConectado !== false)
+    await criarDesafioMfa(usuario.id, dados.manterConectado !== false, produto)
     return ok({ precisaMfa: true })
   }
 
@@ -60,6 +66,7 @@ export const POST = comPublica(async (requisicao: Request) => {
       membroId: usuario.membroId,
       papel: usuario.membro?.papel ?? "TITULAR",
       mfaVersao: usuario.mfaVersao,
+      produto,
     }),
     dados.manterConectado !== false,
   )

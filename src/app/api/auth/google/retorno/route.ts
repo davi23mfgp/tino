@@ -68,8 +68,13 @@ export async function GET(requisicao: Request) {
       })
     }
 
+    const produto = modoMei ? "mei" : "pessoal"
+    if (modoMei && !(await prisma.meiPerfil.findUnique({ where: { larId: usuario.larId }, select: { id: true } }))) {
+      return voltar(requisicao, "sem-mei", true)
+    }
+
     if (usuario.mfaSegredo) {
-      await criarDesafioMfa(usuario.id, manterConectado)
+      await criarDesafioMfa(usuario.id, manterConectado, produto)
       return NextResponse.redirect(new URL(modoMei ? "/login/mei/mfa" : "/login/mfa", requisicao.url))
     }
     await prisma.usuario.update({ where: { id: usuario.id }, data: { ultimoLogin: new Date() } })
@@ -77,7 +82,7 @@ export async function GET(requisicao: Request) {
     await gravarCookieSessao(await criarToken({
       usuarioId: usuario.id, email: usuario.email, nome: usuario.nome,
       larId: usuario.larId, membroId: usuario.membroId, papel: usuario.membro?.papel ?? "TITULAR",
-      mfaVersao: usuario.mfaVersao,
+      mfaVersao: usuario.mfaVersao, produto,
     }), manterConectado)
     return NextResponse.redirect(new URL(modoMei ? "/loja" : "/painel", requisicao.url))
   } catch {

@@ -35,7 +35,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   const [lar, usuario] = await Promise.all([
     prisma.lar.findUnique({
       where: { id: sessao.larId },
-      select: { onboardingEm: true, meiPerfil: { select: { id: true } } },
+      select: { onboardingEm: true },
     }),
     // O papel vem do banco, não do token: o token vale 30 dias, e tirar o papel
     // de alguém precisa valer no próximo clique. `avatarUrl` pela mesma razão:
@@ -52,7 +52,10 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   const acesso = await estadoDoAcesso(sessao.usuarioId)
 
   const apenasLoja = sessao.papel === "FUNCIONARIO_LOJA"
-  const mei = Boolean(lar.meiPerfil)
+  // O modo vem da tela de login usada, não do lar ter MEI (ver
+  // `produtoDaSessao`): a mesma conta entra no pessoal por /login e na loja
+  // por /login/mei.
+  const mei = Boolean(sessao.modoMei)
   if (mei && !rotaPermitidaNoMei((await headers()).get("x-caminho") ?? "")) redirect("/loja")
 
   // Painel vazio não diz nada a quem acabou de chegar. Antes de mostrar

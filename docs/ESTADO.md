@@ -1,10 +1,20 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 04/10/2026: login pessoal e login MEI separados
+
+Defeito relatado pelo Davi: entrou pela tela do Tino pessoal com o próprio e-mail e caiu no MEI. O modo saía do lar ter perfil MEI (`lar.meiPerfil`), não da tela usada. Regra dele: "o mesmo email pode ser usado, mas tem que entrar em logins diferentes".
+
+Agora o token guarda `produto` (`pessoal` ou `mei`), gravado pela tela de entrada: senha, Google (cookie `google_produto`), segundo fator (o produto atravessa o desafio) e cadastro. `getSessao` calcula `modoMei` a cada requisição (`produtoDaSessao` e `sessaoEmModoMei` em `src/lib/acesso.ts`), e o layout usa `sessao.modoMei`. Token antigo, sem `produto`, abre o MEI só para conta que usa apenas a loja (tem MEI e nunca fez a conversa de boas-vindas do pessoal). Entrar por `/login/mei` com conta sem MEI responde "Esta conta ainda não tem o Tino MEI. Entre pelo login do Tino pessoal.", só depois de conferir a senha.
+
+Conferido no servidor local e no Chromium: conta com os dois por `/login` abre `/painel`; por `/login/mei` abre `/loja` e `/api/panorama` responde 404; conta só pessoal recebe o aviso em `/login/mei`. Com o código antigo, o login pessoal da mesma conta redirecionava para `/loja`. Não conferido de ponta a ponta: o caminho com segundo fator ativo (tipado e com o produto passado, sem teste com código TOTP real).
+
+Falta: ligar o MEI numa conta pessoal existente pela interface. A API (`PUT /api/mei`) existe, mas o menu pessoal não leva à tela MEI, e a loja (`Loja`) só nasce no cadastro MEI.
+
 ## 04/10/2026 — Catálogo e venda de serviços
 
 Retomado o recorte local: categorias com imagem por URL, fornecedores, serviços, vínculos de produto por categoria/fornecedor e serviço vendável no Balcão. A tela `/loja/catalogo` permite criar, editar e arquivar categoria; criar/editar fornecedor; criar/editar/pausar serviço. Produto continua cadastrado na Prateleira e recebe categoria/fornecedor no Catálogo. A venda mista rateia desconto e receita entre comércio e serviço para a competência do MEI. Venda, baixa de estoque e competência são gravadas na mesma transação, pois falha parcial gerava divergência.
 
-**Publicação pendente:** código enviado ao `main` em `8cdd4b5`; correção da auditoria de dependências em `55e6bab`. A CI do GitHub passou em `55e6bab`, mas os dois deployments da Vercel falharam (`dpl_Eaf1L8kWe3a1GnSng9J19EyRSBzi` e `dpl_9Z5EcVdHAwHsh4CAebieXPxr7z2G`). A causa do build na Vercel ainda exige o log de `npx vercel inspect dpl_9Z5EcVdHAwHsh4CAebieXPxr7z2G --logs`; o CLI pediu autenticação por dispositivo. Até resolver, **a produção continua sem o catálogo novo**. Não afirmar que a rota `/loja/catalogo` está publicada.
+**Publicação (corrigido em 04/10/2026):** o catálogo **está publicado**. O registro anterior dizia que os deploys tinham falhado, mas o GitHub mostra dois projetos da Vercel recebendo cada commit do `main`: o projeto `tino` da conta `davi-pereiras-projects-0e1004d7`, que é o de produção de sempre, publicou `8cdd4b5`, `55e6bab` e `208a130` com sucesso (para `208a130`: `tino-au2cqtjj9-davi-pereiras-projects-0e1004d7.vercel.app`). As falhas (`dpl_Eaf1L8kWe3a1GnSng9J19EyRSBzi`, `dpl_9Z5EcVdHAwHsh4CAebieXPxr7z2G`, `dpl_GE9cpAqKPhMLpsRdMBHnvFSX6Rn6`) são de um **segundo projeto `tino` na conta `davi-pereiras-projects-24f2ce83`**, criado à parte e sem as variáveis de ambiente. Ele não serve o domínio de produção. Apagar esse projeto duplicado no painel da Vercel (Settings, Delete Project) acaba com o aviso vermelho em todo commit. Conferir no navegador `https://tino-kappa.vercel.app/loja/catalogo` com `demo-mei@tino.local`.
 
 Verificação local: migrations aplicadas ao PostgreSQL Docker isolado, edição e venda mista via API, rateio R$ 36,00 = R$ 9,00 comércio + R$ 27,00 serviços, Catálogo móvel em 390px sem rolagem horizontal. A captura local ficou em `/tmp/tino-catalogo-servico-mobile.png`. O trabalho ainda precisa de compra, proposta, agenda, finanças completas e fiscal real descritos em `TINO-ERP-MEI.md`; esta entrega não os representa como prontos.
 

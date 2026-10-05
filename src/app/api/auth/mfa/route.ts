@@ -19,7 +19,7 @@ export async function POST(requisicao: Request) {
       if (atual.mfaDesafioHash !== desafio.desafioHash || atual.mfaVersao !== desafio.versao) throw new ErroDeUso("Sua tentativa expirou. Entre novamente.", 401)
       return tx.usuario.update({ where: { id: atual.id }, data: { ...validarFator(atual, codigo), mfaDesafioHash: null, ultimoLogin: new Date() }, include: { membro: true } })
     })
-    await gravarSessaoComMfa(usuario, desafio.manterConectado)
+    await gravarSessaoComMfa(usuario, desafio.manterConectado, desafio.produto)
     ;(await cookies()).delete(COOKIE_MFA)
     await registrarAcesso(requisicao, usuario.id, "LOGIN")
     await liberarLimite(`login:${usuario.email}`)

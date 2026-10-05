@@ -4,6 +4,7 @@ import { SignJWT, jwtVerify } from "jose"
 import type { Prisma } from "@prisma/client"
 
 import { ErroDeUso } from "@/lib/api"
+import type { Produto } from "@/lib/acesso"
 import { criarToken, gravarCookieSessao, limparCookieSessao, type Sessao } from "@/lib/auth"
 import { abrirSegredo } from "@/lib/criptografia"
 import { prisma } from "@/lib/prisma"
@@ -17,10 +18,12 @@ export function exigirLoginRecente(sessao: Sessao) {
   }
 }
 
-export async function criarDesafioMfa(usuarioId: string, manterConectado: boolean) {
+// O produto atravessa o desafio: sem ele, quem entrou pela tela do MEI e
+// confirmou o segundo fator cairia no Tino pessoal (ou o contrário).
+export async function criarDesafioMfa(usuarioId: string, manterConectado: boolean, produto: Produto) {
   const desafio = randomBytes(32).toString("base64url")
   const usuario = await prisma.usuario.update({ where: { id: usuarioId }, data: { mfaDesafioHash: hashRecuperacao(desafio) }, select: { mfaVersao: true } })
-  const token = await new SignJWT({ usuarioId, manterConectado, versao: usuario.mfaVersao })
+  const token = await new SignJWT({ usuarioId, manterConectado, produto, versao: usuario.mfaVersao })
     .setProtectedHeader({ alg: "HS256" }).setAudience("tino:mfa").setJti(desafio)
     .setIssuedAt().setExpirationTime("5m").sign(new TextEncoder().encode(process.env.JWT_SECRET!))
   await limparCookieSessao()
@@ -34,7 +37,7 @@ export async function lerDesafioMfa() {
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET!), { algorithms: ["HS256"], audience: "tino:mfa" })
     if (typeof payload.usuarioId !== "string" || typeof payload.jti !== "string" || typeof payload.versao !== "number") throw new Error()
-    return { usuarioId: payload.usuarioId, desafioHash: hashRecuperacao(payload.jti), versao: payload.versao, manterConectado: payload.manterConectado !== false }
+    return { usuarioId: payload.usuarioId, desafioHash: hashRecuperacao(payload.jti), versao: payload.versao, manterConectado: payload.manterConectado !== false, produto: (payload.produto === "mei" ? "mei" : "pessoal") as Produto }
   } catch {
     throw new ErroDeUso("Sua tentativa expirou. Entre novamente.", 401)
   }
@@ -57,10 +60,10 @@ export function validarFator(usuario: { id: string; mfaSegredo: string | null; m
   throw new ErroDeUso("Código inválido ou já utilizado.", 401)
 }
 
-export async function gravarSessaoComMfa(usuario: { id: string; email: string; nome: string; larId: string; membroId: string | null; mfaVersao: number; membro: { papel: string } | null }, manterConectado = true) {
+export async function gravarSessaoComMfa(usuario: { id: string; email: string; nome: string; larId: string; membroId: string | null; mfaVersao: number; membro: { papel: string } | null }, manterConectado: boolean, produto: Produto | undefined) {
   await gravarCookieSessao(await criarToken({
     usuarioId: usuario.id, email: usuario.email, nome: usuario.nome, larId: usuario.larId,
     membroId: usuario.membroId, papel: usuario.membro?.papel ?? "TITULAR",
-    mfaVersao: usuario.mfaVersao, mfaConfirmadoEm: Math.floor(Date.now() / 1000),
+    mfaVersao: usuario.mfaVersao, mfaConfirmadoEm: Math.floor(Date.now() / 1000), produto,
   }), manterConectado)
 }

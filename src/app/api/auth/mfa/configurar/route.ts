@@ -52,7 +52,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     return { usuario: atualizado, codigos, ativo: true }
   })
   // Reemite somente a sessão que concluiu a mudança; as demais versões caem.
-  if (resultado.ativo) await gravarSessaoComMfa(resultado.usuario)
+  if (resultado.ativo) await gravarSessaoComMfa(resultado.usuario, true, sessao.produto)
   else {
     const { criarToken, gravarCookieSessao } = await import("@/lib/auth")
     await gravarCookieSessao(await criarToken({ ...sessao, mfaVersao: resultado.usuario.mfaVersao, mfaConfirmadoEm: undefined }))

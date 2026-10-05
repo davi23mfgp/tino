@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { rotaPermitida, rotaPermitidaNoMei } from "@/lib/acesso"
+import { produtoDaSessao, rotaPermitida, rotaPermitidaNoMei, sessaoEmModoMei } from "@/lib/acesso"
 
 describe("rota permitida por papel", () => {
   it("titular abre qualquer rota", () => {
@@ -76,5 +76,30 @@ describe("rotas da conta MEI", () => {
     assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/loja/painel"), false)
     assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/loja/dados"), false)
     assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/api/loja/cadastro"), false)
+  })
+})
+
+// Davi, 04/10/2026: entrou pela tela do Tino pessoal e caiu na loja, porque o
+// modo saía do lar ter MEI. A mesma conta tem de abrir o produto da tela usada.
+describe("produto da sessão", () => {
+  const ambos = { temMei: true, onboardingFeito: true }
+
+  it("conta com os dois: o login pessoal abre o pessoal, o do MEI abre a loja", () => {
+    assert.equal(sessaoEmModoMei(produtoDaSessao("pessoal", ambos), ambos.temMei), false)
+    assert.equal(sessaoEmModoMei(produtoDaSessao("mei", ambos), ambos.temMei), true)
+  })
+
+  it("sem perfil MEI nunca entra no modo MEI, mesmo que o token peça", () => {
+    assert.equal(sessaoEmModoMei(produtoDaSessao("mei", { temMei: false, onboardingFeito: true }), false), false)
+  })
+
+  it("token antigo, sem produto: só a conta que usa apenas a loja abre o MEI", () => {
+    assert.equal(produtoDaSessao(undefined, { temMei: true, onboardingFeito: false }), "mei")
+    assert.equal(produtoDaSessao(undefined, ambos), "pessoal")
+    assert.equal(produtoDaSessao(undefined, { temMei: false, onboardingFeito: false }), "pessoal")
+  })
+
+  it("valor estranho no token é tratado como ausente", () => {
+    assert.equal(produtoDaSessao("loja", ambos), "pessoal")
   })
 })
