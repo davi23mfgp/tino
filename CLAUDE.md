@@ -108,6 +108,14 @@ A mesma pessoa pode ter **vários negócios** ao mesmo tempo. Tem de servir a
 tela nova é julgada por isso: serve a mais de um segmento? funciona com mais
 de um negócio na conta? uma pessoa de 65 anos usa sem ajuda?
 
+O Tino também é **assessor**, não só registro: a pessoa diz "tenho um
+horário amanhã às 15h com a Ana, agenda pra mim" e o app marca na agenda
+dele e na **Agenda do Google** da pessoa. E é **ajuda tributária**: DAS,
+limite do MEI, nota de serviço, desenquadramento, explicado com a fonte e a
+data da regra. O assessor propõe e a pessoa confirma num toque (regra 5:
+nada entra sem conferência). Quando a dúvida passa do que a regra escrita
+responde, ele diz que é caso de contador, em vez de chutar.
+
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
 - Trabalhar de forma autônoma: usar as skills disponíveis para decidir a
