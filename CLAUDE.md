@@ -116,6 +116,18 @@ data da regra. O assessor propõe e a pessoa confirma num toque (regra 5:
 nada entra sem conferência). Quando a dúvida passa do que a regra escrita
 responde, ele diz que é caso de contador, em vez de chutar.
 
+Mais três pedidos do mesmo dia:
+- **Maquininha integrada:** muito comerciante vende na maquininha, e o Tino
+  tem de ler as vendas e os repasses das principais por API, conciliando com
+  o Balcão. O registro manual (taxa e prazo) continua para quem não conectar.
+- **Guia do negócio, educativo:** quando o negócio está fraco ou desandando,
+  o Tino mostra o que falta, em passos ("já cadastrou o custo? não: faça
+  isso"; "já cobra quem sumiu? não: tente aquilo"), cada passo com o porquê.
+- **Análise de clientes:** quem compra mais, quem sumiu, quem só compra no
+  fiado. Pode ser análise complexa por baixo, mas **toda tela fala em
+  linguagem objetiva, simples e intuitiva**, para qualquer idade e qualquer
+  tipo de negócio.
+
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
 - Trabalhar de forma autônoma: usar as skills disponíveis para decidir a
