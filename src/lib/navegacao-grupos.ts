@@ -15,6 +15,7 @@ import {
   TrendingDown,
   Tags,
   ShoppingBag,
+  Users,
   Sprout,
   Store,
   Target,
@@ -173,6 +174,9 @@ export const GRUPO_LOJA: GrupoNav = {
   itens: [
     { rota: "/loja/painel", rotulo: "Visão geral", Icone: BarChart3 },
     { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
+    // Terceiro de propósito: na barra do celular aparecem os três primeiros,
+    // e o canvas do passo 36 pôs Clientes ali (Catálogo vai para "Mais").
+    { rota: "/loja/clientes", rotulo: "Clientes", Icone: Users },
     { rota: "/loja/catalogo", rotulo: "Catálogo", Icone: Tags },
     { rota: "/loja/estoque", rotulo: "Prateleira", Icone: Package },
     { rota: "/loja/fiado", rotulo: "Fiado", Icone: NotebookPen },

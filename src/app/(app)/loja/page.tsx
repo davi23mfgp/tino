@@ -126,6 +126,7 @@ export default function Balcao() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [notaEmOperacao, setNotaEmOperacao] = useState<string | null>(null)
   const [notaErro, setNotaErro] = useState<string | null>(null)
+  const [doOrcamento, setDoOrcamento] = useState<{ id: string; numero: number; cliente: string } | null>(null)
   const [abrindoCaixa, setAbrindoCaixa] = useState(false)
   const [trocoInicial, setTrocoInicial] = useState("")
   const [fechandoCaixa, setFechandoCaixa] = useState(false)
@@ -143,6 +144,29 @@ export default function Balcao() {
   useEffect(() => {
     const pedida = new URLSearchParams(window.location.search).get("forma")
     if (pedida && FORMAS.some((opcao) => opcao.valor === pedida)) setForma(pedida as FormaPagamento)
+  }, [])
+
+  // "Virar venda no Balcão" na ficha do cliente chega com o orçamento: os
+  // itens, o desconto e o cliente já entram, e o dono só escolhe como pagou.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("orcamento")
+    if (!id) return
+    buscar<{ orcamento: { id: string; numero: number; descontoCentavos: number; cliente: { nome: string; telefone: string | null }; itens: { produtoId: string | null; servicoId: string | null; descricao: string; quantidade: number; precoUnitarioCentavos: number }[] } }>(`/api/loja/orcamentos/${id}`)
+      .then(({ orcamento }) => {
+        setCarrinho(orcamento.itens.map((item) => ({
+          ...(item.produtoId ? { produtoId: item.produtoId } : {}),
+          ...(item.servicoId ? { servicoId: item.servicoId } : {}),
+          descricao: item.descricao,
+          quantidade: item.quantidade,
+          precoUnitarioCentavos: item.precoUnitarioCentavos,
+        })))
+        setDesconto(orcamento.descontoCentavos > 0 ? (orcamento.descontoCentavos / 100).toFixed(2).replace(".", ",") : "")
+        setCliente(orcamento.cliente.nome)
+        setTelefoneCliente(orcamento.cliente.telefone ?? "")
+        setDetalhesAbertos(true)
+        setDoOrcamento({ id: orcamento.id, numero: orcamento.numero, cliente: orcamento.cliente.nome })
+      })
+      .catch((falha) => setErro(falha instanceof Error ? falha.message : "Não consegui abrir o orçamento."))
   }, [])
 
   // O valor que está no visor e ainda não virou item entra na venda como
@@ -272,12 +296,18 @@ export default function Balcao() {
         clienteNome: cliente.trim() || undefined,
         clienteTelefone: telefoneCliente.trim() || undefined,
         observacao: observacao.trim() || undefined,
+        ...(doOrcamento ? { orcamentoId: doOrcamento.id } : {}),
       })
+      const doOrcamentoTexto = doOrcamento ? ` O orçamento ${String(doOrcamento.numero).padStart(4, "0")} virou venda.` : ""
       setAviso(
         resposta.troco > 0
-          ? `Venda ${resposta.venda.numero} fechada. Troco de ${formatarMoeda(resposta.troco)}.`
-          : `Venda ${resposta.venda.numero} fechada.`,
+          ? `Venda ${resposta.venda.numero} fechada. Troco de ${formatarMoeda(resposta.troco)}.${doOrcamentoTexto}`
+          : `Venda ${resposta.venda.numero} fechada.${doOrcamentoTexto}`,
       )
+      if (doOrcamento) {
+        setDoOrcamento(null)
+        window.history.replaceState(null, "", "/loja")
+      }
       setCarrinho([])
       setDigitado(0)
       setDescricaoAvulso("")
@@ -347,6 +377,12 @@ export default function Balcao() {
           <strong>{formatarMoeda(total)}</strong>
           <span>{itens.length ? `${itens.length} ${itens.length === 1 ? "item" : "itens"}` : "digite o valor ou toque num produto"}</span>
         </div>
+
+        {doOrcamento && (
+          <p role="status" className={estilos.aviso}>
+            Orçamento {String(doOrcamento.numero).padStart(4, "0")} de {doOrcamento.cliente}: escolha como pagou e cobre.
+          </p>
+        )}
 
         {carrinho.length > 0 && (
           <div className={estilos.itens}>

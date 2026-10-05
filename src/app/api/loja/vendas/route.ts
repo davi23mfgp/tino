@@ -59,11 +59,29 @@ export const POST = comSessao(async (sessao, requisicao) => {
       clienteNome: campo.texto(80).optional(),
       clienteTelefone: campo.texto(20).optional(),
       observacao: campo.texto(500).optional(),
+      orcamentoId: campo.id().optional(),
     }),
     await corpo(requisicao),
   )
 
   const loja = await lojaDoLar(sessao.larId)
+
+  // Venda que nasce de orçamento: o cliente é o do orçamento, e o orçamento
+  // fica marcado como vendido dentro da mesma transação. O funcionário do
+  // balcão não vê orçamentos (ver `@/lib/acesso`), então não converte.
+  const orcamento = dados.orcamentoId
+    ? await prisma.orcamentoLoja.findFirst({
+        where: { id: dados.orcamentoId, lojaId: loja.id },
+        select: { id: true, status: true, cliente: { select: { id: true, nome: true, telefone: true } } },
+      })
+    : null
+  if (dados.orcamentoId) {
+    if (sessao.papel === "FUNCIONARIO_LOJA") throw new ErroDeUso("Orçamento só o dono converte em venda.", 403)
+    if (!orcamento) throw new ErroDeUso("Orçamento não encontrado.", 404)
+    if (orcamento.status !== "ENVIADO" && orcamento.status !== "APROVADO") throw new ErroDeUso("Este orçamento já foi vendido, perdido ou ainda é rascunho.", 409)
+    dados.clienteNome = orcamento.cliente.nome
+    dados.clienteTelefone = dados.clienteTelefone || orcamento.cliente.telefone || undefined
+  }
 
   // Produto de outra loja não pode entrar: a baixa de estoque mais abaixo
   // descontaria da prateleira de outra pessoa.
@@ -101,7 +119,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
   // um cadastro novo, e a Dona Cida de duas compras aparecia duas vezes em
   // "quem deve", cada uma com metade da dívida (achado em 28/09/2026).
   const nomeDoCliente = dados.clienteNome?.trim().replace(/\s+/g, " ")
-  const existente = nomeDoCliente
+  // O cliente do orçamento é exatamente aquele, não o primeiro com o mesmo nome.
+  const existente = orcamento
+    ? await prisma.clienteLoja.findUnique({ where: { id: orcamento.cliente.id } })
+    : nomeDoCliente
     ? await prisma.clienteLoja.findFirst({
         where: { lojaId: loja.id, nome: { equals: nomeDoCliente, mode: "insensitive" } },
         orderBy: { criadoEm: "asc" },
@@ -166,6 +187,15 @@ export const POST = comSessao(async (sessao, requisicao) => {
     },
     include: { itens: true, pagamentos: true, cliente: true },
     })
+
+    if (orcamento) {
+      const convertido = await transacao.orcamentoLoja.updateMany({
+        where: { id: orcamento.id, status: { in: ["ENVIADO", "APROVADO"] }, vendaId: null },
+        data: { status: "CONVERTIDO", vendaId: criada.id, convertidoEm: vendidoEm },
+      })
+      // Dois cliques em "Cobrar" não podem vender o mesmo orçamento duas vezes.
+      if (convertido.count !== 1) throw new ErroDeUso("Este orçamento acabou de virar venda.", 409)
+    }
 
   // Baixa do estoque. Só para item que aponta para produto cadastrado — item
   // avulso não tem prateleira para descontar, e inventar um produto a partir da

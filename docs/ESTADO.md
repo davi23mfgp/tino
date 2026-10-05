@@ -1,5 +1,21 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 05/10/2026: Clientes e orçamento (ERP MEI, fase 2, opção A do passo 36)
+
+O Davi escolheu a opção A do canvas (o próximo passo primeiro). Tela `/loja/clientes`, terceiro item do menu da loja (no celular, Catálogo foi para "Mais").
+
+- **Para retomar hoje:** próximo passo marcado para hoje ou atrasado, orçamento que vence hoje ou amanhã, vencido, aprovado sem virar venda e rascunho. Enviado dentro do prazo e sem passo não entra. Regras puras em `src/lib/loja/orcamento.ts`, testadas em `testes/orcamento-loja.test.ts`.
+- **Em aberto** por etapa (rascunho, enviado, aberto), sem os vencidos, e **taxa de fechamento** dos 90 dias com os 90 anteriores de referência. Sem envio, a tela diz que não há taxa em vez de mostrar 0%.
+- **Orçamento:** número por loja, itens do catálogo ou avulsos, desconto, validade, entrada e parcelas (centavos sem perda), observação. Editar depois de enviado guarda a versão anterior (`VersaoOrcamentoLoja`).
+- **Link público** `/o/<token>`, fora da área logada, no papel claro da opção C (a A não desenha esta tela). Conta as aberturas, sem contar o robô de prévia do WhatsApp, o próprio dono e recarga em menos de 30 minutos. O cliente aprova pelo link, só dentro da validade.
+- **Perdido** pede o motivo (preço, prazo, atendimento, desistiu, não respondeu, outro).
+- **Virar venda no Balcão:** o Balcão abre com itens, desconto e cliente do orçamento; a venda marca o orçamento como vendido na mesma transação, e dois cliques não vendem duas vezes.
+- O funcionário do balcão não vê clientes nem orçamentos (`BLOQUEADO_MESMO_NA_LOJA`).
+
+Conferido no Chromium com a conta de demonstração MEI: orçamento de R$ 528,00 (entrada R$ 110 e 2x R$ 209) montado pela tela, link mandado, aberto 1 vez (o robô do WhatsApp e o dono não contaram), aprovado pelo cliente, vendido no Balcão (venda 11); perdido com motivo; celular e computador, tema escuro e claro, sem rolagem horizontal.
+
+Falta: agenda e ordem de serviço (próximos da fase 2), relatório dos motivos de perda, editar o contato do cliente pela ficha (hoje só pela API), e aviso ao dono quando o cliente aprova (hoje aparece na tela Clientes, sem notificação).
+
 ## 04/10/2026: login pessoal e login MEI separados
 
 Defeito relatado pelo Davi: entrou pela tela do Tino pessoal com o próprio e-mail e caiu no MEI. O modo saía do lar ter perfil MEI (`lar.meiPerfil`), não da tela usada. Regra dele: "o mesmo email pode ser usado, mas tem que entrar em logins diferentes".

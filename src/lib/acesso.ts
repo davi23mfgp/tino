@@ -18,11 +18,11 @@ export type PapelDeAcesso = "TITULAR" | "CONJUGE" | "DEPENDENTE" | "CONVIDADO" |
 
 // "/api/erros": a tela do funcionário também quebra, e o erro dele tem de
 // chegar ao registro do admin como o de qualquer um.
-const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/login", "/seguranca", "/api/auth/mfa", "/api/auth/logout", "/termos", "/privacidade", "/api/erros"]
+const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/o", "/api/orcamento-publico", "/login", "/seguranca", "/api/auth/mfa", "/api/auth/logout", "/termos", "/privacidade", "/api/erros"]
 
 /// Vive sob "/loja" mas é resultado/lucro do negócio, não operação de balcão —
 /// checado antes do prefixo geral, senão "começa com /loja" liberaria sozinho.
-const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta"]
+const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta", "/loja/clientes", "/api/loja/clientes", "/api/loja/orcamentos"]
 
 function combinaAlgumPrefixo(caminho: string, prefixos: string[]): boolean {
   return prefixos.some((prefixo) => caminho === prefixo || caminho.startsWith(`${prefixo}/`))
