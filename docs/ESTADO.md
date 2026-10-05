@@ -14,7 +14,9 @@ O Davi escolheu a opção A do canvas (o próximo passo primeiro). Tela `/loja/c
 
 Conferido no Chromium com a conta de demonstração MEI: orçamento de R$ 528,00 (entrada R$ 110 e 2x R$ 209) montado pela tela, link mandado, aberto 1 vez (o robô do WhatsApp e o dono não contaram), aprovado pelo cliente, vendido no Balcão (venda 11); perdido com motivo; celular e computador, tema escuro e claro, sem rolagem horizontal.
 
-Falta: agenda e ordem de serviço (próximos da fase 2), relatório dos motivos de perda, editar o contato do cliente pela ficha (hoje só pela API), e aviso ao dono quando o cliente aprova (hoje aparece na tela Clientes, sem notificação).
+Contato do cliente (nome, telefone, e-mail, observação) se edita pela ficha desde o mesmo dia.
+
+Falta: agenda e ordem de serviço (canvas do passo 37), relatório dos motivos de perda, e aviso ao dono quando o cliente aprova. O modo MEI não tem o sino de notificações do pessoal, então o aviso depende do desenho das Notificações (fila do canvas); hoje a aprovação aparece só na tela Clientes.
 
 ## 04/10/2026: login pessoal e login MEI separados
 

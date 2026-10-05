@@ -44,6 +44,7 @@ export function FichaDoCliente({
   const [motivo, setMotivo] = useState<MotivoPerda | null>(null)
   const [detalhe, setDetalhe] = useState("")
   const [ocupado, setOcupado] = useState(false)
+  const [contato, setContato] = useState<{ nome: string; telefone: string; email: string; observacao: string } | null>(null)
 
   const carregar = useCallback(async () => {
     try {
@@ -140,8 +141,10 @@ export function FichaDoCliente({
         <div className={estilos.acoes}>
           {cliente.telefone && <a className={`${estilos.botao} ${estilos.pequeno}`} href={`tel:${cliente.telefone.replace(/[^\d+]/g, "")}`}><Phone aria-hidden />Ligar</a>}
           {cliente.telefone && <a className={`${estilos.botao} ${estilos.pequeno}`} href={linkDoWhatsApp(cliente.telefone, `Olá, ${primeiroNome}!`)} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden />WhatsApp</a>}
+          <button type="button" className={`${estilos.botao} ${estilos.pequeno}`} onClick={() => setContato({ nome: cliente.nome, telefone: cliente.telefone ?? "", email: cliente.email ?? "", observacao: cliente.observacao ?? "" })}><Pencil aria-hidden />Editar contato</button>
         </div>
       </div>
+      {(cliente.email || cliente.observacao) && <p className={estilos.dica}>{[cliente.email, cliente.observacao].filter(Boolean).join(" · ")}</p>}
 
       {editandoPasso ? (
         <form className={`${estilos.passo} ${estilos.formPasso}`} data-calmo onSubmit={salvarPasso}>
@@ -248,6 +251,34 @@ export function FichaDoCliente({
       )}
 
       <button type="button" className={estilos.botao} style={{ justifySelf: "start" }} onClick={() => aoNovoOrcamento({ id: cliente.id, nome: cliente.nome })}><Plus aria-hidden />Novo orçamento para {primeiroNome}</button>
+
+      <Dialog open={contato !== null} onOpenChange={(abrir) => !abrir && setContato(null)}>
+        <DialogContent className="sm:max-w-[440px]">
+          <DialogHeader>
+            <DialogTitle>Contato de {primeiroNome}</DialogTitle>
+            <DialogDescription>O telefone é o que abre o WhatsApp e a ligação.</DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            {contato && (
+              <form
+                className={estilos.form}
+                onSubmit={async (evento) => {
+                  evento.preventDefault()
+                  if (!contato.nome.trim()) return showToast("O nome não pode ficar vazio.", { variant: "error" })
+                  const salvo = await executar(() => enviar(`/api/loja/clientes/${clienteId}`, { nome: contato.nome.trim(), telefone: contato.telefone.trim() || null, email: contato.email.trim() || null, observacao: contato.observacao.trim() || null }, "PATCH"), "Contato salvo")
+                  if (salvo) setContato(null)
+                }}
+              >
+                <label className={estilos.campo}>Nome<Input value={contato.nome} onChange={(e) => setContato({ ...contato, nome: e.target.value })} maxLength={80} /></label>
+                <label className={estilos.campo}>Telefone<Input inputMode="tel" value={contato.telefone} onChange={(e) => setContato({ ...contato, telefone: e.target.value })} maxLength={20} placeholder="(11) 9 0000-0000" /></label>
+                <label className={estilos.campo}>E-mail<Input type="email" value={contato.email} onChange={(e) => setContato({ ...contato, email: e.target.value })} maxLength={254} /></label>
+                <label className={estilos.campo}>Observação<Input value={contato.observacao} onChange={(e) => setContato({ ...contato, observacao: e.target.value })} maxLength={500} placeholder="Prefere WhatsApp à tarde" /></label>
+                <button type="submit" className={estilos.botao} data-principal disabled={ocupado}>Salvar</button>
+              </form>
+            )}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={perdendo} onOpenChange={(abrir) => !abrir && setPerdendo(false)}>
         <DialogContent className="sm:max-w-[440px]">
