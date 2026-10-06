@@ -54,7 +54,20 @@ async function garantir(prisma) {
       return
     }
     console.log(`[admin] ${email} já é admin.`)
-    if (senha) console.log("[admin] ADMIN_SENHA ignorada: a conta já existe e a senha dela não é regravada. Apague a variável da Vercel.")
+    // Troca de senha só com pedido explícito (06/10/2026): o Davi perdeu a
+    // senha do admin e o Tino ainda não tem "Esqueci a senha". Sem a segunda
+    // variável, a senha continua não sendo regravada, pelo motivo do topo.
+    // O código de dois fatores e os códigos de recuperação não mudam.
+    if (senha && process.env.ADMIN_REDEFINIR_SENHA === "sim") {
+      if (senha.length < 8 || senha.length > 128) {
+        console.error("[admin] ADMIN_SENHA precisa ter de 8 a 128 caracteres. A senha não foi trocada.")
+        return
+      }
+      await prisma.usuario.update({ where: { id: existente.id }, data: { senhaHash: await bcrypt.hash(senha, 12) } })
+      console.log("[admin] Senha do admin trocada. Apague ADMIN_SENHA e ADMIN_REDEFINIR_SENHA da Vercel agora.")
+    } else if (senha) {
+      console.log("[admin] ADMIN_SENHA ignorada: a conta já existe e a senha dela não é regravada. Apague a variável da Vercel.")
+    }
   } else {
     if (!senha) {
       console.error(`[admin] ${email} não existe e falta ADMIN_SENHA para criá-la. Nenhuma conta foi criada.`)

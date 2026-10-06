@@ -129,6 +129,22 @@ histórico do git para sempre, mesmo depois de apagada.
 Outras contas que já eram admin continuam sendo; o log do build avisa quantas
 há. Para tirar: `DATABASE_URL="…" node scripts/admin.mjs rebaixar <email>`.
 
+### Esqueceu a senha do admin
+
+O Tino ainda não tem "Esqueci a senha". Para trocar a senha do admin:
+
+1. Na Vercel (Production, Sensitive), crie `ADMIN_SENHA` com a senha nova e
+   `ADMIN_REDEFINIR_SENHA` = `sim`.
+2. Refaça o deploy. No log aparece `[admin] Senha do admin trocada.`
+3. Apague as duas variáveis. Sem `ADMIN_REDEFINIR_SENHA`, o build nunca troca
+   a senha de uma conta que já existe.
+
+O código de dois fatores e os códigos de recuperação não mudam.
+
+**O admin não entra pelo Google.** Desde 06/10/2026 o login pelo Google não
+se liga sozinho a conta de admin: o endereço `admin.tino@gmail.com` não é uma
+caixa que o Davi tenha criado, e quem criasse esse Gmail entraria como admin.
+
 O resto desta seção é o jeito manual, que continua valendo.
 
 ### Promover outra conta à mão
