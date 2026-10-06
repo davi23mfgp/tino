@@ -2,6 +2,23 @@ import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose"
 
 const chavesGoogle = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"))
 
+/**
+ * Se o login pelo Google pode se ligar sozinho a uma conta que já existe com
+ * o mesmo e-mail.
+ *
+ * Só caixa Gmail: o Google administra o endereço, então quem entra com ele é
+ * o dono. E-mail de outro domínio pode trocar de dono.
+ *
+ * **Nunca numa conta de admin** (06/10/2026). A conta `admin.tino@gmail.com`
+ * nasceu no build, com senha, num endereço Gmail que ninguém tinha criado.
+ * Quem criasse esse Gmail entraria pelo Google e ganharia o painel que vê a
+ * conta de todo mundo. O admin entra com a senha; ligar o Google a ele exige
+ * fazer isso já logado, nunca por correspondência de e-mail.
+ */
+export function podeLigarGoogleSozinho(email: string, conta: { googleId: string | null; admin: boolean }) {
+  return email.toLowerCase().endsWith("@gmail.com") && !conta.googleId && !conta.admin
+}
+
 export function configuracaoGoogle() {
   const clienteId = process.env.GOOGLE_CLIENT_ID
   const clienteSegredo = process.env.GOOGLE_CLIENT_SECRET

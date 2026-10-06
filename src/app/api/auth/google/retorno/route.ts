@@ -2,7 +2,7 @@ import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 import { criarToken, gravarCookieSessao } from "@/lib/auth"
-import { COOKIE_CADASTRO_GOOGLE, configuracaoGoogle, criarCadastroGoogle, verificarIdentidadeGoogle } from "@/lib/google-login"
+import { COOKIE_CADASTRO_GOOGLE, configuracaoGoogle, criarCadastroGoogle, podeLigarGoogleSozinho, verificarIdentidadeGoogle } from "@/lib/google-login"
 import { prisma } from "@/lib/prisma"
 import { registrarAcesso } from "@/lib/registro-acesso"
 import { criarDesafioMfa } from "@/lib/mfa"
@@ -58,9 +58,8 @@ export async function GET(requisicao: Request) {
         })
         return resposta
       }
-      // E-mail externo do Google pode mudar de dono. Só uma caixa Gmail, que
-      // o próprio Google administra, é suficiente para ligar a conta sozinha.
-      if (!identidade.email.endsWith("@gmail.com") || usuario.googleId) {
+      // Só Gmail, e nunca conta de admin: as razões estão em podeLigarGoogleSozinho.
+      if (!podeLigarGoogleSozinho(identidade.email, usuario)) {
         return voltar(requisicao, "google-vinculo", modoMei)
       }
       usuario = await prisma.usuario.update({
