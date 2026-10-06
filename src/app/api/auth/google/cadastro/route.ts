@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { abrirTeste } from "@/lib/acesso-assinatura"
 import { corpo, erro, ok } from "@/lib/api"
 import { origemPermitida } from "@/lib/origem-segura"
+import { COOKIE_ORIGEM, origemDaRequisicao } from "@/lib/origem-cadastro"
 import { criarToken, gravarCookieSessao, hashSenha } from "@/lib/auth"
 import { COOKIE_CADASTRO_GOOGLE, lerCadastroGoogle } from "@/lib/google-login"
 import { consumirLimite, ipDaRequisicao, LimiteEstourado, REGRAS } from "@/lib/limite"
@@ -43,12 +44,14 @@ export async function POST(requisicao: Request) {
   try {
     // A senha aleatória impede login por senha até que o usuário defina uma.
     const senhaHash = await hashSenha(randomBytes(32).toString("base64url"))
+    const origemCadastro = origemDaRequisicao(requisicao) as Prisma.InputJsonValue | null
     const { lar, membro, usuario } = await prisma.$transaction(async (tx) => {
       const lar = await tx.lar.create({ data: { nome: `Finanças de ${nome.split(" ")[0]}`, tipo: dados.tipoLar as "SOLO" | "CASAL" | "FAMILIA" } })
       const membro = await tx.membro.create({ data: { larId: lar.id, nome, papel: "TITULAR" } })
       const usuario = await tx.usuario.create({ data: {
         email: identidade.email, nome, googleId: identidade.googleId, senhaHash,
         larId: lar.id, membroId: membro.id, termosVersao: VERSAO_TERMOS, termosAceitosEm: new Date(),
+        origemCadastro: origemCadastro ?? undefined,
       } })
       return { lar, membro, usuario }
     })
@@ -61,6 +64,7 @@ export async function POST(requisicao: Request) {
       produto: dados.modoMei ? "mei" : "pessoal",
     }))
     jar.delete(COOKIE_CADASTRO_GOOGLE)
+    jar.delete(COOKIE_ORIGEM)
     return ok({ id: usuario.id, nome, email: usuario.email, larId: lar.id }, 201)
   } catch (excecao) {
     if (excecao instanceof Prisma.PrismaClientKnownRequestError && excecao.code === "P2002") {

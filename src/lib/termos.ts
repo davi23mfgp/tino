@@ -7,11 +7,11 @@
  * §6º — mudança de finalidade exige informar o titular). Até 29/09/2026 este
  * comentário prometia o aviso, mas nada no app o mostrava.
  */
-export const VERSAO_TERMOS = "2026-10-01"
+export const VERSAO_TERMOS = "2026-10-06"
 
 /** O que mudou na versão vigente, em uma frase, para o aviso do app. */
 export const MUDANCAS_DA_VERSAO =
-  "Destacamos como seus dados são protegidos, quem pode acessá-los, o compartilhamento com fornecedores e seus direitos, incluindo os limites atuais da criptografia."
+  "Passamos a guardar de onde chega cada cadastro novo (o link ou a campanha que trouxe a pessoa), para saber qual divulgação funciona. Não é cookie de publicidade e não muda nada nos dados de quem já tem conta."
 
 /** Quem ainda não viu a versão vigente — inclusive quem se cadastrou antes de haver versão. */
 export function precisaVerTermos(versaoDoUsuario: string | null | undefined): boolean {

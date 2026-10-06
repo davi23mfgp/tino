@@ -1,5 +1,26 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 06/10/2026: origem do cadastro, parte automática (item 1.6)
+
+- O proxy guarda num cookie de 30 dias (`tino_origem`, httpOnly) de onde a
+  pessoa chegou: `utm_source`, `utm_medium`, `utm_campaign`, `ref`, a
+  primeira página e só o domínio do site de onde clicou. Só para quem não
+  entrou, só em página aberta de verdade (troca de tela do app não conta).
+- Vale a primeira chegada; chegada com campanha ou indicação substitui a sem
+  marca, nunca o contrário (`decidirOrigem`, testado em
+  `testes/origem-cadastro.test.ts`, com prova de que o teste falha se a
+  regra mudar).
+- O cadastro por e-mail e pelo Google grava em `Usuario.origemCadastro`
+  (migration `20261006210000_origem_do_cadastro`) e apaga o cookie.
+- Política de privacidade diz o que o cookie guarda; versão dos termos
+  subiu para 2026-10-06, então quem já tem conta vê o aviso uma vez.
+- Testado no Chromium: chegou pelo anúncio do Instagram, voltou pela busca do
+  Google, cadastrou; ficou gravado o anúncio, com `l.instagram.com` como site.
+  O cadastro pelo Google não foi testado no navegador (o Google não abre
+  daqui); o código é o mesmo caminho.
+- **Falta:** a pergunta "Como você conheceu o Tino?" (canvas) e mostrar a
+  origem no painel do admin (item 6.5).
+
 ## 06/10/2026: recuperar senha por e-mail (item 1.9)
 
 - "Esqueci a senha" (login pessoal, login MEI) abre `/esqueci-senha`; o

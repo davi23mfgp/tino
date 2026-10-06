@@ -9,6 +9,9 @@ import { VERSAO_TERMOS } from "@/lib/termos"
 import { validar, z, campo } from "@/lib/validar"
 import { cnpjValido } from "@/lib/loja/cadastro-mei"
 import { origemPermitida } from "@/lib/origem-segura"
+import { COOKIE_ORIGEM, origemDaRequisicao } from "@/lib/origem-cadastro"
+import { cookies } from "next/headers"
+import type { Prisma } from "@prisma/client"
 
 interface Entrada {
   nome: string
@@ -73,6 +76,7 @@ export const POST = comPublica(async (requisicao: Request) => {
     data: { larId: lar.id, nome, papel: "TITULAR" },
   })
 
+  const origemCadastro = origemDaRequisicao(requisicao) as Prisma.InputJsonValue | null
   const usuario = await prisma.usuario.create({
     data: {
       email,
@@ -82,6 +86,7 @@ export const POST = comPublica(async (requisicao: Request) => {
       membroId: membro.id,
       termosVersao: VERSAO_TERMOS,
       termosAceitosEm: new Date(),
+      origemCadastro: origemCadastro ?? undefined,
     },
   })
 
@@ -105,6 +110,8 @@ export const POST = comPublica(async (requisicao: Request) => {
   await gravarCookieSessao(
     await criarToken({ usuarioId: usuario.id, email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel, produto: dados.modoMei ? "mei" : "pessoal" }),
   )
+  // Já está gravada na conta; o cookie não precisa seguir no navegador.
+  ;(await cookies()).delete(COOKIE_ORIGEM)
 
   return ok({ id: usuario.id, nome, email, larId: lar.id }, 201)
 })

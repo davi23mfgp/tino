@@ -99,6 +99,7 @@ const SECOES = [
       "Limite de tentativas de login e de uso, para que ninguém fique testando senha ou varrendo a API em laço.",
       "O servidor confere a sessão, as permissões e o vínculo com o lar para restringir o acesso aos dados autorizados. Ser administrador do produto não concede automaticamente participação no seu lar.",
       "Usamos cookies necessários à sessão, à segurança do login com Google e ao fluxo de convites. O Tino não utiliza cookies de publicidade.",
+      "Antes do cadastro, um cookie guarda por 30 dias de onde você chegou ao Tino: a campanha ou a indicação que veio no link, a primeira página aberta e o nome do site de onde clicou (só o nome, sem o endereço completo). No cadastro isso vai para a sua conta, e o cookie é apagado. Serve para sabermos qual divulgação funciona; não é compartilhado com ninguém.",
       "Nenhum sistema é inviolável. Se houver incidente com risco relevante, a LGPD manda avisar você e a ANPD, e é o que será feito.",
     ],
   },

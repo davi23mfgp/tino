@@ -426,6 +426,9 @@ model Usuario {
   /// Recuperar senha (06/10/2026). Só o hash do token fica no banco: quem lê
   /// o banco não consegue usar o link. Um pedido por vez; o novo substitui o
   /// anterior, e usar o link apaga os dois campos.
+  /// De onde veio o cadastro ({ fonte, meio, campanha, ref, entrada, site, em }),
+  /// ver `src/lib/origem-cadastro.ts`. Nulo para quem entrou antes de 06/10/2026.
+  origemCadastro           Json?
   redefinicaoSenhaHash     String?   @unique
   redefinicaoSenhaExpiraEm DateTime?
 

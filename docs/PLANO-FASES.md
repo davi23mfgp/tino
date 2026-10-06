@@ -40,7 +40,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | 1.3 | Ativar o MEI numa conta pessoal que já existe | ⏳ | [estudo](pesquisas/2026-10-06-ativar-mei-na-conta-pessoal.md) | canvas: "Ligar o Tino negócio" no Perfil e no login MEI, como o Nubank e o Inter |
 | 1.4 | Relatório do mês para o contador | ⏳ | [estudo](pesquisas/2026-10-06-relatorio-para-o-contador.md) | canvas: o Relatório Mensal das Receitas Brutas (Anexo X) pronto todo mês, com nota e sem nota; conferir o texto da resolução antes |
 | 1.5 | Cobrança ligada (Mercado Pago ou Stripe) | 🙋 | plano, seção Modelo de negócio | Davi põe as chaves, ver `docs/PAGAMENTO-E-ADMIN.md` |
-| 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | 🔨 | [estudo](pesquisas/2026-10-06-origem-do-cadastro.md) | a parte automática (link e campanha) vai direto, sem tela; a pergunta "Como você conheceu o Tino?" passa pelo canvas |
+| 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | 🔨 | [estudo](pesquisas/2026-10-06-origem-do-cadastro.md) | parte automática no código (06/10: campanha, indicação e site de origem gravados no cadastro); falta a pergunta "Como você conheceu o Tino?" (canvas) e ver no painel do admin |
 | 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ✅ | plano, seção Modelo de negócio | no código (06/10), com a lista do que inclui atualizada (área, clientes, orçamento, OS). O plano Vários negócios (R$ 79,90) entra com a tela de Assinatura, que passa pelo canvas |
 | 1.9 | Recuperar senha por e-mail | ✅ | não precisa: defeito | no código (06/10); 🙋 o e-mail só sai com `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel |
 | 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | [estudo](pesquisas/2026-10-06-area-funda-assistencia-tecnica.md) | canvas: entrada do aparelho com estado conferido pelo cliente, senha cifrada que some na entrega, garantia de 90 dias, lembrete de aparelho esquecido |
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 06/10/2026 | Item 1.6, parte automática: o cadastro grava de onde a pessoa veio (campanha, indicação, site). Termos na versão 2026-10-06 por causa do cookie novo. |
 | 06/10/2026 | Estudos de mercado dos itens 1.3, 1.4, 1.6 e 1.8 em `docs/pesquisas/`. Próximo: a parte automática do 1.6 no código e os canvas dos quatro, para o Davi escolher de uma vez. |
 | 06/10/2026 | Item 1.7: o plano passou a se chamar Meu negócio. Achado no caminho: `PAGAMENTO-E-ADMIN.md` dizia anual de R$ 199 e R$ 499, mas o código cobra R$ 214,92 e R$ 538,92 (doze meses com 10% de desconto); o documento foi corrigido. |
 | 06/10/2026 | Item 1.9: recuperar senha por e-mail, com link de 30 minutos e uso único, testado no navegador. O envio espera as chaves do Resend na Vercel. |
