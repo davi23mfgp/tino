@@ -128,6 +128,19 @@ Mais três pedidos do mesmo dia:
   linguagem objetiva, simples e intuitiva**, para qualquer idade e qualquer
   tipo de negócio.
 
+**Tino por área (Davi, 06/10/2026).** O Tino é um só, geral, com o básico
+de organização para todos. No cadastro a pessoa escolhe a **área** e a
+**subárea** (assistência técnica: celular, informática...; beleza:
+cabeleireiro, manicure...) e o app já vem personalizado para ela. A área é
+configuração sobre a mesma base (nomes, menu, campos, serviços de partida
+sem preço, checklists, mensagens, Guia do negócio), nunca um app separado,
+e o cálculo de DAS, limite e dinheiro é o mesmo para todas. Começa pelos
+10 segmentos do plano estratégico (doc "Tino · Plano estratégico",
+https://claude.ai/code/artifact/0b555476-3cc6-436a-89dd-8980d12ab07d):
+leve para os 10, funda um de cada vez, Assistência técnica primeiro. O
+nome ("Tino Plus Cabeleireiro" ou "Tino Beleza") e se a área custa a mais
+ainda estão com o Davi. A tela de escolha da área passa pelo canvas.
+
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
 - Trabalhar de forma autônoma: usar as skills disponíveis para decidir a
