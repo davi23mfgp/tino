@@ -271,10 +271,10 @@ model Lar {
 
   /// Marca quando o usuário terminou a conversa inicial. Enquanto for null, o
   /// app leva para o /bem-vindo em vez de mostrar um painel vazio.
-  onboardingEm DateTime?
-  objetivosFinanceiros String[] @default([])
-  perfilDeRisco String?
-  convites ConviteLar[]
+  onboardingEm         DateTime?
+  objetivosFinanceiros String[]     @default([])
+  perfilDeRisco        String?
+  convites             ConviteLar[]
 
   /// Gasto mensal que o usuário estimou na conversa inicial. É a referência de
   /// custo de vida enquanto não houver histórico lançado — sem ela, o app
@@ -425,13 +425,13 @@ model Usuario {
 
   /// Segredo TOTP cifrado com chave separada do JWT. Códigos de recuperação
   /// ficam apenas como hash e são consumidos uma vez, dentro de transação.
-  mfaSegredo String?
-  mfaPendente String?
+  mfaSegredo          String?
+  mfaPendente         String?
   mfaPendenteExpiraEm DateTime?
-  mfaUltimoPasso Int?
-  mfaRecuperacao String[] @default([])
-  mfaVersao Int @default(0)
-  mfaDesafioHash String?
+  mfaUltimoPasso      Int?
+  mfaRecuperacao      String[]  @default([])
+  mfaVersao           Int       @default(0)
+  mfaDesafioHash      String?
 
   /// Prova do consentimento (LGPD, art. 8º, §2º: o ônus da prova é do
   /// controlador). Guarda qual versão do texto a pessoa aceitou e quando.
@@ -917,14 +917,14 @@ model SimulacaoEmprestimo {
 // ============================================================
 
 model MeiPerfil {
-  id           String       @id @default(cuid())
-  larId        String       @unique
-  lar          Lar          @relation(fields: [larId], references: [id], onDelete: Cascade)
-  cnpj         String?
-  razaoSocial  String?
+  id                 String       @id @default(cuid())
+  larId              String       @unique
+  lar                Lar          @relation(fields: [larId], references: [id], onDelete: Cascade)
+  cnpj               String?
+  razaoSocial        String?
   dadosConfirmadosEm DateTime?
-  atividade    AtividadeMei @default(SERVICOS)
-  dataAbertura DateTime?
+  atividade          AtividadeMei @default(SERVICOS)
+  dataAbertura       DateTime?
 
   /// Limite anual de faturamento em centavos. Guardado no perfil (não no código)
   /// porque muda por lei e por atividade — transportador de carga tem outro.
@@ -1230,7 +1230,7 @@ model Loja {
   /// Sem eles a nota não sai — a tela de emissão pede antes de deixar tentar.
   cnpj                     String?
   inscricaoEstadual        String?
-  inscricaoEstadualIsenta  Boolean @default(false)
+  inscricaoEstadualIsenta  Boolean   @default(false)
   telefoneContato          String?
   /// Não é o certificado em si — isso não é guardado no nosso banco. Marca
   /// que o provedor de emissão confirmou o certificado configurado do lado
@@ -1240,16 +1240,20 @@ model Loja {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  produtos    ProdutoLoja[]
+  produtos           ProdutoLoja[]
   categoriasCatalogo CategoriaLoja[]
-  fornecedores FornecedorLoja[]
-  servicos ServicoLoja[]
-  vendas      VendaLoja[]
-  caixas      Caixa[]
-  recebimento FormaRecebimento[]
-  clientes    ClienteLoja[]
-  contas      ContaDaLoja[]
-  metas       MetaDaLoja[]
+  fornecedores       FornecedorLoja[]
+  servicos           ServicoLoja[]
+  vendas             VendaLoja[]
+  caixas             Caixa[]
+  recebimento        FormaRecebimento[]
+  clientes           ClienteLoja[]
+  orcamentos         OrcamentoLoja[]
+  compromissos       CompromissoLoja[]
+  ordensServico      OrdemServicoLoja[]
+  avisos             AvisoLoja[]
+  contas             ContaDaLoja[]
+  metas              MetaDaLoja[]
 
   @@index([larId])
 }
@@ -1257,13 +1261,13 @@ model Loja {
 /// Meta de vendas do mês. Uma por loja e competência, para o painel mostrar
 /// o avanço real sem confundir com as metas pessoais do lar.
 model MetaDaLoja {
-  id String @id @default(cuid())
-  lojaId String
-  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
-  competencia String
+  id            String   @id @default(cuid())
+  lojaId        String
+  loja          Loja     @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  competencia   String
   valorCentavos Int
-  criadoEm DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
 
   @@unique([lojaId, competencia])
 }
@@ -1298,17 +1302,17 @@ model ProdutoLoja {
   descricao     String?
   imagemUrl     String?
   marca         String?
-  unidade       String? @default("UN")
+  unidade       String?         @default("UN")
   categoriaId   String?
-  categoria     CategoriaLoja? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  categoria     CategoriaLoja?  @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   fornecedorId  String?
   fornecedor    FornecedorLoja? @relation(fields: [fornecedorId], references: [id], onDelete: SetNull)
   codigoBarras  String?
-  precoCentavos Int     @default(0)
+  precoCentavos Int             @default(0)
   /// Quanto custou para comprar. Fica em zero até a fase de estoque; sem ele a
   /// margem não é calculada, e margem estimada é pior que margem ausente.
-  custoCentavos Int     @default(0)
-  ativo         Boolean @default(true)
+  custoCentavos Int             @default(0)
+  ativo         Boolean         @default(true)
   /// Com quantas peças o Tino avisa que está acabando. Nulo = só no último
   /// item (ver situacaoDoProduto): melhor avisar tarde do que inventar um
   /// limite que não é o do dono.
@@ -1321,8 +1325,9 @@ model ProdutoLoja {
 
   criadoEm DateTime @default(now())
 
-  itens      ItemVenda[]
-  movimentos MovimentoEstoque[]
+  itens          ItemVenda[]
+  itensOrcamento ItemOrcamentoLoja[]
+  movimentos     MovimentoEstoque[]
 
   @@unique([lojaId, codigoBarras])
   @@unique([lojaId, sku])
@@ -1334,50 +1339,51 @@ model ProdutoLoja {
 /// Agrupamento reutilizado em produto, serviço, proposta e campanha.
 /// Arquivar preserva os vínculos históricos sem oferecer a categoria em novos cadastros.
 model CategoriaLoja {
-  id String @id @default(cuid())
-  lojaId String
-  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
-  nome String
+  id        String        @id @default(cuid())
+  lojaId    String
+  loja      Loja          @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  nome      String
   imagemUrl String?
-  arquivada Boolean @default(false)
-  criadoEm DateTime @default(now())
-  produtos ProdutoLoja[]
-  servicos ServicoLoja[]
+  arquivada Boolean       @default(false)
+  criadoEm  DateTime      @default(now())
+  produtos  ProdutoLoja[]
+  servicos  ServicoLoja[]
 
   @@unique([lojaId, nome])
   @@index([lojaId, arquivada])
 }
 
 model FornecedorLoja {
-  id String @id @default(cuid())
-  lojaId String
-  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
-  nome String
-  telefone String?
-  email String?
+  id        String        @id @default(cuid())
+  lojaId    String
+  loja      Loja          @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  nome      String
+  telefone  String?
+  email     String?
   documento String?
-  criadoEm DateTime @default(now())
-  produtos ProdutoLoja[]
+  criadoEm  DateTime      @default(now())
+  produtos  ProdutoLoja[]
 
   @@unique([lojaId, nome])
 }
 
 /// Serviço vende tempo e conhecimento; materiais são itens separados na ordem.
 model ServicoLoja {
-  id String @id @default(cuid())
-  lojaId String
-  loja Loja @relation(fields: [lojaId], references: [id], onDelete: Cascade)
-  categoriaId String?
-  categoria CategoriaLoja? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
-  nome String
-  descricao String?
-  precoCentavos Int @default(0)
+  id                    String              @id @default(cuid())
+  lojaId                String
+  loja                  Loja                @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+  categoriaId           String?
+  categoria             CategoriaLoja?      @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  nome                  String
+  descricao             String?
+  precoCentavos         Int                 @default(0)
   custoEstimadoCentavos Int?
-  duracaoMinutos Int?
-  imagemUrl String?
-  ativo Boolean @default(true)
-  criadoEm DateTime @default(now())
-  itens ItemVenda[]
+  duracaoMinutos        Int?
+  imagemUrl             String?
+  ativo                 Boolean             @default(true)
+  criadoEm              DateTime            @default(now())
+  itens                 ItemVenda[]
+  itensOrcamento        ItemOrcamentoLoja[]
 
   @@index([lojaId, nome])
   @@index([categoriaId])
@@ -1392,13 +1398,229 @@ model ClienteLoja {
   lojaId String
   loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
 
-  nome     String
-  telefone String?
-  criadoEm DateTime @default(now())
+  nome           String
+  telefone       String?
+  email          String?
+  observacao     String?
+  /// O que o dono combinou de fazer e quando (05/10/2026, opção A do passo
+  /// 36). É o que põe o cliente em "Para retomar hoje"; sem data, não cobra.
+  proximoPasso   String?
+  proximoPassoEm DateTime?
+  criadoEm       DateTime  @default(now())
 
-  vendas VendaLoja[]
+  vendas        VendaLoja[]
+  orcamentos    OrcamentoLoja[]
+  compromissos  CompromissoLoja[]
+  ordensServico OrdemServicoLoja[]
 
   @@index([lojaId, nome])
+}
+
+enum StatusOrcamento {
+  RASCUNHO
+  ENVIADO
+  APROVADO
+  CONVERTIDO
+  PERDIDO
+}
+
+enum MotivoPerdaOrcamento {
+  PRECO
+  PRAZO
+  ATENDIMENTO
+  DESISTIU
+  SEM_RESPOSTA
+  OUTRO
+}
+
+/// Orçamento para um cliente da loja (ERP MEI, fase 2; ideias do Controllares).
+///
+/// "Vencido" não é status: é o enviado com `validoAte` no passado, calculado
+/// na leitura (ver `src/lib/loja/orcamento.ts`).
+model OrcamentoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  clienteId String
+  cliente   ClienteLoja @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  /// Sequencial por loja, como a venda: é o número que o cliente cita.
+  numero Int
+  status StatusOrcamento @default(RASCUNHO)
+  /// Sobe a cada edição depois de enviado; a anterior fica em `versoes`.
+  versao Int             @default(1)
+
+  /// Gravados, não recalculados: o preço do catálogo muda e o orçamento
+  /// enviado tem de continuar dizendo o que disse.
+  totalCentavos    Int       @default(0)
+  descontoCentavos Int       @default(0)
+  /// Sem entrada e com 1 parcela é à vista.
+  entradaCentavos  Int?
+  parcelas         Int       @default(1)
+  /// Último dia de validade, meia-noite UTC do dia escolhido.
+  validoAte        DateTime?
+  observacao       String?
+
+  /// Segredo do link público. Quem tem o link vê só este orçamento.
+  linkToken          String    @unique
+  enviadoEm          DateTime?
+  aberturas          Int       @default(0)
+  primeiraAberturaEm DateTime?
+  ultimaAberturaEm   DateTime?
+
+  aprovadoEm          DateTime?
+  aprovadoPeloCliente Boolean               @default(false)
+  perdidoEm           DateTime?
+  motivoPerda         MotivoPerdaOrcamento?
+  motivoPerdaDetalhe  String?
+
+  vendaId      String?    @unique
+  venda        VendaLoja? @relation(fields: [vendaId], references: [id], onDelete: SetNull)
+  convertidoEm DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  itens        ItemOrcamentoLoja[]
+  versoes      VersaoOrcamentoLoja[]
+  ordemServico OrdemServicoLoja?
+
+  @@unique([lojaId, numero])
+  @@index([lojaId, status])
+  @@index([clienteId])
+}
+
+model ItemOrcamentoLoja {
+  id          String        @id @default(cuid())
+  orcamentoId String
+  orcamento   OrcamentoLoja @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+
+  produtoId String?
+  produto   ProdutoLoja? @relation(fields: [produtoId], references: [id], onDelete: SetNull)
+  servicoId String?
+  servico   ServicoLoja? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+
+  /// Copiada do catálogo, como na venda: renomear o produto não reescreve o
+  /// orçamento que o cliente já viu.
+  descricao             String
+  quantidade            Int    @default(1)
+  precoUnitarioCentavos Int
+  totalCentavos         Int
+  ordem                 Int    @default(0)
+
+  @@index([orcamentoId])
+}
+
+/// Compromisso da agenda da loja (passo 37, opção A, 05/10/2026). Hora é
+/// opcional: sem ela, é coisa do dia inteiro (ideia do Controllares).
+model CompromissoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  titulo     String
+  detalhe    String?
+  /// Dia e hora. Dia inteiro: meia-noite UTC do dia escolhido.
+  inicioEm   DateTime
+  diaInteiro Boolean   @default(false)
+  feitoEm    DateTime?
+
+  clienteId String?
+  cliente   ClienteLoja?      @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  ordemId   String?
+  ordem     OrdemServicoLoja? @relation(fields: [ordemId], references: [id], onDelete: SetNull)
+
+  criadoEm DateTime @default(now())
+
+  @@index([lojaId, inicioEm])
+}
+
+enum EtapaOrdemServico {
+  RECEBIDO
+  FAZENDO
+  ESPERANDO_PECA
+  PRONTO
+  ENTREGUE
+}
+
+/// Ordem de serviço: o aparelho (ou o trabalho) que está com a loja.
+///
+/// O valor é opcional de propósito: aparelho recebido para diagnóstico ainda
+/// não tem preço, e a tela diz "sem preço ainda" em vez de inventar um.
+model OrdemServicoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  numero    Int
+  clienteId String
+  cliente   ClienteLoja @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  /// O que está com a loja ("iPhone 11") e o que fazer ("troca de tela").
+  objeto    String
+  servico   String
+  /// Como chegou: o registro que evita discussão na entrega.
+  naEntrada String?
+
+  etapa         EtapaOrdemServico @default(RECEBIDO)
+  /// Quando entrou em cada etapa ({ "RECEBIDO": iso, ... }), para a ficha e o
+  /// link do cliente mostrarem as datas.
+  etapasEm      Json              @default("{}")
+  prazoEm       DateTime?
+  valorCentavos Int?
+  /// [{ "texto": string, "feito": boolean }]
+  checklist     Json              @default("[]")
+
+  orcamentoId String?        @unique
+  orcamento   OrcamentoLoja? @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
+  vendaId     String?        @unique
+  venda       VendaLoja?     @relation(fields: [vendaId], references: [id], onDelete: SetNull)
+
+  /// Link de acompanhamento do cliente, só leitura.
+  linkToken String @unique
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  compromissos CompromissoLoja[]
+
+  @@unique([lojaId, numero])
+  @@index([lojaId, etapa])
+}
+
+/// Aviso do sino do MEI. A chave impede o mesmo aviso de nascer duas vezes:
+/// a aprovação do orçamento 0002 é um aviso só, por mais que a tela recarregue.
+model AvisoLoja {
+  id     String @id @default(cuid())
+  lojaId String
+  loja   Loja   @relation(fields: [lojaId], references: [id], onDelete: Cascade)
+
+  chave    String
+  tipo     String
+  titulo   String
+  texto    String
+  rota     String?
+  /// Rótulo do botão do aviso ("Abrir OS").
+  acao     String?
+  lidoEm   DateTime?
+  criadoEm DateTime  @default(now())
+
+  @@unique([lojaId, chave])
+  @@index([lojaId, criadoEm])
+}
+
+/// Como o orçamento estava antes de cada edição feita depois do envio. Quem
+/// aprovou a versão 1 pode mostrar o que aprovou.
+model VersaoOrcamentoLoja {
+  id          String        @id @default(cuid())
+  orcamentoId String
+  orcamento   OrcamentoLoja @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+  versao      Int
+  dados       Json
+  criadoEm    DateTime      @default(now())
+
+  @@unique([orcamentoId, versao])
 }
 
 model Caixa {
@@ -1457,9 +1679,11 @@ model VendaLoja {
 
   criadoEm DateTime @default(now())
 
-  itens      ItemVenda[]
-  pagamentos PagamentoVenda[]
-  notaFiscal NotaFiscalVenda?
+  itens        ItemVenda[]
+  pagamentos   PagamentoVenda[]
+  notaFiscal   NotaFiscalVenda?
+  orcamento    OrcamentoLoja?
+  ordemServico OrdemServicoLoja?
 
   @@unique([lojaId, numero])
   @@index([lojaId, criadoEm])
@@ -1512,7 +1736,7 @@ model ItemVenda {
   produtoId String?
   produto   ProdutoLoja? @relation(fields: [produtoId], references: [id])
   servicoId String?
-  servico ServicoLoja? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
+  servico   ServicoLoja? @relation(fields: [servicoId], references: [id], onDelete: SetNull)
 
   /// Copiada do produto na hora da venda. Se o produto for renomeado ou
   /// apagado depois, o histórico continua legível.
@@ -1971,14 +2195,15 @@ model RegistroAdmin {
 
 /// Só o hash do link fica no banco; o convite vale para um e-mail específico.
 model ConviteLar {
-  id String @id @default(cuid())
-  larId String
-  lar Lar @relation(fields: [larId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  larId     String
+  lar       Lar       @relation(fields: [larId], references: [id], onDelete: Cascade)
   emissorId String
-  email String
-  tokenHash String @unique
-  criadoEm DateTime @default(now())
-  expiraEm DateTime
-  aceitoEm DateTime?
+  email     String
+  tokenHash String    @unique
+  criadoEm  DateTime  @default(now())
+  expiraEm  DateTime
+  aceitoEm  DateTime?
+
   @@index([larId, email])
 }

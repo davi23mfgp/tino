@@ -1,0 +1,131 @@
+/* Clientes: opção A do passo 36 (Davi, 05/10/2026). O próximo passo vem
+   primeiro; no computador a ficha do cliente fica ao lado da lista. Mesmo
+   vidro e quadros finos do Fiado e de Finanças da loja; cor só no que pede
+   ação (âmbar no que vence ou atrasou, verde no aprovado). */
+.pagina { display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
+.bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
+.num { font-variant-numeric:tabular-nums; }
+.vazio { padding:22px 18px; text-align:center; font-size:calc(13.5px * var(--escala-letra)); color:var(--texto-3); }
+.erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
+
+.topo { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.topo p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
+.botoes { display:flex; gap:8px; flex-wrap:wrap; }
+@media (max-width:639px) { .botoes { width:100%; } .botoes > :last-child { flex:1; } }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px !important; padding:0 16px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:550; white-space:nowrap; text-decoration:none; color:inherit; background:transparent; }
+.botao svg { width:16px; height:16px; flex:none; }
+.botao[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.botao:disabled { opacity:.55; }
+.pequeno { min-height:36px !important; padding:0 12px !important; font-size:calc(12.5px * var(--escala-letra)); }
+
+.grade { display:grid; gap:18px; align-items:start; }
+@media (min-width:1024px) { .grade { grid-template-columns:400px minmax(0,1fr); gap:22px; } }
+/* No celular, a ficha toma a tela e a lista sai; voltar traz a lista. */
+@media (max-width:1023px) {
+  .grade[data-ficha] > .coluna { display:none; }
+  .grade:not([data-ficha]) > .lado { display:none; }
+}
+.coluna, .lado { display:grid; gap:14px; min-width:0; align-content:start; }
+@media (min-width:1024px) { .lado { position:sticky; top:16px; } }
+
+.titulo { display:flex; justify-content:space-between; align-items:baseline; padding-top:4px; }
+.titulo h2 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.titulo span { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+
+/* Cartão de "Para retomar hoje". */
+.cartao { display:grid; gap:12px; padding:16px; }
+.cartaoTopo { display:flex; align-items:center; gap:12px; min-width:0; width:100%; padding:0 !important; min-height:0 !important; text-align:left; background:none; border:0; color:inherit; }
+.cartaoTopo > span:nth-child(2) { flex:1; min-width:0; }
+.nome { display:block; font-size:calc(15.5px * var(--escala-letra)); font-weight:600; overflow-wrap:anywhere; }
+.sub { display:block; margin-top:2px; font-size:calc(12.5px * var(--escala-letra)); line-height:1.35; color:var(--texto-3); }
+.valorLado { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:none; }
+.valor { font-size:calc(19px * var(--escala-letra)); font-weight:350; letter-spacing:-.02em; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.valor small, .grande small, .quadro strong small { font-size:.58em; opacity:.62; }
+.acoes { display:flex; flex-wrap:wrap; gap:8px; }
+
+.avatar { flex:none; width:40px; height:40px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:color-mix(in oklab, var(--foreground), transparent 92%); border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); font-size:calc(13.5px * var(--escala-letra)); font-weight:650; }
+.avatar[data-grande] { width:52px; height:52px; font-size:calc(17px * var(--escala-letra)); }
+
+.selo { display:inline-flex; align-items:center; height:24px; padding:0 10px; border-radius:99px; font-size:calc(12px * var(--escala-letra)); font-weight:600; white-space:nowrap; background:color-mix(in oklab, var(--foreground), transparent 92%); color:var(--texto-2); }
+.selo[data-tom="atencao"] { background:color-mix(in oklab, var(--atencao), transparent 84%); color:var(--atencao); }
+.selo[data-tom="positivo"] { background:color-mix(in oklab, var(--positivo), transparent 84%); color:var(--positivo); }
+
+/* Em aberto: o funil numa barra, em cinzas. */
+.funil { display:grid; gap:12px; padding:16px 18px; }
+.funil header { display:flex; justify-content:space-between; align-items:baseline; font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
+.grande { font-size:calc(32px * var(--escala-letra)); font-weight:300; letter-spacing:-.03em; line-height:1.1; font-variant-numeric:tabular-nums; }
+.barra { display:flex; height:8px; gap:3px; border-radius:99px; overflow:hidden; background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.barra i { display:block; height:100%; }
+.legenda { display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 10px; font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
+.legenda i { display:inline-block; width:8px; height:8px; border-radius:3px; margin-right:5px; }
+.fechamento { padding-top:10px; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
+.fechamento b { color:var(--foreground); font-weight:650; }
+
+.busca { display:flex; align-items:center; gap:10px; height:46px; padding:0 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); background:color-mix(in oklab, var(--foreground), transparent 96%); }
+.busca svg { width:18px; height:18px; color:var(--texto-3); flex:none; }
+/* Mesmo reset da busca de Categorias: o vidro global dos campos desenharia
+   uma caixa dentro da caixa. */
+.busca input { flex:1; min-width:0; min-height:44px !important; padding:0 !important; border:0 !important; background:transparent !important; box-shadow:none !important; outline:none; font-size:calc(14.5px * var(--escala-letra)); font-weight:400; color:inherit; }
+
+.lista { overflow:hidden; }
+.linha { display:flex; align-items:center; gap:12px; width:100%; min-height:62px; padding:10px 14px !important; text-align:left; background:none; border:0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 91%); color:inherit; }
+.linha:first-child { border-top:0; }
+.linha:hover, .linha[aria-current="true"] { background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.linha > span:nth-child(2) { flex:1; min-width:0; }
+.direita { text-align:right; flex:none; }
+.direita b { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:500; font-variant-numeric:tabular-nums; }
+.direita small { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
+
+/* A ficha. */
+.ficha { display:grid; gap:18px; padding:20px; }
+@media (min-width:1024px) { .ficha { padding:24px; } }
+.voltar { justify-self:start; display:inline-flex; align-items:center; gap:6px; min-height:36px !important; padding:0 !important; background:none; border:0; color:var(--texto-2); font-size:calc(13.5px * var(--escala-letra)); }
+@media (min-width:1024px) { .voltar { display:none; } }
+.fichaTopo { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.fichaTopo > div:nth-child(2) { flex:1; min-width:180px; }
+.fichaTopo h2 { font-size:calc(21px * var(--escala-letra)); font-weight:700; overflow-wrap:anywhere; }
+.passo { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--atencao), transparent 70%); background:color-mix(in oklab, var(--atencao), transparent 90%); font-size:calc(14px * var(--escala-letra)); }
+.passo[data-calmo] { border-color:color-mix(in oklab, var(--foreground), transparent 88%); background:color-mix(in oklab, var(--foreground), transparent 96%); }
+.passo > svg { width:18px; height:18px; color:var(--atencao); flex:none; }
+.passo > div { flex:1; min-width:160px; }
+.passo small { display:block; color:var(--texto-3); font-size:calc(12.5px * var(--escala-letra)); }
+.formPasso { display:grid; gap:10px; }
+@media (min-width:640px) { .formPasso { grid-template-columns:minmax(0,1fr) 210px auto; align-items:end; } }
+
+.orcTopo { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+.orcTopo h3 { font-size:calc(16px * var(--escala-letra)); font-weight:650; }
+.quadros { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+@media (max-width:639px) { .quadros { grid-template-columns:repeat(2, minmax(0,1fr)); } .quadros > :first-child { grid-column:1 / -1; } }
+.quadro { display:flex; flex-direction:column; gap:5px; padding:14px 16px; min-width:0; }
+.quadro > span { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.quadro strong { font-size:calc(24px * var(--escala-letra)); font-weight:300; letter-spacing:-.02em; line-height:1.15; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.quadro small { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
+.itens { display:grid; }
+.item { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:11px 2px; border-bottom:1px solid color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(14px * var(--escala-letra)); }
+.item small { color:var(--texto-3); font-size:calc(12.5px * var(--escala-letra)); }
+.item b { grid-row:span 2; align-self:center; font-weight:500; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.dica { font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.compartilhar { display:grid; gap:10px; padding:14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--positivo), transparent 70%); background:color-mix(in oklab, var(--positivo), transparent 92%); font-size:calc(13.5px * var(--escala-letra)); }
+.compartilhar code { overflow-wrap:anywhere; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-2); }
+.outros { display:grid; }
+.outro { display:flex; align-items:center; gap:10px; width:100%; min-height:48px; padding:8px 4px !important; background:none; border:0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 91%); color:inherit; text-align:left; font-size:calc(13.5px * var(--escala-letra)); }
+.outro > span:first-child { flex:1; min-width:0; }
+.outro[aria-current="true"] { font-weight:650; }
+
+/* Editor (diálogo). */
+.form { display:grid; gap:14px; }
+.campo { display:grid; gap:6px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.dois { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+.linhaItem { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; padding:10px 0; border-bottom:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
+.linhaItem > div { display:flex; align-items:center; gap:6px; }
+.qtd { display:inline-flex; align-items:center; gap:4px; }
+.qtd button, .remover { width:32px; height:32px; min-height:32px !important; padding:0 !important; border-radius:10px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); display:inline-flex; align-items:center; justify-content:center; background:none; color:inherit; }
+.qtd button svg, .remover svg { width:14px; height:14px; }
+.resultados { display:grid; max-height:220px; overflow:auto; border-radius:14px; border:1px solid color-mix(in oklab, var(--foreground), transparent 88%); }
+.resultado { display:flex; justify-content:space-between; gap:10px; width:100%; min-height:44px; padding:8px 12px !important; background:none; border:0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); color:inherit; text-align:left; font-size:calc(13.5px * var(--escala-letra)); }
+.resultado:first-child { border-top:0; }
+.resultado small { color:var(--texto-3); }
+.totalEditor { display:flex; justify-content:space-between; align-items:baseline; padding-top:6px; }
+.motivos { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+.motivo { min-height:44px !important; border-radius:14px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); background:none; color:inherit; font-size:calc(13.5px * var(--escala-letra)); }
+.motivo[aria-pressed="true"] { border-color:oklch(var(--primary)); background:color-mix(in oklab, oklch(var(--primary)), transparent 85%); font-weight:650; }

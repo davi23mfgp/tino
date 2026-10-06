@@ -1,5 +1,39 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 05/10/2026: Agenda, ordem de serviço e avisos do MEI (opção A do passo 37)
+
+O Davi escolheu a opção A (o dia em linha do tempo). Tela `/loja/agenda`, item "Agenda" do menu da loja (no celular, em "Mais").
+
+- **Linha do tempo do dia:** compromisso (com hora ou de dia inteiro, ideia do Controllares), prazo de OS aberta e retorno de cliente (o próximo passo da tela Clientes), pela hora. Semana de segunda a domingo: faixa no celular, lista à esquerda no computador.
+- **Ordem de serviço:** o que ficou com a loja, o que fazer, como chegou, prazo, valor (opcional: sem diagnóstico, a tela diz "sem preço"), checklist e etapas (recebido, fazendo, esperando peça, pronto, entregue), com a data de cada uma. Etapa pulada não aparece como feita.
+- **Do orçamento à OS:** orçamento aprovado (ou vendido) abre OS com cliente, serviço e valor; um orçamento abre uma OS só.
+- **Pronto: avisar o cliente** monta a mensagem para o WhatsApp do próprio dono, com o **link de acompanhamento** `/s/<token>` (papel claro, só leitura).
+- **Cobrar no Balcão:** OS com orçamento usa os itens dele; OS sem orçamento entra como item de mão de obra, que conta como **serviço** no DAS (`dividirFaturamentoMei` aceita `servico`, só na venda de uma OS). A venda fica ligada à OS.
+- **Sino do MEI** (`src/components/avisos-da-loja.tsx`): "cliente aprovou o orçamento pelo link" (com "Abrir OS"), "OS vence hoje", "OS passou do prazo" e "orçamento vence amanhã". Lembretes recalculados a cada abertura, sem duplicar no dia (chave com a data). O número conta só o não lido.
+- O funcionário do balcão não vê agenda, OS nem avisos.
+
+Conferido no Chromium: aprovação pelo link virou aviso; "Abrir OS" do sino abriu a OS do orçamento; checklist, pronto com a mensagem e o link do cliente; compromisso de 9h; OS sem orçamento e sem preço, depois com R$ 150 cobrada no Balcão (venda 12 ligada, R$ 150 somados em serviços do mês); celular e computador, escuro e claro, sem rolagem horizontal. Regras em `src/lib/loja/agenda.ts`, testadas em `testes/agenda-loja.test.ts`.
+
+Falta: arrastar compromisso para outra hora, repetir compromisso (toda semana), espelhar na agenda do Google (o Controllares faz), e relatório dos motivos de perda.
+
+## 05/10/2026: Clientes e orçamento (ERP MEI, fase 2, opção A do passo 36)
+
+O Davi escolheu a opção A do canvas (o próximo passo primeiro). Tela `/loja/clientes`, terceiro item do menu da loja (no celular, Catálogo foi para "Mais").
+
+- **Para retomar hoje:** próximo passo marcado para hoje ou atrasado, orçamento que vence hoje ou amanhã, vencido, aprovado sem virar venda e rascunho. Enviado dentro do prazo e sem passo não entra. Regras puras em `src/lib/loja/orcamento.ts`, testadas em `testes/orcamento-loja.test.ts`.
+- **Em aberto** por etapa (rascunho, enviado, aberto), sem os vencidos, e **taxa de fechamento** dos 90 dias com os 90 anteriores de referência. Sem envio, a tela diz que não há taxa em vez de mostrar 0%.
+- **Orçamento:** número por loja, itens do catálogo ou avulsos, desconto, validade, entrada e parcelas (centavos sem perda), observação. Editar depois de enviado guarda a versão anterior (`VersaoOrcamentoLoja`).
+- **Link público** `/o/<token>`, fora da área logada, no papel claro da opção C (a A não desenha esta tela). Conta as aberturas, sem contar o robô de prévia do WhatsApp, o próprio dono e recarga em menos de 30 minutos. O cliente aprova pelo link, só dentro da validade.
+- **Perdido** pede o motivo (preço, prazo, atendimento, desistiu, não respondeu, outro).
+- **Virar venda no Balcão:** o Balcão abre com itens, desconto e cliente do orçamento; a venda marca o orçamento como vendido na mesma transação, e dois cliques não vendem duas vezes.
+- O funcionário do balcão não vê clientes nem orçamentos (`BLOQUEADO_MESMO_NA_LOJA`).
+
+Conferido no Chromium com a conta de demonstração MEI: orçamento de R$ 528,00 (entrada R$ 110 e 2x R$ 209) montado pela tela, link mandado, aberto 1 vez (o robô do WhatsApp e o dono não contaram), aprovado pelo cliente, vendido no Balcão (venda 11); perdido com motivo; celular e computador, tema escuro e claro, sem rolagem horizontal.
+
+Contato do cliente (nome, telefone, e-mail, observação) se edita pela ficha desde o mesmo dia.
+
+Falta: relatório dos motivos de perda. Agenda, OS e o aviso de aprovação vieram no passo 37 (acima).
+
 ## 04/10/2026: login pessoal e login MEI separados
 
 Defeito relatado pelo Davi: entrou pela tela do Tino pessoal com o próprio e-mail e caiu no MEI. O modo saía do lar ter perfil MEI (`lar.meiPerfil`), não da tela usada. Regra dele: "o mesmo email pode ser usado, mas tem que entrar em logins diferentes".

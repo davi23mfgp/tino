@@ -97,6 +97,70 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   foram pedidas e construídas depois (Telegram e assistente Tino, ver
   README; PDF de fatura em `/importar`).
 
+## Visão de produto (Davi, 05/10/2026)
+
+O Tino tem de ser uma plataforma competitiva e escalável onde **vários tipos
+de negócio** administram o grosso da operação **sem sair do app**, sobre a
+**mesma base** (cliente, catálogo, venda, orçamento, OS, agenda, financeiro).
+A mesma pessoa pode ter **vários negócios** ao mesmo tempo. Tem de servir a
+**várias idades** (leitura, toque e linguagem simples). E a decisão de
+**marca própria ou marca branca** (white label) precisa estar coberta. Toda
+tela nova é julgada por isso: serve a mais de um segmento? funciona com mais
+de um negócio na conta? uma pessoa de 65 anos usa sem ajuda?
+
+O Tino também é **assessor**, não só registro: a pessoa diz "tenho um
+horário amanhã às 15h com a Ana, agenda pra mim" e o app marca na agenda
+dele e na **Agenda do Google** da pessoa. E é **ajuda tributária**: DAS,
+limite do MEI, nota de serviço, desenquadramento, explicado com a fonte e a
+data da regra. O assessor propõe e a pessoa confirma num toque (regra 5:
+nada entra sem conferência). Quando a dúvida passa do que a regra escrita
+responde, ele diz que é caso de contador, em vez de chutar.
+
+Mais três pedidos do mesmo dia:
+- **Maquininha integrada:** muito comerciante vende na maquininha, e o Tino
+  tem de ler as vendas e os repasses das principais por API, conciliando com
+  o Balcão. O registro manual (taxa e prazo) continua para quem não conectar.
+- **Guia do negócio, educativo:** quando o negócio está fraco ou desandando,
+  o Tino mostra o que falta, em passos ("já cadastrou o custo? não: faça
+  isso"; "já cobra quem sumiu? não: tente aquilo"), cada passo com o porquê.
+- **Análise de clientes:** quem compra mais, quem sumiu, quem só compra no
+  fiado. Pode ser análise complexa por baixo, mas **toda tela fala em
+  linguagem objetiva, simples e intuitiva**, para qualquer idade e qualquer
+  tipo de negócio.
+
+**Tino por área (Davi, 06/10/2026).** O Tino é um só, geral, com o básico
+de organização para todos. No cadastro a pessoa escolhe a **área** e a
+**subárea** (assistência técnica: celular, informática...; beleza:
+cabeleireiro, manicure...) e o app já vem personalizado para ela. A área é
+configuração sobre a mesma base (nomes, menu, campos, serviços de partida
+sem preço, checklists, mensagens, Guia do negócio), nunca um app separado,
+e o cálculo de DAS, limite e dinheiro é o mesmo para todas. Começa pelos
+10 segmentos do plano estratégico (doc "Tino · Plano estratégico",
+https://claude.ai/code/artifact/0b555476-3cc6-436a-89dd-8980d12ab07d):
+leve para os 10, funda um de cada vez, Assistência técnica primeiro. A
+tela de escolha da área passa pelo canvas.
+
+**Recomendações aceitas (Davi, 06/10/2026: "vamos seguir as recomendações
+que você fez").** Nome "Tino" mais a área (Tino Assistência, Tino Beleza),
+com a área incluída no plano Meu negócio; cobrança desde o início; marca do
+escritório só na Fase 5. A lista completa está em `docs/PLANO-FASES.md`.
+
+## Fases e estudo de mercado (Davi, 06/10/2026)
+
+- **Tudo em fases, com acompanhamento.** `docs/PLANO-FASES.md` é o painel:
+  cada item com situação, estudo e próximo passo, mais o que precisa
+  melhorar e um registro por data. Atualize no mesmo commit de cada entrega,
+  e diga ao Davi o que foi feito, o que não foi e o que vem a seguir.
+- **Nada por fazer.** Toda recomendação (função, tela, área, preço, canal,
+  integração, nome) passa antes pela skill `estudo-de-mercado`, com casos do
+  Brasil e de fora, fonte, data e força da evidência, registrada em
+  `docs/pesquisas/`. As três opções de cada canvas dizem em quem se
+  inspiraram.
+- **Depois das fases de produto** vêm a fase só de visual (Fase 6) e a
+  revisão geral (Fase 7): mercado de novo, produto tela por tela e o Tino
+  pessoal, para lançar os dois produtos juntos. A venda assistida da Fase 1
+  continua no começo; lançamento público só depois da Fase 7.
+
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
 - Trabalhar de forma autônoma: usar as skills disponíveis para decidir a

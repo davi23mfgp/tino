@@ -1,0 +1,46 @@
+/* O orçamento que o cliente abre: papel claro em qualquer tema, porque é um
+   documento da loja e não uma tela do app (o "papel" da opção C, passo 36).
+   Cores fixas aqui de propósito: o cliente não escolheu o tema do Tino. */
+.fundo { min-height:100dvh; box-sizing:border-box; padding:24px 16px 40px; background:#e9ece9; color:#1d231e; display:flex; justify-content:center; align-items:flex-start; }
+.papel { width:100%; max-width:640px; box-sizing:border-box; background:#fbfcfa; border-radius:22px; padding:26px 22px; display:flex; flex-direction:column; gap:14px; box-shadow:0 18px 40px rgb(20 30 20 / 12%); }
+@media (min-width:640px) { .fundo { padding-top:48px; } .papel { padding:34px 36px; } }
+
+.cabeca { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.cabeca h1 { margin:0; font-size:21px; font-weight:750; letter-spacing:-.01em; overflow-wrap:anywhere; }
+.cabeca p { margin:4px 0 0; font-size:13px; color:#55605a; }
+.numero { text-align:right; flex:none; }
+.numero span { display:block; font-size:12.5px; color:#55605a; }
+.numero strong { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; }
+
+.para { margin:0; font-size:14.5px; }
+.aviso { margin:0; padding:12px 14px; border-radius:14px; font-size:14px; line-height:1.45; background:#fbf1dc; color:#5e4410; }
+.aviso[data-tom="bom"] { background:#e2f3e6; color:#1d5a2c; }
+
+.itens { list-style:none; margin:0; padding:0; }
+.itens li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; padding:12px 0; border-bottom:1px solid rgb(29 35 30 / 11%); font-size:15px; }
+.itens li > span:first-child { grid-column:1; grid-row:1; overflow-wrap:anywhere; }
+.itens li b { grid-column:2; grid-row:1 / span 2; align-self:center; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.qtd { grid-column:1; grid-row:2; font-size:13px; color:#55605a; font-variant-numeric:tabular-nums; }
+
+.linha { display:flex; justify-content:space-between; font-size:14px; color:#55605a; font-variant-numeric:tabular-nums; }
+.total { display:flex; justify-content:space-between; align-items:baseline; padding-top:6px; }
+.total span { font-size:15px; }
+.total strong { font-size:32px; font-weight:300; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.total small { font-size:.55em; color:#55605a; }
+.pagamento { margin:0; font-size:14px; color:#3d4741; }
+.observacao { margin:0; padding:12px 14px; border-radius:14px; background:#f0f2ef; font-size:14px; line-height:1.5; white-space:pre-line; }
+
+.acoes { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; }
+.acoes > * { flex:1 1 200px; }
+.principal, .secundario { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px; border-radius:999px; font-size:15px; font-weight:700; text-decoration:none; white-space:nowrap; cursor:pointer; }
+.principal { border:0; background:#1f6b36; color:#fff; }
+.principal:hover { background:#185a2c; }
+.secundario { border:1px solid rgb(29 35 30 / 22%); background:transparent; color:#1d231e; font-weight:600; }
+.principal:disabled, .secundario:disabled { opacity:.6; cursor:default; }
+.confirmar { display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:16px; background:#f0f2ef; }
+.confirmar p { margin:0; font-size:14px; line-height:1.45; }
+.confirmar div { display:flex; flex-wrap:wrap; gap:8px; }
+.confirmar div > * { flex:1 1 140px; }
+.erro { color:#9b2c1f !important; }
+.nota { margin:4px 0 0; font-size:12px; color:#6a746e; text-align:center; }
+.indisponivel { margin:0; font-size:20px; }
