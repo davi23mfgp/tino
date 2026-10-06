@@ -97,6 +97,38 @@ semanas seguidas, e pelo menos 10 pagando.
 | 5.1 | Marca do escritório com o primeiro contador parceiro | ⏳ |
 | 5.2 | Mais áreas fundas, pela resposta dos clientes | ⏳ |
 
+## Fase 6: acabamento visual
+
+Pedido do Davi (06/10/2026): depois das fases de produto, uma fase só de
+visual, para deixar tudo certo.
+
+| # | Item | Situação |
+|---|---|---|
+| 6.1 | Inventário de todas as telas (pessoal e negócio), com captura no celular (390px) e no computador (1280px), tema claro e escuro | ⏳ |
+| 6.2 | Telas que ainda não passaram pelo canvas vão para o canvas (inclui a fila antiga: Assinatura e Notificações) | ⏳ |
+| 6.3 | Uma linguagem só: estilo das telas da loja, vidro na página, sólido no que abre por cima | ⏳ |
+| 6.4 | Teste de uso com pessoas de mais idade (a pergunta "uma pessoa de 65 anos usa sem ajuda?") | ⏳ |
+
+## Fase 7: revisão e lançamento dos dois produtos
+
+Pedido do Davi (06/10/2026): revisar mercado, produto e tudo, inclusive o
+Tino pessoal, e deixar os dois prontos para o lançamento.
+
+| # | Item | Situação |
+|---|---|---|
+| 7.1 | Estudo de mercado novo do **Tino negócio**: concorrentes, preços e casos atualizados | ⏳ |
+| 7.2 | Estudo de mercado do **Tino pessoal** (apps de finanças pessoais do Brasil e de fora), que ainda não foi feito | ⏳ |
+| 7.3 | Revisão do produto, tela por tela, com as três perguntas da visão: serve a mais de um segmento? funciona com mais de um negócio? uma pessoa de 65 anos usa sem ajuda? | ⏳ |
+| 7.4 | Revisão de segurança e LGPD antes de abrir ao público | ⏳ |
+| 7.5 | Pronto para lançar: preço, termos, suporte, site, cobrança, métricas, página de cada área | ⏳ |
+| 7.6 | Lançamento público do Tino pessoal e do Tino negócio | ⏳ |
+
+**Uma observação sobre a ordem.** Lançamento público (anúncio, divulgação
+aberta) fica para a Fase 7. Mas a **venda assistida** da Fase 1 (o Davi
+instalando o Tino em 30 assistências) continua no começo: é ela que diz o
+que corrigir antes do lançamento. O estudo do plano estratégico mostra que
+produto lançado sem esse teste gasta marketing para encher um balde furado.
+
 ## Feito antes deste plano (base da Fase 1)
 
 - ✅ Login pessoal e login MEI separados (04/10/2026)
@@ -116,4 +148,5 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | Data | O que aconteceu |
 |---|---|
+| 06/10/2026 | Fases 6 (acabamento visual) e 7 (revisão e lançamento do Tino pessoal e do Tino negócio) entram no plano, a pedido do Davi. |
 | 06/10/2026 | Plano estratégico aceito. Criados este painel, a skill `estudo-de-mercado` e o primeiro estudo (área e vários negócios). Próximo: canvas passo 38. |

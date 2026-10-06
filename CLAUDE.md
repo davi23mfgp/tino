@@ -156,6 +156,10 @@ escritório só na Fase 5. A lista completa está em `docs/PLANO-FASES.md`.
   Brasil e de fora, fonte, data e força da evidência, registrada em
   `docs/pesquisas/`. As três opções de cada canvas dizem em quem se
   inspiraram.
+- **Depois das fases de produto** vêm a fase só de visual (Fase 6) e a
+  revisão geral (Fase 7): mercado de novo, produto tela por tela e o Tino
+  pessoal, para lançar os dois produtos juntos. A venda assistida da Fase 1
+  continua no começo; lançamento público só depois da Fase 7.
 
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
