@@ -86,6 +86,11 @@ Detalhes em `docs/AMBIENTE.md`. O `.env` não está no repositório.
   no build por `scripts/garantir-admin.mjs`, com `ADMIN_EMAIL` e `ADMIN_SENHA`
   na Vercel. A senha que o Davi mandou no chat **nunca** vai para o
   repositório, nem em teste, nem em comentário.
+  **Atualizado em 06/10/2026:** o admin tem entrada própria, `/acesso-admin`,
+  sem link em tela nenhuma; só e-mail, senha e código de dois fatores. O
+  login comum e o Google recusam conta de admin (`entradaPermitida`), e o
+  e-mail do admin não precisa ser Gmail (Davi: "o admin login nem vai ter
+  gmail"). Senha perdida: `ADMIN_SENHA` com `ADMIN_REDEFINIR_SENHA=sim`.
 - **Sem WhatsApp** (29/09/2026: "não temos wpp por enquanto, então pode
   tirar. Deixe só telegram"). A rota `/api/whatsapp` saiu, Anotar mostra só
   Telegram, e a política de privacidade não cita mais a Meta. A biblioteca

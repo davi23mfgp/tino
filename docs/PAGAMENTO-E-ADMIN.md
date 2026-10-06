@@ -141,6 +141,12 @@ O Tino ainda não tem "Esqueci a senha". Para trocar a senha do admin:
 
 O código de dois fatores e os códigos de recuperação não mudam.
 
+**Onde o admin entra:** `/acesso-admin` (por exemplo
+`https://tino-kappa.vercel.app/acesso-admin`). Nenhuma tela tem link para lá.
+O login comum (`/login`, `/login/mei`) e o Google recusam conta de admin com a
+mesma mensagem de senha errada, e conta comum também é recusada na entrada do
+admin.
+
 **O admin não entra pelo Google.** Desde 06/10/2026 o login pelo Google não
 se liga sozinho a conta de admin: o endereço `admin.tino@gmail.com` não é uma
 caixa que o Davi tenha criado, e quem criasse esse Gmail entraria como admin.

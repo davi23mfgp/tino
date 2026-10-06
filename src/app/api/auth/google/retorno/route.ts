@@ -67,6 +67,9 @@ export async function GET(requisicao: Request) {
       })
     }
 
+    // Admin só entra pela porta dele, com senha e código (06/10/2026).
+    if (usuario.admin) return voltar(requisicao, "google-falhou", modoMei)
+
     const produto = modoMei ? "mei" : "pessoal"
     if (modoMei && !(await prisma.meiPerfil.findUnique({ where: { larId: usuario.larId }, select: { id: true } }))) {
       return voltar(requisicao, "sem-mei", true)

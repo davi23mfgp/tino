@@ -75,3 +75,15 @@ export function sessaoEmModoMei(produto: Produto, temMei: boolean): boolean {
 /// teria loja para abrir; e cair no pessoal calado é o defeito que esta regra
 /// corrige, só que ao contrário.
 export const SEM_MEI = "Esta conta ainda não tem o Tino MEI. Entre pelo login do Tino pessoal."
+
+/**
+ * Admin entra por uma porta só (Davi, 06/10/2026: "o admin não vai ser
+ * acessado pela landing page nem pelo login comum").
+ *
+ * Conta de admin no login comum recebe a mesma recusa de senha errada, e
+ * conta comum na entrada do admin também: a resposta não pode contar a quem
+ * varre e-mails quais contas são de admin. O Google nunca abre conta de admin.
+ */
+export function entradaPermitida(porta: "comum" | "admin", contaEhAdmin: boolean): boolean {
+  return porta === "admin" ? contaEhAdmin : !contaEhAdmin
+}

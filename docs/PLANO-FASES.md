@@ -52,7 +52,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | Juntar o PR #15 no `main` | ✅ juntado pelo Davi em 06/10/2026 |
 | Vercel: projeto duplicado (24f2ce83) | não está em nenhuma conta que o Davi acessa; fica, só deixa sinal vermelho no PR |
 | Vercel: prévias separadas do banco de verdade (variáveis de teste para todas as prévias, as de produção só em Production) | ✅ feito pelo Davi em 06/10/2026; prévia da branch `claude/` Ready |
-| Admin: conta normal `admin.tino@gmail.com` (e-mail e senha, sem Google) com senha nova pelo build (`ADMIN_REDEFINIR_SENHA`) e código de dois fatores | 🙋 depende de juntar a correção |
+| Admin: entrada própria `/acesso-admin` (só e-mail, senha e código; login comum e Google recusam admin), e-mail sem Gmail, senha nova pelo build | ✅ no código; 🙋 Davi junta e configura |
 | Variáveis adiadas: ADMIN_EMAIL, ADMIN_SENHA, TELEGRAM_*, CRON_SECRET | 🙋 |
 | Lista de 50 assistências técnicas e 5 distribuidoras da região | 🙋 |
 | 15 conversas de 20 minutos com donos de assistência | 🙋 |
