@@ -48,8 +48,9 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | Item | Situação |
 |---|---|
-| Juntar o PR #15 no `main` | 🙋 CI verde, sem conflito |
-| Vercel: apagar o projeto duplicado (24f2ce83) e pôr as variáveis do Preview no 0e1004d7 | 🙋 |
+| Juntar o PR #15 no `main` | ✅ juntado pelo Davi em 06/10/2026 |
+| Vercel: projeto duplicado (24f2ce83) | não está em nenhuma conta que o Davi acessa; fica, só deixa sinal vermelho no PR |
+| Vercel: `MFA_CHAVE_CRIPTOGRAFIA` só no Preview do 0e1004d7 (o log mostrou que era só ela) | 🙋 |
 | Variáveis adiadas: ADMIN_EMAIL, ADMIN_SENHA, TELEGRAM_*, CRON_SECRET | 🙋 |
 | Lista de 50 assistências técnicas e 5 distribuidoras da região | 🙋 |
 | 15 conversas de 20 minutos com donos de assistência | 🙋 |
@@ -148,5 +149,6 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 06/10/2026 | PR #15 juntado no `main` (Clientes, orçamento, Agenda, OS, sino do MEI, plano e painel). Prévia: falta só `MFA_CHAVE_CRIPTOGRAFIA` no Preview. |
 | 06/10/2026 | Fases 6 (acabamento visual) e 7 (revisão e lançamento do Tino pessoal e do Tino negócio) entram no plano, a pedido do Davi. |
 | 06/10/2026 | Plano estratégico aceito. Criados este painel, a skill `estudo-de-mercado` e o primeiro estudo (área e vários negócios). Próximo: canvas passo 38. |
