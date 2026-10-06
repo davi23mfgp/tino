@@ -52,7 +52,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | Juntar o PR #15 no `main` | ✅ juntado pelo Davi em 06/10/2026 |
 | Vercel: projeto duplicado (24f2ce83) | não está em nenhuma conta que o Davi acessa; fica, só deixa sinal vermelho no PR |
 | Vercel: prévias separadas do banco de verdade (variáveis de teste para todas as prévias, as de produção só em Production) | ✅ feito pelo Davi em 06/10/2026; prévia da branch `claude/` Ready |
-| Admin: entrada própria `/acesso-admin` (só e-mail, senha e código; login comum e Google recusam admin), e-mail sem Gmail, senha nova pelo build | ✅ no código; 🙋 Davi junta e configura |
+| Admin: entrada própria `/acesso-admin` (só e-mail, senha e código; login comum e Google recusam admin), e-mail `admin@tino.interno` | ✅ no ar e funcionando (06/10/2026); 🙋 apagar `ADMIN_SENHA` e `ADMIN_REDEFINIR_SENHA` da Vercel |
 | Variáveis adiadas: ADMIN_EMAIL, ADMIN_SENHA, TELEGRAM_*, CRON_SECRET | 🙋 |
 | Lista de 50 assistências técnicas e 5 distribuidoras da região | 🙋 |
 | 15 conversas de 20 minutos com donos de assistência | 🙋 |
@@ -111,6 +111,7 @@ visual, para deixar tudo certo.
 | 6.2 | Telas que ainda não passaram pelo canvas vão para o canvas (inclui a fila antiga: Assinatura e Notificações) | ⏳ |
 | 6.3 | Uma linguagem só: estilo das telas da loja, vidro na página, sólido no que abre por cima | ⏳ |
 | 6.4 | Teste de uso com pessoas de mais idade (a pergunta "uma pessoa de 65 anos usa sem ajuda?") | ⏳ |
+| 6.5 | Painel do admin melhor: as métricas do plano (ativação, conversão do teste, permanência, origem do cadastro) na primeira tela; estudo e canvas antes. Davi, 06/10: "isso é algo pra depois" | ⏳ |
 
 ## Fase 7: revisão e lançamento dos dois produtos
 
