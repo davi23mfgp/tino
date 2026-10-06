@@ -35,8 +35,8 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | # | Item | Situação | Estudo | Próximo passo |
 |---|---|---|---|---|
-| 1.1 | Vários negócios por conta, com troca visível no topo | ⏳ | [estudo](pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md) | canvas passo 38 |
-| 1.2 | Área e subárea no cadastro (10 áreas, modo leve) | ⏳ | [estudo](pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md) | canvas passo 38 |
+| 1.1 | Vários negócios por conta, com troca visível no topo | 🔨 | [estudo](pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md) | canvas passo 38 publicado; Davi escolhe A, B ou C |
+| 1.2 | Área e subárea no cadastro (10 áreas, modo leve) | 🔨 | [estudo](pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md) | canvas passo 38 publicado; Davi escolhe A, B ou C |
 | 1.3 | Ativar o MEI numa conta pessoal que já existe | ⏳ | falta | estudo, depois canvas |
 | 1.4 | Relatório do mês para o contador | ⏳ | falta | estudo (o que o contador pede do MEI) |
 | 1.5 | Cobrança ligada (Mercado Pago ou Stripe) | 🙋 | plano, seção Modelo de negócio | Davi põe as chaves, ver `docs/PAGAMENTO-E-ADMIN.md` |
@@ -154,5 +154,6 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 |---|---|
 | 06/10/2026 | Falha de segurança achada e corrigida no código: o login pelo Google ligava sozinho a conta de admin (`admin.tino@gmail.com`, um Gmail que ninguém criou) a quem criasse esse Gmail. Agora o Google nunca se liga sozinho a conta de admin (`podeLigarGoogleSozinho`, testado). Prévias da Vercel consertadas pelo Davi. |
 | 06/10/2026 | PR #15 juntado no `main` (Clientes, orçamento, Agenda, OS, sino do MEI, plano e painel). Prévia: falta só `MFA_CHAVE_CRIPTOGRAFIA` no Preview. |
+| 06/10/2026 | Canvas passo 38 publicado ("Tino · telas, parte 3", página 38): escolha de área no cadastro e troca de negócio, hoje e três opções, cada uma dizendo em quem se inspirou. |
 | 06/10/2026 | Fases 6 (acabamento visual) e 7 (revisão e lançamento do Tino pessoal e do Tino negócio) entram no plano, a pedido do Davi. |
 | 06/10/2026 | Plano estratégico aceito. Criados este painel, a skill `estudo-de-mercado` e o primeiro estudo (área e vários negócios). Próximo: canvas passo 38. |
