@@ -29,15 +29,17 @@ export const GET = comSessao(async (sessao) => {
   const mesInicio = abriuNesteAno ? (perfil.dataAbertura as Date).getUTCMonth() + 1 : 1
   const limiteAnualCentavos = abriuNesteAno ? limiteProporcionalMei(perfil.limiteAnualCentavos, mesInicio) : perfil.limiteAnualCentavos
 
-  const [competencias, loja] = await Promise.all([
+  const [competencias, lojas] = await Promise.all([
     prisma.meiCompetencia.findMany({ where: { larId: sessao.larId }, orderBy: { competencia: "asc" } }),
-    prisma.loja.findFirst({ where: { larId: sessao.larId }, orderBy: { criadoEm: "asc" }, select: { id: true } }),
+    // Todos os negócios do lar: o MEI tem um CNPJ só, e a capinha vendida no
+    // segundo negócio soma no mesmo limite da assistência (passo 38).
+    prisma.loja.findMany({ where: { larId: sessao.larId }, select: { id: true } }),
   ])
 
   const balcaoPorMes = new Map<string, number>()
-  if (loja) {
+  if (lojas.length) {
     const vendas = await prisma.vendaLoja.findMany({
-      where: { lojaId: loja.id, cancelada: false, criadoEm: { gte: new Date(Date.UTC(ano, 0, 1) - 86_400_000) } },
+      where: { lojaId: { in: lojas.map((loja) => loja.id) }, cancelada: false, criadoEm: { gte: new Date(Date.UTC(ano, 0, 1) - 86_400_000) } },
       select: { criadoEm: true, totalCentavos: true },
     })
     for (const venda of vendas) {

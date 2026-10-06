@@ -1,5 +1,24 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 06/10/2026: Tino por área e vários negócios (opção A do passo 38)
+
+O Davi escolheu a opção A (modo pronto, como o Square). Estudo em `docs/pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md`.
+
+- **"O que você faz?"** em `/loja/comecar`: as 10 áreas do plano, a subárea (ou "Outro"), "Minha área não está aqui" com texto livre, e a caixa "Seu Tino ___ vem assim" ao lado. A caixa só lista o que o Tino já faz para o tipo da área (`oQueVem` em `src/lib/loja/areas.ts`): serviço ganha OS, orçamento e agenda; comércio ganha prateleira e fiado; quem faz os dois ganha o DAS separando as partes.
+- **Cadastro MEI** (e-mail e Google) leva a `/loja/comecar?inicio=1` (passo 2 de 3) e depois aos dados da empresa. Negócio antigo sem área vê o aviso "Diga o que você faz" na Visão geral.
+- **Vários negócios:** o nome do negócio fica no topo, com a seta; abre a lista com Casa, os negócios (com a área) e "Novo negócio". O negócio aberto fica num cookie e só vale se for do próprio lar (`negocioAtivo`); `lojaDoLar` passou a respeitá-lo, então todas as telas da loja seguem a troca.
+- **Mesmo CNPJ:** com mais de um negócio no MEI, a lista avisa que as vendas somam no mesmo limite. A tela do MEI soma o Balcão de todos os negócios do lar.
+- Área é campo da loja (`area`, `subarea`), migration `20261006190000_area_do_negocio`. Muda o que o app destaca, nunca o cálculo.
+
+Conferido no Chromium: cadastro novo caiu na escolha; assistência e celular salvos; segundo negócio "Capinhas" criado pela lista, com moda e acessórios; topo trocou de nome; aviso de mesmo CNPJ; troca de volta; celular e computador, escuro e claro, sem rolagem horizontal. Regras testadas em `testes/areas-loja.test.ts`.
+
+Falta, dito sem enfeite:
+- **Casa** abre o login pessoal em vez de trocar num toque, pela regra de 04/10 (logins separados). Se o Davi quiser a troca direta, é uma decisão dele.
+- No computador a troca ficou no topo, não no alto do menu lateral como no quadro da opção A.
+- O funcionário do balcão sempre vê o negócio mais antigo.
+- A área ainda não muda o menu nem traz serviços de partida; isso é a "área funda" (item 1.8, Assistência técnica primeiro).
+- Origem do cadastro (item 1.6) ainda não é gravada.
+
 ## 05/10/2026: Agenda, ordem de serviço e avisos do MEI (opção A do passo 37)
 
 O Davi escolheu a opção A (o dia em linha do tempo). Tela `/loja/agenda`, item "Agenda" do menu da loja (no celular, em "Mais").

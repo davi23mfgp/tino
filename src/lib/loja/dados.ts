@@ -9,6 +9,8 @@
 import { prisma } from "@/lib/prisma"
 import { ErroDeUso } from "@/lib/api"
 
+import { negocioAtivo } from "./areas"
+
 import type { FormaPagamento, RegraDeRecebimento } from "./venda"
 
 /**
@@ -18,10 +20,28 @@ import type { FormaPagamento, RegraDeRecebimento } from "./venda"
  * Quem abre o Tino.mei quer vender, não preencher formulário.
  */
 export async function lojaDoLar(larId: string, nomeSugerido = "Minha loja") {
-  const existente = await prisma.loja.findFirst({ where: { larId }, orderBy: { criadoEm: "asc" } })
-  if (existente) return existente
+  const lojas = await prisma.loja.findMany({ where: { larId }, orderBy: { criadoEm: "asc" } })
+  const ativa = negocioAtivo(lojas, await negocioEscolhido())
+  if (ativa) return ativa
 
   return prisma.loja.create({ data: { larId, nome: nomeSugerido } })
+}
+
+/**
+ * O negócio que a pessoa escolheu na troca do topo (passo 38). Fica num
+ * cookie, e não no token, porque trocar de negócio não é entrar de novo: o
+ * token continua o mesmo. Fora de uma requisição (teste, script) não há
+ * cookie, e vale o negócio mais antigo.
+ */
+export const COOKIE_NEGOCIO = "tino_negocio"
+
+async function negocioEscolhido(): Promise<string | undefined> {
+  try {
+    const { cookies } = await import("next/headers")
+    return (await cookies()).get(COOKIE_NEGOCIO)?.value
+  } catch {
+    return undefined
+  }
 }
 
 export async function regrasDeRecebimento(lojaId: string): Promise<RegraDeRecebimento[]> {

@@ -1226,6 +1226,13 @@ model Loja {
   /// Galeria, box, quiosque. Só para o dono se achar quando tiver mais de uma.
   endereco String?
 
+  /// Área e subárea do negócio (passo 38, 06/10/2026): "assistencia" e
+  /// "Celular", por exemplo. A lista mora em `src/lib/loja/areas.ts`. Nula
+  /// para o negócio criado antes da escolha; a Visão geral pede para escolher.
+  /// Muda nomes e o que o app destaca, nunca o cálculo do DAS ou do dinheiro.
+  area    String?
+  subarea String?
+
   /// Dados fiscais, preenchidos só quando o lojista liga a emissão de nota.
   /// Sem eles a nota não sai — a tela de emissão pede antes de deixar tentar.
   cnpj                     String?

@@ -22,7 +22,7 @@ export default function FormularioCadastroGoogle({ email, nomeInicial, modoMei =
     setErro(null)
     try {
       await enviar("/api/auth/google/cadastro", { nome, tipoLar: modoMei ? "SOLO" : tipoLar, modoMei, aceiteTermos: aceite })
-      router.push(modoMei ? "/loja" : "/painel")
+      router.push(modoMei ? "/loja/comecar?inicio=1" : "/painel")
       router.refresh()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui criar a conta.")

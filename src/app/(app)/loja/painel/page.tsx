@@ -24,6 +24,8 @@ export default function PainelDaLoja() {
   const [dados, setDados] = useState<Painel | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [cadastroPendente, setCadastroPendente] = useState(false)
+  // Negócio sem área (criado antes do passo 38): pede para dizer o que faz.
+  const [areaPendente, setAreaPendente] = useState(false)
   const [valorMeta, setValorMeta] = useState("")
   const [editandoMeta, setEditandoMeta] = useState(false)
   const [salvandoMeta, setSalvandoMeta] = useState(false)
@@ -33,6 +35,7 @@ export default function PainelDaLoja() {
   }, [periodo, data])
   useEffect(() => { void carregar() }, [carregar])
   useEffect(() => { void buscar<{perfil:{dadosConfirmadosEm:string|null}}>("/api/loja/cadastro").then((resposta)=>setCadastroPendente(!resposta.perfil.dadosConfirmadosEm)).catch(()=>{}) }, [])
+  useEffect(() => { void buscar<{area:string|null}>("/api/loja/area").then((resposta)=>setAreaPendente(!resposta.area)).catch(()=>{}) }, [])
   async function salvarMeta(evento: React.FormEvent) {
     evento.preventDefault(); setSalvandoMeta(true)
     try { await enviar("/api/loja/meta", { competencia: data.slice(0, 7), valorCentavos: paraCentavos(valorMeta) }, "PUT"); setEditandoMeta(false); await carregar() }
@@ -46,6 +49,7 @@ export default function PainelDaLoja() {
       <div role="group" aria-label="Período" className={estilos.abas}><button aria-pressed={periodo === "mes"} onClick={() => setPeriodo("mes")}>Mensal</button><button aria-pressed={periodo === "dia"} onClick={() => setPeriodo("dia")}>Diário</button></div>
       <input aria-label="Data de referência" type={periodo === "dia" ? "date" : "month"} value={periodo === "dia" ? data : data.slice(0, 7)} onChange={(evento) => setData(periodo === "dia" ? evento.target.value : `${evento.target.value}-01`)} />
     </div></div>
+    {areaPendente && <aside className={estilos.aviso}><span><b>Diga o que você faz</b><small>Assistência, beleza, roupa, comida: o Tino se arruma para o seu negócio.</small></span><Link href="/loja/comecar">Escolher →</Link></aside>}
     {cadastroPendente && <aside className={estilos.aviso}><span><b>Confirme os dados da empresa</b><small>Razão social, CNPJ, atividade e contato, em um lugar só.</small></span><Link href="/loja/dados">Vamos lá →</Link></aside>}
     {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
     {!dados && !erro && <p>Carregando o painel…</p>}

@@ -1,0 +1,2 @@
+ALTER TABLE "Loja" ADD COLUMN "area" TEXT;
+ALTER TABLE "Loja" ADD COLUMN "subarea" TEXT;
