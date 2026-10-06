@@ -4,7 +4,7 @@ import { comPublica, corpo, erro, exigir, ok } from "@/lib/api"
 import { consumirLimite, ipDaRequisicao, liberarLimite, LimiteEstourado, REGRAS } from "@/lib/limite"
 import { registrarAcesso } from "@/lib/registro-acesso"
 import { criarDesafioMfa } from "@/lib/mfa"
-import { SEM_MEI } from "@/lib/acesso"
+import { entradaPermitida, SEM_MEI } from "@/lib/acesso"
 import { origemPermitida } from "@/lib/origem-segura"
 import { validar, z, campo } from "@/lib/validar"
 
@@ -15,9 +15,11 @@ const HASH_FALSO = "$2a$12$pUjYLGc.bllSI.9n598Yyu0Xojk4m5altsbg.IDJiYscdr4fI9.c6
 
 export const POST = comPublica(async (requisicao: Request) => {
   if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
-  const dados = validar(z.object({ email: campo.email(), senha: z.string().min(1).max(128), manterConectado: z.boolean().optional(), produto: z.enum(["pessoal", "mei"]).optional() }), await corpo(requisicao))
+  const dados = validar(z.object({ email: campo.email(), senha: z.string().min(1).max(128), manterConectado: z.boolean().optional(), produto: z.enum(["pessoal", "mei"]).optional(), porta: z.enum(["admin"]).optional() }), await corpo(requisicao))
+  const porta = dados.porta ?? "comum"
   // Cliente antigo sem o campo entrava pelo login pessoal: o MEI sempre mandou.
-  const produto = dados.produto ?? "pessoal"
+  // A entrada do admin abre a sessão no pessoal: o painel não é da loja.
+  const produto = porta === "admin" ? "pessoal" : dados.produto ?? "pessoal"
   const email = exigir(dados.email, "Informe o e-mail").trim().toLowerCase()
   const senha = exigir(dados.senha, "Informe a senha")
 
@@ -41,6 +43,8 @@ export const POST = comPublica(async (requisicao: Request) => {
   const invalido = erro("E-mail ou senha incorretos.", 401)
   const senhaConfere = await conferirSenha(senha, usuario?.senhaHash ?? HASH_FALSO)
   if (!usuario || !senhaConfere) return invalido
+  // Mesma recusa da senha errada, para não revelar quais contas são de admin.
+  if (!entradaPermitida(porta, usuario.admin)) return invalido
 
   // Só depois da senha: antes disso a resposta diria quais e-mails têm MEI.
   if (produto === "mei" && !usuario.lar.meiPerfil) return erro(SEM_MEI, 409)

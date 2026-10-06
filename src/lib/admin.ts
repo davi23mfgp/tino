@@ -40,7 +40,7 @@ export async function sessaoDeAdmin(): Promise<Sessao> {
   if (!sessao) notFound()
   if (!(await ehAdmin(sessao.usuarioId))) notFound()
   if (!sessao.mfaConfirmadoEm) redirect("/seguranca?obrigatorio=1")
-  if (Date.now() / 1000 - sessao.mfaConfirmadoEm > 12 * 3600) redirect("/login")
+  if (Date.now() / 1000 - sessao.mfaConfirmadoEm > 12 * 3600) redirect("/acesso-admin")
   return sessao
 }
 

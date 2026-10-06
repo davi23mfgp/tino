@@ -30,8 +30,17 @@ if (faltando.length) {
 // por configuração antiga. Validar antes de tocar a conexão, não só no Next.
 if (process.env.VERCEL_ENV) {
   const problemas = []
-  if (!/^[a-fA-F0-9]{64}$/.test(process.env.MFA_CHAVE_CRIPTOGRAFIA ?? "")) problemas.push("MFA_CHAVE_CRIPTOGRAFIA")
-  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) problemas.push("JWT_SECRET")
+  // A mensagem diz se falta ou se o formato está errado: "configure" para uma
+  // chave que já estava cadastrada (com aspas, espaço ou em base64) mandava o
+  // Davi cadastrar de novo o que ele já tinha feito (06/10/2026).
+  const mfa = process.env.MFA_CHAVE_CRIPTOGRAFIA
+  if (!mfa) problemas.push("MFA_CHAVE_CRIPTOGRAFIA (falta neste ambiente)")
+  else if (!/^[a-fA-F0-9]{64}$/.test(mfa)) {
+    const extra = mfa.trim() !== mfa ? ", com espaço ou quebra de linha" : /^["']|["']$/.test(mfa) ? ", com aspas" : ""
+    problemas.push(`MFA_CHAVE_CRIPTOGRAFIA (formato errado: tem ${mfa.length} caracteres${extra}; precisa de 64, só 0-9 e a-f)`)
+  }
+  if (!process.env.JWT_SECRET) problemas.push("JWT_SECRET (falta neste ambiente)")
+  else if (process.env.JWT_SECRET.length < 32) problemas.push(`JWT_SECRET (curto: ${process.env.JWT_SECRET.length} caracteres, mínimo 32)`)
   for (const nome of ["DATABASE_URL", "DIRECT_URL"]) {
     let tls = false
     try { tls = ["require", "verify-full", "verify-ca"].includes(new URL(process.env[nome]).searchParams.get("sslmode")) } catch {}
