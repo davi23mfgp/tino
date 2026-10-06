@@ -137,9 +137,25 @@ sem preço, checklists, mensagens, Guia do negócio), nunca um app separado,
 e o cálculo de DAS, limite e dinheiro é o mesmo para todas. Começa pelos
 10 segmentos do plano estratégico (doc "Tino · Plano estratégico",
 https://claude.ai/code/artifact/0b555476-3cc6-436a-89dd-8980d12ab07d):
-leve para os 10, funda um de cada vez, Assistência técnica primeiro. O
-nome ("Tino Plus Cabeleireiro" ou "Tino Beleza") e se a área custa a mais
-ainda estão com o Davi. A tela de escolha da área passa pelo canvas.
+leve para os 10, funda um de cada vez, Assistência técnica primeiro. A
+tela de escolha da área passa pelo canvas.
+
+**Recomendações aceitas (Davi, 06/10/2026: "vamos seguir as recomendações
+que você fez").** Nome "Tino" mais a área (Tino Assistência, Tino Beleza),
+com a área incluída no plano Meu negócio; cobrança desde o início; marca do
+escritório só na Fase 5. A lista completa está em `docs/PLANO-FASES.md`.
+
+## Fases e estudo de mercado (Davi, 06/10/2026)
+
+- **Tudo em fases, com acompanhamento.** `docs/PLANO-FASES.md` é o painel:
+  cada item com situação, estudo e próximo passo, mais o que precisa
+  melhorar e um registro por data. Atualize no mesmo commit de cada entrega,
+  e diga ao Davi o que foi feito, o que não foi e o que vem a seguir.
+- **Nada por fazer.** Toda recomendação (função, tela, área, preço, canal,
+  integração, nome) passa antes pela skill `estudo-de-mercado`, com casos do
+  Brasil e de fora, fonte, data e força da evidência, registrada em
+  `docs/pesquisas/`. As três opções de cada canvas dizem em quem se
+  inspiraram.
 
 ## Autonomia e trabalho visual (pedido em 2026-09-04)
 
