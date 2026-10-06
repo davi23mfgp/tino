@@ -44,7 +44,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ⏳ | plano, seção Modelo de negócio | texto, pode ir direto |
 | 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | falta | estudo com Jobber e apps de assistência |
 
-**Fora do código, com o Davi:**
+**Fora do código, com o Davi** (passo a passo com caixas de marcar: [O que o Davi faz](https://claude.ai/code/artifact/18f50cdf-5e06-4fc0-9638-772d1c9304a4)):
 
 | Item | Situação |
 |---|---|
