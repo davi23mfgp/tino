@@ -37,13 +37,13 @@ semanas seguidas, e pelo menos 10 pagando.
 |---|---|---|---|---|
 | 1.1 | Vários negócios por conta, com troca visível no topo | ✅ | [estudo](pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md) | opção A no código (06/10); falta: Casa num toque e funcionário por negócio |
 | 1.2 | Área e subárea no cadastro (10 áreas, modo leve) | ✅ | [estudo](pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md) | opção A no código (06/10); o menu por área fica para a área funda (1.8) |
-| 1.3 | Ativar o MEI numa conta pessoal que já existe | ⏳ | falta | estudo, depois canvas |
-| 1.4 | Relatório do mês para o contador | ⏳ | falta | estudo (o que o contador pede do MEI) |
+| 1.3 | Ativar o MEI numa conta pessoal que já existe | ⏳ | [estudo](pesquisas/2026-10-06-ativar-mei-na-conta-pessoal.md) | canvas: "Ligar o Tino negócio" no Perfil e no login MEI, como o Nubank e o Inter |
+| 1.4 | Relatório do mês para o contador | ⏳ | [estudo](pesquisas/2026-10-06-relatorio-para-o-contador.md) | canvas: o Relatório Mensal das Receitas Brutas (Anexo X) pronto todo mês, com nota e sem nota; conferir o texto da resolução antes |
 | 1.5 | Cobrança ligada (Mercado Pago ou Stripe) | 🙋 | plano, seção Modelo de negócio | Davi põe as chaves, ver `docs/PAGAMENTO-E-ADMIN.md` |
-| 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | ⏳ | plano, seção Métricas | junto com o 1.2 |
+| 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | 🔨 | [estudo](pesquisas/2026-10-06-origem-do-cadastro.md) | a parte automática (link e campanha) vai direto, sem tela; a pergunta "Como você conheceu o Tino?" passa pelo canvas |
 | 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ✅ | plano, seção Modelo de negócio | no código (06/10), com a lista do que inclui atualizada (área, clientes, orçamento, OS). O plano Vários negócios (R$ 79,90) entra com a tela de Assinatura, que passa pelo canvas |
 | 1.9 | Recuperar senha por e-mail | ✅ | não precisa: defeito | no código (06/10); 🙋 o e-mail só sai com `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel |
-| 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | falta | estudo com Jobber e apps de assistência |
+| 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | [estudo](pesquisas/2026-10-06-area-funda-assistencia-tecnica.md) | canvas: entrada do aparelho com estado conferido pelo cliente, senha cifrada que some na entrega, garantia de 90 dias, lembrete de aparelho esquecido |
 
 **Fora do código, com o Davi** (passo a passo com caixas de marcar: [O que o Davi faz](https://claude.ai/code/artifact/18f50cdf-5e06-4fc0-9638-772d1c9304a4)):
 
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 06/10/2026 | Estudos de mercado dos itens 1.3, 1.4, 1.6 e 1.8 em `docs/pesquisas/`. Próximo: a parte automática do 1.6 no código e os canvas dos quatro, para o Davi escolher de uma vez. |
 | 06/10/2026 | Item 1.7: o plano passou a se chamar Meu negócio. Achado no caminho: `PAGAMENTO-E-ADMIN.md` dizia anual de R$ 199 e R$ 499, mas o código cobra R$ 214,92 e R$ 538,92 (doze meses com 10% de desconto); o documento foi corrigido. |
 | 06/10/2026 | Item 1.9: recuperar senha por e-mail, com link de 30 minutos e uso único, testado no navegador. O envio espera as chaves do Resend na Vercel. |
 | 06/10/2026 | Falha de segurança achada e corrigida no código: o login pelo Google ligava sozinho a conta de admin (`admin.tino@gmail.com`, um Gmail que ninguém criou) a quem criasse esse Gmail. Agora o Google nunca se liga sozinho a conta de admin (`podeLigarGoogleSozinho`, testado). Prévias da Vercel consertadas pelo Davi. |
