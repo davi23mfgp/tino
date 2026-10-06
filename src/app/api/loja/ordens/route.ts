@@ -6,6 +6,7 @@ import { lojaDoLar } from "@/lib/loja/dados"
 import { novoToken } from "@/lib/loja/clientes"
 import { proximoNumeroDeOrdem } from "@/lib/loja/ordens"
 import { campo, validar, z } from "@/lib/validar"
+import { esquemaDoAparelho, gravacaoDoAparelho } from "@/lib/loja/entrada-aparelho"
 
 /**
  * Abre uma ordem de serviço. Vinda de orçamento, herda o cliente, o valor e
@@ -25,6 +26,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       prazoEm: campo.data().nullable().optional(),
       valorCentavos: campo.centavos().nullable().optional(),
       checklist: z.array(campo.textoObrigatorio(120)).max(30).optional(),
+      aparelho: esquemaDoAparelho.optional(),
     }),
     await corpo(requisicao),
   )
@@ -53,11 +55,15 @@ export const POST = comSessao(async (sessao, requisicao) => {
     const existente = await prisma.clienteLoja.findFirst({ where: { lojaId: loja.id, nome: { equals: nome, mode: "insensitive" } }, orderBy: { criadoEm: "asc" } })
     clienteId = existente?.id ?? (await prisma.clienteLoja.create({ data: { lojaId: loja.id, nome, telefone: dados.clienteTelefone || null } })).id
   }
-  const objeto = dados.objeto?.trim()
+  // Com a entrada do aparelho, o "o que ficou com a loja" sai do modelo e da
+  // cor: a lista de OS e o link do cliente continuam lendo `objeto`.
+  const objeto = dados.objeto?.trim() || [dados.aparelho?.modelo, dados.aparelho?.cor].filter(Boolean).join(" ").trim()
   if (!objeto) throw new ErroDeUso("Diga o que ficou com a loja (o aparelho, a peça).")
   if (!servico) throw new ErroDeUso("Diga o que vai ser feito.")
 
   const agora = new Date()
+  const linkToken = novoToken()
+  const aparelho = dados.aparelho ? gravacaoDoAparelho(dados.aparelho, linkToken) : {}
   for (let tentativa = 0; tentativa < 3; tentativa += 1) {
     try {
       const ordem = await prisma.$transaction(async (transacao) =>
@@ -74,7 +80,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
             etapasEm: { RECEBIDO: agora.toISOString() },
             checklist: (dados.checklist ?? []).map((texto) => ({ texto, feito: false })),
             orcamentoId: dados.orcamentoId ?? null,
-            linkToken: novoToken(),
+            linkToken,
+            ...aparelho,
           },
           select: { id: true, numero: true },
         }),

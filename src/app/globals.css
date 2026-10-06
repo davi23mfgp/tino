@@ -715,3 +715,32 @@
 .app-abertura-apoio b { color:var(--foreground); }
 .app-abertura-guia { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-top:16px; }
 @media(max-width:640px) { .app-abertura { padding:16px;border-radius:var(--raio-cartao); } }
+
+/* Comprovante da entrada do aparelho (passo 39): só existe no papel. Na
+   impressão, o resto da tela some e fica a folha, em preto no branco,
+   qualquer que seja o tema do app. */
+.comprovante-impressao { display:none; }
+@media print {
+  @page { margin:14mm; }
+  /* Só esconder (visibility) deixaria a tela inteira ocupando páginas em
+     branco depois da folha. Então o que não tem o comprovante sai do papel, e
+     quem o contém perde moldura e posição, para a folha começar no topo. */
+  html, body { background:#fff !important; height:auto !important; }
+  /* O gradiente do vidro mora num body::before fixo (liquid-glass.css). */
+  body::before, body::after { content:none !important; display:none !important; }
+  body *:not(:has(.comprovante-impressao)):not(.comprovante-impressao):not(.comprovante-impressao *) { display:none !important; }
+  *:has(> .comprovante-impressao), *:has(.comprovante-impressao) { display:block !important; position:static !important; transform:none !important; margin:0 !important; padding:0 !important; border:0 !important; box-shadow:none !important; background:none !important; backdrop-filter:none !important; min-height:0 !important; height:auto !important; overflow:visible !important; }
+  .comprovante-impressao { display:block !important; color:#000 !important; background:#fff !important; font:12pt/1.45 system-ui, sans-serif; }
+  .comprovante-impressao header { display:flex; justify-content:space-between; gap:16px; padding-bottom:10px; border-bottom:2px solid #000; }
+  .comprovante-impressao h1 { margin:0; font-size:18pt; }
+  .comprovante-impressao header > div:last-child { text-align:right; display:grid; }
+  .comprovante-impressao header strong { font-size:20pt; }
+  .comprovante-impressao section { padding:10px 0; border-bottom:1px solid #999; }
+  .comprovante-impressao p { margin:2px 0; }
+  .comprovante-dois { display:flex; justify-content:space-between; gap:16px; }
+  .comprovante-qr { display:grid; justify-items:center; gap:4px; width:42mm; flex:none; text-align:center; font-size:9pt; }
+  .comprovante-qr svg { width:38mm; height:38mm; }
+  .comprovante-regras { font-size:10pt; }
+  .comprovante-impressao footer { display:flex; gap:24px; margin-top:28mm; }
+  .comprovante-impressao footer span { flex:1; padding-top:4px; border-top:1px solid #000; font-size:10pt; text-align:center; }
+}

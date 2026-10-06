@@ -11,6 +11,10 @@ import { lembretes, type Etapa, type OrdemDia } from "@/lib/loja/agenda"
 export const SELECAO_ORDEM = {
   id: true, numero: true, objeto: true, servico: true, naEntrada: true, etapa: true, etapasEm: true, prazoEm: true,
   valorCentavos: true, checklist: true, orcamentoId: true, vendaId: true, linkToken: true, criadoEm: true,
+  // A senha cifrada fica de fora de propósito: esta seleção vai inteira para
+  // a lista da Agenda. Quem precisa dela pede à rota da senha.
+  aparelhoModelo: true, aparelhoCor: true, aparelhoSerie: true, aparelhoTipo: true, acessorios: true, estadoEntrada: true,
+  senhaTipo: true, entradaConferidaEm: true, entradaContestada: true,
   cliente: { select: { id: true, nome: true, telefone: true } },
   orcamento: { select: { numero: true, status: true, aprovadoPeloCliente: true } },
   venda: { select: { numero: true } },

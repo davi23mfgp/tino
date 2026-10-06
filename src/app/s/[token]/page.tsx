@@ -3,6 +3,9 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { ETAPAS, numeroDaOrdem, type Etapa } from "@/lib/loja/agenda"
 import estilos from "../../o/[token]/orcamento.module.css"
 import passos from "./servico.module.css"
+import { ConferirEntrada } from "./conferir"
+import { DIAS_DE_GARANTIA, garantiaDoConserto, lerAcessorios, lerEstado, resumoDaEntrada, serieMascarada } from "@/lib/loja/assistencia"
+import type { TipoDeAparelho } from "@/lib/loja/modelos"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Seu serviço", robots: { index: false, follow: false }, referrer: "no-referrer" as const }
@@ -49,6 +52,11 @@ export default async function Servico({ params }: { params: Promise<{ token: str
   })
   const quando = (iso?: string) => (iso ? new Date(iso).toLocaleString("pt-BR", { timeZone: fuso, weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).replace(",", "") : "")
   const telefone = ordem.loja.telefoneContato?.replace(/\D/g, "")
+  const tipo = (ordem.aparelhoTipo ?? null) as TipoDeAparelho | null
+  const entrada = tipo ? resumoDaEntrada(lerEstado(ordem.estadoEntrada, tipo), tipo) : null
+  const junto = lerAcessorios(ordem.acessorios)
+  const garantia = garantiaDoConserto(etapasEm, new Date())
+  const dataLonga = (data: Date) => data.toLocaleDateString("pt-BR", { timeZone: fuso, day: "2-digit", month: "2-digit", year: "numeric" })
   const conversa = telefone ? `https://wa.me/${telefone.length <= 11 ? `55${telefone}` : telefone}?text=${encodeURIComponent(`Olá! Sobre o serviço ${numeroDaOrdem(ordem.numero)}:`)}` : null
 
   return (
@@ -76,6 +84,41 @@ export default async function Servico({ params }: { params: Promise<{ token: str
             )
           })}
         </ol>
+        {entrada && (
+          <section className={passos.entrada} aria-labelledby="como-chegou">
+            <h2 id="como-chegou">Como o aparelho chegou</h2>
+            <p className={passos.aparelho}>
+              {[ordem.aparelhoModelo, ordem.aparelhoCor].filter(Boolean).join(" · ") || ordem.objeto}
+              {ordem.aparelhoSerie && <small> · IMEI ou série {serieMascarada(ordem.aparelhoSerie)}</small>}
+            </p>
+            <ul className={passos.pecas}>
+              {entrada.defeito.map((nome) => <li key={nome} data-estado="defeito"><span aria-hidden>✕</span>{nome}<small>não funciona</small></li>)}
+              {entrada.ok.map((nome) => <li key={nome} data-estado="ok"><span aria-hidden>✓</span>{nome}<small>funciona</small></li>)}
+              {entrada.naoTestado.map((nome) => <li key={nome} data-estado="nao"><span aria-hidden>?</span>{nome}<small>não deu para testar</small></li>)}
+            </ul>
+            <p className={estilos.para}>Ficou junto: {junto.length ? junto.join(", ").toLowerCase() : "nada além do aparelho"}.</p>
+            {ordem.naEntrada && <p className={estilos.para}>Observação da loja: {ordem.naEntrada}</p>}
+            {ordem.entradaConferidaEm ? (
+              <p className={estilos.aviso} data-tom="bom">Você conferiu em {dataLonga(ordem.entradaConferidaEm)}.</p>
+            ) : ordem.entradaContestada ? (
+              <p className={estilos.aviso}>Você avisou a loja: “{ordem.entradaContestada}”. Eles vão falar com você.</p>
+            ) : ordem.etapa !== "ENTREGUE" ? (
+              <>
+                <p className={estilos.para}><b>Confira, por favor.</b> Isso evita discussão na entrega, para você e para a loja.</p>
+                <ConferirEntrada token={token} />
+              </>
+            ) : null}
+          </section>
+        )}
+        {entrada && (
+          <p className={estilos.aviso} data-tom="bom">
+            {garantia.comecou
+              ? garantia.vigente
+                ? `Garantia do conserto até ${dataLonga(garantia.ate)}: ${DIAS_DE_GARANTIA} dias depois da entrega (Código de Defesa do Consumidor, art. 26).`
+                : `A garantia de ${DIAS_DE_GARANTIA} dias deste conserto terminou em ${dataLonga(garantia.ate)}.`
+              : `Depois da entrega, o conserto tem ${DIAS_DE_GARANTIA} dias de garantia (Código de Defesa do Consumidor, art. 26).`}
+          </p>
+        )}
         {ordem.valorCentavos !== null && (
           <div className={estilos.total}><span>Valor combinado</span><strong>{formatarMoeda(ordem.valorCentavos)}</strong></div>
         )}

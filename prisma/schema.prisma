@@ -1588,6 +1588,26 @@ model OrdemServicoLoja {
   /// [{ "texto": string, "feito": boolean }]
   checklist     Json              @default("[]")
 
+  /// Entrada do aparelho (passo 39, área Assistência técnica). Ficam nulos nas
+  /// OS de outras áreas, que continuam só com `objeto` e `naEntrada`.
+  aparelhoModelo String?
+  aparelhoCor    String?
+  /// IMEI ou número de série: é o que prova, na entrega, que o aparelho é o mesmo.
+  aparelhoSerie  String?
+  /// celular, tablet, notebook... decide a lista de peças conferidas.
+  aparelhoTipo   String?
+  /// ["Chip", "Capinha"]: o que ficou junto com o aparelho.
+  acessorios     Json      @default("[]")
+  /// { "tela": "ok" | "defeito" | "nao_testado" }. Peça fora do mapa não foi testada.
+  estadoEntrada  Json      @default("{}")
+  /// PADRAO, NUMERO ou NENHUMA. A senha em si fica cifrada e é apagada na
+  /// entrega: guardar senha de celular depois do serviço não tem motivo (LGPD).
+  senhaTipo      String?
+  senhaCifrada   String?
+  /// O cliente conferiu a entrada pelo link, ou disse o que está errado.
+  entradaConferidaEm DateTime?
+  entradaContestada  String?
+
   orcamentoId String?        @unique
   orcamento   OrcamentoLoja? @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
   vendaId     String?        @unique

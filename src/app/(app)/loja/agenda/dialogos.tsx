@@ -11,6 +11,9 @@ import { showToast } from "@/components/ui/toast"
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 import base from "../clientes/clientes.module.css"
+import { EntradaDoAparelho, entradaVazia, type ValorDaEntrada } from "./entrada-aparelho"
+import { senhaValida, type EstadoDaPeca, type TipoDeSenha } from "@/lib/loja/assistencia"
+import type { TipoDeAparelho } from "@/lib/loja/modelos"
 
 export interface ClienteSimples { id: string; nome: string; telefone: string | null }
 export interface OrdemSimples { id: string; numero: number; objeto: string; cliente: { nome: string } }
@@ -102,16 +105,33 @@ export function NovoCompromisso({ aberto, aoFechar, aoSalvar, dia, clientes, ord
 
 export interface OrdemParaEditar {
   id: string; objeto: string; servico: string; naEntrada: string | null; prazoEm: string | null; valorCentavos: number | null
+  aparelho?: {
+    modelo: string | null; cor: string | null; serie: string | null; tipo: TipoDeAparelho; acessorios: string[]
+    estado: Record<string, EstadoDaPeca>; senhaTipo: TipoDeSenha | null; temSenha: boolean
+  } | null
 }
+
+/** A área Assistência abre a OS pela entrada do aparelho (passo 39). */
+export interface ModoAssistencia { tipoInicial: TipoDeAparelho; modelosUsados: string[] }
+
+// Os serviços mais comuns do balcão, para o "o que fazer" sair em duas letras.
+const SERVICOS_DE_ASSISTENCIA = [
+  "Troca de tela", "Troca de bateria", "Troca do conector de carga", "Troca da tampa traseira", "Troca da câmera", "Troca do alto-falante",
+  "Limpeza e desoxidação", "Atualização e formatação", "Backup e transferência de dados", "Diagnóstico", "Troca de teclado", "Limpeza interna e pasta térmica",
+]
 
 /**
  * Nova ordem de serviço, ou editar uma. Vinda de orçamento aprovado, já
  * chega com o cliente, o serviço e o valor; o dono só diz o que ficou com a
  * loja e como chegou.
  */
-export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamentoId, ordem }: {
+export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamentoId, ordem, assistencia }: {
   aberto: boolean; aoFechar: () => void; aoSalvar: (id: string) => void; clientes: ClienteSimples[]; orcamentoId?: string | null; ordem?: OrdemParaEditar | null
+  assistencia?: ModoAssistencia | null
 }) {
+  // OS antiga, de antes da entrada, continua editando no jeito de texto livre.
+  const comEntrada = Boolean(assistencia && (!ordem || ordem.aparelho))
+  const [entrada, setEntrada] = useState<ValorDaEntrada>(() => entradaVazia(assistencia?.tipoInicial ?? "celular"))
   const [cliente, setCliente] = useState("")
   const [telefone, setTelefone] = useState("")
   const [objeto, setObjeto] = useState("")
@@ -130,6 +150,10 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
     setServico(ordem?.servico ?? "")
     setNaEntrada(ordem?.naEntrada ?? "")
     setPrazo(ordem?.prazoEm ? paraCampo(new Date(ordem.prazoEm)) : "")
+    const aparelho = ordem?.aparelho
+    setEntrada(aparelho
+      ? { modelo: aparelho.modelo ?? "", cor: aparelho.cor ?? "", serie: aparelho.serie ?? "", tipo: aparelho.tipo, acessorios: aparelho.acessorios, estado: aparelho.estado, senhaTipo: aparelho.senhaTipo, senha: "", trocarSenha: !aparelho.temSenha }
+      : entradaVazia(assistencia?.tipoInicial ?? "celular"))
     setValor(reaisDoCampo(ordem?.valorCentavos ?? null))
     if (orcamentoId && !ordem) {
       buscar<{ orcamento: { numero: number; totalCentavos: number; cliente: { nome: string }; itens: { descricao: string }[] } }>(`/api/loja/orcamentos/${orcamentoId}`)
@@ -140,16 +164,29 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
         })
         .catch(() => showToast("Não consegui abrir o orçamento.", { variant: "error" }))
     }
-  }, [aberto, orcamentoId, ordem])
+  }, [aberto, orcamentoId, ordem, assistencia?.tipoInicial])
 
   async function salvar(evento: React.FormEvent) {
     evento.preventDefault()
     if (ocupado) return
-    if (!objeto.trim()) return showToast("Diga o que ficou com a loja.", { variant: "error" })
+    if (comEntrada && !entrada.modelo.trim()) return showToast("Diga o modelo do aparelho.", { variant: "error" })
+    if (!comEntrada && !objeto.trim()) return showToast("Diga o que ficou com a loja.", { variant: "error" })
     if (!servico.trim()) return showToast("Diga o que vai ser feito.", { variant: "error" })
+    const mandaSenha = comEntrada && entrada.trocarSenha && entrada.senhaTipo !== null
+    if (mandaSenha && !senhaValida(entrada.senhaTipo!, entrada.senha)) {
+      return showToast(entrada.senhaTipo === "PADRAO" ? "O padrão precisa de pelo menos 4 pontos." : "Escreva a senha do aparelho, ou marque Sem senha.", { variant: "error" })
+    }
     setOcupado(true)
+    const objetoDaEntrada = [entrada.modelo.trim(), entrada.cor.trim()].filter(Boolean).join(" ")
     const comum = {
-      objeto: objeto.trim(), servico: servico.trim(), naEntrada: naEntrada.trim() || null,
+      objeto: comEntrada ? objetoDaEntrada : objeto.trim(), servico: servico.trim(), naEntrada: naEntrada.trim() || null,
+      ...(comEntrada ? {
+        aparelho: {
+          modelo: entrada.modelo.trim(), cor: entrada.cor.trim(), serie: entrada.serie.trim(), tipo: entrada.tipo,
+          acessorios: entrada.acessorios, estado: entrada.estado,
+          ...(mandaSenha ? { senhaTipo: entrada.senhaTipo!, senha: entrada.senhaTipo === "NENHUMA" ? "" : entrada.senha } : {}),
+        },
+      } : {}),
       prazoEm: prazo ? new Date(prazo).toISOString() : null,
       valorCentavos: valor.trim() ? paraCentavos(valor) : null,
     }
@@ -178,11 +215,11 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
   const conhecido = clientes.some((linha) => linha.nome.toLowerCase() === cliente.trim().toLowerCase())
   return (
     <Dialog open={aberto} onOpenChange={(abrir) => !abrir && aoFechar()}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className={comEntrada ? "sm:max-w-[980px]" : "sm:max-w-[520px]"}>
         <DialogHeader>
           <DialogTitle>{ordem ? "Editar ordem de serviço" : "Nova ordem de serviço"}</DialogTitle>
           <DialogDescription>
-            {doOrcamento ? `Do orçamento ${String(doOrcamento.numero).padStart(4, "0")} de ${doOrcamento.cliente}, ${formatarMoeda(doOrcamento.total)}.` : "O que ficou com a loja, o que fazer e até quando."}
+            {doOrcamento ? `Do orçamento ${String(doOrcamento.numero).padStart(4, "0")} de ${doOrcamento.cliente}, ${formatarMoeda(doOrcamento.total)}.` : comEntrada ? "O aparelho, como chegou e o que fazer. O cliente confere pelo link." : "O que ficou com a loja, o que fazer e até quando."}
           </DialogDescription>
         </DialogHeader>
         <DialogBody>
@@ -196,16 +233,29 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
                 <label className={base.campo}>Telefone{conhecido ? " (já cadastrado)" : ""}<Input inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} disabled={conhecido} placeholder="(11) 9 0000-0000" /></label>
               </div>
             )}
-            <div className={base.dois}>
-              <label className={base.campo}>O que ficou com a loja<Input value={objeto} onChange={(e) => setObjeto(e.target.value)} maxLength={120} placeholder="iPhone 11 preto" /></label>
-              <label className={base.campo}>O que fazer<Input value={servico} onChange={(e) => setServico(e.target.value)} maxLength={160} placeholder="Troca de tela" /></label>
-            </div>
-            <label className={base.campo}>Como chegou<Textarea rows={2} value={naEntrada} onChange={(e) => setNaEntrada(e.target.value)} maxLength={500} placeholder="Tela trincada, toque funciona. Sem capinha, sem chip." /></label>
+            {comEntrada ? (
+              <>
+                <EntradaDoAparelho valor={entrada} mudar={setEntrada} modelosUsados={assistencia!.modelosUsados} temSenhaGuardada={Boolean(ordem?.aparelho?.temSenha)} />
+                <label className={base.campo}>O que fazer
+                  <Input list="servicos-assistencia" value={servico} onChange={(e) => setServico(e.target.value)} maxLength={160} placeholder="Troca de tela" autoComplete="off" />
+                  <datalist id="servicos-assistencia">{SERVICOS_DE_ASSISTENCIA.map((nome) => <option key={nome} value={nome} />)}</datalist>
+                </label>
+                <label className={base.campo}>Observação (se tiver)<Textarea rows={2} value={naEntrada} onChange={(e) => setNaEntrada(e.target.value)} maxLength={500} placeholder="Tela trincada no canto. Arranhão na tampa." /></label>
+              </>
+            ) : (
+              <>
+                <div className={base.dois}>
+                  <label className={base.campo}>O que ficou com a loja<Input value={objeto} onChange={(e) => setObjeto(e.target.value)} maxLength={120} placeholder="iPhone 11 preto" /></label>
+                  <label className={base.campo}>O que fazer<Input value={servico} onChange={(e) => setServico(e.target.value)} maxLength={160} placeholder="Troca de tela" /></label>
+                </div>
+                <label className={base.campo}>Como chegou<Textarea rows={2} value={naEntrada} onChange={(e) => setNaEntrada(e.target.value)} maxLength={500} placeholder="Tela trincada, toque funciona. Sem capinha, sem chip." /></label>
+              </>
+            )}
             <div className={base.dois}>
               <label className={base.campo}>Prazo<Input type="datetime-local" value={prazo} onChange={(e) => setPrazo(e.target.value)} /></label>
               <label className={base.campo}>Valor (se já tiver)<Input inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="sem preço ainda" /></label>
             </div>
-            {!ordem && (
+            {!ordem && !comEntrada && (
               <label className={base.campo}>Checklist (uma por linha)<Textarea rows={3} value={checklist} onChange={(e) => setChecklist(e.target.value)} placeholder={"Fotografar o aparelho na entrada\nTestar o toque antes de abrir"} /></label>
             )}
             <button type="submit" className={base.botao} data-principal disabled={ocupado}>{ordem ? "Salvar" : "Abrir ordem de serviço"}</button>

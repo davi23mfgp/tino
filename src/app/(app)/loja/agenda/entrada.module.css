@@ -1,0 +1,87 @@
+/* Entrada do aparelho, passo 39 (opções A e C juntas, Davi, 07/10/2026).
+   Blocos numerados, campos grandes para o polegar, e o desenho do celular
+   onde se toca o defeito. Cores dos estados: vermelho é defeito, verde é
+   funciona, e o neutro é "não testado", que nunca vira verde sozinho. */
+.entrada { display:grid; gap:12px; }
+.bloco { display:grid; gap:10px; padding:14px; border-radius:20px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 97%); }
+.bloco h3 { display:flex; align-items:center; gap:10px; margin:0; font-size:calc(15px * var(--escala-letra)); font-weight:700; }
+.bloco h3 span { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(12.5px * var(--escala-letra)); font-weight:800; }
+
+.campo { display:grid; gap:6px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.campo input, .buscaCampo input { width:100%; box-sizing:border-box; min-height:48px; padding:0 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); background:color-mix(in oklab, var(--foreground), transparent 95%); color:var(--foreground); font:inherit; font-size:calc(16px * var(--escala-letra)); }
+.campo input:focus, .buscaCampo input:focus { outline:none; border-color:oklch(var(--primary)); box-shadow:0 0 0 3px color-mix(in oklab, oklch(var(--primary)), transparent 78%); }
+.dois { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+@media (max-width:420px) { .dois { grid-template-columns:minmax(0,1fr); } }
+.dica { margin:0; display:flex; align-items:center; gap:6px; font-size:calc(12.5px * var(--escala-letra)); line-height:1.4; color:var(--texto-3); }
+.dica svg { width:15px; height:15px; flex:none; }
+.dica[data-tom="bom"] { color:var(--positivo); }
+.dica[data-tom="atencao"] { color:var(--atencao); }
+
+/* A busca do modelo: lista que abre por cima, sólida. */
+.busca { position:relative; display:grid; gap:6px; }
+.buscaCampo { position:relative; }
+.buscaCampo svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); width:19px; height:19px; color:var(--texto-3); pointer-events:none; }
+.buscaCampo input { padding-left:44px; min-height:54px; font-size:calc(17px * var(--escala-letra)); font-weight:600; }
+.sugestoes { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 6px); margin:0; padding:6px; list-style:none; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); box-shadow:0 18px 44px rgb(0 0 0 / 35%); max-height:340px; overflow:auto; }
+.sugestoes li { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:46px; padding:0 12px; border-radius:12px; cursor:pointer; }
+.sugestoes li b { font-size:calc(15.5px * var(--escala-letra)); font-weight:650; }
+.sugestoes li small { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.sugestoes li[aria-selected="true"] { background:color-mix(in oklab, oklch(var(--primary)), transparent 82%); }
+
+.tipos, .chips { display:flex; flex-wrap:wrap; gap:6px; }
+.tipos button, .chips button { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); background:transparent; color:inherit; font-size:calc(13px * var(--escala-letra)); font-weight:550; }
+.chips button { min-height:42px; padding:0 15px; font-size:calc(14px * var(--escala-letra)); }
+.chips button svg { width:15px; height:15px; }
+.tipos button[aria-pressed="true"], .chips button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
+
+/* O desenho do celular: as peças são botões sobre o corpo, onde ficam no aparelho. */
+.desenho { position:relative; width:min(230px, 62vw); aspect-ratio:9 / 17; margin:6px auto 4px; }
+.desenho[data-tipo="tablet"] { width:min(300px, 76vw); aspect-ratio:3 / 4; }
+.corpo { position:absolute; inset:0; border-radius:34px; border:2px solid color-mix(in oklab, var(--foreground), transparent 70%); background:linear-gradient(170deg, color-mix(in oklab, var(--foreground), transparent 93%), color-mix(in oklab, var(--foreground), transparent 98%)); }
+.desenho[data-tipo="tablet"] .corpo { border-radius:26px; }
+.corpo::before { content:""; position:absolute; left:50%; top:10px; width:56px; height:7px; border-radius:9px; transform:translateX(-50%); background:color-mix(in oklab, var(--foreground), transparent 80%); }
+.ponto { position:absolute; transform:translate(-50%, -50%); min-height:34px; padding:0 12px; border-radius:999px; border:1px dashed color-mix(in oklab, var(--foreground), transparent 60%); background:var(--superficie-flutuante, transparent); color:var(--foreground); font-size:calc(12.5px * var(--escala-letra)); font-weight:650; white-space:nowrap; box-shadow:0 4px 12px rgb(0 0 0 / 18%); }
+.ponto[data-lado="esq"] { transform:translate(-25%, -50%); }
+.ponto[data-lado="dir"] { transform:translate(-75%, -50%); }
+.ponto[data-estado="defeito"], .peca[data-estado="defeito"] { border:1px solid transparent; background:var(--negativo); color:#fff; }
+.ponto[data-estado="ok"], .peca[data-estado="ok"] { border:1px solid transparent; background:color-mix(in oklab, var(--positivo), transparent 15%); color:#fff; }
+
+.gradePecas { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:8px; }
+.peca { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-height:56px; padding:9px 12px; border-radius:16px; border:1px dashed color-mix(in oklab, var(--foreground), transparent 60%); background:transparent; color:inherit; font-size:calc(14px * var(--escala-letra)); font-weight:650; text-align:left; }
+.peca small { font-size:calc(11.5px * var(--escala-letra)); font-weight:500; opacity:.85; }
+
+.resumo { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.resumo [data-tom="defeito"] { color:var(--negativo); font-weight:650; }
+.resumo [data-tom="ok"] { color:var(--positivo); font-weight:650; }
+.resumo button { margin-left:auto; min-height:38px; padding:0 14px; border-radius:999px; border:1px solid color-mix(in oklab, var(--positivo), transparent 40%); background:transparent; color:var(--positivo); font-size:calc(13px * var(--escala-letra)); font-weight:650; }
+
+/* Senha: segmento, padrão de 9 pontos ou campo. */
+.segmento { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:4px; padding:4px; border-radius:16px; background:color-mix(in oklab, var(--foreground), transparent 94%); }
+.segmento button { min-height:40px; border:0; border-radius:12px; background:transparent; color:inherit; font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+.segmento button[aria-checked="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
+.padrao { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.grade3 { position:relative; display:grid; grid-template-columns:repeat(3, 44px); gap:22px; padding:8px; }
+.grade3 svg { position:absolute; inset:8px; width:calc(100% - 16px); height:calc(100% - 16px); pointer-events:none; overflow:visible; }
+.grade3 svg line { stroke:oklch(var(--primary)); stroke-width:4; stroke-linecap:round; opacity:.75; }
+.grade3 button { position:relative; width:44px; height:44px; border-radius:50%; border:2px solid color-mix(in oklab, var(--foreground), transparent 70%); background:color-mix(in oklab, var(--foreground), transparent 94%); color:oklch(var(--primary-foreground)); font-size:15px; font-weight:800; }
+.grade3 button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); opacity:1; }
+.padraoLado { display:grid; gap:8px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.padraoLado p { margin:0; }
+.padraoLado button, .guardada button { display:inline-flex; align-items:center; gap:6px; justify-self:start; min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 80%); background:transparent; color:inherit; font-size:calc(13px * var(--escala-letra)); }
+.padraoLado svg { width:15px; height:15px; }
+.guardada { display:flex; align-items:center; gap:10px; font-size:calc(13.5px * var(--escala-letra)); }
+.guardada > svg { width:18px; height:18px; color:var(--positivo); flex:none; }
+.guardada button { margin-left:auto; }
+
+/* No diálogo do computador: duas colunas, o desenho fica à direita e os
+   outros blocos descem na esquerda. */
+@media (min-width:900px) {
+  .entrada { grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); grid-auto-flow:dense; align-items:start; }
+  .estado { grid-column:2; grid-row:1 / span 3; }
+}
+
+.padraoMini { width:84px; height:84px; }
+.padraoMini line { stroke:oklch(var(--primary)); stroke-width:3.5; stroke-linecap:round; }
+.padraoMini circle { fill:color-mix(in oklab, var(--foreground), transparent 70%); }
+.padraoMini circle[data-marcado] { fill:oklch(var(--primary)); }
+.padraoMini text { fill:oklch(var(--primary-foreground)); font-size:9px; font-weight:800; }

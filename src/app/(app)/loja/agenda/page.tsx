@@ -12,7 +12,8 @@ import { showToast } from "@/components/ui/toast"
 
 import { Reais, Selo } from "../clientes/comum"
 import base from "../clientes/clientes.module.css"
-import { NovoCompromisso, OrdemDeServico, type ClienteSimples, type OrdemParaEditar } from "./dialogos"
+import { NovoCompromisso, OrdemDeServico, type ClienteSimples, type ModoAssistencia, type OrdemParaEditar } from "./dialogos"
+import { tipoDaSubarea } from "@/lib/loja/assistencia"
 import { FichaDaOrdem } from "./ficha-os"
 import estilos from "./agenda.module.css"
 
@@ -28,7 +29,8 @@ interface OrdemDaLista {
 }
 
 interface DadosDaAgenda {
-  loja: { nome: string }
+  loja: { nome: string; area: string | null; subarea: string | null }
+  modelosUsados: string[]
   hoje: string
   dia: string
   semana: { dia: string; nome: string; numero: string; quantidade: number }[]
@@ -118,6 +120,11 @@ function AgendaDoDia() {
     }
   }
 
+  // A área Assistência abre a OS pela entrada do aparelho (passo 39).
+  const assistencia = useMemo<ModoAssistencia | null>(
+    () => (dados?.loja.area === "assistencia" ? { tipoInicial: tipoDaSubarea(dados.loja.subarea), modelosUsados: dados.modelosUsados } : null),
+    [dados],
+  )
   const abertas = useMemo(() => dados?.ordens.filter((ordem) => ordem.etapa !== "ENTREGUE") ?? [], [dados])
   const diaAtual = dados?.semana.find((linha) => linha.dia === dados.dia)
   const tituloDoDia = dados && diaAtual
@@ -253,6 +260,7 @@ function AgendaDoDia() {
         clientes={dados?.clientes ?? []}
         orcamentoId={ordemDialogo?.orcamentoId ?? null}
         ordem={ordemDialogo?.ordem ?? null}
+        assistencia={assistencia}
       />
     </div>
   )
