@@ -423,6 +423,12 @@ model Usuario {
   /// continuaria abrindo a conta mesmo depois de a pessoa perder o acesso.
   sessoesValidasDesde DateTime?
 
+  /// Recuperar senha (06/10/2026). Só o hash do token fica no banco: quem lê
+  /// o banco não consegue usar o link. Um pedido por vez; o novo substitui o
+  /// anterior, e usar o link apaga os dois campos.
+  redefinicaoSenhaHash     String?   @unique
+  redefinicaoSenhaExpiraEm DateTime?
+
   /// Segredo TOTP cifrado com chave separada do JWT. Códigos de recuperação
   /// ficam apenas como hash e são consumidos uma vez, dentro de transação.
   mfaSegredo          String?

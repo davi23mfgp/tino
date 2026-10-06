@@ -1,5 +1,22 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 06/10/2026: recuperar senha por e-mail (item 1.9)
+
+- "Esqueci a senha" (login pessoal, login MEI) abre `/esqueci-senha`; o
+  e-mail com o link sai pelo Resend, que já era dependência dos convites.
+- O link vale 30 minutos e uma vez só; no banco fica só o hash
+  (`redefinicaoSenhaHash`, migration `20261006200000_recuperar_senha`).
+- A resposta é a mesma, exista o e-mail ou não; cinco pedidos por hora por
+  e-mail e por endereço.
+- Trocar a senha derruba as sessões abertas e libera o bloqueio de login.
+- Admin não recupera por aqui (continua `ADMIN_REDEFINIR_SENHA`).
+- O endereço do link vem da Vercel, nunca do cabeçalho `Host`.
+- Testado no navegador: senha nova entra (200), a antiga não (401), o mesmo
+  link de novo é recusado (400).
+- **Falta (Davi):** `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel. Sem as
+  duas, a tela diz que o envio não está ligado e mostra o e-mail do Davi,
+  em vez de fingir que mandou.
+
 ## 06/10/2026: Tino por área e vários negócios (opção A do passo 38)
 
 O Davi escolheu a opção A (modo pronto, como o Square). Estudo em `docs/pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md`.

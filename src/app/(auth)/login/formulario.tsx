@@ -70,7 +70,7 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false, mod
 
             {!modoAdmin && <div className={estilos.opcoes}>
               <label className={estilos.lembrar}><input type="checkbox" checked={manterConectado} onChange={(evento) => setManterConectado(evento.target.checked)} /><span className={estilos.caixa}><Check size={13} strokeWidth={3} /></span>Manter conectado</label>
-              <a href="mailto:davi23mfgp@gmail.com?subject=Recuperar%20acesso%20ao%20Tino" className={estilos.link}>Esqueci a senha</a>
+              <Link href={modoMei ? "/esqueci-senha?mei=1" : "/esqueci-senha"} className={estilos.link}>Esqueci a senha</Link>
             </div>}
 
             {(erro || (erroGoogle && mensagensGoogle[erroGoogle])) && <p className={estilos.erro} role="alert">{erro || mensagensGoogle[erroGoogle!]}</p>}

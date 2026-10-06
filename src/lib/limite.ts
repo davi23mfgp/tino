@@ -35,6 +35,9 @@ export const REGRAS = {
   /// senha de verdade duas ou três vezes; seis já é folga para quem é dono da
   /// conta e é pouco para quem está varrendo.
   login: { maximo: 6, janelaSegundos: 900, bloqueioSegundos: 900 },
+  /// Recuperar senha: cada pedido manda um e-mail. Cinco por hora bastam para
+  /// quem não recebeu e tenta de novo, e seguram quem quer encher a caixa de alguém.
+  redefinir: { maximo: 5, janelaSegundos: 3600, bloqueioSegundos: 3600 },
   /// Cadastro: segura criação de conta em massa.
   cadastro: { maximo: 5, janelaSegundos: 3600, bloqueioSegundos: 3600 },
   /// Rotas que gastam dinheiro por chamada.

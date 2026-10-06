@@ -42,7 +42,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | 1.5 | Cobrança ligada (Mercado Pago ou Stripe) | 🙋 | plano, seção Modelo de negócio | Davi põe as chaves, ver `docs/PAGAMENTO-E-ADMIN.md` |
 | 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | ⏳ | plano, seção Métricas | junto com o 1.2 |
 | 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ⏳ | plano, seção Modelo de negócio | texto, pode ir direto |
-| 1.9 | Recuperar senha por e-mail (o link já aparece no login) | ⏳ | não precisa: defeito | antes da venda assistida |
+| 1.9 | Recuperar senha por e-mail | ✅ | não precisa: defeito | no código (06/10); 🙋 o e-mail só sai com `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel |
 | 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | falta | estudo com Jobber e apps de assistência |
 
 **Fora do código, com o Davi** (passo a passo com caixas de marcar: [O que o Davi faz](https://claude.ai/code/artifact/18f50cdf-5e06-4fc0-9638-772d1c9304a4)):
@@ -53,7 +53,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | Vercel: projeto duplicado (24f2ce83) | não está em nenhuma conta que o Davi acessa; fica, só deixa sinal vermelho no PR |
 | Vercel: prévias separadas do banco de verdade (variáveis de teste para todas as prévias, as de produção só em Production) | ✅ feito pelo Davi em 06/10/2026; prévia da branch `claude/` Ready |
 | Admin: entrada própria `/acesso-admin` (só e-mail, senha e código; login comum e Google recusam admin), e-mail `admin@tino.interno` | ✅ no ar e funcionando (06/10/2026); 🙋 apagar `ADMIN_SENHA` e `ADMIN_REDEFINIR_SENHA` da Vercel |
-| Variáveis adiadas: ADMIN_EMAIL, ADMIN_SENHA, TELEGRAM_*, CRON_SECRET | 🙋 |
+| Variáveis adiadas: ADMIN_EMAIL, ADMIN_SENHA, TELEGRAM_*, CRON_SECRET, RESEND_API_KEY e EMAIL_REMETENTE (recuperar senha) | 🙋 |
 | Lista de 50 assistências técnicas e 5 distribuidoras da região | 🙋 |
 | 15 conversas de 20 minutos com donos de assistência | 🙋 |
 | Registrar a marca Tino no INPI; confirmar a titularidade do código do Controllares | 🙋 |
@@ -144,7 +144,6 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 ## O que precisa melhorar (defeitos e faltas conhecidas)
 
 - Agenda: arrastar compromisso para outra hora; compromisso que se repete.
-- **Recuperar senha não existe:** o link "Esqueci a senha" aparece no login, mas não leva a lugar nenhum. Cliente que esquece a senha fica preso. Entra antes da venda assistida.
 - O estudo de mercado deste ambiente depende de resumo de busca: as páginas
   não abrem daqui. Números para apresentação externa precisam ser conferidos.
 
@@ -152,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 06/10/2026 | Item 1.9: recuperar senha por e-mail, com link de 30 minutos e uso único, testado no navegador. O envio espera as chaves do Resend na Vercel. |
 | 06/10/2026 | Falha de segurança achada e corrigida no código: o login pelo Google ligava sozinho a conta de admin (`admin.tino@gmail.com`, um Gmail que ninguém criou) a quem criasse esse Gmail. Agora o Google nunca se liga sozinho a conta de admin (`podeLigarGoogleSozinho`, testado). Prévias da Vercel consertadas pelo Davi. |
 | 06/10/2026 | PR #15 juntado no `main` (Clientes, orçamento, Agenda, OS, sino do MEI, plano e painel). Prévia: falta só `MFA_CHAVE_CRIPTOGRAFIA` no Preview. |
 | 06/10/2026 | Opção A do passo 38 implementada: "O que você faz?" no cadastro, troca de negócio no topo, aviso de mesmo CNPJ, MEI somando todos os negócios. Detalhes e faltas em `docs/ESTADO.md`. |
