@@ -227,7 +227,11 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 }
 
 /** Título da página no cabeçalho — mesma lista das abas, nunca um mapa à parte. */
+/** Telas que não estão no menu mas precisam de título no topo. */
+const TITULOS_FORA_DO_MENU: Record<string, string> = { "/loja/comecar": "Seu negócio" }
+
 export function tituloDaRota(grupos: GrupoNav[], caminho: string): string | null {
+  if (TITULOS_FORA_DO_MENU[caminho]) return TITULOS_FORA_DO_MENU[caminho]
   for (const grupo of grupos) {
     for (const item of grupo.itens) {
       if (estaAtivo(caminho, item.rota)) return item.rotulo

@@ -1,0 +1,35 @@
+/* "O que você faz?" (opção A do passo 38). Os cartões e o vidro seguem a tela Clientes. */
+.pagina { display:grid; gap:22px; max-width:1180px; }
+@media (min-width:1024px) {
+  .pagina { grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr); align-items:start; column-gap:36px; row-gap:18px; }
+  .pagina > .vem { grid-column:2; grid-row:1 / span 2; }
+  .pagina > .acao { grid-column:1; grid-row:2; }
+}
+.acao .botao, .acao button { min-width:180px; }
+.coluna { display:grid; gap:16px; min-width:0; }
+.passos { display:grid; gap:8px; }
+.passos > div { display:flex; gap:6px; }
+.passos i { flex:1; height:5px; border-radius:9px; background:color-mix(in oklab, var(--foreground), transparent 88%); }
+.passos i[data-feito] { background:oklch(var(--primary)); }
+.passos span { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.titulo h1 { font-size:calc(28px * var(--escala-letra)); font-weight:700; letter-spacing:-.02em; }
+.titulo p { margin-top:4px; font-size:calc(14.5px * var(--escala-letra)); color:var(--texto-3); }
+.areas { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+@media (min-width:1024px) { .areas { grid-template-columns:repeat(5, minmax(0,1fr)); } }
+.area { display:flex; flex-direction:column; justify-content:space-between; gap:10px; min-height:84px; padding:12px 13px !important; border-radius:18px; text-align:left; color:inherit; border:1px solid color-mix(in oklab, var(--foreground), transparent 89%); background:color-mix(in oklab, var(--foreground), transparent 96%); }
+.area svg { width:22px; height:22px; color:var(--texto-3); }
+.area span { font-size:calc(14px * var(--escala-letra)); font-weight:650; line-height:1.2; }
+.area[aria-pressed="true"] { border:2px solid oklch(var(--primary)); background:color-mix(in oklab, oklch(var(--primary)), transparent 88%); }
+.area[aria-pressed="true"] svg { color:oklch(var(--primary)); }
+.pergunta { font-size:calc(14.5px * var(--escala-letra)); font-weight:650; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { display:inline-flex; align-items:center; min-height:40px !important; padding:0 15px !important; border-radius:99px; font-size:calc(14px * var(--escala-letra)); color:inherit; background:transparent; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); }
+.chip[aria-pressed="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); border-color:transparent; font-weight:700; }
+.vem { display:grid; gap:11px; padding:16px; }
+.vem b { font-size:calc(15px * var(--escala-letra)); }
+.vem ul { display:grid; gap:10px; }
+.vem li { display:flex; gap:10px; align-items:flex-start; font-size:calc(13.5px * var(--escala-letra)); line-height:1.35; }
+.vem li svg { flex:none; width:17px; height:17px; margin-top:1px; color:oklch(var(--primary)); }
+.vem p { font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.outra { justify-self:start; padding:4px 0 !important; min-height:0 !important; background:none; border:0; color:var(--acao); font-size:calc(13.5px * var(--escala-letra)); text-decoration:underline; text-underline-offset:3px; }
+.campo { width:100%; min-height:46px; padding:0 14px; border-radius:14px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); background:transparent; color:inherit; font-size:calc(15px * var(--escala-letra)); }

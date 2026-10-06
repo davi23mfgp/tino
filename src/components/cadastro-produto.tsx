@@ -42,7 +42,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
 
     try {
       await enviar("/api/auth/cadastro", { nome, email, senha, tipoLar: modoMei ? "SOLO" : tipoLar, modoMei, aceiteTermos: aceite, ...(modoMei ? { razaoSocial, cnpj, telefoneContato, atividade } : {}) })
-      router.push(modoMei ? "/loja" : "/painel")
+      router.push(modoMei ? "/loja/comecar?inicio=1" : "/painel")
       router.refresh()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui criar a conta.")

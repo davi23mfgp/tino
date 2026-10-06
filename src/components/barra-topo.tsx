@@ -15,6 +15,7 @@ import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { usarAlertas } from "@/components/alertas-provider"
 import notificacoes from "./notificacoes.module.css"
 import { AvisosDaLoja } from "./avisos-da-loja"
+import { TrocaDeNegocio } from "./troca-de-negocio"
 import menuConta from "./menu-da-conta.module.css"
 import { showToast } from "@/components/ui/toast"
 
@@ -151,7 +152,7 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja,mei}:{nom
   // No celular o Início traz o sino e a conta dentro do bloco branco do topo
   // (Davi, 23/09); a barra ali repetiria os dois e o título "Início".
   return <header className={caminho==="/painel" ? "app-header app-header-inicio" : "app-header"}>
-    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1><p>{apenasLoja || mei ? "Seu negócio, organizado." : competencia}</p></div>
+    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1>{mei && !apenasLoja ? <TrocaDeNegocio /> : <p>{apenasLoja || mei ? "Seu negócio, organizado." : competencia}</p>}</div>
     <div className="app-header-actions">
       {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
           que existe atalho. A forma de barra e a mesma do resto do app e ja
