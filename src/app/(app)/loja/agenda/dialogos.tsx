@@ -12,6 +12,7 @@ import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, Dia
 
 import base from "../clientes/clientes.module.css"
 import { EntradaDoAparelho, entradaVazia, type ValorDaEntrada } from "./entrada-aparelho"
+import fino from "./entrada.module.css"
 import { senhaValida, type EstadoDaPeca, type TipoDeSenha } from "@/lib/loja/assistencia"
 import type { TipoDeAparelho } from "@/lib/loja/modelos"
 
@@ -224,41 +225,58 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
         </DialogHeader>
         <DialogBody>
           <form className={base.form} onSubmit={salvar}>
-            {!ordem && !orcamentoId && (
-              <div className={base.dois}>
-                <label className={base.campo}>Cliente
-                  <Input list="clientes-os" value={cliente} onChange={(e) => setCliente(e.target.value)} autoComplete="off" placeholder="Nome" />
-                  <datalist id="clientes-os">{clientes.map((linha) => <option key={linha.id} value={linha.nome} />)}</datalist>
-                </label>
-                <label className={base.campo}>Telefone{conhecido ? " (já cadastrado)" : ""}<Input inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} disabled={conhecido} placeholder="(11) 9 0000-0000" /></label>
-              </div>
-            )}
             {comEntrada ? (
               <>
+                {!ordem && !orcamentoId && (
+                  <div className={fino.dois}>
+                    <label className={fino.campo}>Cliente
+                      <input list="clientes-os" value={cliente} onChange={(e) => setCliente(e.target.value)} autoComplete="off" placeholder="Nome" />
+                      <datalist id="clientes-os">{clientes.map((linha) => <option key={linha.id} value={linha.nome} />)}</datalist>
+                    </label>
+                    <label className={fino.campo}>Telefone{conhecido ? " (já cadastrado)" : ""}<input inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} disabled={conhecido} placeholder="(11) 9 0000-0000" /></label>
+                  </div>
+                )}
                 <EntradaDoAparelho valor={entrada} mudar={setEntrada} modelosUsados={assistencia!.modelosUsados} temSenhaGuardada={Boolean(ordem?.aparelho?.temSenha)} />
-                <label className={base.campo}>O que fazer
-                  <Input list="servicos-assistencia" value={servico} onChange={(e) => setServico(e.target.value)} maxLength={160} placeholder="Troca de tela" autoComplete="off" />
-                  <datalist id="servicos-assistencia">{SERVICOS_DE_ASSISTENCIA.map((nome) => <option key={nome} value={nome} />)}</datalist>
-                </label>
-                <label className={base.campo}>Observação (se tiver)<Textarea rows={2} value={naEntrada} onChange={(e) => setNaEntrada(e.target.value)} maxLength={500} placeholder="Tela trincada no canto. Arranhão na tampa." /></label>
+                {/* O serviço no mesmo traço dos blocos da entrada: é o 05 da folha. */}
+                <section className={fino.bloco} aria-labelledby="entrada-servico">
+                  <h3 id="entrada-servico"><span>05</span>Serviço</h3>
+                  <div className={fino.servico}>
+                    <label className={fino.campo}>O que fazer
+                      <input list="servicos-assistencia" value={servico} onChange={(e) => setServico(e.target.value)} maxLength={160} placeholder="Troca de tela" autoComplete="off" />
+                      <datalist id="servicos-assistencia">{SERVICOS_DE_ASSISTENCIA.map((nome) => <option key={nome} value={nome} />)}</datalist>
+                    </label>
+                    <label className={fino.campo}>Prazo<input type="datetime-local" value={prazo} onChange={(e) => setPrazo(e.target.value)} /></label>
+                    <label className={fino.campo}>Valor (se já tiver)<input inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="sem preço ainda" /></label>
+                  </div>
+                  <label className={fino.campo}>Observação (se tiver)<textarea rows={2} value={naEntrada} onChange={(e) => setNaEntrada(e.target.value)} maxLength={500} placeholder="Tela trincada no canto. Arranhão na tampa." /></label>
+                </section>
               </>
             ) : (
               <>
+                {!ordem && !orcamentoId && (
+                  <div className={base.dois}>
+                    <label className={base.campo}>Cliente
+                      <Input list="clientes-os" value={cliente} onChange={(e) => setCliente(e.target.value)} autoComplete="off" placeholder="Nome" />
+                      <datalist id="clientes-os">{clientes.map((linha) => <option key={linha.id} value={linha.nome} />)}</datalist>
+                    </label>
+                    <label className={base.campo}>Telefone{conhecido ? " (já cadastrado)" : ""}<Input inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} disabled={conhecido} placeholder="(11) 9 0000-0000" /></label>
+                  </div>
+                )}
                 <div className={base.dois}>
                   <label className={base.campo}>O que ficou com a loja<Input value={objeto} onChange={(e) => setObjeto(e.target.value)} maxLength={120} placeholder="iPhone 11 preto" /></label>
                   <label className={base.campo}>O que fazer<Input value={servico} onChange={(e) => setServico(e.target.value)} maxLength={160} placeholder="Troca de tela" /></label>
                 </div>
                 <label className={base.campo}>Como chegou<Textarea rows={2} value={naEntrada} onChange={(e) => setNaEntrada(e.target.value)} maxLength={500} placeholder="Tela trincada, toque funciona. Sem capinha, sem chip." /></label>
+                <div className={base.dois}>
+                  <label className={base.campo}>Prazo<Input type="datetime-local" value={prazo} onChange={(e) => setPrazo(e.target.value)} /></label>
+                  <label className={base.campo}>Valor (se já tiver)<Input inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="sem preço ainda" /></label>
+                </div>
               </>
             )}
-            <div className={base.dois}>
-              <label className={base.campo}>Prazo<Input type="datetime-local" value={prazo} onChange={(e) => setPrazo(e.target.value)} /></label>
-              <label className={base.campo}>Valor (se já tiver)<Input inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="sem preço ainda" /></label>
-            </div>
             {!ordem && !comEntrada && (
               <label className={base.campo}>Checklist (uma por linha)<Textarea rows={3} value={checklist} onChange={(e) => setChecklist(e.target.value)} placeholder={"Fotografar o aparelho na entrada\nTestar o toque antes de abrir"} /></label>
             )}
-            <button type="submit" className={base.botao} data-principal disabled={ocupado}>{ordem ? "Salvar" : "Abrir ordem de serviço"}</button>
+            <button type="submit" className={comEntrada ? fino.enviar : base.botao} data-principal disabled={ocupado}>{ordem ? "Salvar" : "Abrir ordem de serviço"}</button>
           </form>
         </DialogBody>
       </DialogContent>

@@ -268,7 +268,7 @@ function AparelhoDaFicha({ ordem, senha, verSenha }: { ordem: Ordem; senha: stri
           senha ? (
             ordem.senhaTipo === "PADRAO" ? <PadraoSoLeitura valor={senha} /> : <code>{senha}</code>
           ) : (
-            <button type="button" className={`${base.botao} ${base.pequeno}`} onClick={verSenha}><Eye aria-hidden />Ver senha ({ordem.senhaTipo === "PADRAO" ? "padrão" : "número"})</button>
+            <button type="button" className={`${base.botao} ${base.pequeno}`} onClick={verSenha}><Eye aria-hidden />Ver senha ({ordem.senhaTipo === "PADRAO" ? "padrão" : "digitada"})</button>
           )
         ) : (
           <span className={base.sub}>{ordem.senhaTipo === "NENHUMA" ? "Aparelho sem senha." : ordem.etapa === "ENTREGUE" && ordem.senhaTipo ? "Senha apagada na entrega." : "Senha não informada."}</span>

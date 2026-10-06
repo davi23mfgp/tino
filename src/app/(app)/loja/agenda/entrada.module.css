@@ -1,87 +1,117 @@
 /* Entrada do aparelho, passo 39 (opções A e C juntas, Davi, 07/10/2026).
-   Blocos numerados, campos grandes para o polegar, e o desenho do celular
-   onde se toca o defeito. Cores dos estados: vermelho é defeito, verde é
-   funciona, e o neutro é "não testado", que nunca vira verde sozinho. */
+   Davi pediu, depois de ver: "sofisticado, moderno, fino e bem
+   dimensionado". Então: linha fina (1px, quase transparente), peso leve no
+   texto, cor só no que pede atenção (o defeito, o que funciona, o escolhido)
+   e uma escala só de medidas (campo 46, botão 34, raio 14 a 18, espaço 8,
+   12 e 16). Os estados: vermelho é defeito, verde é funciona, e o neutro é
+   "não testado", que nunca vira verde sozinho. */
+/* As medidas e as linhas valem também para os campos do diálogo fora da entrada (cliente, serviço). */
+.entrada, .bloco, .campo, .dois { --linha:color-mix(in oklab, var(--foreground), transparent 90%); --linha-forte:color-mix(in oklab, var(--foreground), transparent 80%); --fundo-campo:color-mix(in oklab, var(--foreground), transparent 96%); --tinta-acao:color-mix(in oklab, oklch(var(--primary)), transparent 86%); }
 .entrada { display:grid; gap:12px; }
-.bloco { display:grid; gap:10px; padding:14px; border-radius:20px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 97%); }
-.bloco h3 { display:flex; align-items:center; gap:10px; margin:0; font-size:calc(15px * var(--escala-letra)); font-weight:700; }
-.bloco h3 span { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(12.5px * var(--escala-letra)); font-weight:800; }
+.bloco { display:grid; gap:12px; padding:16px; border-radius:18px; border:1px solid var(--linha); background:color-mix(in oklab, var(--foreground), transparent 98.5%); }
+.bloco h3 { display:flex; align-items:baseline; gap:10px; margin:0; font-size:calc(12px * var(--escala-letra)); font-weight:550; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-2); }
+.bloco h3 span { font-size:calc(12px * var(--escala-letra)); font-weight:500; letter-spacing:.04em; color:oklch(var(--primary)); font-variant-numeric:tabular-nums; }
 
-.campo { display:grid; gap:6px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
-.campo input, .buscaCampo input { width:100%; box-sizing:border-box; min-height:48px; padding:0 14px; border-radius:16px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); background:color-mix(in oklab, var(--foreground), transparent 95%); color:var(--foreground); font:inherit; font-size:calc(16px * var(--escala-letra)); }
-.campo input:focus, .buscaCampo input:focus { outline:none; border-color:oklch(var(--primary)); box-shadow:0 0 0 3px color-mix(in oklab, oklch(var(--primary)), transparent 78%); }
-.dois { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
+.campo { display:grid; gap:6px; font-size:calc(12.5px * var(--escala-letra)); font-weight:450; color:var(--texto-3); }
+.campo input, .campo textarea, .buscaCampo input { width:100%; box-sizing:border-box; min-height:46px; padding:0 14px; border-radius:14px; border:1px solid var(--linha-forte); background:var(--fundo-campo); color:var(--foreground); font:inherit; font-size:calc(15.5px * var(--escala-letra)); font-weight:450; letter-spacing:.005em; transition:border-color .15s, box-shadow .15s; }
+.campo input::placeholder, .campo textarea::placeholder, .buscaCampo input::placeholder { color:var(--texto-3); font-weight:400; }
+.campo textarea { min-height:0; padding:12px 14px; resize:vertical; line-height:1.45; }
+.campo input:disabled { opacity:.55; }
+.campo input:focus, .campo textarea:focus, .buscaCampo input:focus { outline:none; border-color:color-mix(in oklab, oklch(var(--primary)), transparent 30%); box-shadow:0 0 0 3px color-mix(in oklab, oklch(var(--primary)), transparent 85%); }
+.dois { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:10px; }
 @media (max-width:420px) { .dois { grid-template-columns:minmax(0,1fr); } }
-.dica { margin:0; display:flex; align-items:center; gap:6px; font-size:calc(12.5px * var(--escala-letra)); line-height:1.4; color:var(--texto-3); }
-.dica svg { width:15px; height:15px; flex:none; }
+.dica { margin:0; display:flex; align-items:center; gap:6px; font-size:calc(12px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.dica svg { width:14px; height:14px; flex:none; }
 .dica[data-tom="bom"] { color:var(--positivo); }
 .dica[data-tom="atencao"] { color:var(--atencao); }
 
-/* A busca do modelo: lista que abre por cima, sólida. */
+/* A busca do modelo: o campo principal, e a lista que abre por cima, sólida. */
 .busca { position:relative; display:grid; gap:6px; }
 .buscaCampo { position:relative; }
-.buscaCampo svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); width:19px; height:19px; color:var(--texto-3); pointer-events:none; }
-.buscaCampo input { padding-left:44px; min-height:54px; font-size:calc(17px * var(--escala-letra)); font-weight:600; }
-.sugestoes { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 6px); margin:0; padding:6px; list-style:none; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); box-shadow:0 18px 44px rgb(0 0 0 / 35%); max-height:340px; overflow:auto; }
-.sugestoes li { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:46px; padding:0 12px; border-radius:12px; cursor:pointer; }
-.sugestoes li b { font-size:calc(15.5px * var(--escala-letra)); font-weight:650; }
-.sugestoes li small { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
-.sugestoes li[aria-selected="true"] { background:color-mix(in oklab, oklch(var(--primary)), transparent 82%); }
+.buscaCampo svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--texto-3); stroke-width:1.6; pointer-events:none; }
+.buscaCampo input { padding-left:42px; min-height:50px; font-size:calc(17px * var(--escala-letra)); font-weight:500; letter-spacing:-.005em; }
+.sugestoes { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 6px); margin:0; padding:5px; list-style:none; border-radius:16px; border:1px solid var(--linha-forte); box-shadow:0 20px 48px rgb(0 0 0 / 28%); max-height:330px; overflow:auto; }
+.sugestoes li { display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:42px; padding:0 12px; border-radius:11px; cursor:pointer; }
+.sugestoes li b { font-size:calc(15px * var(--escala-letra)); font-weight:500; }
+.sugestoes li small { font-size:calc(11.5px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.sugestoes li[aria-selected="true"] { background:var(--tinta-acao); }
+.sugestoes li[aria-selected="true"] b { color:oklch(var(--primary)); }
 
-.tipos, .chips { display:flex; flex-wrap:wrap; gap:6px; }
-.tipos button, .chips button { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); background:transparent; color:inherit; font-size:calc(13px * var(--escala-letra)); font-weight:550; }
-.chips button { min-height:42px; padding:0 15px; font-size:calc(14px * var(--escala-letra)); }
-.chips button svg { width:15px; height:15px; }
-.tipos button[aria-pressed="true"], .chips button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
+/* Tipo do aparelho: uma linha só, que rola de lado no celular. */
+.tipos { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:0 16px; }
+.tipos::-webkit-scrollbar { display:none; }
+.tipos button { flex:none; min-height:30px; padding:0 12px; border-radius:999px; border:1px solid var(--linha); background:transparent; color:var(--texto-2); font-size:calc(12.5px * var(--escala-letra)); font-weight:450; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chips button { display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:0 14px; border-radius:999px; border:1px solid var(--linha-forte); background:transparent; color:inherit; font-size:calc(13.5px * var(--escala-letra)); font-weight:450; transition:background .15s, border-color .15s; }
+.chips button svg { width:13px; height:13px; stroke-width:2.2; }
+.tipos button[aria-pressed="true"], .chips button[aria-pressed="true"] { border-color:color-mix(in oklab, oklch(var(--primary)), transparent 45%); background:var(--tinta-acao); color:oklch(var(--primary)); font-weight:550; }
 
-/* O desenho do celular: as peças são botões sobre o corpo, onde ficam no aparelho. */
-.desenho { position:relative; width:min(230px, 62vw); aspect-ratio:9 / 17; margin:6px auto 4px; }
-.desenho[data-tipo="tablet"] { width:min(300px, 76vw); aspect-ratio:3 / 4; }
-.corpo { position:absolute; inset:0; border-radius:34px; border:2px solid color-mix(in oklab, var(--foreground), transparent 70%); background:linear-gradient(170deg, color-mix(in oklab, var(--foreground), transparent 93%), color-mix(in oklab, var(--foreground), transparent 98%)); }
+/* O desenho do aparelho: contorno fino, e cada peça é uma pílula pequena
+   sobre o corpo, no lugar onde fica no aparelho. */
+.desenho { position:relative; width:min(214px, 58vw); aspect-ratio:9 / 18; margin:4px auto 2px; }
+.desenho[data-tipo="tablet"] { width:min(290px, 74vw); aspect-ratio:3 / 4; }
+.corpo { position:absolute; inset:0; border-radius:38px; border:1px solid var(--linha-forte); background:linear-gradient(165deg, color-mix(in oklab, var(--foreground), transparent 95%), color-mix(in oklab, var(--foreground), transparent 99%) 60%); box-shadow:inset 0 0 0 6px color-mix(in oklab, var(--foreground), transparent 97.5%); }
 .desenho[data-tipo="tablet"] .corpo { border-radius:26px; }
-.corpo::before { content:""; position:absolute; left:50%; top:10px; width:56px; height:7px; border-radius:9px; transform:translateX(-50%); background:color-mix(in oklab, var(--foreground), transparent 80%); }
-.ponto { position:absolute; transform:translate(-50%, -50%); min-height:34px; padding:0 12px; border-radius:999px; border:1px dashed color-mix(in oklab, var(--foreground), transparent 60%); background:var(--superficie-flutuante, transparent); color:var(--foreground); font-size:calc(12.5px * var(--escala-letra)); font-weight:650; white-space:nowrap; box-shadow:0 4px 12px rgb(0 0 0 / 18%); }
+.corpo::before { content:""; position:absolute; left:50%; top:14px; width:46px; height:5px; border-radius:9px; transform:translateX(-50%); background:color-mix(in oklab, var(--foreground), transparent 84%); }
+.ponto { position:absolute; display:inline-flex; align-items:center; gap:6px; transform:translate(-50%, -50%); min-height:28px; padding:0 11px; border-radius:999px; border:1px solid var(--linha-forte); background:var(--superficie-flutuante, transparent); color:var(--texto-2); font-size:calc(12px * var(--escala-letra)); font-weight:500; white-space:nowrap; box-shadow:0 2px 8px rgb(0 0 0 / 10%); transition:background .15s, border-color .15s, color .15s; }
+.ponto::before { content:""; width:6px; height:6px; border-radius:50%; background:color-mix(in oklab, var(--foreground), transparent 70%); }
 .ponto[data-lado="esq"] { transform:translate(-25%, -50%); }
 .ponto[data-lado="dir"] { transform:translate(-75%, -50%); }
-.ponto[data-estado="defeito"], .peca[data-estado="defeito"] { border:1px solid transparent; background:var(--negativo); color:#fff; }
-.ponto[data-estado="ok"], .peca[data-estado="ok"] { border:1px solid transparent; background:color-mix(in oklab, var(--positivo), transparent 15%); color:#fff; }
+.ponto[data-estado="defeito"], .peca[data-estado="defeito"] { border-color:color-mix(in oklab, var(--negativo), transparent 50%); background:color-mix(in oklab, var(--negativo), var(--superficie-flutuante, transparent) 84%); color:var(--negativo); }
+.ponto[data-estado="ok"], .peca[data-estado="ok"] { border-color:color-mix(in oklab, var(--positivo), transparent 55%); background:color-mix(in oklab, var(--positivo), var(--superficie-flutuante, transparent) 88%); color:var(--positivo); }
+/* Marcada, a peça mostra ✕ ou ✓ no lugar do ponto: a cor não fica sozinha
+   para quem não distingue vermelho de verde. */
+.ponto[data-estado="defeito"]::before, .ponto[data-estado="ok"]::before { display:none; }
 
-.gradePecas { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:8px; }
-.peca { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-height:56px; padding:9px 12px; border-radius:16px; border:1px dashed color-mix(in oklab, var(--foreground), transparent 60%); background:transparent; color:inherit; font-size:calc(14px * var(--escala-letra)); font-weight:650; text-align:left; }
-.peca small { font-size:calc(11.5px * var(--escala-letra)); font-weight:500; opacity:.85; }
+.gradePecas { display:grid; grid-template-columns:repeat(auto-fill, minmax(124px, 1fr)); gap:8px; }
+.peca { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-height:52px; padding:8px 12px; border-radius:14px; border:1px solid var(--linha-forte); background:transparent; color:inherit; font-size:calc(13.5px * var(--escala-letra)); font-weight:500; text-align:left; }
+.peca small { font-size:calc(11px * var(--escala-letra)); font-weight:400; opacity:.85; }
 
-.resumo { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
-.resumo [data-tom="defeito"] { color:var(--negativo); font-weight:650; }
-.resumo [data-tom="ok"] { color:var(--positivo); font-weight:650; }
-.resumo button { margin-left:auto; min-height:38px; padding:0 14px; border-radius:999px; border:1px solid color-mix(in oklab, var(--positivo), transparent 40%); background:transparent; color:var(--positivo); font-size:calc(13px * var(--escala-letra)); font-weight:650; }
+.resumo { display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; padding-top:10px; border-top:1px solid var(--linha); font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.resumo span { display:inline-flex; align-items:center; gap:6px; }
+.resumo span::before { content:""; width:6px; height:6px; border-radius:50%; background:color-mix(in oklab, var(--foreground), transparent 70%); }
+.resumo [data-tom="defeito"] { color:var(--negativo); }
+.resumo [data-tom="defeito"]::before { background:var(--negativo); }
+.resumo [data-tom="ok"] { color:var(--positivo); }
+.resumo [data-tom="ok"]::before { background:var(--positivo); }
+.resumo button { margin-left:auto; min-height:32px; padding:0 12px; border-radius:999px; border:1px solid color-mix(in oklab, var(--positivo), transparent 55%); background:transparent; color:var(--positivo); font-size:calc(12.5px * var(--escala-letra)); font-weight:500; }
 
 /* Senha: segmento, padrão de 9 pontos ou campo. */
-.segmento { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:4px; padding:4px; border-radius:16px; background:color-mix(in oklab, var(--foreground), transparent 94%); }
-.segmento button { min-height:40px; border:0; border-radius:12px; background:transparent; color:inherit; font-size:calc(13px * var(--escala-letra)); font-weight:600; }
-.segmento button[aria-checked="true"] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:700; }
-.padrao { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-.grade3 { position:relative; display:grid; grid-template-columns:repeat(3, 44px); gap:22px; padding:8px; }
-.grade3 svg { position:absolute; inset:8px; width:calc(100% - 16px); height:calc(100% - 16px); pointer-events:none; overflow:visible; }
-.grade3 svg line { stroke:oklch(var(--primary)); stroke-width:4; stroke-linecap:round; opacity:.75; }
-.grade3 button { position:relative; width:44px; height:44px; border-radius:50%; border:2px solid color-mix(in oklab, var(--foreground), transparent 70%); background:color-mix(in oklab, var(--foreground), transparent 94%); color:oklch(var(--primary-foreground)); font-size:15px; font-weight:800; }
-.grade3 button[aria-pressed="true"] { border-color:transparent; background:oklch(var(--primary)); opacity:1; }
-.padraoLado { display:grid; gap:8px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.segmento { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:2px; padding:3px; border-radius:13px; border:1px solid var(--linha); background:var(--fundo-campo); }
+.segmento button { min-height:34px; border:0; border-radius:10px; background:transparent; color:var(--texto-2); font-size:calc(12.5px * var(--escala-letra)); font-weight:450; transition:background .15s; }
+.segmento button[aria-checked="true"] { background:var(--superficie-flutuante, var(--background)); color:var(--foreground); font-weight:550; box-shadow:0 1px 3px rgb(0 0 0 / 14%), 0 0 0 1px var(--linha); }
+.padrao { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.grade3 { position:relative; display:grid; grid-template-columns:repeat(3, 40px); gap:18px; padding:6px; }
+.grade3 svg { position:absolute; inset:6px; width:calc(100% - 12px); height:calc(100% - 12px); pointer-events:none; overflow:visible; }
+.grade3 svg line { stroke:oklch(var(--primary)); stroke-width:2.5; stroke-linecap:round; opacity:.7; }
+.grade3 button { position:relative; display:grid; place-items:center; width:40px; height:40px; border-radius:50%; border:1px solid var(--linha-forte); background:transparent; color:oklch(var(--primary)); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; }
+.grade3 button::before { content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:color-mix(in oklab, var(--foreground), transparent 55%); }
+.grade3 button[aria-pressed="true"] { border-color:color-mix(in oklab, oklch(var(--primary)), transparent 30%); background:var(--superficie-flutuante, var(--background)); opacity:1; }
+.grade3 button[aria-pressed="true"]::before { display:none; }
+.padraoLado { display:grid; gap:8px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
 .padraoLado p { margin:0; }
-.padraoLado button, .guardada button { display:inline-flex; align-items:center; gap:6px; justify-self:start; min-height:36px; padding:0 13px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 80%); background:transparent; color:inherit; font-size:calc(13px * var(--escala-letra)); }
-.padraoLado svg { width:15px; height:15px; }
-.guardada { display:flex; align-items:center; gap:10px; font-size:calc(13.5px * var(--escala-letra)); }
-.guardada > svg { width:18px; height:18px; color:var(--positivo); flex:none; }
+.padraoLado button, .guardada button { display:inline-flex; align-items:center; gap:6px; justify-self:start; min-height:32px; padding:0 12px; border-radius:999px; border:1px solid var(--linha-forte); background:transparent; color:var(--texto-2); font-size:calc(12.5px * var(--escala-letra)); }
+.padraoLado svg { width:14px; height:14px; }
+.guardada { display:flex; align-items:center; gap:10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
+.guardada > svg { width:16px; height:16px; color:var(--positivo); flex:none; }
 .guardada button { margin-left:auto; }
 
-/* No diálogo do computador: duas colunas, o desenho fica à direita e os
-   outros blocos descem na esquerda. */
+/* No diálogo do computador: duas colunas, o desenho à direita e os outros
+   blocos descendo na esquerda. */
 @media (min-width:900px) {
-  .entrada { grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); grid-auto-flow:dense; align-items:start; }
+  .entrada { grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); grid-auto-flow:dense; align-items:start; gap:14px; }
   .estado { grid-column:2; grid-row:1 / span 3; }
+  .tipos { flex-wrap:wrap; overflow:visible; margin:0; padding:0; }
 }
 
-.padraoMini { width:84px; height:84px; }
-.padraoMini line { stroke:oklch(var(--primary)); stroke-width:3.5; stroke-linecap:round; }
+.padraoMini { width:80px; height:80px; }
+.padraoMini line { stroke:oklch(var(--primary)); stroke-width:2.5; stroke-linecap:round; }
 .padraoMini circle { fill:color-mix(in oklab, var(--foreground), transparent 70%); }
-.padraoMini circle[data-marcado] { fill:oklch(var(--primary)); }
-.padraoMini text { fill:oklch(var(--primary-foreground)); font-size:9px; font-weight:800; }
+.padraoMini circle[data-marcado] { fill:none; stroke:oklch(var(--primary)); stroke-width:1.2; }
+.padraoMini text { fill:oklch(var(--primary)); font-size:8.5px; font-weight:600; }
+
+/* 05 Serviço: o que fazer, prazo e valor numa linha no computador. */
+.servico { display:grid; gap:10px; grid-template-columns:minmax(0,1fr); }
+@media (min-width:640px) { .servico { grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr) minmax(0,.9fr); } }
+.enviar { display:inline-flex; align-items:center; justify-content:center; min-height:48px; border:0; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14.5px * var(--escala-letra)); font-weight:600; letter-spacing:.01em; box-shadow:0 8px 24px color-mix(in oklab, oklch(var(--primary)), transparent 75%); }
+.enviar:disabled { opacity:.55; }

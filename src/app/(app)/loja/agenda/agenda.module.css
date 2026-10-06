@@ -72,25 +72,26 @@
 .ordemLinha > span:nth-child(2) { flex:1; min-width:0; }
 .ordemLinha > span:last-child { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex:none; }
 
-/* Passo 39: o aparelho na ficha e o QR do acompanhamento. */
-.aparelho { display:grid; gap:10px; padding:14px; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 97%); }
+/* Passo 39: o aparelho na ficha e o QR do acompanhamento. Linha fina,
+   peso leve, cor só no defeito e no que funciona (pedido do Davi: "fino"). */
+.aparelho { display:grid; gap:12px; padding:16px; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); background:color-mix(in oklab, var(--foreground), transparent 98.5%); }
 .aparelhoTopo { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-.aparelhoTopo b { display:block; font-size:calc(16px * var(--escala-letra)); }
-.aparelhoTopo small { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); font-variant-numeric:tabular-nums; }
+.aparelhoTopo b { display:block; font-size:calc(16px * var(--escala-letra)); font-weight:550; letter-spacing:-.005em; }
+.aparelhoTopo small { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); font-variant-numeric:tabular-nums; letter-spacing:.02em; }
 .pecas { display:flex; flex-wrap:wrap; gap:6px; }
-.pecas span { padding:6px 11px; border-radius:999px; font-size:calc(12.5px * var(--escala-letra)); font-weight:600; background:color-mix(in oklab, var(--foreground), transparent 92%); }
-.pecas span[data-estado="defeito"] { background:color-mix(in oklab, var(--negativo), transparent 82%); color:var(--negativo); }
-.pecas span[data-estado="ok"] { background:color-mix(in oklab, var(--positivo), transparent 85%); color:var(--positivo); }
+.pecas span { padding:5px 11px; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 86%); font-size:calc(12px * var(--escala-letra)); font-weight:450; color:var(--texto-2); }
+.pecas span[data-estado="defeito"] { border-color:color-mix(in oklab, var(--negativo), transparent 55%); background:color-mix(in oklab, var(--negativo), transparent 90%); color:var(--negativo); }
+.pecas span[data-estado="ok"] { border-color:color-mix(in oklab, var(--positivo), transparent 60%); background:color-mix(in oklab, var(--positivo), transparent 92%); color:var(--positivo); }
 .senhaLinha { display:flex; align-items:center; gap:10px; }
-.senhaLinha code { padding:6px 12px; border-radius:10px; background:color-mix(in oklab, var(--foreground), transparent 90%); font-size:calc(16px * var(--escala-letra)); font-weight:700; letter-spacing:.06em; }
-.conferencia { display:flex; align-items:center; gap:8px; margin:0; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
-.conferencia svg { width:16px; height:16px; flex:none; }
+.senhaLinha code { padding:5px 12px; border-radius:10px; border:1px solid color-mix(in oklab, var(--foreground), transparent 84%); font-size:calc(15px * var(--escala-letra)); font-weight:500; letter-spacing:.12em; }
+.conferencia { display:flex; align-items:center; gap:8px; margin:0; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.conferencia svg { width:15px; height:15px; flex:none; stroke-width:1.8; }
 .conferencia[data-tom="bom"] { color:var(--positivo); }
-.conferencia[data-tom="atencao"] { color:var(--atencao); font-weight:600; }
-.qr { display:flex; gap:16px; align-items:center; padding:14px; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
-.qr b { font-size:calc(15px * var(--escala-letra)); }
-.qr p { margin:4px 0 10px; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); line-height:1.45; }
+.conferencia[data-tom="atencao"] { color:var(--atencao); }
+.qr { display:flex; gap:16px; align-items:center; padding:16px; border-radius:18px; border:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
+.qr b { font-size:calc(14.5px * var(--escala-letra)); font-weight:550; }
+.qr p { margin:4px 0 10px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); line-height:1.5; }
 /* O QR fica sempre preto no branco: leitor de câmera erra com QR claro em fundo escuro. */
-.qrImagem { flex:none; width:118px; height:118px; padding:6px; border-radius:14px; background:#fff; }
+.qrImagem { flex:none; width:112px; height:112px; padding:7px; border-radius:14px; background:#fff; box-shadow:0 0 0 1px color-mix(in oklab, var(--foreground), transparent 88%); }
 .qrImagem svg { display:block; width:100%; height:100%; }
-@media (max-width:420px) { .qr { flex-direction:column; align-items:flex-start; } .qrImagem { width:150px; height:150px; } }
+@media (max-width:420px) { .qr { flex-direction:column; align-items:flex-start; } .qrImagem { width:148px; height:148px; } }

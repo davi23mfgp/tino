@@ -57,7 +57,7 @@ export function EntradaDoAparelho({ valor, mudar, modelosUsados, temSenhaGuardad
   return (
     <div className={estilos.entrada}>
       <section className={estilos.bloco} aria-labelledby="entrada-aparelho">
-        <h3 id="entrada-aparelho"><span>1</span>Aparelho</h3>
+        <h3 id="entrada-aparelho"><span>01</span>Aparelho</h3>
         <BuscaDeModelo
           valor={valor.modelo}
           historico={modelosUsados}
@@ -87,7 +87,7 @@ export function EntradaDoAparelho({ valor, mudar, modelosUsados, temSenhaGuardad
       </section>
 
       <section className={estilos.bloco} aria-labelledby="entrada-junto">
-        <h3 id="entrada-junto"><span>2</span>O que ficou junto</h3>
+        <h3 id="entrada-junto"><span>02</span>O que ficou junto</h3>
         <div className={estilos.chips}>
           {ACESSORIOS[valor.tipo].map((item) => {
             const marcado = valor.acessorios.includes(item)
@@ -101,7 +101,7 @@ export function EntradaDoAparelho({ valor, mudar, modelosUsados, temSenhaGuardad
       </section>
 
       <section className={`${estilos.bloco} ${estilos.estado}`} aria-labelledby="entrada-estado">
-        <h3 id="entrada-estado"><span>3</span>Como chegou</h3>
+        <h3 id="entrada-estado"><span>03</span>Como chegou</h3>
         <p className={estilos.dica}>Toque uma vez onde tem defeito. Mais um toque: funciona. Mais um: volta a não testado.</p>
         {valor.tipo === "celular" || valor.tipo === "tablet" ? (
           <DesenhoDoAparelho tipo={valor.tipo} estado={valor.estado} tocar={(chave) => mudar({ ...valor, estado: { ...valor.estado, [chave]: proximoEstado(valor.estado[chave]) } })} />
@@ -125,7 +125,7 @@ export function EntradaDoAparelho({ valor, mudar, modelosUsados, temSenhaGuardad
       </section>
 
       <section className={estilos.bloco} aria-labelledby="entrada-senha">
-        <h3 id="entrada-senha"><span>4</span>Senha do aparelho</h3>
+        <h3 id="entrada-senha"><span>04</span>Senha do aparelho</h3>
         {temSenhaGuardada && !valor.trocarSenha ? (
           <div className={estilos.guardada}>
             <KeyRound aria-hidden /><span>Senha guardada. Fica cifrada e some na entrega.</span>
@@ -134,7 +134,7 @@ export function EntradaDoAparelho({ valor, mudar, modelosUsados, temSenhaGuardad
         ) : (
           <>
             <div className={estilos.segmento} role="radiogroup" aria-label="Tipo de senha">
-              {([["PADRAO", "Padrão"], ["NUMERO", "Número ou senha"], ["NENHUMA", "Sem senha"]] as const).map(([tipo, nome]) => (
+              {([["PADRAO", "Padrão"], ["NUMERO", "Senha"], ["NENHUMA", "Sem senha"]] as const).map(([tipo, nome]) => (
                 <button key={tipo} type="button" role="radio" aria-checked={valor.senhaTipo === tipo} onClick={() => mudar({ ...valor, senhaTipo: tipo, senha: "" })}>{nome}</button>
               ))}
             </div>

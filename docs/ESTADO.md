@@ -1,5 +1,45 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 07/10/2026: entrada do aparelho na Assistência técnica (passo 39, opções A e C juntas)
+
+O Davi escolheu A e C juntas, com a busca de modelo pelo começo do nome, o QR
+de acompanhamento e, depois de ver, "sofisticado, moderno, fino e bem
+dimensionado". Vale só para negócio da área Assistência; as outras áreas
+seguem com a OS de texto livre.
+
+- **01 Aparelho:** busca em 740 modelos (celular, tablet, notebook,
+  videogame, relógio, fone e eletrônicos), pelo começo de qualquer palavra
+  e sem precisar de espaço ("a5", "note12", "ip 15 pro", "ps5"), com os
+  modelos que a loja já atendeu em cima. Roda no aparelho, em 0,1 ms. O
+  escolhido decide o tipo, e o tipo decide as peças e o que pode ficar
+  junto. IMEI conferido pelo dígito verificador na hora.
+- **02 O que ficou junto** e **03 Como chegou:** no desenho do celular, um
+  toque marca defeito, outro marca que funciona, outro volta a não testado.
+  O que ninguém tocou fica "não testado", nunca "funciona" (regra 3); o botão
+  "Testei: o resto funciona" é a pessoa quem toca.
+- **04 Senha:** padrão (pontos na ordem) ou digitada, cifrada com a chave do
+  servidor e o link da OS; só aparece no "Ver senha" por 30 segundos, nunca
+  no link do cliente, e é apagada na entrega.
+- **05 Serviço:** o que fazer (com os serviços mais comuns sugeridos), prazo,
+  valor e observação.
+- **Ficha:** o aparelho, a conferência do cliente, a garantia depois da
+  entrega e o **QR de acompanhamento** (sempre preto no branco), com
+  "Imprimir comprovante" (folha A4 com QR, como chegou, regras do CDC e
+  assinaturas; testado em PDF: uma página).
+- **Link do cliente** (`/s/...`): como o aparelho chegou, "Está certo" ou
+  "Tem coisa errada" (vira aviso no sino), e a garantia de 90 dias contada
+  da entrega (CDC, art. 26). Mostra só o final do IMEI.
+- Testado no Chromium, 390 e 1280, escuro e claro: cadastro de assistência,
+  busca, IMEI errado e certo, desenho, padrão, OS aberta, senha vista,
+  cliente conferindo, pronto, entregue, senha apagada (404), garantia nos
+  dois lados, segunda resposta do cliente recusada (409).
+- Regras em `src/lib/loja/assistencia.ts` e `modelos.ts`, testadas em
+  `testes/entrada-aparelho.test.ts`, com prova de que cada teste falha se a
+  regra mudar.
+- **Falta:** foto do aparelho (fica para depois das conversas com os donos),
+  lembrete de aparelho esquecido e marcar "retorno em garantia" na OS nova.
+  O campo de prazo usa o calendário do navegador.
+
 ## 06/10/2026: origem do cadastro, parte automática (item 1.6)
 
 - O proxy guarda num cookie de 30 dias (`tino_origem`, httpOnly) de onde a

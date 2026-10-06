@@ -43,7 +43,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | 🔨 | [estudo](pesquisas/2026-10-06-origem-do-cadastro.md) | parte automática no código (06/10: campanha, indicação e site de origem gravados no cadastro); falta a pergunta: 🙋 escolher no [canvas, passo 42](https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi) (A fim do cadastro, B boas-vindas, C uma semana depois), e ver no painel do admin |
 | 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ✅ | plano, seção Modelo de negócio | no código (06/10), com a lista do que inclui atualizada (área, clientes, orçamento, OS). O plano Vários negócios (R$ 79,90) entra com a tela de Assinatura, que passa pelo canvas |
 | 1.9 | Recuperar senha por e-mail | ✅ | não precisa: defeito | no código (06/10); 🙋 o e-mail só sai com `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel |
-| 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | [estudo](pesquisas/2026-10-06-area-funda-assistencia-tecnica.md) | 🙋 escolher no [canvas, passo 39](https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi): A entrada em passos e o cliente confere no link, B ficha com garantia e esquecidos, C toque no desenho |
+| 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | 🔨 | [estudo](pesquisas/2026-10-06-area-funda-assistencia-tecnica.md) | entrada do aparelho no código (07/10, opções A e C do passo 39, com busca de modelo e QR); falta lembrete de aparelho esquecido e retorno em garantia |
 
 **Fora do código, com o Davi** (passo a passo com caixas de marcar: [O que o Davi faz](https://claude.ai/code/artifact/18f50cdf-5e06-4fc0-9638-772d1c9304a4)):
 
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Passo 39 no código: entrada do aparelho (busca de 740 modelos pelo começo, IMEI conferido, desenho de tocar o defeito, senha cifrada que some na entrega), QR de acompanhamento com comprovante impresso, e o cliente conferindo a entrada e vendo a garantia pelo link. Refinado para o traço fino a pedido do Davi. |
 | 06/10/2026 | Canvas dos passos 39 a 42 publicado ("Tino · telas, parte 3"): Assistência funda, ligar o negócio na conta pessoal, relatório do contador e como conheceu o Tino. Esperam a escolha do Davi. |
 | 06/10/2026 | Item 1.6, parte automática: o cadastro grava de onde a pessoa veio (campanha, indicação, site). Termos na versão 2026-10-06 por causa do cookie novo. |
 | 06/10/2026 | Estudos de mercado dos itens 1.3, 1.4, 1.6 e 1.8 em `docs/pesquisas/`. Próximo: a parte automática do 1.6 no código e os canvas dos quatro, para o Davi escolher de uma vez. |
