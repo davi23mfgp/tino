@@ -53,17 +53,21 @@ export const PLANOS: Plano[] = [
   },
   {
     codigo: "loja",
-    nome: "Meu dinheiro e minha loja",
+    // Era "Meu dinheiro e minha loja" até 06/10/2026 (item 1.7 do plano). O
+    // nome falava em loja, e metade das áreas do cadastro é serviço: o
+    // técnico de celular e a manicure não se veem numa "loja". O código
+    // continua "loja" porque está gravado nas assinaturas.
+    nome: "Meu negócio",
     mensalCentavos: 4990,
     anualCentavos: precoAnualComDescontoCentavos(4990),
-    chamada: "Para o MEI que atende no balcão e precisa saber quanto sobra de verdade.",
+    chamada: "Para o MEI que vende ou presta serviço e precisa saber quanto sobra de verdade.",
     inclui: [
       "Tudo do plano Meu dinheiro",
+      "O Tino da sua área: assistência, beleza, moda, alimentação e mais seis",
+      "Clientes, orçamento com link e ordem de serviço com agenda",
       "Venda no balcão com taxa e prazo de cada maquininha",
-      "Estoque com custo médio e margem por produto",
-      "Fiado: quem deve, há quanto tempo, com texto de cobrança",
-      "Contas a pagar e fechamento do caixa da loja",
-      "Contas da loja separadas das de casa",
+      "Estoque com custo médio e margem, e fiado com texto de cobrança",
+      "Contas a pagar e caixa do negócio separados das de casa",
       "Limite anual do MEI e DAS, sem redigitar faturamento",
     ],
     naoInclui: ["Emissão de nota fiscal", "Integração com maquininha", "Folha de pagamento"],

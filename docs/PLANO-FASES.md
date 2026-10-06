@@ -41,7 +41,7 @@ semanas seguidas, e pelo menos 10 pagando.
 | 1.4 | Relatório do mês para o contador | ⏳ | falta | estudo (o que o contador pede do MEI) |
 | 1.5 | Cobrança ligada (Mercado Pago ou Stripe) | 🙋 | plano, seção Modelo de negócio | Davi põe as chaves, ver `docs/PAGAMENTO-E-ADMIN.md` |
 | 1.6 | Origem do cadastro (indicação, link, contador, anúncio) | ⏳ | plano, seção Métricas | junto com o 1.2 |
-| 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ⏳ | plano, seção Modelo de negócio | texto, pode ir direto |
+| 1.7 | Plano "Meu dinheiro e minha loja" passa a se chamar "Meu negócio" | ✅ | plano, seção Modelo de negócio | no código (06/10), com a lista do que inclui atualizada (área, clientes, orçamento, OS). O plano Vários negócios (R$ 79,90) entra com a tela de Assinatura, que passa pelo canvas |
 | 1.9 | Recuperar senha por e-mail | ✅ | não precisa: defeito | no código (06/10); 🙋 o e-mail só sai com `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel |
 | 1.8 | Área funda: Assistência técnica (IMEI, senha, garantia, checklist de entrada) | ⏳ | falta | estudo com Jobber e apps de assistência |
 
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 06/10/2026 | Item 1.7: o plano passou a se chamar Meu negócio. Achado no caminho: `PAGAMENTO-E-ADMIN.md` dizia anual de R$ 199 e R$ 499, mas o código cobra R$ 214,92 e R$ 538,92 (doze meses com 10% de desconto); o documento foi corrigido. |
 | 06/10/2026 | Item 1.9: recuperar senha por e-mail, com link de 30 minutos e uso único, testado no navegador. O envio espera as chaves do Resend na Vercel. |
 | 06/10/2026 | Falha de segurança achada e corrigida no código: o login pelo Google ligava sozinho a conta de admin (`admin.tino@gmail.com`, um Gmail que ninguém criou) a quem criasse esse Gmail. Agora o Google nunca se liga sozinho a conta de admin (`podeLigarGoogleSozinho`, testado). Prévias da Vercel consertadas pelo Davi. |
 | 06/10/2026 | PR #15 juntado no `main` (Clientes, orçamento, Agenda, OS, sino do MEI, plano e painel). Prévia: falta só `MFA_CHAVE_CRIPTOGRAFIA` no Preview. |

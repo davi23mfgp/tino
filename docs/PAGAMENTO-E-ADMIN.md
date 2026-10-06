@@ -19,8 +19,12 @@ Hoje estão em:
 
 | Plano | Mensal | Anual |
 |---|---|---|
-| Meu dinheiro | R$ 19,90 | R$ 199,00 |
-| Meu dinheiro e minha loja | R$ 49,90 | R$ 499,00 |
+| Meu dinheiro | R$ 19,90 | R$ 214,92 |
+| Meu negócio (era "Meu dinheiro e minha loja") | R$ 49,90 | R$ 538,92 |
+
+O anual são doze mensalidades com 10% de desconto (`precoAnualComDescontoCentavos`).
+O plano Vários negócios (R$ 79,90, decisão de 06/10/2026) ainda não existe no código:
+entra com a tela de Assinatura, que passa pelo canvas antes.
 
 Depois que o app estiver no ar, **o preço se muda em `/admin/configuracoes`, sem
 deploy**. A página de vendas e o gateway leem o mesmo número — não há como
