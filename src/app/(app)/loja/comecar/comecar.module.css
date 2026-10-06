@@ -1,4 +1,4 @@
-/* "O que você faz?" (opção A do passo 38). Os cartões e o vidro seguem a tela Clientes. */
+/* "Qual é o seu segmento?" (opção A do passo 38). Os cartões e o vidro seguem a tela Clientes. */
 .pagina { display:grid; gap:22px; max-width:1180px; }
 @media (min-width:1024px) {
   .pagina { grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr); align-items:start; column-gap:36px; row-gap:18px; }

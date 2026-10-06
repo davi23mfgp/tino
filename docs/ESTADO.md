@@ -4,8 +4,8 @@
 
 O Davi escolheu a opção A (modo pronto, como o Square). Estudo em `docs/pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md`.
 
-- **"O que você faz?"** em `/loja/comecar`: as 10 áreas do plano, a subárea (ou "Outro"), "Minha área não está aqui" com texto livre, e a caixa "Seu Tino ___ vem assim" ao lado. A caixa só lista o que o Tino já faz para o tipo da área (`oQueVem` em `src/lib/loja/areas.ts`): serviço ganha OS, orçamento e agenda; comércio ganha prateleira e fiado; quem faz os dois ganha o DAS separando as partes.
-- **Cadastro MEI** (e-mail e Google) leva a `/loja/comecar?inicio=1` (passo 2 de 3) e depois aos dados da empresa. Negócio antigo sem área vê o aviso "Diga o que você faz" na Visão geral.
+- **"Qual é o seu segmento?"** (era "O que você faz?"; o Davi pediu a troca no mesmo dia) em `/loja/comecar`: as 10 áreas do plano, a subárea (ou "Outro"), "Meu segmento não está aqui" com texto livre, e a caixa "Seu Tino ___ vem assim" ao lado. A caixa só lista o que o Tino já faz para o tipo da área (`oQueVem` em `src/lib/loja/areas.ts`): serviço ganha OS, orçamento e agenda; comércio ganha prateleira e fiado; quem faz os dois ganha o DAS separando as partes.
+- **Cadastro MEI** (e-mail e Google) leva a `/loja/comecar?inicio=1` (passo 2 de 3) e depois aos dados da empresa. Negócio antigo sem área vê o aviso "Escolha o seu segmento" na Visão geral.
 - **Vários negócios:** o nome do negócio fica no topo, com a seta; abre a lista com Casa, os negócios (com a área) e "Novo negócio". O negócio aberto fica num cookie e só vale se for do próprio lar (`negocioAtivo`); `lojaDoLar` passou a respeitá-lo, então todas as telas da loja seguem a troca.
 - **Mesmo CNPJ:** com mais de um negócio no MEI, a lista avisa que as vendas somam no mesmo limite. A tela do MEI soma o Balcão de todos os negócios do lar.
 - Área é campo da loja (`area`, `subarea`), migration `20261006190000_area_do_negocio`. Muda o que o app destaca, nunca o cálculo.

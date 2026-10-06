@@ -49,7 +49,7 @@ export default function PainelDaLoja() {
       <div role="group" aria-label="Período" className={estilos.abas}><button aria-pressed={periodo === "mes"} onClick={() => setPeriodo("mes")}>Mensal</button><button aria-pressed={periodo === "dia"} onClick={() => setPeriodo("dia")}>Diário</button></div>
       <input aria-label="Data de referência" type={periodo === "dia" ? "date" : "month"} value={periodo === "dia" ? data : data.slice(0, 7)} onChange={(evento) => setData(periodo === "dia" ? evento.target.value : `${evento.target.value}-01`)} />
     </div></div>
-    {areaPendente && <aside className={estilos.aviso}><span><b>Diga o que você faz</b><small>Assistência, beleza, roupa, comida: o Tino se arruma para o seu negócio.</small></span><Link href="/loja/comecar">Escolher →</Link></aside>}
+    {areaPendente && <aside className={estilos.aviso}><span><b>Escolha o seu segmento</b><small>Assistência, beleza, roupa, comida: o Tino se arruma para o seu negócio.</small></span><Link href="/loja/comecar">Escolher →</Link></aside>}
     {cadastroPendente && <aside className={estilos.aviso}><span><b>Confirme os dados da empresa</b><small>Razão social, CNPJ, atividade e contato, em um lugar só.</small></span><Link href="/loja/dados">Vamos lá →</Link></aside>}
     {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
     {!dados && !erro && <p>Carregando o painel…</p>}
