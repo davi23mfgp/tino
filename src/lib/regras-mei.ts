@@ -55,6 +55,17 @@ export function dasDoMes(atividade: ContextoDoMei["atividade"]): number | null {
   return inss + icms + iss
 }
 
+/**
+ * O DAS que vale no perfil: o que a pessoa informou ou, sem ele, a tabela do
+ * ano pela atividade. Sem os dois (caminhoneiro que não informou), `null`: a
+ * tela pede o valor da guia em vez de mostrar um número que não confere.
+ */
+export function dasDoPerfil(informadoCentavos: number | null, atividade: ContextoDoMei["atividade"]): { centavos: number | null; daTabela: boolean } {
+  if (informadoCentavos !== null) return { centavos: informadoCentavos, daTabela: false }
+  const tabela = dasDoMes(atividade)
+  return { centavos: tabela, daTabela: tabela !== null }
+}
+
 const reais = (centavos: number) => formatarMoeda(centavos).replace(/\u00a0/g, " ")
 
 interface Regra {

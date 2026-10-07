@@ -16,7 +16,7 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     atividade?: string
     dataAbertura?: string
     limiteAnualCentavos?: number
-    dasMensalCentavos?: number
+    dasMensalCentavos?: number | null
     diaVencimentoDas?: number
     proLaboreCentavos?: number
   }>(requisicao)
@@ -25,7 +25,7 @@ export const PUT = comSessao(async (sessao, requisicao) => {
   // vencendo em dia que não existe); recusa aqui, com a mensagem do campo.
   const centavosValidos = (valor: number | undefined) => valor === undefined || (Number.isInteger(valor) && valor >= 0)
   if (dados.limiteAnualCentavos !== undefined && (!Number.isInteger(dados.limiteAnualCentavos) || dados.limiteAnualCentavos <= 0)) throw new ErroDeUso("Informe o limite anual.")
-  if (!centavosValidos(dados.dasMensalCentavos) || !centavosValidos(dados.proLaboreCentavos)) throw new ErroDeUso("Confira o valor do DAS e do pró-labore.")
+  if ((dados.dasMensalCentavos !== null && !centavosValidos(dados.dasMensalCentavos)) || !centavosValidos(dados.proLaboreCentavos)) throw new ErroDeUso("Confira o valor do DAS e do pró-labore.")
   if (dados.diaVencimentoDas !== undefined && (!Number.isInteger(dados.diaVencimentoDas) || dados.diaVencimentoDas < 1 || dados.diaVencimentoDas > 31)) throw new ErroDeUso("O dia do DAS vai de 1 a 31.")
   if (dados.dataAbertura && Number.isNaN(Date.parse(dados.dataAbertura))) throw new ErroDeUso("Data de abertura inválida.")
 
@@ -35,7 +35,8 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     ...(dados.atividade !== undefined ? { atividade: dados.atividade as never } : {}),
     ...(dados.dataAbertura !== undefined ? { dataAbertura: dados.dataAbertura ? new Date(dados.dataAbertura) : null } : {}),
     ...(dados.limiteAnualCentavos !== undefined ? { limiteAnualCentavos: dados.limiteAnualCentavos } : {}),
-    ...(dados.dasMensalCentavos !== undefined ? { dasMensalCentavos: dados.dasMensalCentavos } : {}),
+    // `null` volta para a tabela do ano: quem apaga o campo não quer um DAS zero.
+    ...(dados.dasMensalCentavos !== undefined ? { dasMensalCentavos: dados.dasMensalCentavos || null } : {}),
     ...(dados.diaVencimentoDas !== undefined ? { diaVencimentoDas: dados.diaVencimentoDas } : {}),
     ...(dados.proLaboreCentavos !== undefined ? { proLaboreCentavos: dados.proLaboreCentavos } : {}),
   }

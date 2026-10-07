@@ -942,8 +942,10 @@ model MeiPerfil {
   /// porque muda por lei e por atividade — transportador de carga tem outro.
   limiteAnualCentavos Int @default(8100000)
 
-  /// Valor do DAS mensal em centavos — muda todo ano com o salário mínimo.
-  dasMensalCentavos Int @default(7580)
+  /// DAS mensal em centavos, quando a pessoa informou. Vazio: vale a tabela do
+  /// ano pela atividade (`dasDoMes`). Já teve padrão de R$ 75,80, que não era
+  /// o DAS de ano nenhum e aparecia como fato.
+  dasMensalCentavos Int?
   diaVencimentoDas  Int @default(20)
 
   /// Pró-labore: quanto o MEI transfere do CNPJ para a PF todo mês.

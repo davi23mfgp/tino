@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 
 import { arquivoIcs, instanteNoFuso, lerPedidoDeAgenda, linkGoogleAgenda, textoDaProposta } from "../src/lib/loja/pedido-agenda"
-import { dasDoMes, responderTributario, LIMITE_MEI_2026_CENTAVOS, type ContextoDoMei } from "../src/lib/regras-mei"
+import { dasDoMes, dasDoPerfil, responderTributario, LIMITE_MEI_2026_CENTAVOS, type ContextoDoMei } from "../src/lib/regras-mei"
 
 // Quarta, 7 de outubro de 2026, 10h em São Paulo.
 const agora = new Date("2026-10-07T13:00:00Z")
@@ -84,4 +84,13 @@ test("MEI: responde com fonte e data, usa os números da conta, e diz quando é 
   const fora = responderTributario("posso abater o carro no imposto de renda?", contexto({}))
   assert.equal(fora.chave, "contador")
   assert.equal(fora.procureContador, true)
+})
+
+test("DAS do perfil: o informado vale; sem ele, a tabela de 2026; sem os dois, nenhum número", () => {
+  assert.deepEqual(dasDoPerfil(9000, "COMERCIO"), { centavos: 9000, daTabela: false })
+  assert.deepEqual(dasDoPerfil(null, "COMERCIO"), { centavos: 8205, daTabela: true })
+  assert.deepEqual(dasDoPerfil(null, "SERVICOS"), { centavos: 8605, daTabela: true })
+  // O caminhoneiro tem conta própria: sem o valor da guia, a tela pede, não inventa.
+  assert.deepEqual(dasDoPerfil(null, "TRANSPORTE_CARGA"), { centavos: null, daTabela: false })
+  assert.deepEqual(dasDoPerfil(0, "COMERCIO"), { centavos: 0, daTabela: false })
 })

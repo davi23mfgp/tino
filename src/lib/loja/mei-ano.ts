@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { avaliarMei, limiteProporcionalMei, situacaoDoDas, vencimentoDoDas } from "@/lib/financeiro"
 import { diaNoFuso } from "@/lib/loja/contas"
+import { dasDoPerfil } from "@/lib/regras-mei"
 
 /**
  * O MEI do ano: limite, faturamento mês a mês e o DAS de cada competência.
@@ -50,6 +51,8 @@ export async function anoDoMei(larId: string) {
     }
   }
 
+  const { centavos: dasMensalCentavos, daTabela: dasDaTabela } = dasDoPerfil(perfil.dasMensalCentavos, perfil.atividade)
+
   const porCompetencia = new Map(competencias.map((linha) => [linha.competencia, linha]))
   const meses = Array.from({ length: mesAtual - mesInicio + 1 }, (_, indice) => {
     const competencia = `${ano}-${String(mesInicio + indice).padStart(2, "0")}`
@@ -69,7 +72,7 @@ export async function anoDoMei(larId: string) {
         // Sem registro nenhum não dá para dizer que ficou sem pagar: o mês
         // só não foi lançado. A tela mostra "sem registro", não "atrasado".
         registrado: Boolean(linha),
-        valorCentavos: linha?.dasValorCentavos || perfil.dasMensalCentavos,
+        valorCentavos: linha?.dasValorCentavos || dasMensalCentavos,
       },
     }
   })
@@ -84,7 +87,7 @@ export async function anoDoMei(larId: string) {
 
   return {
     hoje,
-    perfil: { ...perfil, limiteAnualEfetivoCentavos: limiteAnualCentavos, limiteProporcional: abriuNesteAno },
+    perfil: { ...perfil, dasInformadoCentavos: perfil.dasMensalCentavos, dasMensalCentavos, dasDaTabela, limiteAnualEfetivoCentavos: limiteAnualCentavos, limiteProporcional: abriuNesteAno },
     meses,
     situacao,
   }

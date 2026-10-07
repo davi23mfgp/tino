@@ -107,7 +107,7 @@ visual, para deixar tudo certo.
 
 | # | Item | Situação |
 |---|---|---|
-| 6.1 | Inventário de todas as telas (pessoal e negócio), com captura no celular (390px) e no computador (1280px), tema claro e escuro | ⏳ |
+| 6.1 | Inventário de todas as telas (pessoal e negócio), com captura no celular (390px) e no computador (1280px), tema claro e escuro | ✅ [galeria com as 49 telas em 4 versões](https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG) (07/10/2026); achou o DAS de R$ 75,80 e telas sem nome no topo (corrigidos) e o botão do leão por cima do conteúdo (vai para o canvas na 6.2) |
 | 6.2 | Telas que ainda não passaram pelo canvas vão para o canvas (inclui a fila antiga: Assinatura e Notificações) | ⏳ |
 | 6.3 | Uma linguagem só: estilo das telas da loja, vidro na página, sólido no que abre por cima | ⏳ |
 | 6.4 | Teste de uso com pessoas de mais idade (a pergunta "uma pessoa de 65 anos usa sem ajuda?") | ⏳ |
@@ -121,7 +121,7 @@ Tino pessoal, e deixar os dois prontos para o lançamento.
 | # | Item | Situação |
 |---|---|---|
 | 7.1 | Estudo de mercado novo do **Tino negócio**: concorrentes, preços e casos atualizados | ⏳ |
-| 7.2 | Estudo de mercado do **Tino pessoal** (apps de finanças pessoais do Brasil e de fora), que ainda não foi feito | ⏳ |
+| 7.2 | Estudo de mercado do **Tino pessoal** (apps de finanças pessoais do Brasil e de fora), que ainda não foi feito | 🔨 [estudo](pesquisas/2026-10-07-mercado-tino-pessoal.md): a diferença é a dívida (82% das famílias endividadas, Peic de agosto); 🙋 o anual do Tino (R$ 214,92) custa o dobro do anual do Mobills (R$ 99,90), decisão de preço do Davi; refazer perto do lançamento |
 | 7.3 | Revisão do produto, tela por tela, com as três perguntas da visão: serve a mais de um segmento? funciona com mais de um negócio? uma pessoa de 65 anos usa sem ajuda? | ⏳ |
 | 7.4 | Revisão de segurança e LGPD antes de abrir ao público | ⏳ |
 | 7.5 | Pronto para lançar: preço, termos, suporte, site, cobrança, métricas, página de cada área | ⏳ |
@@ -144,6 +144,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 ## O que precisa melhorar (defeitos e faltas conhecidas)
 
 - Agenda: arrastar compromisso para outra hora; compromisso que se repete.
+- Botão flutuante do leão cobre a ponta direita de valores no celular (Investimentos, Metas, Pontos e milhas, Reserva). Desenho: canvas na Fase 6.2.
 - O estudo de mercado deste ambiente depende de resumo de busca: as páginas
   não abrem daqui. Números para apresentação externa precisam ser conferidos.
 
@@ -151,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Inventário de telas (6.1) com 196 capturas (https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG). Dois defeitos corrigidos na hora: o DAS padrão de R$ 75,80 (não era o DAS de ano nenhum; agora vale a tabela de 2026 pela atividade, migração `das_pela_tabela`) e quatro telas sem nome no topo (com teste que pega a próxima). Estudo de mercado do Tino pessoal (7.2). |
 | 07/10/2026 | Fase 4 começada pelo arquivo: estudo das maquininhas e da NFS-e; leitor da planilha (cabeçalho por sinônimo, negada e estornada de fora) e conciliação com o Balcão (bateu, só na maquininha, só no Balcão, taxa e data diferentes), com ajustes que só gravam com o toque. Testado com mutação e contra o banco. Canvas do passo 51 publicado. |
 | 07/10/2026 | Canvas parte 4 aberto (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) com os passos 48 (assessor e Google Agenda), 49 (ajuda tributária) e 50 (modo simples); estudo do modo simples (Apple, Samsung, Uber) no adendo do estudo da Fase 3. Esperam a escolha do Davi. |
 | 07/10/2026 | Fase 3 sem tela: leitor de pedido de agenda, link do Google Agenda e .ics, catálogo de regras do MEI com fonte e data (DAS 2026 conferido com o salário mínimo de R$ 1.621). A conta do ano do MEI saiu da rota para `anoDoMei`, usada pela tela e pela ajuda tributária. |
