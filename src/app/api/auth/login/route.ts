@@ -75,5 +75,6 @@ export const POST = comPublica(async (requisicao: Request) => {
     dados.manterConectado !== false,
   )
 
-  return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email })
+  // Quem ligou o modo simples entra direto nos seis blocos (passo 50, opção A).
+  return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email, ...(produto === "mei" && usuario.modoSimples ? { inicio: "/loja/simples" } : {}) })
 })

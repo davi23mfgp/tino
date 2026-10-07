@@ -80,12 +80,15 @@ function Mais({ grupos, ativo, desktop = false }: { grupos: GrupoNav[]; ativo: b
   </Drawer>
 }
 
-export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja?: boolean; nome: string; avatarUrl?: string | null }) {
+export function Navegacao({ mei, apenasLoja, nome, simples }: { mei?: boolean; apenasLoja?: boolean; nome: string; avatarUrl?: string | null; simples?: boolean }) {
   const caminho = usePathname()
   const router = useRouter()
   // Entrada por texto, arquivo e banco continua acessivel sem abas permanentes.
   const extras = mei ? [] : [NUCLEO[1], ...gruposPara(false)]
-  const principais = (apenasLoja ? GRUPO_LOJA_FUNCIONARIO.itens : mei ? GRUPO_LOJA.itens : null)?.map(item => ({chave:item.rota, titulo:item.rotulo, itens:[item], pergunta:""})) ?? NUCLEO.slice(0,3)
+  // No modo simples (passo 50, opção A), "Visão geral" vira "Início" e leva aos
+  // seis blocos: é o lugar seguro para onde a pessoa sempre consegue voltar.
+  const itensDaLoja = simples ? GRUPO_LOJA.itens.map(item => item.rota === "/loja/painel" ? { ...item, rota: "/loja/simples", rotulo: "Início" } : item) : GRUPO_LOJA.itens
+  const principais = (apenasLoja ? GRUPO_LOJA_FUNCIONARIO.itens : mei ? itensDaLoja : null)?.map(item => ({chave:item.rota, titulo:item.rotulo, itens:[item], pergunta:""})) ?? NUCLEO.slice(0,3)
   // A barra lateral mostrava "Extrato" duas vezes: uma no trilho de cima e
   // outra logo abaixo, como grupo recolhido com Anotar, Importar e Entrada
   // automática dentro. O trilho de baixo do celular precisa dos três itens
@@ -98,7 +101,7 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
   return <>
     {!apenasLoja && !mei && <div className="fixed bottom-[104px] right-3 z-40 lg:hidden"><TinoDock /></div>}
     <aside className="app-sidebar">
-      <Link href={apenasLoja || mei ? "/loja" : "/painel"} className="app-brand" aria-label="Início do Tino"><TinoMarca className="size-9" /><span>tino.</span></Link>
+      <Link href={simples ? "/loja/simples" : apenasLoja || mei ? "/loja" : "/painel"} className="app-brand" aria-label="Início do Tino"><TinoMarca className="size-9" /><span>tino.</span></Link>
       <p className="app-sidebar-caption">{apenasLoja || mei ? "Seu negócio" : "Seu dia a dia"}</p>
       <nav aria-label="Navegação principal" className="space-y-1">
         {trilhoLateral.map(grupo => { const {rota,Icone}=grupo.itens[0]; const ativo=grupo.itens.some(item => estaAtivo(caminho,item.rota)); return <Link key={grupo.chave} href={rota} className={cn("app-nav-item",ativo && "is-active")} aria-current={ativo ? "page" : undefined}><Icone className="size-5" aria-hidden /><span>{grupo.titulo}</span></Link>})}

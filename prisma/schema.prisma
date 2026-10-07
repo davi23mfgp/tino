@@ -429,6 +429,14 @@ model Usuario {
   /// De onde veio o cadastro ({ fonte, meio, campanha, ref, entrada, site, em }),
   /// ver `src/lib/origem-cadastro.ts`. Nulo para quem entrou antes de 06/10/2026.
   origemCadastro           Json?
+
+  /// Modo simples (passo 50, opção A): seis blocos grandes no lugar da Visão
+  /// geral, para quem tem pouca prática. Fica na conta, não no aparelho: quem
+  /// liga uma vez não precisa ligar de novo no celular novo.
+  modoSimples   Boolean @default(false)
+  /// Quem a pessoa chama no botão "Pedir ajuda" (o WhatsApp dela, por link).
+  ajudaNome     String?
+  ajudaTelefone String?
   /// Código de indicação (item 2.6). Nasce quando a pessoa abre a tela de
   /// indicar; quem se cadastra pelo link leva o código em `origemCadastro.ref`.
   codigoIndicacao          String?   @unique

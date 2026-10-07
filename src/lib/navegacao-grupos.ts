@@ -230,6 +230,7 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 /** Telas que não estão no menu mas precisam de título no topo; sem nome aqui, o topo dizia só "Tino" (inventário de 07/10/2026). */
 const TITULOS_FORA_DO_MENU: Record<string, string> = {
   "/loja/comecar": "Seu negócio",
+  "/loja/simples": "Início",
   "/loja/minha-conta": "Minha conta",
   "/lancar": "Anotar",
   "/regras": "Regras",

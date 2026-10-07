@@ -42,8 +42,8 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false, mod
         router.refresh()
         return
       }
-      const resposta = await enviar<{ precisaMfa?: boolean }>("/api/auth/login", { email, senha, manterConectado, produto: modoMei ? "mei" : "pessoal" })
-      router.push(resposta.precisaMfa ? (modoMei ? "/login/mei/mfa" : "/login/mfa") : (modoMei ? "/loja" : "/painel"))
+      const resposta = await enviar<{ precisaMfa?: boolean; inicio?: string }>("/api/auth/login", { email, senha, manterConectado, produto: modoMei ? "mei" : "pessoal" })
+      router.push(resposta.precisaMfa ? (modoMei ? "/login/mei/mfa" : "/login/mfa") : (resposta.inicio ?? (modoMei ? "/loja" : "/painel")))
       router.refresh()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui entrar.")
