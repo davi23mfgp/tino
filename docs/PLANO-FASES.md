@@ -78,10 +78,10 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | # | Item | Situação | Estudo | Próximo passo |
 |---|---|---|---|---|
-| 3.1 | Agendar por pedido, com confirmação num toque | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | leitor do pedido pronto e testado (`lerPedidoDeAgenda`, `/api/loja/agenda/pedido`: "amanhã às 15h com a Ana" vira proposta); 🙋 tela no canvas |
-| 3.2 | Google Agenda | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | link "adicionar ao Google Agenda" e arquivo .ics prontos (`/api/loja/agenda/compromissos/[id]/exportar`); a integração que escreve sozinha espera a verificação do app no Google (🙋 Davi) |
-| 3.3 | Ajuda tributária com fonte e data; "caso de contador" quando passar do escrito | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | catálogo de 7 regras com fonte e data e os números da conta (`/api/mei/pergunta`); 🙋 tela no canvas; conferir o texto da LC 123 antes de abrir ao público |
-| 3.4 | Modo simples (letra maior, menos itens) | ⏳ | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | canvas |
+| 3.1 | Agendar por pedido, com confirmação num toque | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | leitor do pedido pronto e testado (`lerPedidoDeAgenda`, `/api/loja/agenda/pedido`: "amanhã às 15h com a Ana" vira proposta); 🙋 escolher no [canvas parte 4, passo 48](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) |
+| 3.2 | Google Agenda | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | link "adicionar ao Google Agenda" e arquivo .ics prontos (`/api/loja/agenda/compromissos/[id]/exportar`), botões no [passo 48](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB); a integração que escreve sozinha espera a verificação do app no Google (🙋 Davi) |
+| 3.3 | Ajuda tributária com fonte e data; "caso de contador" quando passar do escrito | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | catálogo de 7 regras com fonte e data e os números da conta (`/api/mei/pergunta`); 🙋 escolher no [canvas parte 4, passo 49](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB); conferir o texto da LC 123 antes de abrir ao público |
+| 3.4 | Modo simples (letra maior, menos itens) | ⏳ | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) (adendo do 3.4) | 🙋 escolher no [canvas parte 4, passo 50](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB): blocos grandes, a mesma tela maior, ou montado por quem ajuda |
 | 3.5 | Área funda: Moda e vestuário | ⏳ | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | estudo próprio quando chegar a vez (depois de Beleza) |
 
 ## Fase 4: ligar o dinheiro (jul. a set. de 2027)
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Canvas parte 4 aberto (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) com os passos 48 (assessor e Google Agenda), 49 (ajuda tributária) e 50 (modo simples); estudo do modo simples (Apple, Samsung, Uber) no adendo do estudo da Fase 3. Esperam a escolha do Davi. |
 | 07/10/2026 | Fase 3 sem tela: leitor de pedido de agenda, link do Google Agenda e .ics, catálogo de regras do MEI com fonte e data (DAS 2026 conferido com o salário mínimo de R$ 1.621). A conta do ano do MEI saiu da rota para `anoDoMei`, usada pela tela e pela ajuda tributária. |
 | 07/10/2026 | Canvas dos passos 43 a 47 publicado (Guia, Clientes e perdas, Pix e rodapé, Indicação, Beleza). Esperam a escolha do Davi. |
 | 07/10/2026 | Fase 2 sem tela: Guia do negócio, grupos de clientes, motivos de perda (uma rota, `/api/loja/analises`, conferida com a demonstração: os mesmos 3 DAS atrasados da tela MEI), Pix BR Code e chave Pix da loja, indicação com código e contagem. As telas esperam a escolha no canvas. |

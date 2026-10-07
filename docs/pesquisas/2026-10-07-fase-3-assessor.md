@@ -59,3 +59,22 @@ fonte e data, dizendo quando é caso de contador?
   regra fica na resposta para isso ficar visível.
 - O limite do MEI pode mudar (PLP 108/2021). O catálogo guarda a data em
   que a regra foi conferida.
+
+## Adendo: modo simples (3.4)
+
+| Referência | O que faz | Resultado ou número | Fonte | Força |
+|---|---|---|---|---|
+| Apple, Acesso Assistivo (iOS 17, 2023) | Tela inicial só com o essencial, em grade de blocos grandes ou em linhas; botões de alto contraste, rótulos grandes, menos gestos. Quem configura pode ser um familiar. | recurso do sistema, sem número de uso público | [Perkins](https://www.perkins.org/resource/apple-unveils-new-features-for-global-accessibility-awareness-day/), [AbilityNet](https://mcmw.abilitynet.org.uk/how-to-simplify-your-iphone-or-ipad-s-interface-using-assistive-access-in-ios-26) | média |
+| Samsung, Modo fácil | Ícones e letra maiores, tela inicial enxuta, tempo de toque longo ajustável (0,3 a 1,5 s) para evitar toque sem querer. | recurso do sistema | [Tom's Guide](https://www.tomsguide.com/phones/samsung-phones/your-samsung-galaxy-phone-comes-with-a-hidden-easy-mode-heres-how-to-find-it), [How-To Geek](https://www.howtogeek.com/736539/psa-samsung-galaxy-phones-have-easy-mode-for-better-accessibility/) | média |
+| Uber, conta sênior (Brasil, 2025) | Letra maior, desenho mais limpo, menos passos para pedir a corrida e um familiar que ajuda; começou por BH, Porto Alegre e Fortaleza, e o familiar pode ligar o modo. | lançamento, sem número de uso | [Olhar Digital](https://olhardigital.com.br/2025/06/04/internet-e-redes-sociais/uber-novo-modo-para-idosos-tem-letras-maiores-e-cara-mais-simples/), [MacMagazine](https://macmagazine.com.br/post/2025/06/04/focado-em-idosos-novo-recurso-da-uber-simplifica-interface-do-aplicativo/) | média |
+| Banca March (Espanha) | Versão simplificada do app do banco, para acessibilidade. | lançamento | [Banca March](https://www.bancamarch.es/en/news/banca-march-launches-a-simplified-version-of-its-app-to-afford-greater-accessibility-for-customers.html) | fraca (só o anúncio) |
+
+**Veredito do 3.4:** faz sentido, e o padrão dos quatro é o mesmo: poucas
+ações grandes na tela inicial, letra maior e um jeito de outra pessoa
+ligar o modo. As três opções do canvas (passo 50) seguem esses três
+caminhos: blocos grandes como o Acesso Assistivo, a mesma tela com letra
+e botões maiores como o Modo fácil, e o modo ligado por quem ajuda, como
+a conta sênior da Uber. O cálculo não muda em nenhum: é só a casca.
+
+**Como medir o 3.4:** quantas contas ligam o modo e quantas desligam em 7
+dias (desligar rápido diz que o modo tirou o que a pessoa usava).

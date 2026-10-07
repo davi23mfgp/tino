@@ -225,7 +225,8 @@ Só abrem para usuário com `admin = true`. Para qualquer outra sessão devolvem
 
 ## Fila do Claude Design (29/09/2026)
 
-Canvas parte 3: https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi. Uma tela por
+Canvas parte 3: https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi (passos 30 a 47);
+parte 4: https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB (passo 48 em diante). Uma tela por
 vez: o Davi escolhe, a escolha é implementada, testada e enviada, e só então
 vem a próxima.
 
