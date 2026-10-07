@@ -240,7 +240,7 @@ Esperando escolha (já desenhados, hoje e três caminhos):
 
 A desenhar depois:
 7. Assinatura (desenhada: canvas parte 4, passo 52, em escolha)
-8. Notificações
+8. Notificações (desenhada: canvas parte 4, passo 54, em escolha; a gaveta translúcida, o "mês(es)" e o aviso repetido já foram corrigidos)
 9. Faturas por mês (Cartões): foi mudado direto em 29/09 antes da regra
    "design só depois do canvas"; entra no canvas para o Davi aprovar ou
    voltar ao que era.

@@ -108,7 +108,7 @@ visual, para deixar tudo certo.
 | # | Item | Situação |
 |---|---|---|
 | 6.1 | Inventário de todas as telas (pessoal e negócio), com captura no celular (390px) e no computador (1280px), tema claro e escuro | ✅ [galeria com as 49 telas em 4 versões](https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG) (07/10/2026); achou o DAS de R$ 75,80 e telas sem nome no topo (corrigidos) e o botão do leão por cima do conteúdo (vai para o canvas na 6.2) |
-| 6.2 | Telas que ainda não passaram pelo canvas vão para o canvas (inclui a fila antiga: Assinatura e Notificações) | 🔨 [estudo](pesquisas/2026-10-07-assinatura-e-botao-do-leao.md); Assinatura no [passo 52](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) e o botão do leão no [passo 53](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB), 🙋 escolher; Notificações e as demais da [galeria](https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG) sem canvas vêm a seguir |
+| 6.2 | Telas que ainda não passaram pelo canvas vão para o canvas (inclui a fila antiga: Assinatura e Notificações) | 🔨 [estudo](pesquisas/2026-10-07-assinatura-e-botao-do-leao.md); Assinatura no [passo 52](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) e o botão do leão no [passo 53](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB), 🙋 escolher; Notificações no [passo 54](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) ([estudo](pesquisas/2026-10-07-notificacoes.md)); as demais da [galeria](https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG) que nunca passaram pelo canvas vêm a seguir |
 | 6.3 | Uma linguagem só: estilo das telas da loja, vidro na página, sólido no que abre por cima | ⏳ |
 | 6.4 | Teste de uso com pessoas de mais idade (a pergunta "uma pessoa de 65 anos usa sem ajuda?") | ⏳ |
 | 6.5 | Painel do admin melhor: as métricas do plano (ativação, conversão do teste, permanência, origem do cadastro) na primeira tela; estudo e canvas antes. Davi, 06/10: "isso é algo pra depois" | ⏳ |
@@ -152,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Canvas do passo 54 (Notificações: duas pilhas, resumo do dia ou agrupado por assunto). A fila antiga do canvas (Assinatura e Notificações) está toda desenhada. |
 | 07/10/2026 | Notificações (fila antiga) conferidas antes do canvas: a gaveta deixava ver a tela por trás (usava `--papel-solido`, que o vidro deixa com 6% de opacidade; agora `--superficie-flutuante`), o texto dizia "1.2 mês(es)" (agora "1,2 mês", com `textoDeMeses` em oito frases) e o aviso de reserva de setembro aparecia junto do de outubro (aviso de estado agora vale só no mês corrente). Conferido no navegador, escuro e claro. |
 | 07/10/2026 | Canvas dos passos 52 (Assinatura: o que já fez no teste, linha do tempo como a da Blinkist, anual em "por mês") e 53 (o botão do leão sai de cima do conteúdo). |
 | 07/10/2026 | Revisão de segurança do que entrou depois de 22/09: "esqueci a senha" respondia mais devagar para quem tem conta (agora o envio roda depois da resposta; medido com curl); conferir a maquininha ganhou teto de 5.000 vendas e 100 dias. |
