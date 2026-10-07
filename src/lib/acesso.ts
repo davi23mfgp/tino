@@ -22,7 +22,7 @@ const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/o", "/s", "/api/orcam
 
 /// Vive sob "/loja" mas é resultado/lucro do negócio, não operação de balcão —
 /// checado antes do prefixo geral, senão "começa com /loja" liberaria sozinho.
-const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta", "/loja/clientes", "/api/loja/clientes", "/api/loja/orcamentos", "/loja/agenda", "/api/loja/agenda", "/api/loja/ordens", "/api/loja/avisos", "/loja/comecar", "/api/loja/negocios", "/api/loja/area"]
+const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta", "/loja/clientes", "/api/loja/clientes", "/api/loja/orcamentos", "/loja/agenda", "/api/loja/agenda", "/api/loja/ordens", "/api/loja/avisos", "/loja/comecar", "/api/loja/negocios", "/api/loja/area", "/api/loja/analises", "/api/loja/indicacao", "/api/indicacao"]
 
 function combinaAlgumPrefixo(caminho: string, prefixos: string[]): boolean {
   return prefixos.some((prefixo) => caminho === prefixo || caminho.startsWith(`${prefixo}/`))
@@ -37,7 +37,7 @@ export function rotaPermitida(papel: PapelDeAcesso, caminho: string): boolean {
 
 // A conta MEI usa o mesmo mecanismo de login, mas suas telas e APIs são do
 // negócio. Bloquear por URL evita que um link antigo abra a vida pessoal.
-const LIBERADO_PARA_MEI = ["/loja", "/mei", "/assinatura", "/seguranca", "/termos", "/privacidade", "/api/loja", "/api/mei", "/api/assinatura", "/api/usuario", "/api/auth", "/api/seguranca", "/api/suporte", "/api/erros"]
+const LIBERADO_PARA_MEI = ["/loja", "/mei", "/assinatura", "/seguranca", "/termos", "/privacidade", "/api/loja", "/api/mei", "/api/assinatura", "/api/usuario", "/api/auth", "/api/seguranca", "/api/suporte", "/api/erros", "/api/indicacao"]
 
 export function rotaPermitidaNoMei(caminho: string): boolean {
   return combinaAlgumPrefixo(caminho, LIBERADO_PARA_MEI)

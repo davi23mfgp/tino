@@ -64,12 +64,12 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | # | Item | Situação | Estudo | Próximo passo |
 |---|---|---|---|---|
-| 2.1 | Guia do negócio (passos com o porquê) | ⏳ | [estudo](pesquisas/2026-10-07-guia-e-analise-de-clientes.md) | regras e API sem tela; canvas |
-| 2.2 | Análise de clientes em linguagem simples | ⏳ | [estudo](pesquisas/2026-10-07-guia-e-analise-de-clientes.md) | regras e API sem tela; canvas |
-| 2.3 | Cobrança por Pix no link do orçamento, da OS e do fiado | ⏳ | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | BR Code estático pela regra do BC; chave Pix da loja; canvas |
-| 2.4 | Relatório de motivos de perda dos orçamentos | ⏳ | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | regras e API sem tela; canvas |
+| 2.1 | Guia do negócio (passos com o porquê) | 🔨 | [estudo](pesquisas/2026-10-07-guia-e-analise-de-clientes.md) | regras e API prontas (`guiaDoNegocio`, `/api/loja/analises`); 🙋 tela no canvas |
+| 2.2 | Análise de clientes em linguagem simples | 🔨 | [estudo](pesquisas/2026-10-07-guia-e-analise-de-clientes.md) | regras e API prontas (`gruposDeClientes`); 🙋 tela no canvas |
+| 2.3 | Cobrança por Pix no link do orçamento, da OS e do fiado | 🔨 | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | BR Code pronto (`src/lib/pix.ts`, igual ao exemplo do manual do BC) e chave Pix na base; 🙋 tela no canvas |
+| 2.4 | Relatório de motivos de perda dos orçamentos | 🔨 | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | regras e API prontas (`motivosDePerda`); 🙋 tela no canvas |
 | 2.5 | Rodapé "feito com o Tino" nos links públicos (canvas antes) | ⏳ | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | canvas |
-| 2.6 | Indicação: um mês grátis para os dois | ⏳ | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | código e link já; o prêmio depende da cobrança ligada (1.5) |
+| 2.6 | Indicação: um mês grátis para os dois | 🔨 | [estudo](pesquisas/2026-10-07-pix-rodape-motivos-indicacao.md) | código, link e contagem prontos (`/api/indicacao`, testado com cadastro de verdade); 🙋 tela no canvas; o prêmio depende da cobrança ligada (1.5) |
 | 2.7 | Área funda: Beleza | ⏳ | [estudo](pesquisas/2026-10-07-area-funda-beleza.md) | agenda por profissional e horário, confirmação na véspera; canvas |
 
 ## Fase 3: o assessor (abr. a jun. de 2027)
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Fase 2 sem tela: Guia do negócio, grupos de clientes, motivos de perda (uma rota, `/api/loja/analises`, conferida com a demonstração: os mesmos 3 DAS atrasados da tela MEI), Pix BR Code e chave Pix da loja, indicação com código e contagem. As telas esperam a escolha no canvas. |
 | 07/10/2026 | Estudos de mercado da Fase 2 (2.1 a 2.7) em `docs/pesquisas/`. Davi pediu para seguir sozinho com as fases e deixar o que depende dele para o fim. |
 | 07/10/2026 | Item 1.8 fechado: lembrete de aparelho pronto e não buscado (7, 30 e 60 dias, no sino e na ficha) e retorno em garantia proposto pelo IMEI na entrada. |
 | 07/10/2026 | Passo 39 no código: entrada do aparelho (busca de 740 modelos pelo começo, IMEI conferido, desenho de tocar o defeito, senha cifrada que some na entrega), QR de acompanhamento com comprovante impresso, e o cliente conferindo a entrada e vendo a garantia pelo link. Refinado para o traço fino a pedido do Davi. |

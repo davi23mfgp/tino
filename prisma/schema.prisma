@@ -429,6 +429,9 @@ model Usuario {
   /// De onde veio o cadastro ({ fonte, meio, campanha, ref, entrada, site, em }),
   /// ver `src/lib/origem-cadastro.ts`. Nulo para quem entrou antes de 06/10/2026.
   origemCadastro           Json?
+  /// Código de indicação (item 2.6). Nasce quando a pessoa abre a tela de
+  /// indicar; quem se cadastra pelo link leva o código em `origemCadastro.ref`.
+  codigoIndicacao          String?   @unique
   redefinicaoSenhaHash     String?   @unique
   redefinicaoSenhaExpiraEm DateTime?
 
@@ -1252,6 +1255,11 @@ model Loja {
   /// que o provedor de emissão confirmou o certificado configurado do lado
   /// dele, para a tela saber se já dá para tentar emitir.
   certificadoConfiguradoEm DateTime?
+  /// Chave Pix da loja (item 2.3), já no formato do Pix (`normalizarChavePix`).
+  /// Com ela, o link do orçamento, da OS e do fiado leva o Pix pronto.
+  chavePix                 String?
+  /// Cidade que o BR Code pede (campo 60 do padrão); o banco do cliente mostra.
+  cidade                   String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
