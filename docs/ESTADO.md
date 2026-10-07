@@ -239,7 +239,7 @@ Esperando escolha (já desenhados, hoje e três caminhos):
 6. Passo 35 · Entrar (L1, L2, L3), com "Esqueci a senha", que ainda não existe
 
 A desenhar depois:
-7. Assinatura
+7. Assinatura (desenhada: canvas parte 4, passo 52, em escolha)
 8. Notificações
 9. Faturas por mês (Cartões): foi mudado direto em 29/09 antes da regra
    "design só depois do canvas"; entra no canvas para o Davi aprovar ou

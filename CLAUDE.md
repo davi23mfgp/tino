@@ -211,8 +211,8 @@ escritório só na Fase 5. A lista completa está em `docs/PLANO-FASES.md`.
   em diante: "Tino · telas, parte 3"
   (https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi), passos 30 a 47, com
   158 arquivos (fechada). Do 48 em diante: "Tino · telas, parte 4"
-  (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB), com 32 arquivos depois
-  do passo 51. Cada parte é um artefato: a imagem enviada a uma (o leão, as
+  (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB), com 48 arquivos depois
+  do passo 53. Cada parte é um artefato: a imagem enviada a uma (o leão, as
   capturas de hoje) não vale na outra, tem de ser enviada de novo.
 - **Estilo das telas da loja** (29/09/2026, "pode deixar estilo última
   tela"): quadros finos como Finanças da loja (H2) e MEI (N1) — número
