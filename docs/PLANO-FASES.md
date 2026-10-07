@@ -88,10 +88,10 @@ semanas seguidas, e pelo menos 10 pagando.
 
 **Meta de passagem:** 40% dos clientes da maquininha escolhida conectados.
 
-| # | Item | Situação |
-|---|---|---|
-| 4.1 | Primeira maquininha integrada, conciliando com o Balcão | ⏳ |
-| 4.2 | Nota de serviço (NFS-e) pelo padrão nacional | ⏳ |
+| # | Item | Situação | Estudo | Próximo passo |
+|---|---|---|---|---|
+| 4.1 | Primeira maquininha integrada, conciliando com o Balcão | 🔨 | [estudo](pesquisas/2026-10-07-fase-4-maquininha-e-nfse.md) | começa pelo arquivo: leitor da planilha de qualquer maquininha e conciliação com o Balcão prontos e testados (`src/lib/loja/maquininha.ts`, `/api/loja/maquininha/conferir` e `/ajustes`, conferidos no banco da demonstração); 🙋 escolher a tela no [canvas parte 4, passo 51](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB); a API do Mercado Pago (a única de autoatendimento) pede o token de uma conta de teste (🙋 Davi) |
+| 4.2 | Nota de serviço (NFS-e) pelo padrão nacional | ⏳ | [estudo](pesquisas/2026-10-07-fase-4-maquininha-e-nfse.md) | depende do certificado do CNPJ (ou gov.br) e da escolha do provedor (🙋 Davi); o módulo `src/lib/nota-fiscal/` já existe, em "sandbox" |
 
 ## Fase 5: escala (a partir de out. de 2027)
 
@@ -151,6 +151,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Fase 4 começada pelo arquivo: estudo das maquininhas e da NFS-e; leitor da planilha (cabeçalho por sinônimo, negada e estornada de fora) e conciliação com o Balcão (bateu, só na maquininha, só no Balcão, taxa e data diferentes), com ajustes que só gravam com o toque. Testado com mutação e contra o banco. Canvas do passo 51 publicado. |
 | 07/10/2026 | Canvas parte 4 aberto (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) com os passos 48 (assessor e Google Agenda), 49 (ajuda tributária) e 50 (modo simples); estudo do modo simples (Apple, Samsung, Uber) no adendo do estudo da Fase 3. Esperam a escolha do Davi. |
 | 07/10/2026 | Fase 3 sem tela: leitor de pedido de agenda, link do Google Agenda e .ics, catálogo de regras do MEI com fonte e data (DAS 2026 conferido com o salário mínimo de R$ 1.621). A conta do ano do MEI saiu da rota para `anoDoMei`, usada pela tela e pela ajuda tributária. |
 | 07/10/2026 | Canvas dos passos 43 a 47 publicado (Guia, Clientes e perdas, Pix e rodapé, Indicação, Beleza). Esperam a escolha do Davi. |
