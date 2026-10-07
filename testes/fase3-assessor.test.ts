@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 
 import { acharCliente, arquivoIcs, instanteNoFuso, lerPedidoDeAgenda, linkGoogleAgenda, textoDaProposta } from "../src/lib/loja/pedido-agenda"
-import { dasDoMes, dasDoPerfil, responderTributario, LIMITE_MEI_2026_CENTAVOS, type ContextoDoMei } from "../src/lib/regras-mei"
+import { dasDoMes, dasDoPerfil, ehPerguntaDeSituacao, ehPerguntaTributaria, responderTributario, textoDaResposta, LIMITE_MEI_2026_CENTAVOS, type ContextoDoMei } from "../src/lib/regras-mei"
 
 // Quarta, 7 de outubro de 2026, 10h em São Paulo.
 const agora = new Date("2026-10-07T13:00:00Z")
@@ -116,4 +116,30 @@ test("agenda: acha a cliente pelo começo do nome; com duas, pergunta; com nenhu
   assert.equal(acharCliente("Bia", comBia).escolhido?.id, "5")
   // Palavras fora de ordem não casam: "Paula Ana" não é "Ana Paula".
   assert.equal(acharCliente("Paula Ana", clientes).escolhido, null)
+})
+
+test("tributário: reconhece a pergunta de imposto e separa a pergunta de situação", () => {
+  for (const pergunta of ["posso abrir uma filial em outra cidade?", "preciso emitir nota fiscal?", "o DAS vence quando?", "virei ME, e agora?", "e o INSS?"]) {
+    assert.equal(ehPerguntaTributaria(pergunta), true, pergunta)
+  }
+  // "das" preposição não é o imposto.
+  for (const pergunta of ["quanto gastei com mercado?", "quando saio do vermelho?", "das 8 às 10 tenho reunião", "quanto gastei das compras do mês?"]) {
+    assert.equal(ehPerguntaTributaria(pergunta), false, pergunta)
+  }
+  assert.equal(ehPerguntaTributaria("quanto é o das do mei"), true)
+  assert.equal(ehPerguntaTributaria("quando vence o das"), true)
+  assert.equal(ehPerguntaDeSituacao("como está meu MEI?"), true)
+  assert.equal(ehPerguntaDeSituacao("tenho DAS em aberto?"), true)
+  assert.equal(ehPerguntaDeSituacao("e se eu passar do limite?"), false)
+})
+
+test("tributário: o texto da conversa leva a fonte e a data; o caso de contador vai sem fonte", () => {
+  const contexto: ContextoDoMei = { faturadoNoAnoCentavos: 3_842_000, limiteAnualCentavos: LIMITE_MEI_2026_CENTAVOS, atividade: "COMERCIO_E_SERVICOS" }
+  const das = textoDaResposta(responderTributario("quanto é o das?", contexto))
+  assert.ok(das.includes("O seu, pela atividade cadastrada: R$ 87,05."))
+  assert.ok(das.endsWith("Fonte: Lei Complementar 123/2006; Portal do Empreendedor (gov.br). Regra conferida em 07/10/2026."))
+  const filial = textoDaResposta(responderTributario("posso abrir uma filial em outra cidade?", contexto))
+  assert.ok(filial.startsWith("Isso passa do que a regra escrita responde"))
+  assert.ok(!filial.includes("Fonte:"))
+  assert.ok(textoDaResposta(responderTributario("posso contratar um ajudante?", contexto)).includes("vale conversar com um contador"))
 })

@@ -158,3 +158,37 @@ export function responderTributario(pergunta: string, contexto: ContextoDoMei): 
   const { resposta, procureContador } = melhor.regra.responder(contexto)
   return { chave: melhor.regra.chave, pergunta: melhor.regra.pergunta, resposta, fontes: melhor.regra.fontes, conferidaEm: CONFERIDA, procureContador: Boolean(procureContador) }
 }
+
+const TERMOS_TRIBUTARIOS = ["mei", "simples nacional", "imposto", "tribut", "nota fiscal", "nfs", "nfe", "cnpj", "dasn", "declaracao anual", "desenquadr", "limite do mei", "receita federal", "inss", "filial", "socio", "contador", "microempresa", "me ", "epp", "funcionario", "empregado", "iss", "icms"]
+
+/**
+ * A pergunta é sobre imposto e regra do MEI? Serve para a conversa do Tino
+ * decidir que, se o catálogo não responder, a saída é "caso de contador", e
+ * não o modelo de linguagem: em imposto, chute custa caro.
+ */
+export function ehPerguntaTributaria(pergunta: string): boolean {
+  // "das" é também preposição ("quanto gastei das compras"): conta como o
+  // imposto só em maiúsculas ou perto de pagar, valor, vencer, guia.
+  if (/\bDAS\b/.test(pergunta) || /\bdas\b.{0,25}\b(pag|valor|venc|guia|boleto|atras|mensal|mei)|\b(pag|valor|venc|guia|boleto)\w*\b.{0,25}\bdas\b/i.test(normalizar(pergunta))) return true
+  const texto = ` ${normalizar(pergunta).replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim()} `
+  return TERMOS_TRIBUTARIOS.some((termo) => termo.length <= 4 ? texto.includes(` ${termo.trim()} `) : texto.includes(termo))
+}
+
+/**
+ * "Como está o meu MEI?", "tenho DAS em aberto?": é a situação da conta, que
+ * o painel responde com os números, não a regra escrita.
+ */
+export function ehPerguntaDeSituacao(pergunta: string): boolean {
+  const texto = normalizar(pergunta)
+  return /\b(como (esta|anda|vai|ta)|meu mei|tenho (das|algum|alguma)|em aberto|quanto (ja )?(faturei|vendi|fatur))/.test(texto)
+}
+
+const formatarData = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`
+
+/** A resposta em texto corrido, com a fonte e a data no fim, para a conversa e o Telegram. */
+export function textoDaResposta(resposta: RespostaTributaria | CasoDeContador): string {
+  if (!("fontes" in resposta)) return resposta.resposta
+  const fontes = resposta.fontes.map((fonte) => fonte.nome).join("; ")
+  const contador = resposta.procureContador ? "\n\nAqui vale conversar com um contador antes de decidir." : ""
+  return `${resposta.resposta}${contador}\n\nFonte: ${fontes}. Regra conferida em ${formatarData(resposta.conferidaEm)}.`
+}

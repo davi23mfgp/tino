@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { showToast } from "@/components/ui/toast"
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
+import { SUGESTOES_MEI, TinoDock } from "@/components/tino-dock"
 import estilos from "./mei.module.css"
 
 /**
@@ -238,6 +239,8 @@ export default function Mei() {
           {perfil.razaoSocial ?? "Seu MEI"} · {ATIVIDADE[perfil.atividade] ?? perfil.atividade.toLowerCase()} · {ano}
         </p>
         <Link href="/loja/dados" className={estilos.dadosEmpresa}>Dados da empresa</Link>
+        {/* Dúvida do MEI na conversa com o Tino (passo 49, opção C). */}
+        <TinoDock gatilho="botao" rota="/api/mei/pergunta" sugestoes={SUGESTOES_MEI} descricao="Dúvidas do MEI, com a regra, a fonte e a data." />
         <button type="button" className={estilos.botao} onClick={() => setLancar("novo")}>
           <Plus aria-hidden />
           Lançar mês

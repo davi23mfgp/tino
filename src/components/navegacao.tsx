@@ -10,7 +10,7 @@ import { enviar } from "@/lib/cliente"
 import { TinoMarca } from "@/components/tino-mascote"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { FabAdicionar } from "@/components/fab-adicionar"
-import { TinoDock } from "@/components/tino-dock"
+import { SUGESTOES_MEI, TinoDock } from "@/components/tino-dock"
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger, DrawerClose } from "@/components/ui/drawer"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -123,6 +123,8 @@ export function Navegacao({ mei, apenasLoja, nome }: { mei?: boolean; apenasLoja
         })}
       </div>}
       {!apenasLoja && !mei && <div className="mt-4"><TinoDock comoItem /></div>}
+      {/* A conta MEI conversa com o Tino sobre imposto (passo 49, opção C): sem o panorama pessoal, pelo catálogo de regras. */}
+      {mei && !apenasLoja && <div className="mt-4"><TinoDock comoItem rota="/api/mei/pergunta" sugestoes={SUGESTOES_MEI} descricao="Dúvidas do MEI, com a regra, a fonte e a data." /></div>}
       <div className="mt-auto space-y-2 pt-6">
         <div className="border-t border-pauta pt-3"><p className="truncate px-3 text-sm font-medium">{nome}</p>
         {mei && !apenasLoja && <Link href="/loja/minha-conta" className="app-nav-item"><Settings className="size-4" aria-hidden /><span>Minha conta</span></Link>}

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { avaliarMei, limiteProporcionalMei, situacaoDoDas, vencimentoDoDas } from "@/lib/financeiro"
 import { diaNoFuso } from "@/lib/loja/contas"
-import { dasDoPerfil } from "@/lib/regras-mei"
+import { dasDoPerfil, LIMITE_MEI_2026_CENTAVOS, type ContextoDoMei } from "@/lib/regras-mei"
 
 /**
  * O MEI do ano: limite, faturamento mês a mês e o DAS de cada competência.
@@ -90,5 +90,15 @@ export async function anoDoMei(larId: string) {
     perfil: { ...perfil, dasInformadoCentavos: perfil.dasMensalCentavos, dasMensalCentavos, dasDaTabela, limiteAnualEfetivoCentavos: limiteAnualCentavos, limiteProporcional: abriuNesteAno },
     meses,
     situacao,
+  }
+}
+
+/** Os números do ano que a ajuda tributária usa: os mesmos da tela MEI. */
+export async function contextoTributario(larId: string): Promise<ContextoDoMei> {
+  const ano = await anoDoMei(larId)
+  return {
+    faturadoNoAnoCentavos: ano ? ano.situacao.faturamentoAnoCentavos : null,
+    limiteAnualCentavos: ano?.perfil.limiteAnualEfetivoCentavos ?? LIMITE_MEI_2026_CENTAVOS,
+    atividade: ano?.perfil.atividade ?? null,
   }
 }

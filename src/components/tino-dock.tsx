@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Send } from "lucide-react"
+import Link from "next/link"
+import { Briefcase, Send } from "lucide-react"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 import { cn } from "@/lib/utils"
@@ -14,6 +15,8 @@ import { DitarGasto } from "@/components/ditar-gasto"
 interface Turno {
   papel: "USUARIO" | "ASSISTENTE"
   texto: string
+  /** A dúvida passou do que a regra escrita responde: o Tino diz que é caso de contador. */
+  contador?: boolean
 }
 
 const SUGESTOES = [
@@ -30,7 +33,18 @@ const SUGESTOES = [
  * motor de regras. O componente trata os dois casos pelo Content-Type: JSON é
  * resposta pronta, texto puro é fluxo.
  */
-export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
+/** Dúvidas do MEI (passo 49, opção C): a conversa da conta MEI responde pelo catálogo de regras. */
+export const SUGESTOES_MEI = ["Quanto é o meu DAS?", "E se eu passar do limite?", "Preciso emitir nota fiscal?", "Posso contratar alguém?"]
+
+export function TinoDock({
+  comoItem = false,
+  /** "botao": a pílula "Pergunte ao Tino" dentro de uma tela, como na MEI e DAS. */
+  gatilho,
+  /** A conta MEI não tem o panorama pessoal: pergunta em `/api/mei/pergunta`. */
+  rota = "/api/tino/chat",
+  sugestoes = SUGESTOES,
+  descricao,
+}: { comoItem?: boolean; gatilho?: "botao"; rota?: string; sugestoes?: string[]; descricao?: string } = {}) {
   const [aberto, setAberto] = useState(false)
   const [estado, setEstado] = useState<EstadoTino>("tranquilo")
   const [turnos, setTurnos] = useState<Turno[]>([])
@@ -64,10 +78,10 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
     setPensando(true)
 
     try {
-      const resposta = await fetch("/api/tino/chat", {
+      const resposta = await fetch(rota, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pergunta: texto, conversaId: conversaId.current }),
+        body: JSON.stringify(rota === "/api/tino/chat" ? { pergunta: texto, conversaId: conversaId.current } : { pergunta: texto }),
       })
 
       const idDaConversa = resposta.headers.get("X-Conversa-Id")
@@ -76,7 +90,7 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
       if (resposta.headers.get("Content-Type")?.includes("application/json")) {
         const dados = await resposta.json()
         if (dados.conversaId) conversaId.current = dados.conversaId
-        setTurnos((atual) => [...atual, { papel: "ASSISTENTE", texto: dados.texto ?? dados.erro }])
+        setTurnos((atual) => [...atual, { papel: "ASSISTENTE", texto: dados.texto ?? dados.erro, contador: dados.chave === "contador" }])
       } else if (resposta.body) {
         // O turno do Tino entra vazio e vai crescendo: assim o texto aparece
         // conforme chega, em vez de a tela ficar parada até o fim.
@@ -107,7 +121,9 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
   return (
     <Dialog open={aberto} onOpenChange={setAberto}>
       <DialogTrigger asChild>
-        {comoItem ? (
+        {gatilho === "botao" ? (
+          <button className="inline-flex min-h-11 items-center gap-2 rounded-full border border-pauta px-4 text-[calc(13.5px*var(--escala-letra))] font-semibold"><TinoMarca className="size-5" />Pergunte ao Tino</button>
+        ) : comoItem ? (
           // Na barra lateral ele é um item de navegação como os outros, e o
           // que aparece ali é o leão da marca — a mesma arte do topo, a traço,
           // que herda a cor de quem a usa. O mascote colorido ao lado de
@@ -129,19 +145,19 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
           reposicionar por `fixed`, que quebraria a area segura do celular.
           No celular continua subindo de baixo, ocupando a largura toda. */}
       <DialogContent className="flex h-[min(640px,85dvh)] flex-col overflow-hidden sm:ml-auto sm:mt-auto sm:max-w-[420px]">
-        <DialogHeader><DialogTitle>Tino</DialogTitle><DialogDescription>{FRASE[estado]}</DialogDescription></DialogHeader>
+        <DialogHeader><DialogTitle>Tino</DialogTitle><DialogDescription>{descricao ?? FRASE[estado]}</DialogDescription></DialogHeader>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {turnos.length === 0 && (
           <div>
             <p className="text-[calc(13px*var(--escala-letra))] text-[color:var(--texto-2)]">
-              Trabalho com os seus números. Pergunte à vontade:
+              {rota === "/api/tino/chat" ? "Trabalho com os seus números. Pergunte à vontade:" : "Respondo com a regra, a fonte e a data, e com os números do seu MEI. O que passar disso é caso de contador."}
             </p>
             {/* Pílulas que quebram linha, não botões de largura cheia
                 empilhados. Em bloco, quatro sugestões pareciam um menu de
                 quatro opções e escondiam o campo de escrever; em pílula elas
                 lêem como exemplo do que dá para perguntar, que é o que são. */}
             <div className="mt-3 flex flex-wrap gap-2">
-              {SUGESTOES.map((sugestao) => (
+              {sugestoes.map((sugestao) => (
                 <button
                   key={sugestao}
                   onClick={() => perguntar(sugestao)}
@@ -154,7 +170,15 @@ export function TinoDock({ comoItem = false }: { comoItem?: boolean } = {}) {
           </div>
         )}
 
-        {turnos.map((turno, indice) => (
+        {turnos.map((turno, indice) => turno.contador ? (
+          // O "caso de contador" não é uma resposta qualquer: é o Tino dizendo
+          // que não chuta. Fica destacado, com o caminho para o resumo do ano.
+          <div key={indice} className="max-w-[88%] space-y-2 rounded-2xl border border-[color:color-mix(in_oklab,var(--atencao),transparent_55%)] px-3 py-3 text-sm leading-relaxed">
+            <p className="flex items-center gap-2 font-semibold text-[color:var(--atencao)]"><Briefcase className="size-4" aria-hidden />É caso de contador</p>
+            <p className="whitespace-pre-wrap">{turno.texto}</p>
+            <Link href="/mei" onClick={() => setAberto(false)} className="inline-flex min-h-10 items-center rounded-full border border-pauta px-3 text-[calc(13px*var(--escala-letra))] font-semibold">Ver o resumo do ano</Link>
+          </div>
+        ) : (
           <div
             key={indice}
             className={cn(

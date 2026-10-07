@@ -46,7 +46,7 @@
 .dica { font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
 .erro { font-size:calc(13px * var(--escala-letra)); color:var(--negativo); }
 
-.topo { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.topo { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; }
 .topo p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }
 .botao { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:40px !important; padding:0 16px !important; border-radius:99px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(13.5px * var(--escala-letra)); font-weight:650; white-space:nowrap; }
 .botao svg { width:15px; height:15px; }
