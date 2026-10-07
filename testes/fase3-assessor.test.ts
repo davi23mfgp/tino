@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
 
-import { arquivoIcs, instanteNoFuso, lerPedidoDeAgenda, linkGoogleAgenda, textoDaProposta } from "../src/lib/loja/pedido-agenda"
+import { acharCliente, arquivoIcs, instanteNoFuso, lerPedidoDeAgenda, linkGoogleAgenda, textoDaProposta } from "../src/lib/loja/pedido-agenda"
 import { dasDoMes, dasDoPerfil, responderTributario, LIMITE_MEI_2026_CENTAVOS, type ContextoDoMei } from "../src/lib/regras-mei"
 
 // Quarta, 7 de outubro de 2026, 10h em São Paulo.
@@ -93,4 +93,27 @@ test("DAS do perfil: o informado vale; sem ele, a tabela de 2026; sem os dois, n
   // O caminhoneiro tem conta própria: sem o valor da guia, a tela pede, não inventa.
   assert.deepEqual(dasDoPerfil(null, "TRANSPORTE_CARGA"), { centavos: null, daTabela: false })
   assert.deepEqual(dasDoPerfil(0, "COMERCIO"), { centavos: 0, daTabela: false })
+})
+
+test("agenda: acha a cliente pelo começo do nome; com duas, pergunta; com nenhuma, não inventa", () => {
+  const clientes = [
+    { id: "1", nome: "Ana Paula Souza", telefone: "31988771203" },
+    { id: "2", nome: "Mariana Lima", telefone: null },
+    { id: "3", nome: "Rita Álvares", telefone: null },
+    { id: "4", nome: "Ana Clara", telefone: null },
+    { id: "5", nome: "Bia", telefone: null },
+  ]
+  // "Ana" está dentro de "Mariana", mas não começa uma palavra dela.
+  assert.deepEqual(acharCliente("Ana", clientes).candidatos.map((c) => c.id), ["1", "4"])
+  assert.equal(acharCliente("Ana", clientes).escolhido, null)
+  assert.equal(acharCliente("Ana Paula", clientes).escolhido?.id, "1")
+  assert.equal(acharCliente("rita alvares", clientes).escolhido?.id, "3")
+  assert.equal(acharCliente("Paula", clientes).escolhido?.id, "1")
+  assert.deepEqual(acharCliente("Joana", clientes), { escolhido: null, candidatos: [] })
+  assert.deepEqual(acharCliente(null, clientes), { escolhido: null, candidatos: [] })
+  // Nome inteiro igual vence quem só começa igual.
+  const comBia = [...clientes, { id: "6", nome: "Bianca Reis", telefone: null }]
+  assert.equal(acharCliente("Bia", comBia).escolhido?.id, "5")
+  // Palavras fora de ordem não casam: "Paula Ana" não é "Ana Paula".
+  assert.equal(acharCliente("Paula Ana", clientes).escolhido, null)
 })

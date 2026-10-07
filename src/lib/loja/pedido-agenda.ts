@@ -190,3 +190,36 @@ export function arquivoIcs(evento: { id: string; titulo: string; inicio: Date; m
     "END:VEVENT", "END:VCALENDAR", "",
   ].join("\r\n")
 }
+
+// ------------------------------------------------------------ quem é a "Ana"
+
+export interface ClienteDoPedido { id: string; nome: string; telefone: string | null }
+
+/**
+ * A pessoa diz "com a Ana"; a loja tem a Ana Paula e a Mariana. Casa pelo
+ * começo de uma das palavras do nome, sem acento: "Ana" acha "Ana Paula" e
+ * não acha "Mariana". Nome inteiro igual vence o resto, para "Ana" não virar
+ * dúvida quando existe uma cliente chamada só Ana. Com mais de uma, a tela
+ * pergunta qual; com nenhuma, o compromisso fica sem cliente (não se cria
+ * cadastro sozinho).
+ */
+export function acharCliente(dito: string | null, clientes: ClienteDoPedido[]): { escolhido: ClienteDoPedido | null; candidatos: ClienteDoPedido[] } {
+  if (!dito) return { escolhido: null, candidatos: [] }
+  const procurado = normalizar(dito).trim()
+  const palavrasProcuradas = procurado.split(/\s+/)
+  const casam = clientes.filter((cliente) => {
+    const palavras = normalizar(cliente.nome).split(/\s+/)
+    // Cada palavra dita começa uma palavra do nome, na ordem: "Ana Paula" acha "Ana Paula Souza".
+    let inicio = 0
+    return palavrasProcuradas.every((procurada) => {
+      const achada = palavras.findIndex((palavra, i) => i >= inicio && palavra.startsWith(procurada))
+      if (achada < 0) return false
+      inicio = achada + 1
+      return true
+    })
+  })
+  const exatos = casam.filter((cliente) => normalizar(cliente.nome).trim() === procurado)
+  if (exatos.length === 1) return { escolhido: exatos[0]!, candidatos: exatos }
+  if (casam.length === 1) return { escolhido: casam[0]!, candidatos: casam }
+  return { escolhido: null, candidatos: casam.slice(0, 6) }
+}

@@ -78,8 +78,8 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | # | Item | Situação | Estudo | Próximo passo |
 |---|---|---|---|---|
-| 3.1 | Agendar por pedido, com confirmação num toque | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | leitor do pedido pronto e testado (`lerPedidoDeAgenda`, `/api/loja/agenda/pedido`: "amanhã às 15h com a Ana" vira proposta); 🙋 escolher no [canvas parte 4, passo 48](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) |
-| 3.2 | Google Agenda | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | link "adicionar ao Google Agenda" e arquivo .ics prontos (`/api/loja/agenda/compromissos/[id]/exportar`), botões no [passo 48](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB); a integração que escreve sozinha espera a verificação do app no Google (🙋 Davi) |
+| 3.1 | Agendar por pedido, com confirmação num toque | ✅ | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | "Peça ao Tino" no alto da Agenda (passo 48, A e B juntas, Davi 07/10): a linha recebe o pedido, o Tino pergunta só o que falta (dia, hora, qual cliente) com as respostas num toque, e nada marca sem "Marcar"; testado no navegador (390 e 1280, claro) |
+| 3.2 | Google Agenda | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | link "adicionar ao Google Agenda" e arquivo .ics prontos (`/api/loja/agenda/compromissos/[id]/exportar`), com os botões "Google Agenda" e ".ics" depois de marcar (testado: o Google abre às 15:00 de Brasília); a integração que escreve sozinha espera a verificação do app no Google (🙋 Davi) |
 | 3.3 | Ajuda tributária com fonte e data; "caso de contador" quando passar do escrito | 🔨 | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | catálogo de 7 regras com fonte e data e os números da conta (`/api/mei/pergunta`); 🙋 escolher no [canvas parte 4, passo 49](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB); conferir o texto da LC 123 antes de abrir ao público |
 | 3.4 | Modo simples (letra maior, menos itens) | ⏳ | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) (adendo do 3.4) | 🙋 escolher no [canvas parte 4, passo 50](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB): blocos grandes, a mesma tela maior, ou montado por quem ajuda |
 | 3.5 | Área funda: Moda e vestuário | ⏳ | [estudo](pesquisas/2026-10-07-fase-3-assessor.md) | estudo próprio quando chegar a vez (depois de Beleza) |
@@ -152,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Passo 48 escolhido (A e B juntas) e construído: "Peça ao Tino" na Agenda. A conversa não guarda estado no servidor: cada resposta se junta ao pedido e o leitor relê tudo. A cliente dita é procurada pelo começo do nome ("Ana" acha Ana Paula, não Mariana); com duas, o Tino pergunta qual. |
 | 07/10/2026 | Canvas do passo 54 (Notificações: duas pilhas, resumo do dia ou agrupado por assunto). A fila antiga do canvas (Assinatura e Notificações) está toda desenhada. |
 | 07/10/2026 | Notificações (fila antiga) conferidas antes do canvas: a gaveta deixava ver a tela por trás (usava `--papel-solido`, que o vidro deixa com 6% de opacidade; agora `--superficie-flutuante`), o texto dizia "1.2 mês(es)" (agora "1,2 mês", com `textoDeMeses` em oito frases) e o aviso de reserva de setembro aparecia junto do de outubro (aviso de estado agora vale só no mês corrente). Conferido no navegador, escuro e claro. |
 | 07/10/2026 | Canvas dos passos 52 (Assinatura: o que já fez no teste, linha do tempo como a da Blinkist, anual em "por mês") e 53 (o botão do leão sai de cima do conteúdo). |

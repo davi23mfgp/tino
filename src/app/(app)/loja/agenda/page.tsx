@@ -15,6 +15,7 @@ import base from "../clientes/clientes.module.css"
 import { NovoCompromisso, OrdemDeServico, type ClienteSimples, type ModoAssistencia, type OrdemParaEditar } from "./dialogos"
 import { tipoDaSubarea } from "@/lib/loja/assistencia"
 import { FichaDaOrdem } from "./ficha-os"
+import { PecaAoTino } from "./peca-ao-tino"
 import estilos from "./agenda.module.css"
 
 interface OrdemDaLista {
@@ -190,6 +191,8 @@ function AgendaDoDia() {
           </nav>
 
           <div className={estilos.meio}>
+            <PecaAoTino aoMarcar={(marcado) => { if (marcado === dados.dia) void carregar(dia); else setDia(marcado) }} />
+
             <div className={estilos.faixa} role="group" aria-label="Dias da semana">
               {dados.semana.map((linha) => (
                 <button key={linha.dia} type="button" className={estilos.diaFaixa} aria-pressed={linha.dia === dados.dia} data-hoje={linha.dia === dados.hoje ? "" : undefined} onClick={() => setDia(linha.dia)} aria-label={`${NOMES[linha.nome] ?? linha.nome} ${linha.numero}, ${linha.quantidade} na agenda`}>
