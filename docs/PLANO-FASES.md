@@ -123,7 +123,7 @@ Tino pessoal, e deixar os dois prontos para o lançamento.
 | 7.1 | Estudo de mercado novo do **Tino negócio**: concorrentes, preços e casos atualizados | ⏳ |
 | 7.2 | Estudo de mercado do **Tino pessoal** (apps de finanças pessoais do Brasil e de fora), que ainda não foi feito | 🔨 [estudo](pesquisas/2026-10-07-mercado-tino-pessoal.md): a diferença é a dívida (82% das famílias endividadas, Peic de agosto); 🙋 o anual do Tino (R$ 214,92) custa o dobro do anual do Mobills (R$ 99,90), decisão de preço do Davi; refazer perto do lançamento |
 | 7.3 | Revisão do produto, tela por tela, com as três perguntas da visão: serve a mais de um segmento? funciona com mais de um negócio? uma pessoa de 65 anos usa sem ajuda? | ⏳ |
-| 7.4 | Revisão de segurança e LGPD antes de abrir ao público | ⏳ |
+| 7.4 | Revisão de segurança e LGPD antes de abrir ao público | 🔨 revisão do que entrou depois de 22/09 feita ([relatório](SEGURANCA-LGPD-2026-10-07.md)): "esqueci a senha" contava quem tem conta pelo tempo de resposta (corrigido e medido); a revisão completa fica para perto do lançamento |
 | 7.5 | Pronto para lançar: preço, termos, suporte, site, cobrança, métricas, página de cada área | ⏳ |
 | 7.6 | Lançamento público do Tino pessoal e do Tino negócio | ⏳ |
 
@@ -152,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Revisão de segurança do que entrou depois de 22/09: "esqueci a senha" respondia mais devagar para quem tem conta (agora o envio roda depois da resposta; medido com curl); conferir a maquininha ganhou teto de 5.000 vendas e 100 dias. |
 | 07/10/2026 | Inventário de telas (6.1) com 196 capturas (https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG). Dois defeitos corrigidos na hora: o DAS padrão de R$ 75,80 (não era o DAS de ano nenhum; agora vale a tabela de 2026 pela atividade, migração `das_pela_tabela`) e quatro telas sem nome no topo (com teste que pega a próxima). Estudo de mercado do Tino pessoal (7.2). |
 | 07/10/2026 | Fase 4 começada pelo arquivo: estudo das maquininhas e da NFS-e; leitor da planilha (cabeçalho por sinônimo, negada e estornada de fora) e conciliação com o Balcão (bateu, só na maquininha, só no Balcão, taxa e data diferentes), com ajustes que só gravam com o toque. Testado com mutação e contra o banco. Canvas do passo 51 publicado. |
 | 07/10/2026 | Canvas parte 4 aberto (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB) com os passos 48 (assessor e Google Agenda), 49 (ajuda tributária) e 50 (modo simples); estudo do modo simples (Apple, Samsung, Uber) no adendo do estudo da Fase 3. Esperam a escolha do Davi. |
