@@ -95,3 +95,6 @@
 .qrImagem { flex:none; width:112px; height:112px; padding:7px; border-radius:14px; background:#fff; box-shadow:0 0 0 1px color-mix(in oklab, var(--foreground), transparent 88%); }
 .qrImagem svg { display:block; width:100%; height:100%; }
 @media (max-width:420px) { .qr { flex-direction:column; align-items:flex-start; } .qrImagem { width:148px; height:148px; } }
+.esquecido { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:14px 16px; border-radius:16px; border:1px solid color-mix(in oklab, var(--atencao), transparent 55%); background:color-mix(in oklab, var(--atencao), transparent 92%); }
+.esquecido p { flex:1 1 240px; margin:0; font-size:calc(12.5px * var(--escala-letra)); line-height:1.5; color:var(--texto-2); }
+.esquecido b { font-weight:550; color:var(--atencao); }

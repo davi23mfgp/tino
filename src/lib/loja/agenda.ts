@@ -157,6 +157,49 @@ export function lembretes(
   return avisos
 }
 
+/**
+ * Os marcos do aparelho pronto que ninguém buscou (passo 39, estudo da área
+ * Assistência): 7, 30 e 60 dias depois do "pronto". O sino avisa uma vez em
+ * cada marco, e só o mais recente: OS esquecida há 65 dias não acende três
+ * avisos de uma vez.
+ *
+ * O caminho é lembrar e registrar. Vender o aparelho esquecido não é: a
+ * cláusula "depois de 90 dias o aparelho é vendido" é tida como abusiva, e o
+ * Tino não ensina a fazer o que o Procon derruba.
+ */
+export const MARCOS_DE_RETIRADA = [7, 30, 60] as const
+
+export function diasDesde(dia: string, agora: Date, fuso?: string) {
+  return Math.round((Date.parse(`${diaNoFuso(agora, fuso)}T00:00:00Z`) - Date.parse(`${dia}T00:00:00Z`)) / 86_400_000)
+}
+
+export function lembretesDeRetirada(
+  ordens: { id: string; numero: number; objeto: string; cliente: string; prontoEm: Date }[],
+  agora: Date,
+  fuso?: string,
+): AvisoGerado[] {
+  const avisos: AvisoGerado[] = []
+  for (const o of ordens) {
+    const dias = diasDesde(diaNoFuso(o.prontoEm, fuso), agora, fuso)
+    const marco = [...MARCOS_DE_RETIRADA].reverse().find((limite) => dias >= limite)
+    if (!marco) continue
+    avisos.push({
+      chave: `os-esquecida:${o.id}:${marco}`, tipo: "os_esquecida",
+      titulo: `${o.objeto} de ${o.cliente} está pronto há ${dias} dias`,
+      texto: `OS ${numeroDaOrdem(o.numero)} ainda não foi buscada. Mande um lembrete.`,
+      rota: `/loja/agenda?os=${o.id}`, acao: "Lembrar",
+    })
+  }
+  return avisos
+}
+
+/** O lembrete de buscar, mais firme a cada marco, sem ameaça que a lei não sustenta. */
+export function mensagemDeLembrete(cliente: string, objeto: string, loja: string, dias: number, link: string) {
+  const nome = cliente.split(" ")[0]
+  if (dias < 30) return `Olá, ${nome}! Passando para lembrar que seu ${objeto} está pronto na ${loja} desde a semana passada. Pode buscar quando quiser: ${link}`
+  return `Olá, ${nome}! Seu ${objeto} está pronto na ${loja} há ${dias} dias e continua guardado aqui. Consegue passar para buscar esta semana? Detalhes: ${link}`
+}
+
 /** A mensagem de "está pronto", para o dono mandar do próprio WhatsApp. */
 export function mensagemDePronto(cliente: string, objeto: string, loja: string, link: string) {
   return `Olá, ${cliente.split(" ")[0]}! Seu ${objeto} está pronto na ${loja}. Pode buscar quando quiser. Acompanhe por aqui: ${link}`

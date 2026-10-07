@@ -23,6 +23,7 @@ interface OrdemDoComprovante {
   entradaConferidaEm: string | null
   entradaContestada: string | null
   qr: string
+  garantiaDe?: { numero: number; servico: string } | null
 }
 
 /** O que a ficha diz sobre a conferência do cliente, com o tom do aviso. */
@@ -56,6 +57,7 @@ export function ComprovanteDeEntrada({ loja, ordem }: { loja: { nome: string; te
           {ordem.aparelhoSerie && <p><b>IMEI ou série:</b> {ordem.aparelhoSerie}</p>}
           <p><b>Ficou junto:</b> {ordem.acessorios.length ? ordem.acessorios.join(", ") : "nada além do aparelho"}</p>
           <p><b>Serviço:</b> {ordem.servico}</p>
+          {ordem.garantiaDe && <p><b>Retorno em garantia</b> da OS {numeroDaOrdem(ordem.garantiaDe.numero)} ({ordem.garantiaDe.servico})</p>}
           {ordem.prazoEm && <p><b>Previsão:</b> {data(ordem.prazoEm)}</p>}
           <p><b>Valor:</b> {ordem.valorCentavos !== null ? formatarMoeda(ordem.valorCentavos) : "depois do diagnóstico, com a sua aprovação"}</p>
         </div>

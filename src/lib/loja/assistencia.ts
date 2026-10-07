@@ -171,3 +171,47 @@ export function serieMascarada(serie: string | null): string | null {
   const limpo = serie.replace(/\s/g, "")
   return limpo.length <= 4 ? limpo : `final ${limpo.slice(-4)}`
 }
+
+/** Série comparável: sem espaço nem pontuação, em maiúsculas. */
+export function serieNormalizada(serie: string | null | undefined): string {
+  return (serie ?? "").replace(/[^0-9a-z]/gi, "").toUpperCase()
+}
+
+export interface CandidataDeGarantia {
+  id: string
+  numero: number
+  servico: string
+  clienteId: string
+  aparelhoSerie: string | null
+  aparelhoModelo: string | null
+  etapasEm: Record<string, string> | null
+}
+
+/**
+ * O aparelho que entra agora já passou por aqui e ainda está na garantia?
+ * O IMEI ou a série decidem; sem eles, vale o mesmo cliente com o mesmo
+ * modelo, que é mais fraco e a tela diz que é. Só conta OS entregue há menos
+ * de 90 dias: antes da entrega a garantia nem começou, e depois dos 90 ela
+ * acabou. A loja confirma: o Tino propõe, não marca sozinho (regra 5).
+ */
+export function procurarGarantia(
+  candidatas: CandidataDeGarantia[],
+  novo: { serie?: string | null; modelo?: string | null; clienteId?: string | null },
+  agora: Date,
+): { ordem: CandidataDeGarantia; por: "serie" | "cliente_e_modelo"; ate: Date; diasRestantes: number } | null {
+  const serie = serieNormalizada(novo.serie)
+  const modelo = (novo.modelo ?? "").trim().toLowerCase()
+  const vigentes = candidatas
+    .map((ordem) => ({ ordem, garantia: garantiaDoConserto(ordem.etapasEm, agora) }))
+    .filter((linha) => linha.garantia.comecou && linha.garantia.vigente)
+    .sort((a, b) => Date.parse(b.ordem.etapasEm!.ENTREGUE!) - Date.parse(a.ordem.etapasEm!.ENTREGUE!))
+  const porSerie = serie.length >= 6 ? vigentes.find((linha) => serieNormalizada(linha.ordem.aparelhoSerie) === serie) : undefined
+  const porCliente = !porSerie && novo.clienteId && modelo
+    ? vigentes.find((linha) => linha.ordem.clienteId === novo.clienteId && (linha.ordem.aparelhoModelo ?? "").trim().toLowerCase() === modelo
+      // Série diferente nos dois lados é outro aparelho, mesmo com o mesmo modelo.
+      && !(serie && linha.ordem.aparelhoSerie && serieNormalizada(linha.ordem.aparelhoSerie) !== serie))
+    : undefined
+  const achada = porSerie ?? porCliente
+  if (!achada || !achada.garantia.comecou) return null
+  return { ordem: achada.ordem, por: porSerie ? "serie" : "cliente_e_modelo", ate: achada.garantia.ate, diasRestantes: achada.garantia.diasRestantes }
+}

@@ -115,3 +115,14 @@
 @media (min-width:640px) { .servico { grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr) minmax(0,.9fr); } }
 .enviar { display:inline-flex; align-items:center; justify-content:center; min-height:48px; border:0; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(14.5px * var(--escala-letra)); font-weight:600; letter-spacing:.01em; box-shadow:0 8px 24px color-mix(in oklab, oklch(var(--primary)), transparent 75%); }
 .enviar:disabled { opacity:.55; }
+
+/* Retorno em garantia: o Tino propõe, a loja marca (regra 5). */
+.garantia { --linha:color-mix(in oklab, var(--foreground), transparent 90%); display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 16px; border-radius:16px; border:1px solid color-mix(in oklab, var(--atencao), transparent 55%); background:color-mix(in oklab, var(--atencao), transparent 92%); }
+.garantia > svg { width:20px; height:20px; flex:none; color:var(--atencao); stroke-width:1.6; }
+.garantia > div { flex:1 1 260px; display:grid; gap:3px; }
+.garantia b { font-size:calc(13.5px * var(--escala-letra)); font-weight:550; line-height:1.4; }
+.garantia span { font-size:calc(12px * var(--escala-letra)); color:var(--texto-3); }
+.garantia button { min-height:34px; padding:0 14px; border-radius:999px; border:1px solid color-mix(in oklab, var(--atencao), transparent 45%); background:transparent; color:var(--atencao); font-size:calc(13px * var(--escala-letra)); font-weight:550; }
+.garantia[data-marcado] { border-color:color-mix(in oklab, var(--positivo), transparent 50%); background:color-mix(in oklab, var(--positivo), transparent 92%); }
+.garantia[data-marcado] > svg { color:var(--positivo); }
+.garantia button[aria-pressed="true"] { border-color:transparent; background:color-mix(in oklab, var(--positivo), transparent 82%); color:var(--positivo); }

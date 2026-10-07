@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { ShieldCheck } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
@@ -104,6 +105,8 @@ export function NovoCompromisso({ aberto, aoFechar, aoSalvar, dia, clientes, ord
   )
 }
 
+interface GarantiaAchada { id: string; numero: number; servico: string; por: "serie" | "cliente_e_modelo"; ate: string; diasRestantes: number }
+
 export interface OrdemParaEditar {
   id: string; objeto: string; servico: string; naEntrada: string | null; prazoEm: string | null; valorCentavos: number | null
   aparelho?: {
@@ -133,6 +136,9 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
   // OS antiga, de antes da entrada, continua editando no jeito de texto livre.
   const comEntrada = Boolean(assistencia && (!ordem || ordem.aparelho))
   const [entrada, setEntrada] = useState<ValorDaEntrada>(() => entradaVazia(assistencia?.tipoInicial ?? "celular"))
+  const [garantia, setGarantia] = useState<GarantiaAchada | null>(null)
+  const [retorno, setRetorno] = useState(false)
+
   const [cliente, setCliente] = useState("")
   const [telefone, setTelefone] = useState("")
   const [objeto, setObjeto] = useState("")
@@ -144,9 +150,23 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
   const [doOrcamento, setDoOrcamento] = useState<{ numero: number; cliente: string; total: number } | null>(null)
   const [ocupado, setOcupado] = useState(false)
 
+  // Enquanto a pessoa digita o IMEI, escolhe o modelo ou o cliente, o Tino
+  // procura se o aparelho saiu daqui há menos de 90 dias. Espera a digitação
+  // parar, para não perguntar ao servidor a cada letra.
+  useEffect(() => {
+    if (!aberto || !comEntrada || ordem) return
+    const temo = window.setTimeout(() => {
+      const busca = new URLSearchParams({ serie: entrada.serie, modelo: entrada.modelo, cliente })
+      if (!entrada.serie.trim() && !(entrada.modelo.trim() && cliente.trim())) { setGarantia(null); return }
+      buscar<{ garantia: GarantiaAchada | null }>(`/api/loja/ordens/garantia?${busca}`)
+        .then((resposta) => { setGarantia(resposta.garantia); if (!resposta.garantia) setRetorno(false) }, () => setGarantia(null))
+    }, 450)
+    return () => window.clearTimeout(temo)
+  }, [aberto, comEntrada, ordem, entrada.serie, entrada.modelo, cliente])
+
   useEffect(() => {
     if (!aberto) return
-    setCliente(""); setTelefone(""); setChecklist(""); setDoOrcamento(null)
+    setCliente(""); setTelefone(""); setChecklist(""); setDoOrcamento(null); setGarantia(null); setRetorno(false)
     setObjeto(ordem?.objeto ?? "")
     setServico(ordem?.servico ?? "")
     setNaEntrada(ordem?.naEntrada ?? "")
@@ -201,6 +221,7 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
         const resposta = await enviar<{ ordem: { id: string; numero: number }; existente: boolean }>("/api/loja/ordens", {
           ...comum,
           ...(orcamentoId ? { orcamentoId } : conhecido ? { clienteId: conhecido.id } : { clienteNome: cliente.trim(), clienteTelefone: telefone.trim() || undefined }),
+          ...(retorno && garantia ? { garantiaDeId: garantia.id } : {}),
           checklist: checklist.split("\n").map((linha) => linha.trim()).filter(Boolean),
         })
         showToast(resposta.existente ? `Este orçamento já tinha a OS ${String(resposta.ordem.numero).padStart(4, "0")}` : `OS ${String(resposta.ordem.numero).padStart(4, "0")} aberta`)
@@ -237,6 +258,16 @@ export function OrdemDeServico({ aberto, aoFechar, aoSalvar, clientes, orcamento
                   </div>
                 )}
                 <EntradaDoAparelho valor={entrada} mudar={setEntrada} modelosUsados={assistencia!.modelosUsados} temSenhaGuardada={Boolean(ordem?.aparelho?.temSenha)} />
+                {garantia && (
+                  <div className={fino.garantia} data-marcado={retorno ? "" : undefined}>
+                    <ShieldCheck aria-hidden />
+                    <div>
+                      <b>{garantia.por === "serie" ? "Este aparelho" : "Um aparelho igual deste cliente"} saiu daqui na OS {String(garantia.numero).padStart(4, "0")} ({garantia.servico.toLowerCase()}) e está na garantia até {new Date(garantia.ate).toLocaleDateString("pt-BR")}.</b>
+                      <span>Se for o mesmo defeito, o conserto é por conta da loja (Código de Defesa do Consumidor, art. 26).</span>
+                    </div>
+                    <button type="button" aria-pressed={retorno} onClick={() => setRetorno(!retorno)}>{retorno ? "É retorno em garantia" : "Marcar como retorno"}</button>
+                  </div>
+                )}
                 {/* O serviço no mesmo traço dos blocos da entrada: é o 05 da folha. */}
                 <section className={fino.bloco} aria-labelledby="entrada-servico">
                   <h3 id="entrada-servico"><span>05</span>Serviço</h3>

@@ -1607,6 +1607,12 @@ model OrdemServicoLoja {
   /// O cliente conferiu a entrada pelo link, ou disse o que está errado.
   entradaConferidaEm DateTime?
   entradaContestada  String?
+  /// Retorno em garantia: a OS de antes, do mesmo aparelho, ainda nos 90
+  /// dias. Liga as duas para a ficha mostrar o histórico e a loja contar
+  /// quanto conserto volta.
+  garantiaDeId String?
+  garantiaDe   OrdemServicoLoja?  @relation("RetornoEmGarantia", fields: [garantiaDeId], references: [id], onDelete: SetNull)
+  retornos     OrdemServicoLoja[] @relation("RetornoEmGarantia")
 
   orcamentoId String?        @unique
   orcamento   OrcamentoLoja? @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)

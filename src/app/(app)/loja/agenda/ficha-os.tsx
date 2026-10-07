@@ -6,7 +6,8 @@ import { ArrowLeft, Check, ExternalLink, Eye, Link2, MessageCircle, Pencil, Plus
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
-import { ETAPAS, mensagemDePronto, numeroDaOrdem, prazoDaOrdem, rotuloDaEtapa, type Etapa, type ItemDaChecklist } from "@/lib/loja/agenda"
+import { ETAPAS, diasDesde, MARCOS_DE_RETIRADA, mensagemDeLembrete, mensagemDePronto, numeroDaOrdem, prazoDaOrdem, rotuloDaEtapa, type Etapa, type ItemDaChecklist } from "@/lib/loja/agenda"
+import { diaNoFuso } from "@/lib/loja/contas"
 import { Input } from "@/components/ui/input"
 import { showToast } from "@/components/ui/toast"
 
@@ -50,6 +51,7 @@ interface Ordem {
   garantia: { comecou: false } | { comecou: true; ate: string; vigente: boolean; diasRestantes: number }
   linkAbsoluto: string
   qr: string
+  garantiaDe: { id: string; numero: number; servico: string } | null
 }
 
 export interface LojaDaFicha { nome: string; telefone: string | null; area: string | null; subarea: string | null }
@@ -115,6 +117,9 @@ export function FichaDaOrdem({ id, atualizar, aoVoltar, aoMudar, aoEditar }: {
   const orcamentoAberto = ordem.orcamento && (ordem.orcamento.status === "ENVIADO" || ordem.orcamento.status === "APROVADO")
   const pagoPeloOrcamento = ordem.orcamento?.status === "CONVERTIDO"
   const podeCobrar = !ordem.vendaId && !pagoPeloOrcamento && (orcamentoAberto || ordem.valorCentavos !== null)
+  // Pronto há uma semana ou mais: o primeiro marco do lembrete (7, 30 e 60 dias).
+  const diasPronto = ordem.etapa === "PRONTO" && ordem.etapasEm.PRONTO ? diasDesde(diaNoFuso(new Date(ordem.etapasEm.PRONTO)), new Date()) : null
+  const esquecido = diasPronto !== null && diasPronto >= MARCOS_DE_RETIRADA[0] ? diasPronto : null
   const cobrar = orcamentoAberto ? `/loja?orcamento=${ordem.orcamentoId}&os=${ordem.id}` : `/loja?os=${ordem.id}`
 
   return (
@@ -216,6 +221,13 @@ export function FichaDaOrdem({ id, atualizar, aoVoltar, aoMudar, aoEditar }: {
         </div>
       </div>
 
+      {esquecido !== null && (
+        <div className={estilos.esquecido}>
+          <p><b>Pronto há {esquecido} dias e ainda não buscado.</b> Lembre {ordem.cliente.nome.split(" ")[0]}. A lei não deixa vender aparelho esquecido: o caminho é lembrar.</p>
+          <a className={`${base.botao} ${base.pequeno}`} href={linkDoWhatsApp(ordem.cliente.telefone, mensagemDeLembrete(ordem.cliente.nome, ordem.objeto, dados.loja.nome, esquecido, url))} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden />Mandar lembrete</a>
+        </div>
+      )}
+
       <div className={base.acoes}>
         {ordem.etapa !== "PRONTO" && ordem.etapa !== "ENTREGUE" && (
           <button type="button" className={base.botao} data-principal disabled={ocupado} onClick={async () => { if (await mudar({ etapa: "PRONTO" }, "Marcado como pronto")) setAvisar(true) }}>
@@ -275,6 +287,9 @@ function AparelhoDaFicha({ ordem, senha, verSenha }: { ordem: Ordem; senha: stri
         )}
         {senha && <small className={base.sub}>some em 30 segundos</small>}
       </div>
+      {ordem.garantiaDe && (
+        <p className={estilos.conferencia} data-tom="atencao"><ShieldCheck aria-hidden />Retorno em garantia da OS {numeroDaOrdem(ordem.garantiaDe.numero)} ({ordem.garantiaDe.servico.toLowerCase()}).</p>
+      )}
       <p className={estilos.conferencia} data-tom={conferencia.tom}>{conferencia.texto}</p>
       {ordem.garantia.comecou && (
         <p className={estilos.conferencia} data-tom={ordem.garantia.vigente ? "bom" : undefined}>

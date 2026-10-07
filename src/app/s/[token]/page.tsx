@@ -25,7 +25,7 @@ export default async function Servico({ params }: { params: Promise<{ token: str
   const ordem = TOKEN_VALIDO.test(token)
     ? await prisma.ordemServicoLoja.findUnique({
         where: { linkToken: token },
-        include: { loja: { select: { nome: true, telefoneContato: true, lar: { select: { fusoHorario: true } } } }, cliente: { select: { nome: true } } },
+        include: { loja: { select: { nome: true, telefoneContato: true, lar: { select: { fusoHorario: true } } } }, cliente: { select: { nome: true } }, garantiaDe: { select: { numero: true } } },
       })
     : null
 
@@ -68,6 +68,7 @@ export default async function Servico({ params }: { params: Promise<{ token: str
         </header>
         <p className={estilos.para}>{ordem.objeto} de <b>{ordem.cliente.nome}</b> · {ordem.servico}</p>
         {ordem.etapa === "PRONTO" && <p className={estilos.aviso} data-tom="bom">Está pronto. Pode buscar quando quiser.</p>}
+        {ordem.garantiaDe && <p className={estilos.aviso} data-tom="bom">Retorno em garantia do serviço {numeroDaOrdem(ordem.garantiaDe.numero)}.</p>}
         {ordem.prazoEm && ordem.etapa !== "PRONTO" && ordem.etapa !== "ENTREGUE" && (
           <p className={estilos.aviso} data-tom="bom">Previsão: {quando(ordem.prazoEm.toISOString())}.</p>
         )}

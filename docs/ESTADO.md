@@ -36,9 +36,25 @@ seguem com a OS de texto livre.
 - Regras em `src/lib/loja/assistencia.ts` e `modelos.ts`, testadas em
   `testes/entrada-aparelho.test.ts`, com prova de que cada teste falha se a
   regra mudar.
-- **Falta:** foto do aparelho (fica para depois das conversas com os donos),
-  lembrete de aparelho esquecido e marcar "retorno em garantia" na OS nova.
-  O campo de prazo usa o calendário do navegador.
+- **Aparelho esquecido** (07/10): o sino avisa quando a OS está pronta há
+  7, 30 e 60 dias (só o marco mais recente), e a ficha mostra "Pronto há N
+  dias" com o lembrete pronto para o WhatsApp, mais firme depois de 30 dias.
+  O Tino não sugere vender o aparelho: a cláusula é tida como abusiva.
+- **Retorno em garantia** (07/10): na entrada, ao digitar o IMEI (ou com o
+  mesmo cliente e o mesmo modelo, que a tela diz ser mais fraco), o Tino
+  procura OS entregue há menos de 90 dias e propõe "Marcar como retorno";
+  quem marca é a loja. A OS nova fica ligada à antiga (`garantiaDeId`,
+  migration `20261007150000_retorno_em_garantia`), e a ficha, o link do
+  cliente e o comprovante dizem "Retorno em garantia da OS 0001". O servidor
+  confere de novo que a garantia vale antes de ligar.
+- Testado no Chromium, 390 e 1280: aviso no sino, lembrete na ficha com a
+  mensagem, proposta de garantia pelo IMEI, vínculo na ficha e no link.
+  Regras em `testes/retorno-e-esquecido.test.ts`, com prova de que falham
+  se a regra mudar.
+- **Falta:** foto do aparelho (depois das conversas com os donos); registrar
+  que o lembrete foi mandado; quanto conserto volta em garantia por mês (não
+  há faixa de referência com fonte, então o número não aparece ainda). O
+  campo de prazo usa o calendário do navegador.
 
 ## 06/10/2026: origem do cadastro, parte automática (item 1.6)
 

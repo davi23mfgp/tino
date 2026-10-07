@@ -7,6 +7,7 @@ import { novoToken } from "@/lib/loja/clientes"
 import { proximoNumeroDeOrdem } from "@/lib/loja/ordens"
 import { campo, validar, z } from "@/lib/validar"
 import { esquemaDoAparelho, gravacaoDoAparelho } from "@/lib/loja/entrada-aparelho"
+import { garantiaDoConserto } from "@/lib/loja/assistencia"
 
 /**
  * Abre uma ordem de serviço. Vinda de orçamento, herda o cliente, o valor e
@@ -27,6 +28,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       valorCentavos: campo.centavos().nullable().optional(),
       checklist: z.array(campo.textoObrigatorio(120)).max(30).optional(),
       aparelho: esquemaDoAparelho.optional(),
+      garantiaDeId: campo.id().optional(),
     }),
     await corpo(requisicao),
   )
@@ -62,6 +64,16 @@ export const POST = comSessao(async (sessao, requisicao) => {
   if (!servico) throw new ErroDeUso("Diga o que vai ser feito.")
 
   const agora = new Date()
+  // Retorno em garantia: a loja confirmou na tela. Confere aqui de novo que a
+  // OS de antes é desta loja e que a garantia ainda vale, senão o vínculo
+  // diria "na garantia" de um conserto que já saiu dela.
+  let garantiaDeId: string | null = null
+  if (dados.garantiaDeId) {
+    const anterior = await prisma.ordemServicoLoja.findFirst({ where: { id: dados.garantiaDeId, lojaId: loja.id }, select: { id: true, etapasEm: true } })
+    const garantia = anterior ? garantiaDoConserto(anterior.etapasEm as Record<string, string> | null, agora) : null
+    if (!anterior || !garantia?.comecou || !garantia.vigente) throw new ErroDeUso("Essa OS não está mais na garantia.", 409)
+    garantiaDeId = anterior.id
+  }
   const linkToken = novoToken()
   const aparelho = dados.aparelho ? gravacaoDoAparelho(dados.aparelho, linkToken) : {}
   for (let tentativa = 0; tentativa < 3; tentativa += 1) {
@@ -81,6 +93,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
             checklist: (dados.checklist ?? []).map((texto) => ({ texto, feito: false })),
             orcamentoId: dados.orcamentoId ?? null,
             linkToken,
+            garantiaDeId,
             ...aparelho,
           },
           select: { id: true, numero: true },
