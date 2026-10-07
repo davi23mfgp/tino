@@ -12,7 +12,7 @@
  * Regras da casa mantidas: centavos inteiros, taxa em pontos-base, função pura.
  */
 
-import { bpsParaTaxa } from "@/lib/dinheiro"
+import { bpsParaTaxa, textoDeMeses } from "@/lib/dinheiro"
 import { competenciaMaisMeses, distanciaEmMeses } from "@/lib/datas"
 import { parcelaPrice } from "@/lib/financeiro"
 
@@ -414,9 +414,9 @@ function lerComparacao(
   }
 
   if (delta.mesesQuitacaoAntes !== null && delta.mesesQuitacaoAntes > 0) {
-    frases.push(`As dívidas acabam ${delta.mesesQuitacaoAntes} mês(es) antes.`)
+    frases.push(`As dívidas acabam ${textoDeMeses(delta.mesesQuitacaoAntes, 0)} antes.`)
   } else if (delta.mesesQuitacaoAntes !== null && delta.mesesQuitacaoAntes < 0) {
-    frases.push(`As dívidas demoram ${Math.abs(delta.mesesQuitacaoAntes)} mês(es) a mais para acabar.`)
+    frases.push(`As dívidas demoram ${textoDeMeses(Math.abs(delta.mesesQuitacaoAntes), 0)} a mais para acabar.`)
   }
 
   if (delta.mudouRiscoNegativo === "EVITA") {

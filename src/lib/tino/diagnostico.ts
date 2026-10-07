@@ -16,7 +16,7 @@
  * exatamente o que um contador faz.
  */
 
-import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import type { Panorama } from "@/lib/tino/panorama"
 import { REFERENCIA_COMPROMETIMENTO, REFERENCIA_JURO_MENSAL } from "@/lib/tino/leitura-dividas"
@@ -331,7 +331,7 @@ export function montarDiagnostico(
     {
       chave: "liquidez",
       nome: "Meses de folga",
-      valor: `${formatarDecimal(liquidez, 1)} meses`,
+      valor: textoDeMeses(liquidez),
       numero: Math.round(liquidez * 10) / 10,
       faixa: semDados ? "SEM_DADO" : faixaMaiorMelhor(liquidez, REFERENCIA.liquidez),
       referencia: "6 meses de custo essencial é o alvo · abaixo de 3 é frágil",
@@ -339,7 +339,7 @@ export function montarDiagnostico(
       leitura:
         liquidez < 1
           ? "Sem nenhuma receita, o dinheiro disponível não cobre um mês."
-          : `Sem nenhuma receita, o que você tem cobre ${formatarDecimal(liquidez, 1)} mês(es) do essencial.`,
+          : `Sem nenhuma receita, o que você tem cobre ${textoDeMeses(liquidez)} do essencial.`,
     },
     {
       chave: "custo-fixo",
@@ -362,7 +362,7 @@ export function montarDiagnostico(
       faixa: semDados ? "SEM_DADO" : faixaMenorMelhor(endividamento, REFERENCIA.endividamento),
       referencia: "até 30% administrável · acima de 100% compromete mais de um ano de renda",
       escala: { bom: REFERENCIA.endividamento.bom, atencao: REFERENCIA.endividamento.atencao, maximo: 15000, menorMelhor: true },
-      leitura: `Sua dívida total equivale a ${formatarDecimal(endividamento / 100 / 100 * 12, 1)} mês(es) de renda.`,
+      leitura: `Sua dívida total equivale a ${textoDeMeses(endividamento / 100 / 100 * 12)} de renda.`,
     },
     {
       chave: "essencial",
@@ -466,7 +466,7 @@ export function montarDiagnostico(
       ordem: prioridades.length + 1,
       chave: "reserva",
       titulo: "Formar reserva de emergência",
-      porque: `Hoje o disponível cobre ${formatarDecimal(liquidez, 1)} mês(es). O alvo é ${panorama.lar.mesesReserva}.`,
+      porque: `Hoje o disponível cobre ${textoDeMeses(liquidez)}. O alvo é ${panorama.lar.mesesReserva}.`,
       acao: `Guardar até chegar a ${formatarMoeda(custoEssencialMensal * panorama.lar.mesesReserva)}, em algo com liquidez diária.`,
     })
   }

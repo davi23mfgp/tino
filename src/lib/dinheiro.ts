@@ -73,6 +73,17 @@ export function formatarDecimal(valor: number, casas = 1): string {
   return valor.toFixed(casas).replace(".", ",")
 }
 
+/**
+ * "1 mês", "1,2 mês", "3 meses": vírgula decimal e o plural da língua. O
+ * texto antigo dizia "1.2 mês(es)", com o ponto do JavaScript e um plural de
+ * formulário, no aviso que a pessoa mais lê (a reserva).
+ */
+export function textoDeMeses(valor: number, casas = 1): string {
+  const arredondado = Number(valor.toFixed(casas))
+  const numero = Number.isInteger(arredondado) ? String(arredondado) : formatarDecimal(arredondado, casas)
+  return `${numero} ${Math.abs(arredondado) >= 2 ? "meses" : "mês"}`
+}
+
 /** Versão curta para gráficos e cartões: R$ 12,3 mil / R$ 1,2 mi. */
 export function formatarMoedaCurta(centavos: number): string {
   const reais = Math.abs(paraReais(centavos))

@@ -14,7 +14,7 @@
  * mecanismo, mostra o número e deixa a decisão com a pessoa.
  */
 
-import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
+import { formatarMoeda, formatarPercentual, paraCentavos, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { analisarEmprestimo } from "@/lib/financeiro"
 import type { Panorama } from "@/lib/tino/panorama"
@@ -241,7 +241,7 @@ export function responderPorRegras(pergunta: string, panorama: Panorama): Respos
     return {
       texto: [
         `Sua reserva está em ${formatarMoeda(panorama.reserva.atualCentavos)}, ${panorama.reserva.percentual}% do alvo de ${formatarMoeda(panorama.reserva.idealCentavos)} (${panorama.lar.mesesReserva} meses de custo essencial).`,
-        `Sem nenhuma receita, esse dinheiro sustenta ${panorama.reserva.mesesDeFolga} mês(es) do seu padrão atual.`,
+        `Sem nenhuma receita, esse dinheiro sustenta ${textoDeMeses(panorama.reserva.mesesDeFolga)} do seu padrão atual.`,
         panorama.reserva.percentual < 100
           ? "Reserva vem antes de investir em prazo longo: sem ela, qualquer imprevisto vira dívida cara."
           : "Reserva completa. A partir daqui a sobra pode ir para as metas de prazo mais longo.",

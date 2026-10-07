@@ -152,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 07/10/2026 | Notificações (fila antiga) conferidas antes do canvas: a gaveta deixava ver a tela por trás (usava `--papel-solido`, que o vidro deixa com 6% de opacidade; agora `--superficie-flutuante`), o texto dizia "1.2 mês(es)" (agora "1,2 mês", com `textoDeMeses` em oito frases) e o aviso de reserva de setembro aparecia junto do de outubro (aviso de estado agora vale só no mês corrente). Conferido no navegador, escuro e claro. |
 | 07/10/2026 | Canvas dos passos 52 (Assinatura: o que já fez no teste, linha do tempo como a da Blinkist, anual em "por mês") e 53 (o botão do leão sai de cima do conteúdo). |
 | 07/10/2026 | Revisão de segurança do que entrou depois de 22/09: "esqueci a senha" respondia mais devagar para quem tem conta (agora o envio roda depois da resposta; medido com curl); conferir a maquininha ganhou teto de 5.000 vendas e 100 dias. |
 | 07/10/2026 | Inventário de telas (6.1) com 196 capturas (https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG). Dois defeitos corrigidos na hora: o DAS padrão de R$ 75,80 (não era o DAS de ano nenhum; agora vale a tabela de 2026 pela atividade, migração `das_pela_tabela`) e quatro telas sem nome no topo (com teste que pega a próxima). Estudo de mercado do Tino pessoal (7.2). |
