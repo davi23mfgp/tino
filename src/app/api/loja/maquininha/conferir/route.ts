@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic"
 
 // Um mês de vendas de uma loja pequena cabe com folga; acima disso é outro arquivo.
 const TAMANHO_MAXIMO = 2_000_000
+// A conciliação compara cada venda do arquivo com cada pagamento do período:
+// arquivo de um ano inteiro vira conta de milhões numa requisição só.
+const MAXIMO_DE_VENDAS = 5_000
+const MAXIMO_DE_DIAS = 100
 
 /**
  * Confere a planilha da maquininha com o Balcão (item 4.1). Só lê e compara:
@@ -24,6 +28,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
     return ok({ leitura: { cabecalho: leitura.cabecalho, descartadas: leitura.descartadas, falta: leitura.falta ?? "nenhuma venda aprovada no arquivo" }, conciliacao: null })
   }
   const dias = leitura.vendas.map((venda) => venda.dia).sort()
+  const periodo = (Date.parse(dias[dias.length - 1]) - Date.parse(dias[0])) / 86_400_000
+  if (leitura.vendas.length > MAXIMO_DE_VENDAS || periodo > MAXIMO_DE_DIAS) {
+    return ok({ leitura: { cabecalho: leitura.cabecalho, descartadas: [], falta: "um arquivo menor: mande até três meses de vendas por vez" }, conciliacao: null })
+  }
   const balcao = await pagamentosDoBalcao(loja.id, dias[0], dias[dias.length - 1], lar?.fusoHorario ?? "America/Sao_Paulo")
   return ok({
     leitura: { cabecalho: leitura.cabecalho, descartadas: leitura.descartadas, falta: null, vendas: leitura.vendas.length },
