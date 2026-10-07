@@ -38,7 +38,7 @@ escrito. Nada quebra.
 - criar a aplicação no Mercado Pago e gerar Access Token + segredo do webhook;
 - criar a conta no Stripe e gerar Secret Key + signing secret;
 - colar as quatro variáveis na Vercel;
-- **decidir o preço final dos planos** — os valores em `src/lib/planos.ts` são
+- **decidir o preço final dos planos**: os valores em `src/lib/planos.ts` são
   placeholder;
 - promover o seu usuário a admin com um `UPDATE` no banco.
 
@@ -51,7 +51,7 @@ Passo a passo, com o SQL exato: `docs/PAGAMENTO-E-ADMIN.md`.
 **Pronto:** a tela Importar já lê PDF de fatura e já pede a senha do arquivo.
 
 **Falta você:** informar a senha dos três PDFs. São **31 parcelamentos reais**
-que continuam fora do sistema — enquanto estiverem de fora, a projeção de caixa
+que continuam fora do sistema. Enquanto estiverem de fora, a projeção de caixa
 e o comprometimento de renda mostram uma folga que você não tem.
 
 ---
@@ -63,7 +63,7 @@ informada, e diz na tela que está assumindo. Esse teto agora é editável em
 `/admin/configuracoes`, sem deploy.
 
 **Falta você:** olhar o contrato e informar a taxa que o seu banco cobra de
-fato. Enquanto for o teto, a projeção é conservadora de propósito — mas não é a
+fato. Enquanto for o teto, a projeção é conservadora de propósito, mas não é a
 sua conta.
 
 ---
