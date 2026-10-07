@@ -152,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 08/10/2026 | Passo 51: Davi gostou do B (um por um) e pediu mais informação, organizada e moderna. Canvas 51b com três jeitos (lado a lado como o Xero; o caminho do dinheiro com o grau de certeza; fila por tipo com o que muda no mês e no limite). Espera a escolha. |
 | 08/10/2026 | Passo 50 escolhido (A) e construído: modo simples com seis blocos grandes, migração `modo_simples` (campo na conta, mais o contato de quem ajuda). |
 | 07/10/2026 | Passo 49 escolhido (C) e construído: dúvida do MEI na conversa com o Tino, com fonte e data, e "caso de contador" destacado. "das" como preposição ("quanto gastei das compras") não conta como o imposto. |
 | 07/10/2026 | Passo 48 escolhido (A e B juntas) e construído: "Peça ao Tino" na Agenda. A conversa não guarda estado no servidor: cada resposta se junta ao pedido e o leitor relê tudo. A cliente dita é procurada pelo começo do nome ("Ana" acha Ana Paula, não Mariana); com duas, o Tino pergunta qual. |

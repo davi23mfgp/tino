@@ -55,3 +55,17 @@ de contrato com cada empresa? E o que a nota de serviço nacional pede?
   o leitor aceita cabeçalhos por sinônimo, como o importador de extrato, e
   vai ser ajustado com o primeiro arquivo real de cada uma.
 - Sem número público de fatia de mercado por credenciadora entre MEIs.
+
+## Adendo de 08/10/2026: a tela de conferir, um por um com mais informação
+
+Davi escolheu a opção B do passo 51 (um por um) e pediu "mais informações,
+organizadas e modernas". Como os conciliadores mostram o detalhe:
+
+| Referência | O que faz | Fonte | Força |
+|---|---|---|---|
+| Xero (Nova Zelândia) | Tela lado a lado: à esquerda a linha do extrato, à direita a sugestão de par no sistema, em verde quando acha; um OK confirma e a linha some. | [Fit Small Business](https://fitsmallbusiness.com/connect-and-reconcile-bank-account-xero/), [Marc Andrews, a tela em 2026](https://marcandrews.com/xero-bank-reconciliation-tutorial-uk-step-by-step-guide/) | média (guias de terceiros) |
+| QuickBooks (EUA) | Fila "Para revisar"; cada sugestão de par mostra um selo de confiança, para a pessoa saber o que pode aceitar sem olhar e o que pede atenção. | [QuickBooks, sugestões por IA](https://quickbooks.intuit.com/learn-support/en-global/help-article/bank-transactions/ai-suggestions-help-match-categorise-bank/L8FHOh4AD_ROW_en), [Intuit, combinar transações](https://community.intuit.com/articles/1773491-add-and-match-downloaded-banking-transactions) | média |
+
+Três versões do B no canvas, passo 51b: lado a lado (Xero), o caminho do
+dinheiro com o grau de certeza (QuickBooks), e a fila com o efeito de cada
+decisão no mês e no limite do MEI.
