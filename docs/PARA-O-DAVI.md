@@ -73,3 +73,58 @@ sua conta.
 **Falta você:** confirmar a titularidade do que veio do ERP Controllares antes
 de vender o produto. O `globals.css` original já saiu inteiro (visual próprio
 desde 30/08/2026), mas a conferência continua sendo sua.
+
+---
+
+## 6. O que ficou para você depois da noite de 06 para 07/10/2026
+
+Pedido: "Continue todas as fases sem parar de forma autônoma. Vou dormir,
+deixe o que depender de mim pro final." Está tudo aqui, na ordem em que
+mais destrava.
+
+**Escolher no canvas** (cada passo tem "hoje" e três opções, no celular e no
+computador; código só depois da sua escolha):
+
+- Parte 3 (https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi): passos 40
+  (ligar o negócio na conta pessoal), 41 (relatório do contador), 42 (como
+  conheceu o Tino), 43 (Guia do negócio), 44 (clientes e perdas), 45 (Pix no
+  link), 46 (indicação), 47 (Beleza).
+- Parte 4 (https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB): 48 (pedir ao
+  Tino para marcar na agenda), 49 (dúvidas do MEI), 50 (modo simples), 51
+  (conferir a maquininha), 52 (Assinatura), 53 (botão do leão), 54
+  (Notificações).
+- Todas as telas de hoje, para comparar:
+  https://claude.ai/artifact/3nTgY5Aq7gUauSZ74EisPG
+
+**Decidir:**
+
+- **Preço do anual.** O anual do Tino pessoal (R$ 214,92) custa o dobro do
+  anual do Mobills (R$ 99,90), com o mesmo mensal (R$ 19,90). Estudo em
+  `docs/pesquisas/2026-10-07-mercado-tino-pessoal.md`.
+- **Duração do teste.** 14 dias hoje; o relatório da RevenueCat diz que
+  teste de 17 a 32 dias converte mais. Hipótese, não regra.
+- **Provedor de nota de serviço (NFS-e)** e quem guarda o certificado do
+  CNPJ (ou o gov.br). Estudo em
+  `docs/pesquisas/2026-10-07-fase-4-maquininha-e-nfse.md`.
+
+**Criar ou colar:**
+
+- Uma conta de teste do Mercado Pago com token de vendedor, para a primeira
+  maquininha por API (a conciliação por planilha já funciona sem isso).
+- Verificação do app no Google, para o Tino escrever sozinho na Agenda do
+  Google (o link "pôr no Google Agenda" já funciona sem isso).
+- Na Vercel: `RESEND_API_KEY` e `EMAIL_REMETENTE` (recuperar senha),
+  `CRON_SECRET`, as chaves do Telegram e do Mercado Pago, e apagar
+  `ADMIN_SENHA` e `ADMIN_REDEFINIR_SENHA` depois de entrar no admin.
+
+**Juntar no `main`** (a sessão não pode):
+https://github.com/davi23mfgp/tino/compare/main...claude/clever-turing-o0fv45
+Inclui duas migrações novas que o build aplica sozinho: `das_pela_tabela`
+(o DAS sem valor informado passa a seguir a tabela de 2026) e as da
+entrada do aparelho e da Fase 2.
+
+**Antes do lançamento:** conferir os textos da LC 123 e da Resolução CGSN
+140 usados nas dúvidas do MEI (cada resposta mostra a data em que foi
+conferida), a lista das 50 assistências e as 15 conversas da venda
+assistida, o registro da marca no INPI e a titularidade do Controllares
+(item 5).
