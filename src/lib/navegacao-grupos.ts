@@ -185,6 +185,7 @@ export const GRUPO_LOJA: GrupoNav = {
     { rota: "/loja/contas", rotulo: "Contas a pagar", Icone: Receipt },
     { rota: "/loja/financas", rotulo: "Finanças da loja", Icone: Wallet },
     { rota: "/mei", rotulo: "MEI e DAS", Icone: Store },
+    { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     { rota: "/loja/dados", rotulo: "Dados da empresa", Icone: Settings },
   ],
 }

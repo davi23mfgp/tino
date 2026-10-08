@@ -37,7 +37,12 @@ export function rotaPermitida(papel: PapelDeAcesso, caminho: string): boolean {
 
 // A conta MEI usa o mesmo mecanismo de login, mas suas telas e APIs são do
 // negócio. Bloquear por URL evita que um link antigo abra a vida pessoal.
-const LIBERADO_PARA_MEI = ["/loja", "/mei", "/assinatura", "/seguranca", "/termos", "/privacidade", "/api/loja", "/api/mei", "/api/assinatura", "/api/usuario", "/api/auth", "/api/seguranca", "/api/suporte", "/api/erros", "/api/indicacao"]
+//
+// Investimentos é a mesma tela do pessoal (Davi, 08/10/2026: "se for
+// investimentos deixe o mesmo que o pessoal"). Ela precisa de contas e de
+// lançamentos para registrar aporte, então `/api/contas` e `/api/transacoes`
+// entram junto: são as únicas APIs pessoais abertas à conta MEI, e só por isso.
+const LIBERADO_PARA_MEI = ["/investir", "/api/investir", "/api/carteira", "/api/cdi", "/api/mercado", "/api/contas", "/api/transacoes", "/loja", "/mei", "/assinatura", "/seguranca", "/termos", "/privacidade", "/api/loja", "/api/mei", "/api/assinatura", "/api/usuario", "/api/auth", "/api/seguranca", "/api/suporte", "/api/erros", "/api/indicacao"]
 
 export function rotaPermitidaNoMei(caminho: string): boolean {
   return combinaAlgumPrefixo(caminho, LIBERADO_PARA_MEI)
