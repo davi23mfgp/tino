@@ -14,6 +14,7 @@ import { FabAdicionar } from "@/components/fab-adicionar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { GatilhoBuscaPaginas } from "@/components/buscar-paginas"
 import { usarAlertas } from "@/components/alertas-provider"
+import { agruparPorAssunto, resumoDoGrupo } from "@/lib/tino/assunto-do-aviso"
 import notificacoes from "./notificacoes.module.css"
 import { AvisosDaLoja } from "./avisos-da-loja"
 import { TrocaDeNegocio } from "./troca-de-negocio"
@@ -64,6 +65,8 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{n
   const novas=alertas.filter(a=>!a.lido)
   const prioridade:Record<string,number>={CRITICO:0,ATENCAO:1,INFO:2}
   const lista=[...(soNovas ? novas : alertas)].sort((a,b)=>(prioridade[a.severidade]??3)-(prioridade[b.severidade]??3))
+  const grupos=agruparPorAssunto(lista)
+  const [abertos,setAbertos]=useState<Record<string,boolean>>({})
   const borda=sobreClaro ? "border-[oklch(0_0_0/0.12)] text-[oklch(0.17_0.02_145)]" : "border-pauta"
   return <>
       {!apenasLoja && !mei && <TinoDock gatilho="topo" classeTopo={borda} />}
@@ -97,29 +100,52 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{n
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
             {carregando ? <p role="status" className="py-6 text-sm text-muted-fg">Carregando avisos…</p> : erro ? <div role="alert" className="py-6"><p className="text-sm">Não foi possível carregar os avisos.</p><button className="mt-2 min-h-11 text-sm underline" onClick={()=>void recarregar()}>Tentar novamente</button></div> : <>
               {!lista.length && <div className="flex min-h-52 flex-col items-center justify-center gap-3 py-8 text-center"><span className="grid size-14 place-items-center rounded-2xl border border-pauta bg-papel-2 text-muted-fg"><Bell className="size-6" aria-hidden /></span><p className="text-sm font-medium">{soNovas ? "Tudo em dia" : "Sem novidades por enquanto"}</p><p className="max-w-60 text-xs leading-relaxed text-muted-fg">{soNovas ? "Você já leu todos os seus avisos." : "Seus lembretes e pendências aparecem aqui quando houver algo para acompanhar."}</p></div>}
-              {lista.map(a=>(
+              {/* Agrupado por assunto (passo 54, opção C): quatro categorias
+                  estouradas são um aviso, não quatro. A linha do grupo mostra
+                  quantos avisos tem; o toque abre os avisos de verdade, com os
+                  mesmos botões de antes. */}
+              {grupos.map(g=>{
+                const aberto=abertos[g.assunto] ?? false
+                return <section key={g.assunto} aria-label={g.assunto} className="mb-2 last:mb-0">
+                  <button type="button" aria-expanded={aberto} onClick={()=>setAbertos(atual=>({...atual,[g.assunto]:!aberto}))} className="flex min-h-14 w-full items-center gap-3 rounded-[14px] border border-pauta bg-papel-2 px-4 py-3 text-left">
+                    <span aria-hidden className={"grid size-9 shrink-0 place-items-center rounded-full bg-papel-solido "+(g.severidade==="CRITICO" ? "text-negativo" : "text-[color:var(--texto-2)]")}>
+                      {g.severidade === "CRITICO" ? <AlertTriangle className="size-[17px]" /> : g.severidade === "ATENCAO" ? <Clock className="size-[17px]" /> : <Info className="size-[17px]" />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={"block text-[calc(15px*var(--escala-letra))] leading-snug "+(g.naoLidos ? "font-semibold" : "font-normal text-muted-fg")}>{g.assunto}</span>
+                      <span className="mt-0.5 line-clamp-2 block text-[calc(13px*var(--escala-letra))] leading-snug text-muted-fg">{resumoDoGrupo(g)}</span>
+                    </span>
+                    <span className="shrink-0 rounded-full bg-papel-solido px-2.5 py-0.5 text-xs font-semibold tabular-nums">{g.avisos.length}</span>
+                    <ChevronRight aria-hidden className={"size-4 shrink-0 text-muted-fg transition-transform "+(aberto ? "rotate-90" : "")} />
+                  </button>
+                  {aberto && <div className="mt-2">
+                    {g.avisos.map(a=>(
                 <article key={a.id} data-lido={a.lido} data-severidade={a.severidade} className={notificacoes.aviso + " " + "relative mb-2 flex items-start gap-3 overflow-hidden rounded-[14px] py-3 pl-4 pr-3 last:mb-0 " + (a.lido ? "border border-pauta bg-transparent" : "bg-papel-2")}>
-                  <span aria-hidden className={"mt-0.5 grid size-9 shrink-0 place-items-center rounded-full " + (a.lido ? "bg-transparent text-[color:var(--texto-3)] ring-1 ring-inset ring-[color:var(--pauta)]" : "bg-papel-solido text-[color:var(--texto-2)]")}>
-                    {a.severidade === "CRITICO" ? <AlertTriangle className="size-[17px]" /> : a.severidade === "ATENCAO" ? <Clock className="size-[17px]" /> : <Info className="size-[17px]" />}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start gap-2">
-                      <h2 className={"flex min-w-0 flex-1 items-center gap-1.5 text-[calc(15px*var(--escala-letra))] leading-snug " + (a.lido ? "font-normal text-muted-fg" : "font-medium text-foreground")}><span className="min-w-0 flex-1 truncate">{a.titulo}</span></h2>
-                      <span className="shrink-0 pt-0.5 text-xs text-muted-fg">{new Date(a.criadoEm ?? Date.now()).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</span>
-                    </div>
-                    <p className="mt-0.5 line-clamp-2 text-[calc(13px*var(--escala-letra))] leading-snug text-muted-fg">{a.texto}</p>
-                    <div className={notificacoes.acoes}>
-                      {a.acaoRota && <Link href={a.acaoRota} onClick={()=>setAberto(false)}>Abrir detalhes →</Link>}
-                      <button
-                        disabled={salvando || a.lido}
-                        aria-label={a.lido ? `Lida: ${a.titulo}` : `Marcar como lida: ${a.titulo}`}
-                        onClick={()=>void marcar([a.id])}
-                        className={notificacoes.ler}
-                      ><Check className="size-[15px]" aria-hidden /><span>{a.lido ? "Lida" : "Marcar lida"}</span></button>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                      <span aria-hidden className={"mt-0.5 grid size-9 shrink-0 place-items-center rounded-full " + (a.lido ? "bg-transparent text-[color:var(--texto-3)] ring-1 ring-inset ring-[color:var(--pauta)]" : "bg-papel-solido text-[color:var(--texto-2)]")}>
+                        {a.severidade === "CRITICO" ? <AlertTriangle className="size-[17px]" /> : a.severidade === "ATENCAO" ? <Clock className="size-[17px]" /> : <Info className="size-[17px]" />}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-2">
+                          <h2 className={"flex min-w-0 flex-1 items-center gap-1.5 text-[calc(15px*var(--escala-letra))] leading-snug " + (a.lido ? "font-normal text-muted-fg" : "font-medium text-foreground")}><span className="min-w-0 flex-1 truncate">{a.titulo}</span></h2>
+                          <span className="shrink-0 pt-0.5 text-xs text-muted-fg">{new Date(a.criadoEm ?? Date.now()).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}</span>
+                        </div>
+                        <p className="mt-0.5 line-clamp-2 text-[calc(13px*var(--escala-letra))] leading-snug text-muted-fg">{a.texto}</p>
+                        <div className={notificacoes.acoes}>
+                          {a.acaoRota && <Link href={a.acaoRota} onClick={()=>setAberto(false)}>Abrir detalhes →</Link>}
+                          <button
+                            disabled={salvando || a.lido}
+                            aria-label={a.lido ? `Lida: ${a.titulo}` : `Marcar como lida: ${a.titulo}`}
+                            onClick={()=>void marcar([a.id])}
+                            className={notificacoes.ler}
+                          ><Check className="size-[15px]" aria-hidden /><span>{a.lido ? "Lida" : "Marcar lida"}</span></button>
+                        </div>
+                      </div>
+                    </article>
+                        ))}
+                  </div>}
+                </section>
+              })}
+              {lista.length>0 && <Link href="/configuracoes" onClick={()=>setAberto(false)} className="mt-3 flex min-h-11 items-center justify-center rounded-[12px] text-xs font-medium text-acao">Escolher o que o Tino avisa</Link>}
             </>}
           </div>
 
