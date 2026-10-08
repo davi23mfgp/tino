@@ -20,8 +20,8 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const dados = await dadosDoRelatorio(sessao.larId, mes)
   if (!dados) throw new ErroDeUso("Esta conta ainda não tem o Tino negócio.")
   const linhas = [
-    ["Venda", "Data", "Cliente", "Valor (R$)", "Nota", "Número da nota"].map(celula).join(";"),
-    ...dados.vendas.map((venda) => [String(venda.numero), venda.dia.split("-").reverse().join("/"), venda.cliente ?? "", reais(venda.totalCentavos), ROTULO[venda.status], venda.notaNumero ? String(venda.notaNumero) : ""].map(celula).join(";")),
+    ["Venda", "Data", "Cliente", "Valor (R$)", "Nota", "Número da nota", "Nota anexada"].map(celula).join(";"),
+    ...dados.vendas.map((venda) => [String(venda.numero), venda.dia.split("-").reverse().join("/"), venda.cliente ?? "", reais(venda.totalCentavos), ROTULO[venda.status], venda.notaNumero ? String(venda.notaNumero) : "", venda.anexo ? venda.anexo.nome : ""].map(celula).join(";")),
   ]
   return new Response(`﻿${linhas.join("\r\n")}\r\n`, {
     headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="vendas-${mes}.csv"`, "Cache-Control": "no-store" },

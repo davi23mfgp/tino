@@ -1749,11 +1749,30 @@ model VendaLoja {
   itens        ItemVenda[]
   pagamentos   PagamentoVenda[]
   notaFiscal   NotaFiscalVenda?
+  notaAnexada  NotaAnexada?
   orcamento    OrcamentoLoja?
   ordemServico OrdemServicoLoja?
 
   @@unique([lojaId, numero])
   @@index([lojaId, criadoEm])
+}
+
+/// A nota que o dono anexa a uma venda marcada "com nota" (passo 41: "os com
+/// nota quero a nota em anexo"). É para a nota emitida fora do Tino (portal da
+/// prefeitura ou da Receita), que o relatório do MEI manda guardar junto: o
+/// Tino guarda a cópia, não a recria nem a lê. Uma por venda; anexar de novo
+/// troca a anterior. O arquivo fica no banco porque o app não tem armazenamento
+/// de arquivos, e o limite de tamanho (`validarAnexo`) mantém isso barato.
+model NotaAnexada {
+  id      String    @id @default(cuid())
+  vendaId String    @unique
+  venda   VendaLoja @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+
+  nome         String
+  tipo         String
+  tamanhoBytes Int
+  conteudo     Bytes
+  criadoEm     DateTime @default(now())
 }
 
 /// Nota fiscal (NFC-e) de uma venda, emitida por API de terceiro.

@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight, Download, FileText, Printer } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, FileText, Paperclip, Printer } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { rotuloCompetencia } from "@/lib/datas"
@@ -24,7 +24,7 @@ import estilos from "./fechar.module.css"
  * por você: venda sem marcação aparece como "não marcado", nunca como "sem nota".
  */
 
-interface Venda { id: string; numero: number; dia: string; cliente: string | null; totalCentavos: number; status: StatusDaNota; notaNumero: number | null; notaEmitida: boolean }
+interface Venda { id: string; numero: number; dia: string; cliente: string | null; totalCentavos: number; status: StatusDaNota; notaNumero: number | null; notaEmitida: boolean; anexo: { nome: string; tamanhoBytes: number } | null; pendencia: "marcar" | "anexar" | null }
 interface Dados {
   competencia: string
   prazo: string
@@ -33,6 +33,8 @@ interface Dados {
   usouLancamento: boolean
   vendas: Venda[]
   pendentes: number
+  aMarcar: number
+  aAnexar: number
   notasEmitidas: number
   das: { registrado: boolean; pago: boolean }
 }
@@ -64,8 +66,31 @@ export default function FecharMes() {
     finally { setOcupado(null) }
   }
 
+  async function anexar(vendaId: string, arquivo: File | undefined) {
+    if (!arquivo) return
+    setOcupado(vendaId)
+    try {
+      const formulario = new FormData()
+      formulario.set("vendaId", vendaId)
+      formulario.set("arquivo", arquivo)
+      const resposta = await fetch("/api/loja/relatorio/anexo", { method: "POST", body: formulario })
+      if (!resposta.ok) throw new Error(((await resposta.json().catch(() => null)) as { erro?: string } | null)?.erro ?? "Não consegui anexar a nota.")
+      await carregar(mes)
+    } catch (excecao) { setErro(excecao instanceof Error ? excecao.message : "Não consegui anexar a nota.") }
+    finally { setOcupado(null) }
+  }
+
+  async function tirarAnexo(vendaId: string) {
+    setOcupado(vendaId)
+    try { await enviar(`/api/loja/relatorio/anexo?vendaId=${vendaId}`, {}, "DELETE"); await carregar(mes) }
+    catch (excecao) { setErro(excecao instanceof Error ? excecao.message : "Não consegui tirar a nota.") }
+    finally { setOcupado(null) }
+  }
+
   const nome = rotuloCompetencia(mes)
-  const pendentes = dados?.vendas.filter((venda) => venda.status === "naoMarcado") ?? []
+  // "Pendentes de nota": as vendas sem resposta (marcar) e as marcadas "com nota" sem a nota em mãos (anexar).
+  const pendentes = dados?.vendas.filter((venda) => venda.pendencia !== null) ?? []
+  const anexadas = dados?.vendas.filter((venda) => venda.anexo !== null) ?? []
   const emitidas = dados?.vendas.filter((venda) => venda.notaEmitida) ?? []
 
   return (
@@ -86,24 +111,36 @@ export default function FecharMes() {
               <ul className="space-y-2.5 text-[calc(14px*var(--escala-letra))]">
                 <Item feito={dados.vendas.length > 0 || dados.usouLancamento} texto={dados.usouLancamento ? "Mês lançado à parte na tela MEI" : `${dados.vendas.length} ${dados.vendas.length === 1 ? "venda do Balcão" : "vendas do Balcão"} no mês`} />
                 <Item feito={dados.das.pago} texto={dados.das.registrado ? (dados.das.pago ? `DAS de ${nome} pago` : `DAS de ${nome} ainda não pago`) : `DAS de ${nome}: sem registro`} />
-                <Item feito={dados.vendas.length > 0 && pendentes.length === 0} texto={dados.usouLancamento ? "Nota das vendas: o lançamento à parte não separa" : pendentes.length ? `Falta marcar a nota de ${pendentes.length} ${pendentes.length === 1 ? "venda" : "vendas"}` : "Nota de todas as vendas marcada"} />
+                <Item feito={dados.vendas.length > 0 && pendentes.length === 0} texto={dados.usouLancamento ? "Nota das vendas: o lançamento à parte não separa" : pendentes.length ? `Pendentes de nota: ${pendentes.length} ${pendentes.length === 1 ? "venda" : "vendas"} (${dados.aMarcar} a marcar, ${dados.aAnexar} a anexar)` : "Nota de todas as vendas marcada e anexada"} />
               </ul>
 
               {!dados.usouLancamento && pendentes.length > 0 && (
-                <div className="mt-4 divide-y divide-pauta border-t border-pauta">
+                <div className="mt-4 divide-y divide-pauta border-t border-pauta" aria-label="Pendentes de nota">
                   {pendentes.map((venda) => (
                     <div key={venda.id} className="flex flex-wrap items-center gap-2 py-2.5">
                       <span className="min-w-0 flex-1 text-[calc(14px*var(--escala-letra))]">
                         Venda {venda.numero}{venda.cliente ? ` · ${venda.cliente}` : ""}
-                        <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">{formatarMoeda(venda.totalCentavos)} · {dataCurta(venda.dia)}</span>
+                        <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">{formatarMoeda(venda.totalCentavos)} · {dataCurta(venda.dia)} · {venda.pendencia === "anexar" ? "falta anexar a nota" : "falta marcar"}</span>
                       </span>
-                      <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} border border-pauta`} onClick={() => void marcar(venda.id, true)}>com nota</button>
-                      <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} border border-pauta`} onClick={() => void marcar(venda.id, false)}>sem nota</button>
+                      {venda.pendencia === "marcar" ? (
+                        <>
+                          <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} border border-pauta`} onClick={() => void marcar(venda.id, true)}>com nota</button>
+                          <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} border border-pauta`} onClick={() => void marcar(venda.id, false)}>sem nota</button>
+                        </>
+                      ) : (
+                        <>
+                          <label className={`${BOTAO} inline-flex cursor-pointer items-center gap-2 bg-primary font-semibold text-primary-foreground`}>
+                            <Paperclip className="size-4" aria-hidden />Anexar nota
+                            <input type="file" accept=".pdf,.xml,.png,.jpg,.jpeg,application/pdf,text/xml,application/xml,image/png,image/jpeg" className="sr-only" disabled={ocupado === venda.id} onChange={(evento) => { void anexar(venda.id, evento.target.files?.[0]); evento.target.value = "" }} />
+                          </label>
+                          <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} border border-pauta`} onClick={() => void marcar(venda.id, false)}>sem nota</button>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
-              <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">Marcar é só para o relatório. O que você não marcar aparece como &quot;não marcado&quot;, e o Tino não chuta.</p>
+              <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">Marcar é só para o relatório. O que você não marcar aparece como &quot;não marcado&quot;, e o Tino não chuta. A venda &quot;com nota&quot; fica pendente até a nota estar anexada (a nota emitida pelo Tino já conta).</p>
             </Cartao>
           </div>
 
@@ -141,14 +178,23 @@ export default function FecharMes() {
 
           <div className={estilos.naoImprimir}>
             <Cartao titulo="Suas notas do mês" estatico>
-              {emitidas.length === 0 ? (
-                <p className="flex items-start gap-2 text-[calc(13px*var(--escala-letra))] text-muted-fg"><FileText className="mt-0.5 size-4 shrink-0" aria-hidden />Nenhuma nota emitida pelo Tino em {nome}. As vendas que você marcou &quot;com nota&quot; contam no relatório, mas a nota em si fica com quem a emitiu (portal da prefeitura ou da Receita): guarde a cópia junto do relatório.</p>
+              {emitidas.length === 0 && anexadas.length === 0 ? (
+                <p className="flex items-start gap-2 text-[calc(13px*var(--escala-letra))] text-muted-fg"><FileText className="mt-0.5 size-4 shrink-0" aria-hidden />Nenhuma nota emitida pelo Tino nem anexada em {nome}. Para a venda &quot;com nota&quot;, anexe a cópia da nota (PDF, XML ou foto, até 3 MB) e ela fica guardada junto do relatório.</p>
               ) : (
                 <ul className="divide-y divide-pauta">
                   {emitidas.map((venda) => (
                     <li key={venda.id} className="flex items-baseline justify-between gap-3 py-2.5 text-[calc(14px*var(--escala-letra))]">
-                      <span>Nota {venda.notaNumero ?? "sem número"}<span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">Venda {venda.numero} · {dataCurta(venda.dia)}</span></span>
+                      <span>Nota {venda.notaNumero ?? "sem número"} · emitida no Tino<span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">Venda {venda.numero} · {dataCurta(venda.dia)}</span></span>
                       <span className="numero">{formatarMoeda(venda.totalCentavos)}</span>
+                    </li>
+                  ))}
+                  {anexadas.map((venda) => (
+                    <li key={venda.id} className="flex items-center justify-between gap-3 py-2.5 text-[calc(14px*var(--escala-letra))]">
+                      <span className="min-w-0">
+                        <a className="inline-flex max-w-full items-center gap-1.5 font-medium text-primary" href={`/api/loja/relatorio/anexo?vendaId=${venda.id}`}><Paperclip className="size-4 shrink-0" aria-hidden /><span className="truncate">{venda.anexo!.nome}</span></a>
+                        <span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">Venda {venda.numero} · {dataCurta(venda.dia)} · {formatarMoeda(venda.totalCentavos)}</span>
+                      </span>
+                      <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} shrink-0 border border-pauta`} onClick={() => void tirarAnexo(venda.id)}>Tirar</button>
                     </li>
                   ))}
                 </ul>

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { dividirVenda, mesParaFechar, montarRelatorio, prazoDoRelatorio, statusDaNota, type VendaDoMes } from "@/lib/loja/relatorio-mei"
+import { ANEXO_TAMANHO_MAXIMO, dividirVenda, pendenciaDaNota, validarAnexo, mesParaFechar, montarRelatorio, prazoDoRelatorio, statusDaNota, type VendaDoMes } from "@/lib/loja/relatorio-mei"
 
 const venda = (total: number, comNota: boolean | null, notaEmitida = false, servico = false): VendaDoMes => ({ totalCentavos: total, comNota, notaEmitida, itens: [{ totalCentavos: total, ehServico: servico }] })
 
@@ -62,5 +62,35 @@ describe("prazo e mês a fechar", () => {
   it("o mês a fechar é o anterior ao de hoje", () => {
     assert.equal(mesParaFechar("2026-10-08"), "2026-09")
     assert.equal(mesParaFechar("2027-01-03"), "2026-12")
+  })
+})
+
+describe("pendências de nota", () => {
+  it("venda não marcada pede para marcar; marcada com nota e sem a nota em mãos pede para anexar", () => {
+    assert.equal(pendenciaDaNota({ status: "naoMarcado", notaEmitida: false, temAnexo: false }), "marcar")
+    assert.equal(pendenciaDaNota({ status: "com", notaEmitida: false, temAnexo: false }), "anexar")
+  })
+  it("nota emitida pelo Tino ou anexada, e venda sem nota, não pedem nada", () => {
+    assert.equal(pendenciaDaNota({ status: "com", notaEmitida: true, temAnexo: false }), null)
+    assert.equal(pendenciaDaNota({ status: "com", notaEmitida: false, temAnexo: true }), null)
+    assert.equal(pendenciaDaNota({ status: "sem", notaEmitida: false, temAnexo: false }), null)
+  })
+})
+
+describe("arquivo da nota anexada", () => {
+  it("aceita PDF, XML e foto com a extensão certa", () => {
+    assert.equal(validarAnexo({ nome: "nota-123.pdf", tipo: "application/pdf", tamanho: 90_000 }).ok, true)
+    assert.equal(validarAnexo({ nome: "NFe.XML", tipo: "text/xml", tamanho: 4_000 }).ok, true)
+    assert.equal(validarAnexo({ nome: "foto.jpeg", tipo: "image/jpeg", tamanho: 400_000 }).ok, true)
+  })
+  it("recusa vazio, grande demais, tipo de fora e extensão que não combina", () => {
+    assert.equal(validarAnexo({ nome: "a.pdf", tipo: "application/pdf", tamanho: 0 }).ok, false)
+    assert.equal(validarAnexo({ nome: "a.pdf", tipo: "application/pdf", tamanho: ANEXO_TAMANHO_MAXIMO + 1 }).ok, false)
+    assert.equal(validarAnexo({ nome: "a.exe", tipo: "application/x-msdownload", tamanho: 100 }).ok, false)
+    assert.equal(validarAnexo({ nome: "a.html", tipo: "application/pdf", tamanho: 100 }).ok, false)
+  })
+  it("limpa o nome: sem barra, aspas nem quebra de linha", () => {
+    const lido = validarAnexo({ nome: '../x"\n.pdf', tipo: "application/pdf", tamanho: 10 })
+    assert.equal(lido.ok && /[\\/"\r\n]/.test(lido.valor.nome), false)
   })
 })

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { diaNoFuso } from "@/lib/loja/contas"
-import { montarRelatorio, prazoDoRelatorio, statusDaNota, type StatusDaNota } from "@/lib/loja/relatorio-mei"
+import { montarRelatorio, pendenciaDaNota, prazoDoRelatorio, statusDaNota, type Pendencia, type StatusDaNota } from "@/lib/loja/relatorio-mei"
 
 /**
  * Tudo que a tela "Fechar o mês" e a planilha precisam de um mês: as vendas do
@@ -17,6 +17,9 @@ export interface VendaDoRelatorio {
   /** Número da nota emitida pelo Tino, quando existe. */
   notaNumero: number | null
   notaEmitida: boolean
+  /** A nota que o dono anexou (cópia de fora do Tino), sem o conteúdo: o arquivo só sai pela rota de download. */
+  anexo: { nome: string; tamanhoBytes: number } | null
+  pendencia: Pendencia
 }
 
 export async function dadosDoRelatorio(larId: string, competencia: string) {
@@ -37,7 +40,7 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
       ? prisma.vendaLoja.findMany({
           where: { lojaId: { in: lojas.map((loja) => loja.id) }, cancelada: false, criadoEm: { gte: de, lt: ate } },
           orderBy: { criadoEm: "asc" },
-          include: { itens: { select: { totalCentavos: true, servicoId: true } }, notaFiscal: { select: { status: true, numero: true } }, cliente: { select: { nome: true } } },
+          include: { itens: { select: { totalCentavos: true, servicoId: true } }, notaFiscal: { select: { status: true, numero: true } }, notaAnexada: { select: { nome: true, tamanhoBytes: true } }, cliente: { select: { nome: true } } },
         })
       : Promise.resolve([]),
     prisma.meiCompetencia.findUnique({ where: { larId_competencia: { larId, competencia } } }),
@@ -56,6 +59,8 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
         status: statusDaNota({ comNota: venda.comNota, notaEmitida }),
         notaNumero: notaEmitida ? (venda.notaFiscal?.numero ?? null) : null,
         notaEmitida,
+        anexo: venda.notaAnexada,
+        pendencia: pendenciaDaNota({ status: statusDaNota({ comNota: venda.comNota, notaEmitida }), notaEmitida, temAnexo: venda.notaAnexada !== null }),
       }
     })
 
@@ -76,7 +81,10 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
     /** Quando o mês foi lançado à parte, o relatório vale o lançamento e as vendas abaixo não somam. */
     usouLancamento,
     vendas,
-    pendentes: vendas.filter((venda) => venda.status === "naoMarcado").length,
+    /** As duas pendências juntas: é o número do "pendentes de nota". */
+    pendentes: vendas.filter((venda) => venda.pendencia !== null).length,
+    aMarcar: vendas.filter((venda) => venda.pendencia === "marcar").length,
+    aAnexar: vendas.filter((venda) => venda.pendencia === "anexar").length,
     notasEmitidas: vendas.filter((venda) => venda.notaEmitida).length,
     das: { registrado: Boolean(lancamento), pago: lancamento?.dasPago ?? false },
   }
