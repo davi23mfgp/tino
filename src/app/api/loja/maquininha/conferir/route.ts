@@ -3,6 +3,7 @@ import { comSessao, corpo, ok } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
 import { conciliar, lerArquivoDaMaquininha } from "@/lib/loja/maquininha"
 import { pagamentosDoBalcao } from "@/lib/loja/maquininha-dados"
+import { anoDoMei } from "@/lib/loja/mei-ano"
 import { validar, z } from "@/lib/validar"
 
 export const dynamic = "force-dynamic"
@@ -33,7 +34,16 @@ export const POST = comSessao(async (sessao, requisicao) => {
     return ok({ leitura: { cabecalho: leitura.cabecalho, descartadas: [], falta: "um arquivo menor: mande até três meses de vendas por vez" }, conciliacao: null })
   }
   const balcao = await pagamentosDoBalcao(loja.id, dias[0], dias[dias.length - 1], lar?.fusoHorario ?? "America/Sao_Paulo")
+  // "O que muda se lançar": o faturamento do mês e o limite do MEI, com os
+  // mesmos números da tela MEI. Sem perfil MEI, a tela não mostra o limite.
+  const ano = await anoDoMei(sessao.larId)
+  const mei = ano ? {
+    limiteAnualCentavos: ano.perfil.limiteAnualEfetivoCentavos,
+    faturadoNoAnoCentavos: ano.situacao.faturamentoAnoCentavos,
+    porMes: Object.fromEntries(ano.meses.map((mes) => [mes.competencia, mes.faturamentoCentavos])),
+  } : null
   return ok({
+    mei,
     leitura: { cabecalho: leitura.cabecalho, descartadas: leitura.descartadas, falta: null, vendas: leitura.vendas.length },
     conciliacao: conciliar(leitura.vendas, balcao),
   })

@@ -231,6 +231,7 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 const TITULOS_FORA_DO_MENU: Record<string, string> = {
   "/loja/comecar": "Seu negócio",
   "/loja/simples": "Início",
+  "/loja/maquininha": "Conferir a maquininha",
   "/loja/minha-conta": "Minha conta",
   "/lancar": "Anotar",
   "/regras": "Regras",

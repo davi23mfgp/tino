@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
 
-import { conciliar, lerArquivoDaMaquininha, type PagamentoDoBalcao, type VendaDaMaquininha } from "../src/lib/loja/maquininha"
+import { conciliar, lerArquivoDaMaquininha, maisParecida, type PagamentoDoBalcao, type VendaDaMaquininha } from "../src/lib/loja/maquininha"
 
 // Planilha no jeito das maquininhas: título antes do cabeçalho, ";" e vírgula decimal,
 // data com hora, taxa em reais negativa, uma venda negada e uma estornada.
@@ -137,7 +137,7 @@ test("conciliação: Pix do Balcão só conta como sobra se o arquivo trouxer Pi
   assert.deepEqual(conciliar([venda], [pix]).soNoBalcao, [])
   assert.deepEqual(conciliar([venda, { ...venda, forma: "PIX", brutoCentavos: 500 }], [pix]).soNoBalcao.map((linha) => linha.id), ["pix"])
   assert.equal(conciliar([venda], [pix]).taxa, null)
-  assert.deepEqual(conciliar([], [pix]), { periodo: null, bateram: [], soNaMaquininha: [], soNoBalcao: [], taxa: null, ajustes: [] })
+  assert.deepEqual(conciliar([], [pix]), { periodo: null, bateram: [], soNaMaquininha: [], soNoBalcao: [], parecidas: {}, taxa: null, ajustes: [] })
 })
 
 test("conciliação: parcelado e o que já foi recebido não ganham data proposta", () => {
@@ -155,4 +155,19 @@ test("conciliação: parcelado e o que já foi recebido não ganham data propost
 test("maquininha: sinônimo curto não casa dentro de outra palavra", () => {
   // "id" está dentro de "Unidade": sem a regra, o nome da loja virava código da venda.
   assert.equal(lerArquivoDaMaquininha("Data;Valor;Unidade\n05/10/2026;10,00;Loja Centro").vendas[0].codigo, null)
+})
+
+test("conciliação: a venda esquecida ganha a mais parecida do Balcão, se houver", () => {
+  const venda: VendaDaMaquininha = { linha: 7, dia: "2026-09-18", hora: "10:05", forma: "CREDITO_VISTA", parcelas: 1, brutoCentavos: 8200, taxaCentavos: 245, liquidoCentavos: 7955, previsao: "2026-10-18", pago: false, codigo: "48213" }
+  const perto = pagamento("v213", { dia: "2026-09-18", hora: "10:02", forma: "CREDITO_VISTA", valorCentavos: 8000 })
+  const longe = pagamento("v300", { dia: "2026-09-18", hora: "10:04", forma: "CREDITO_VISTA", valorCentavos: 7000 })
+  const pix = pagamento("pix", { dia: "2026-09-18", forma: "PIX", valorCentavos: 8100 })
+  const resultado = conciliar([venda], [longe, perto, pix])
+  assert.equal(resultado.parecidas[7]?.id, "v213")
+  // A folga é R$ 20 ou 10% do valor, o que for maior: R$ 30 de diferença passa dela.
+  assert.equal(maisParecida(venda, [pagamento("x", { dia: "2026-09-18", forma: "DEBITO", valorCentavos: 5200 })]), null)
+  // Dois dias depois não é a mesma venda.
+  assert.equal(maisParecida(venda, [pagamento("y", { dia: "2026-09-20", forma: "CREDITO_VISTA", valorCentavos: 8000 })]), null)
+  // Pix não é parecida com cartão.
+  assert.equal(maisParecida(venda, [pix]), null)
 })

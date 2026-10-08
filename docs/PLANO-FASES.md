@@ -90,7 +90,7 @@ semanas seguidas, e pelo menos 10 pagando.
 
 | # | Item | Situação | Estudo | Próximo passo |
 |---|---|---|---|---|
-| 4.1 | Primeira maquininha integrada, conciliando com o Balcão | 🔨 | [estudo](pesquisas/2026-10-07-fase-4-maquininha-e-nfse.md) | começa pelo arquivo: leitor da planilha de qualquer maquininha e conciliação com o Balcão prontos e testados (`src/lib/loja/maquininha.ts`, `/api/loja/maquininha/conferir` e `/ajustes`, conferidos no banco da demonstração); 🙋 escolher a tela no [canvas parte 4, passo 51](https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB); a API do Mercado Pago (a única de autoatendimento) pede o token de uma conta de teste (🙋 Davi) |
+| 4.1 | Primeira maquininha integrada, conciliando com o Balcão | 🔨 | [estudo](pesquisas/2026-10-07-fase-4-maquininha-e-nfse.md) | conferência pela planilha pronta, com tela (passo 51, D e F juntas, Davi 08/10): em Finanças da loja, "Conferir a maquininha"; fila por tipo (esquecidas, só no Balcão, datas, taxas) e a ficha ao lado, com a maquininha e o Balcão lado a lado, a venda mais parecida ("É esta"), o que muda no mês e no limite do MEI, e "Lançar no Balcão" na data da maquininha. Testado no navegador (390, 1280, claro). Falta: a API do Mercado Pago (🙋 Davi, conta de teste) |
 | 4.2 | Nota de serviço (NFS-e) pelo padrão nacional | ⏳ | [estudo](pesquisas/2026-10-07-fase-4-maquininha-e-nfse.md) | depende do certificado do CNPJ (ou gov.br) e da escolha do provedor (🙋 Davi); o módulo `src/lib/nota-fiscal/` já existe, em "sandbox" |
 
 ## Fase 5: escala (a partir de out. de 2027)
@@ -152,6 +152,7 @@ produto lançado sem esse teste gasta marketing para encher um balde furado.
 
 | Data | O que aconteceu |
 |---|---|
+| 08/10/2026 | Passo 51 escolhido (D e F) e construído: tela de conferir a maquininha. Defeito achado no teste e corrigido: ao acabar uma aba, ela ficava vazia na frente. |
 | 08/10/2026 | Passo 51: Davi gostou do B (um por um) e pediu mais informação, organizada e moderna. Canvas 51b com três jeitos (lado a lado como o Xero; o caminho do dinheiro com o grau de certeza; fila por tipo com o que muda no mês e no limite). Espera a escolha. |
 | 08/10/2026 | Passo 50 escolhido (A) e construído: modo simples com seis blocos grandes, migração `modo_simples` (campo na conta, mais o contato de quem ajuda). |
 | 07/10/2026 | Passo 49 escolhido (C) e construído: dúvida do MEI na conversa com o Tino, com fonte e data, e "caso de contador" destacado. "das" como preposição ("quanto gastei das compras") não conta como o imposto. |

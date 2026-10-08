@@ -235,6 +235,12 @@ export interface Conciliacao {
   soNaMaquininha: VendaDaMaquininha[]
   /** Está no Balcão e não na maquininha, dentro do período do arquivo. */
   soNoBalcao: PagamentoDoBalcao[]
+  /**
+   * Para cada venda esquecida (pela linha do arquivo), o pagamento do Balcão
+   * mais parecido que sobrou: mesmo dia ou o seguinte, valor perto. É o caso
+   * de quem lançou R$ 80 quando passou R$ 82 na maquininha, e não esqueceu.
+   */
+  parecidas: Record<number, PagamentoDoBalcao>
   /** Só com as vendas que bateram e têm taxa no arquivo; `null` se nenhuma tem. */
   taxa: { cobradaCentavos: number; esperadaCentavos: number; diferencaCentavos: number } | null
   ajustes: AjusteProposto[]
@@ -259,7 +265,7 @@ function compativel(maquininha: VendaDaMaquininha, balcao: PagamentoDoBalcao): b
  * mesmo, a taxa e o prazo é que mudam.
  */
 export function conciliar(arquivo: VendaDaMaquininha[], balcao: PagamentoDoBalcao[]): Conciliacao {
-  if (arquivo.length === 0) return { periodo: null, bateram: [], soNaMaquininha: [], soNoBalcao: [], taxa: null, ajustes: [] }
+  if (arquivo.length === 0) return { periodo: null, bateram: [], soNaMaquininha: [], soNoBalcao: [], parecidas: {}, taxa: null, ajustes: [] }
   const dias = arquivo.map((venda) => venda.dia).sort()
   const periodo = { de: dias[0], ate: dias[dias.length - 1] }
   const temPix = arquivo.some((venda) => venda.forma === "PIX")
@@ -290,15 +296,40 @@ export function conciliar(arquivo: VendaDaMaquininha[], balcao: PagamentoDoBalca
   const soNoBalcao = balcao.filter((pagamento) => livres.has(pagamento.id) && pagamento.dia >= periodo.de && pagamento.dia <= periodo.ate
     && (CARTAO.includes(pagamento.forma) || (temPix && pagamento.forma === "PIX")))
 
+  const parecidas: Record<number, PagamentoDoBalcao> = {}
+  for (const venda of soNaMaquininha) {
+    const parecida = maisParecida(venda, soNoBalcao)
+    if (parecida) parecidas[venda.linha] = parecida
+  }
+
   const comTaxa = bateram.filter((par) => par.maquininha.taxaCentavos !== null)
   const cobrada = comTaxa.reduce((soma, par) => soma + (par.maquininha.taxaCentavos ?? 0), 0)
   const esperada = comTaxa.reduce((soma, par) => soma + (par.balcao.valorCentavos - par.balcao.liquidoCentavos), 0)
 
   return {
-    periodo, bateram, soNaMaquininha, soNoBalcao,
+    periodo, bateram, soNaMaquininha, soNoBalcao, parecidas,
     taxa: comTaxa.length ? { cobradaCentavos: cobrada, esperadaCentavos: esperada, diferencaCentavos: cobrada - esperada } : null,
     ajustes: bateram.map(ajusteDoPar).filter((ajuste): ajuste is AjusteProposto => ajuste !== null),
   }
+}
+
+/**
+ * O pagamento do Balcão que pode ser esta venda lançada com outro valor:
+ * mesma família de forma, mesmo dia ou o seguinte, e diferença de até
+ * R$ 20 ou 10% do valor (o que for maior). Mais perto no valor vence; no
+ * empate, mais perto na hora. É só sugestão: quem decide é a pessoa.
+ */
+export function maisParecida(venda: VendaDaMaquininha, candidatos: PagamentoDoBalcao[]): PagamentoDoBalcao | null {
+  const folga = Math.max(2_000, Math.round(venda.brutoCentavos / 10))
+  let melhor: { pagamento: PagamentoDoBalcao; pontos: number } | null = null
+  for (const pagamento of candidatos) {
+    const diferenca = Math.abs(pagamento.valorCentavos - venda.brutoCentavos)
+    const distancia = diasEntre(venda.dia, pagamento.dia)
+    if (diferenca === 0 || diferenca > folga || distancia < 0 || distancia > 1 || !compativel(venda, pagamento)) continue
+    const pontos = diferenca * 10_000 + distancia * 2_000 + (venda.hora ? Math.abs(minutos(venda.hora) - minutos(pagamento.hora)) : 0)
+    if (!melhor || pontos < melhor.pontos) melhor = { pagamento, pontos }
+  }
+  return melhor?.pagamento ?? null
 }
 
 function avisosDoPar(venda: VendaDaMaquininha, pagamento: PagamentoDoBalcao): Aviso[] {
