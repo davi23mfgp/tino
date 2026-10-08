@@ -5,12 +5,11 @@ import { validarAnexo } from "@/lib/loja/relatorio-mei"
 export const dynamic = "force-dynamic"
 
 /** A venda tem de ser de um negócio deste lar: o id sozinho não prova isso. */
-const vendaDoLar = (larId: string, vendaId: string) => prisma.vendaLoja.findFirst({ where: { id: vendaId, loja: { larId } }, select: { id: true, comNota: true } })
+const vendaDoLar = (larId: string, vendaId: string) => prisma.vendaLoja.findFirst({ where: { id: vendaId, loja: { larId } }, select: { id: true } })
 
 /**
- * Anexa a nota a uma venda marcada "com nota" (passo 41). Anexar de novo troca
- * a anterior. Anexar numa venda ainda não marcada marca "com nota" junto: quem
- * tem o arquivo da nota já respondeu a pergunta.
+ * Anexa a nota à venda (passo 41): com a nota anexada a venda passa de
+ * "pendente de nota" para "com nota". Anexar de novo troca a anterior.
  */
 export const POST = comSessao(async (sessao, requisicao) => {
   const formulario = await requisicao.formData().catch(() => null)
@@ -23,10 +22,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
   if (!lido.ok) throw new ErroDeUso(lido.erro)
   const conteudo = Buffer.from(await arquivo.arrayBuffer())
   const dados = { nome: lido.valor.nome, tipo: lido.valor.tipo, tamanhoBytes: conteudo.length, conteudo }
-  await prisma.$transaction([
-    prisma.notaAnexada.upsert({ where: { vendaId: venda.id }, create: { vendaId: venda.id, ...dados }, update: dados }),
-    ...(venda.comNota !== true ? [prisma.vendaLoja.update({ where: { id: venda.id }, data: { comNota: true } })] : []),
-  ])
+  await prisma.notaAnexada.upsert({ where: { vendaId: venda.id }, create: { vendaId: venda.id, ...dados }, update: dados })
   return ok({ ok: true })
 })
 

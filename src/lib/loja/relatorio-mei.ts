@@ -2,7 +2,8 @@ import type { Leitura } from "@/lib/loja/ligar-negocio"
 
 /**
  * Relatório Mensal das Receitas Brutas do MEI (passo 41, Davi, 08/10/2026:
- * "A e B misturado, quero meu relatório e minhas notas também").
+ * "quero meu relatório e minhas notas também", "os com nota anexada ficam de um
+ * lado e os sem nota ficam pendentes").
  *
  * O modelo é o do Anexo X da Resolução CGSN 140/2018: receita de revenda
  * (comércio), de indústria e de serviços, cada uma com e sem nota fiscal, e o
@@ -13,25 +14,20 @@ import type { Leitura } from "@/lib/loja/ligar-negocio"
  * `docs/pesquisas/2026-10-06-relatorio-para-o-contador.md`), que divergem sobre
  * o relatório ser obrigatório. A folha diz isso no rodapé.
  *
- * O ponto de honestidade (regra 3): o Tino não sabia se cada venda saiu com
- * nota. Em vez de inventar a divisão, a venda ganhou "com nota, sem nota ou
- * ainda não marcado", e o relatório mostra o que não foi marcado numa coluna à
- * parte. Pôr tudo em "sem nota" por omissão faria o contador achar que a
- * pessoa vendeu sem nota o mês inteiro.
+ * A regra de dois lados: venda COM NOTA é a que tem a nota em mãos, anexada
+ * pelo dono ou emitida pelo próprio Tino; toda venda sem a nota em mãos é
+ * PENDENTE. Não existe um terceiro "sem nota" dito pela pessoa: a nota some da
+ * pasta, não da venda, e pendente é o que o contador vai cobrar. A pessoa tira
+ * a pendência anexando a nota. Antes (primeira versão do dia) havia "com", "sem"
+ * e "não marcado", e o "sem nota" virava resposta final: não era o que o Davi
+ * queria.
  */
 
-export type StatusDaNota = "com" | "sem" | "naoMarcado"
+export type StatusDaNota = "com" | "pendente"
 
-/**
- * Uma nota emitida pelo Tino vale por si: o XML autorizado é a prova, e a
- * marcação manual não pode contradizê-la. Sem nota emitida, vale o que a
- * pessoa marcou (`comNota`); nulo é "ainda não marcado".
- */
-export function statusDaNota(venda: { comNota: boolean | null; notaEmitida: boolean }): StatusDaNota {
-  if (venda.notaEmitida) return "com"
-  if (venda.comNota === true) return "com"
-  if (venda.comNota === false) return "sem"
-  return "naoMarcado"
+/** Nota emitida pelo Tino vale por si (o XML autorizado fica no banco); a anexada é a cópia que o dono guardou. */
+export function statusDaNota(venda: { notaEmitida: boolean; temAnexo: boolean }): StatusDaNota {
+  return venda.notaEmitida || venda.temAnexo ? "com" : "pendente"
 }
 
 export interface ItemParaClassificar { totalCentavos: number; ehServico: boolean }
@@ -53,46 +49,45 @@ export function dividirVenda(totalCentavos: number, itens: ItemParaClassificar[]
 
 export interface VendaDoMes {
   totalCentavos: number
-  comNota: boolean | null
   notaEmitida: boolean
+  temAnexo: boolean
   itens: ItemParaClassificar[]
 }
 
-export interface LinhaDoRelatorio { comCentavos: number; semCentavos: number; naoMarcadoCentavos: number }
+export interface LinhaDoRelatorio { comCentavos: number; pendenteCentavos: number }
 
 export interface RelatorioMensal {
   comercio: LinhaDoRelatorio
   industria: LinhaDoRelatorio
   servicos: LinhaDoRelatorio
   totalCentavos: number
-  /** Quanto do total ainda não tem "com nota" ou "sem nota": é o que o contador vai perguntar. */
-  naoMarcadoCentavos: number
+  /** Quanto do total ainda está sem a nota em mãos: é o que o contador vai cobrar. */
+  pendenteCentavos: number
 }
 
-const vazia = (): LinhaDoRelatorio => ({ comCentavos: 0, semCentavos: 0, naoMarcadoCentavos: 0 })
+const vazia = (): LinhaDoRelatorio => ({ comCentavos: 0, pendenteCentavos: 0 })
 
 function somar(linha: LinhaDoRelatorio, status: StatusDaNota, centavos: number) {
   if (status === "com") linha.comCentavos += centavos
-  else if (status === "sem") linha.semCentavos += centavos
-  else linha.naoMarcadoCentavos += centavos
+  else linha.pendenteCentavos += centavos
 }
 
 /**
  * Monta o relatório de um mês. Mesma regra da tela MEI: se o mês foi lançado à
- * parte (`lancado`), vale o lançamento, e como ele não diz se saiu com nota
- * cai todo em "não marcado"; sem lançamento, valem as vendas do Balcão. Somar
+ * parte (`lancado`), vale o lançamento, e como ele não tem venda onde anexar a
+ * nota cai todo em "pendente"; sem lançamento, valem as vendas do Balcão. Somar
  * as duas fontes contaria a venda duas vezes.
  *
  * Indústria fica zerada: o Tino não separa o que a pessoa fabrica do que
  * revende, e a folha avisa.
  */
 export function montarRelatorio(vendas: VendaDoMes[], lancado: { comercioCentavos: number; servicosCentavos: number } | null): RelatorioMensal {
-  const relatorio: RelatorioMensal = { comercio: vazia(), industria: vazia(), servicos: vazia(), totalCentavos: 0, naoMarcadoCentavos: 0 }
+  const relatorio: RelatorioMensal = { comercio: vazia(), industria: vazia(), servicos: vazia(), totalCentavos: 0, pendenteCentavos: 0 }
   const lancadoTotal = lancado ? lancado.comercioCentavos + lancado.servicosCentavos : 0
 
   if (lancado && lancadoTotal > 0) {
-    somar(relatorio.comercio, "naoMarcado", lancado.comercioCentavos)
-    somar(relatorio.servicos, "naoMarcado", lancado.servicosCentavos)
+    somar(relatorio.comercio, "pendente", lancado.comercioCentavos)
+    somar(relatorio.servicos, "pendente", lancado.servicosCentavos)
   } else {
     for (const venda of vendas) {
       const status = statusDaNota(venda)
@@ -103,8 +98,8 @@ export function montarRelatorio(vendas: VendaDoMes[], lancado: { comercioCentavo
   }
 
   for (const linha of [relatorio.comercio, relatorio.industria, relatorio.servicos]) {
-    relatorio.totalCentavos += linha.comCentavos + linha.semCentavos + linha.naoMarcadoCentavos
-    relatorio.naoMarcadoCentavos += linha.naoMarcadoCentavos
+    relatorio.totalCentavos += linha.comCentavos + linha.pendenteCentavos
+    relatorio.pendenteCentavos += linha.pendenteCentavos
   }
   return relatorio
 }
@@ -120,24 +115,6 @@ export function prazoDoRelatorio(competencia: string): string {
 export function mesParaFechar(hoje: string): string {
   const [ano, mes] = hoje.slice(0, 7).split("-").map(Number)
   return mes === 1 ? `${ano - 1}-12` : `${ano}-${String(mes - 1).padStart(2, "0")}`
-}
-
-/**
- * O que ainda falta numa venda para o relatório ficar fechado (passo 41, Davi:
- * "quero um pendentes de nota, e os com nota quero a nota em anexo").
- *
- * - `marcar`: ninguém disse se saiu com nota.
- * - `anexar`: foi marcada "com nota", mas a nota não está guardada. A nota que
- *   o próprio Tino emitiu conta como guardada (o XML autorizado fica no banco),
- *   então não pede anexo.
- * - `null`: nada pendente (sem nota, ou com nota e a nota em mãos).
- */
-export type Pendencia = "marcar" | "anexar" | null
-
-export function pendenciaDaNota(venda: { status: StatusDaNota; notaEmitida: boolean; temAnexo: boolean }): Pendencia {
-  if (venda.status === "naoMarcado") return "marcar"
-  if (venda.status === "com" && !venda.notaEmitida && !venda.temAnexo) return "anexar"
-  return null
 }
 
 export const ANEXO_TAMANHO_MAXIMO = 3 * 1024 * 1024

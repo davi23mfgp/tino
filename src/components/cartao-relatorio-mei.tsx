@@ -31,7 +31,7 @@ export function CartaoRelatorioMei() {
       <span className="min-w-0 flex-1">
         <b className="block text-[calc(15px*var(--escala-letra))]">Relatório de {nome}</b>
         <span className="block text-[calc(13px*var(--escala-letra))] text-muted-fg">
-          guarde até {resumo.prazo.slice(0, 5)}{resumo.pendentes > 0 ? ` · pendentes de nota: ${resumo.pendentes}` : resumo.vendas > 0 ? " · notas marcadas" : ""}
+          guarde até {resumo.prazo.slice(0, 5)}{resumo.pendentes > 0 ? ` · pendentes de nota: ${resumo.pendentes}` : resumo.vendas > 0 ? " · todas com nota" : ""}
         </span>
       </span>
       <span className="shrink-0 text-[calc(13px*var(--escala-letra))] font-semibold text-primary">Fechar o mês</span>

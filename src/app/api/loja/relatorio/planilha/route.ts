@@ -3,7 +3,7 @@ import { dadosDoRelatorio } from "@/lib/loja/relatorio-mei-dados"
 
 export const dynamic = "force-dynamic"
 
-const ROTULO = { com: "com nota", sem: "sem nota", naoMarcado: "não marcado" } as const
+const ROTULO = { com: "com nota", pendente: "pendente de nota" } as const
 
 /** Texto de planilha: aspas dobradas e nada de fórmula (=, +, -, @) no começo de célula. */
 const celula = (valor: string) => `"${(/^[=+\-@\t\r]/.test(valor) ? `'${valor}` : valor).replaceAll('"', '""')}"`

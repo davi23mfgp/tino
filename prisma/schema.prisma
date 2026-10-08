@@ -1737,13 +1737,6 @@ model VendaLoja {
   canceladaEm DateTime?
   observacao  String?
 
-  /// A venda saiu com nota fiscal? Nulo é "ainda não marcado", e é diferente de
-  /// falso: o relatório mensal do MEI separa receita com e sem nota, e tratar o
-  /// que ninguém marcou como "sem nota" diria ao contador algo que ninguém
-  /// afirmou. A nota emitida pelo Tino (`notaFiscal` EMITIDA) vale por si e
-  /// dispensa a marcação.
-  comNota Boolean?
-
   criadoEm DateTime @default(now())
 
   itens        ItemVenda[]

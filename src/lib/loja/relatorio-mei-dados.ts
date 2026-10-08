@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { diaNoFuso } from "@/lib/loja/contas"
-import { montarRelatorio, pendenciaDaNota, prazoDoRelatorio, statusDaNota, type Pendencia, type StatusDaNota } from "@/lib/loja/relatorio-mei"
+import { montarRelatorio, prazoDoRelatorio, statusDaNota, type StatusDaNota } from "@/lib/loja/relatorio-mei"
 
 /**
  * Tudo que a tela "Fechar o mês" e a planilha precisam de um mês: as vendas do
@@ -19,7 +19,6 @@ export interface VendaDoRelatorio {
   notaEmitida: boolean
   /** A nota que o dono anexou (cópia de fora do Tino), sem o conteúdo: o arquivo só sai pela rota de download. */
   anexo: { nome: string; tamanhoBytes: number } | null
-  pendencia: Pendencia
 }
 
 export async function dadosDoRelatorio(larId: string, competencia: string) {
@@ -56,11 +55,10 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
         dia: diaNoFuso(venda.criadoEm, fuso),
         cliente: venda.cliente?.nome ?? null,
         totalCentavos: venda.totalCentavos,
-        status: statusDaNota({ comNota: venda.comNota, notaEmitida }),
+        status: statusDaNota({ notaEmitida, temAnexo: venda.notaAnexada !== null }),
         notaNumero: notaEmitida ? (venda.notaFiscal?.numero ?? null) : null,
         notaEmitida,
         anexo: venda.notaAnexada,
-        pendencia: pendenciaDaNota({ status: statusDaNota({ comNota: venda.comNota, notaEmitida }), notaEmitida, temAnexo: venda.notaAnexada !== null }),
       }
     })
 
@@ -68,7 +66,7 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
   const relatorio = montarRelatorio(
     brutas
       .filter((venda) => diaNoFuso(venda.criadoEm, fuso).slice(0, 7) === competencia)
-      .map((venda) => ({ totalCentavos: venda.totalCentavos, comNota: venda.comNota, notaEmitida: venda.notaFiscal?.status === "EMITIDA", itens: venda.itens.map((item) => ({ totalCentavos: item.totalCentavos, ehServico: item.servicoId !== null })) })),
+      .map((venda) => ({ totalCentavos: venda.totalCentavos, notaEmitida: venda.notaFiscal?.status === "EMITIDA", temAnexo: venda.notaAnexada !== null, itens: venda.itens.map((item) => ({ totalCentavos: item.totalCentavos, ehServico: item.servicoId !== null })) })),
     lancado,
   )
   const usouLancamento = lancado !== null && lancado.comercioCentavos + lancado.servicosCentavos > 0
@@ -81,10 +79,9 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
     /** Quando o mês foi lançado à parte, o relatório vale o lançamento e as vendas abaixo não somam. */
     usouLancamento,
     vendas,
-    /** As duas pendências juntas: é o número do "pendentes de nota". */
-    pendentes: vendas.filter((venda) => venda.pendencia !== null).length,
-    aMarcar: vendas.filter((venda) => venda.pendencia === "marcar").length,
-    aAnexar: vendas.filter((venda) => venda.pendencia === "anexar").length,
+    /** O "pendentes de nota": toda venda sem a nota em mãos. */
+    pendentes: vendas.filter((venda) => venda.status === "pendente").length,
+    comNota: vendas.filter((venda) => venda.status === "com").length,
     notasEmitidas: vendas.filter((venda) => venda.notaEmitida).length,
     das: { registrado: Boolean(lancamento), pago: lancamento?.dasPago ?? false },
   }
