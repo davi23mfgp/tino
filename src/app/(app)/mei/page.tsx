@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { showToast } from "@/components/ui/toast"
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
+import { CartaoRelatorioMei } from "@/components/cartao-relatorio-mei"
 import { SUGESTOES_MEI, TinoDock } from "@/components/tino-dock"
 import estilos from "./mei.module.css"
 
@@ -248,6 +249,8 @@ export default function Mei() {
       </div>
 
       {erro && <p className={estilos.erro}>{erro}</p>}
+
+      <CartaoRelatorioMei />
 
       <div className={estilos.quatro}>
         {situacao.disponivelCentavos >= 0 ? (

@@ -234,6 +234,7 @@ const TITULOS_FORA_DO_MENU: Record<string, string> = {
   "/ligar-negocio": "Ligar o negócio",
   "/loja/simples": "Início",
   "/loja/maquininha": "Conferir a maquininha",
+  "/loja/fechar-mes": "Fechar o mês",
   "/loja/minha-conta": "Minha conta",
   "/lancar": "Anotar",
   "/regras": "Regras",
