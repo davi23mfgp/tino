@@ -99,7 +99,6 @@ export function Navegacao({ mei, apenasLoja, nome, simples }: { mei?: boolean; a
   const secundario = !principaisNoCelular.some(grupo => grupo.itens.some(item => estaAtivo(caminho,item.rota)))
   async function sair() { await enviar("/api/auth/logout", {}); router.push("/login"); router.refresh() }
   return <>
-    {!apenasLoja && !mei && <div className="fixed bottom-[104px] right-3 z-40 lg:hidden"><TinoDock /></div>}
     <aside className="app-sidebar">
       <Link href={simples ? "/loja/simples" : apenasLoja || mei ? "/loja" : "/painel"} className="app-brand" aria-label="Início do Tino"><TinoMarca className="size-9" /><span>tino.</span></Link>
       <p className="app-sidebar-caption">{apenasLoja || mei ? "Seu negócio" : "Seu dia a dia"}</p>

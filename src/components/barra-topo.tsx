@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
+import { TinoDock } from "@/components/tino-dock"
 import { AlertTriangle, ChevronRight, Bell, Check, Clock, Info, LogOut, Settings, ShieldCheck } from "lucide-react"
 import { buscar, enviar } from "@/lib/cliente"
 import { tituloDaRota, todosOsGrupos, GRUPO_LOJA_FUNCIONARIO } from "@/lib/navegacao-grupos"
@@ -65,6 +66,7 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{n
   const lista=[...(soNovas ? novas : alertas)].sort((a,b)=>(prioridade[a.severidade]??3)-(prioridade[b.severidade]??3))
   const borda=sobreClaro ? "border-[oklch(0_0_0/0.12)] text-[oklch(0.17_0.02_145)]" : "border-pauta"
   return <>
+      {!apenasLoja && !mei && <TinoDock gatilho="topo" classeTopo={borda} />}
       {!apenasLoja && !mei && <Sheet open={aberto} onOpenChange={setAberto}>
         <SheetTrigger asChild><button aria-label="Notificações" className={"relative grid size-11 place-items-center rounded-full border sm:size-10 "+borda}><Bell className="size-[18px]" strokeWidth={1.6} aria-hidden/>{/* Ponto vermelho quando há alerta crítico sem ler: a faixa que o
             repetia no topo de toda tela saiu (Davi, 25/09), e o sino passou a

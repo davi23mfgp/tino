@@ -38,13 +38,15 @@ export const SUGESTOES_MEI = ["Quanto é o meu DAS?", "E se eu passar do limite?
 
 export function TinoDock({
   comoItem = false,
-  /** "botao": a pílula "Pergunte ao Tino" dentro de uma tela, como na MEI e DAS. */
+  /** "botao": a pílula "Pergunte ao Tino" dentro de uma tela, como na MEI e DAS.
+      "topo": o leão redondo ao lado do sino (passo 53, opção C, 08/10/2026). */
   gatilho,
   /** A conta MEI não tem o panorama pessoal: pergunta em `/api/mei/pergunta`. */
   rota = "/api/tino/chat",
   sugestoes = SUGESTOES,
   descricao,
-}: { comoItem?: boolean; gatilho?: "botao"; rota?: string; sugestoes?: string[]; descricao?: string } = {}) {
+  classeTopo = "border-pauta",
+}: { comoItem?: boolean; gatilho?: "botao" | "topo"; rota?: string; sugestoes?: string[]; descricao?: string; classeTopo?: string } = {}) {
   const [aberto, setAberto] = useState(false)
   const [estado, setEstado] = useState<EstadoTino>("tranquilo")
   const [turnos, setTurnos] = useState<Turno[]>([])
@@ -121,7 +123,13 @@ export function TinoDock({
   return (
     <Dialog open={aberto} onOpenChange={setAberto}>
       <DialogTrigger asChild>
-        {gatilho === "botao" ? (
+        {gatilho === "topo" ? (
+          // Antes o leão flutuava sobre o conteúdo e cobria a ponta direita dos
+          // valores; no topo ele divide a linha com o sino e a conta, e nada
+          // fica por cima do que a pessoa lê. Só no celular: no computador o
+          // assistente já é um item da barra lateral.
+          <button aria-label="Falar com o Tino" className={`grid size-11 place-items-center rounded-full border lg:hidden ${classeTopo}`}><TinoMarca className="size-5" /></button>
+        ) : gatilho === "botao" ? (
           <button className="inline-flex min-h-11 items-center gap-2 rounded-full border border-pauta px-4 text-[calc(13.5px*var(--escala-letra))] font-semibold"><TinoMarca className="size-5" />Pergunte ao Tino</button>
         ) : comoItem ? (
           // Na barra lateral ele é um item de navegação como os outros, e o
