@@ -14,17 +14,27 @@ import { gateway, opcoesDeGateway, valorDoPlanoCentavos, GatewayNaoConfigurado }
 import type { CicloCobranca, ProvedorPagamento } from "@prisma/client"
 
 export const GET = comSessao(async (sessao) => {
-  const [assinatura, planos, diasDeTeste] = await Promise.all([
+  const [assinatura, planos, diasDeTeste, dividas, gastos, pelotelegram, metas] = await Promise.all([
     prisma.assinatura.findUnique({
       where: { usuarioId: sessao.usuarioId },
       include: { cobrancas: { orderBy: { criadoEm: "desc" }, take: 12 } },
     }),
     planosVigentes(),
     diasDeTesteVigentes(),
+    // O que a pessoa já guardou no Tino, contado do banco. É o argumento da
+    // tela (opção A do passo 52): pagar para não perder o que já organizou.
+    // Só contagem real; sem uso, o cartão some em vez de mostrar zero vistoso.
+    prisma.divida.count({ where: { larId: sessao.larId, quitada: false } }),
+    prisma.transacao.count({ where: { larId: sessao.larId, tipo: "DESPESA" } }),
+    prisma.captura.count({ where: { larId: sessao.larId, origem: "TELEGRAM" } }),
+    prisma.meta.count({ where: { larId: sessao.larId } }),
   ])
 
   return ok({
     assinatura,
+    uso: { dividas, gastos, pelotelegram, metas },
+    // Plano que combina com o que a pessoa usa: quem entrou pela loja usa o Meu negócio.
+    planoSugerido: sessao.produto === "mei" ? "loja" : "pessoal",
     planos,
     diasDeTeste,
     gateways: opcoesDeGateway(),

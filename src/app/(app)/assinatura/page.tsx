@@ -44,6 +44,7 @@ interface Assinatura {
   ciclo: Ciclo
   valorCentavos: number
   proximaCobrancaEm: string | null
+  testeAteEm: string | null
   canceladaEm: string | null
   motivoFalha: string | null
   cobrancas: Cobranca[]
@@ -61,7 +62,12 @@ interface Situacao {
   planos: (Plano & { precoEditado: boolean })[]
   diasDeTeste: number
   gateways: Gateway[]
+  uso: { dividas: number; gastos: number; pelotelegram: number; metas: number }
+  planoSugerido: string
 }
+
+const DIA_MS = 86_400_000
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
 
 const ROTULO_STATUS = {
   TESTE: "Em teste",
@@ -81,7 +87,8 @@ const TOM_STATUS = {
 
 export default function Assinatura() {
   const [situacao, setSituacao] = useState<Situacao | null>(null)
-  const [ciclo, setCiclo] = useState<Ciclo>("MENSAL")
+  const [ciclo, setCiclo] = useState<Ciclo>("ANUAL")
+  const [escolhido, setEscolhido] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [ocupado, setOcupado] = useState(false)
 
@@ -128,7 +135,22 @@ export default function Assinatura() {
     )
   }
 
-  const { assinatura, planos, gateways, diasDeTeste } = situacao
+  const { assinatura, planos, gateways, diasDeTeste, uso, planoSugerido } = situacao
+  const emTeste = !assinatura || assinatura.status === "TESTE"
+  if (emTeste) {
+    return (
+      <TelaDoTeste
+        situacao={situacao}
+        ciclo={ciclo}
+        setCiclo={setCiclo}
+        escolhido={escolhido ?? planoSugerido}
+        setEscolhido={setEscolhido}
+        ocupado={ocupado}
+        erro={erro}
+        contratar={contratar}
+      />
+    )
+  }
   const disponiveis = gateways.filter((linha) => linha.configurado)
   const ativa = assinatura?.status === "ATIVA"
   const maiorDesconto = Math.max(0, ...planos.map((linha) => descontoAnualBps(linha)))
@@ -321,6 +343,131 @@ export default function Assinatura() {
           </div>
         </Cartao>
       )}
+    </div>
+  )
+}
+
+/**
+ * A tela de quem ainda está no teste, opção A do passo 52 (Davi, 08/10/2026).
+ * Abre pelo que a pessoa já guardou no Tino, porque é isso que ela perde se
+ * não assinar; depois diz quando o teste acaba e que nada é cobrado sozinho,
+ * que é o medo de quem testa. O anual aparece dividido por mês, com o total
+ * do ano e o mensal ao lado: esconder o total seria o truque que faz o
+ * cliente se sentir enganado na fatura.
+ */
+function TelaDoTeste({ situacao, ciclo, setCiclo, escolhido, setEscolhido, ocupado, erro, contratar }: {
+  situacao: Situacao
+  ciclo: Ciclo
+  setCiclo: (ciclo: Ciclo) => void
+  escolhido: string
+  setEscolhido: (codigo: string) => void
+  ocupado: boolean
+  erro: string | null
+  contratar: (provedor: Provedor, planoId: string) => void
+}) {
+  const { assinatura, planos, gateways, diasDeTeste, uso, planoSugerido } = situacao
+  const fim = assinatura?.testeAteEm ? new Date(assinatura.testeAteEm) : null
+  // Dia do teste contado a partir do fim gravado; sem data (conta antiga), não há dia a mostrar.
+  const diaDoTeste = fim ? Math.min(diasDeTeste, Math.max(1, diasDeTeste - Math.ceil((fim.getTime() - Date.now()) / DIA_MS) + 1)) : null
+  const gateway = gateways.find((linha) => linha.configurado && linha.provedor === "MERCADO_PAGO") ?? gateways.find((linha) => linha.configurado)
+  const plano = planos.find((linha) => linha.codigo === escolhido) ?? planos[0]
+  const itens = [
+    uso.dividas > 0 && { valor: plural(uso.dividas, "dívida cadastrada", "dívidas cadastradas"), nota: "com o plano para pagar" },
+    uso.gastos > 0 && { valor: plural(uso.gastos, "gasto anotado", "gastos anotados"), nota: uso.pelotelegram > 0 ? `${plural(uso.pelotelegram, "pelo Telegram", "pelo Telegram")}` : "no seu extrato" },
+    uso.metas > 0 && { valor: plural(uso.metas, "meta", "metas"), nota: "juntando dinheiro" },
+  ].filter(Boolean) as { valor: string; nota: string }[]
+
+  return (
+    <div className="space-y-4">
+      {erro && <Aviso tom="critico">{erro}</Aviso>}
+      {/* O título "Assinatura" já vem do cabeçalho do app; aqui só o dia do teste. */}
+      <header>
+        <p className="text-[calc(13px*var(--escala-letra))] text-muted-fg">
+          {diaDoTeste ? `teste grátis · dia ${diaDoTeste} de ${diasDeTeste}` : `teste grátis de ${diasDeTeste} dias`}
+        </p>
+      </header>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+        <Cartao titulo="No teste, você já">
+          {itens.length > 0 ? (
+            <ul className="divide-y divide-pauta">
+              {itens.map((item) => (
+                <li key={item.valor} className="flex items-baseline justify-between gap-3 py-2.5">
+                  <span className="text-[calc(15px*var(--escala-letra))]">{item.valor}</span>
+                  <span className="text-right text-[calc(12px*var(--escala-letra))] text-muted-fg">{item.nota}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[calc(13px*var(--escala-letra))] text-muted-fg">Ainda nada guardado. Cadastre uma dívida, um gasto ou uma meta para o Tino começar a ajudar.</p>
+          )}
+          <p className="mt-4 border-t border-pauta pt-3 text-[calc(13px*var(--escala-letra))] leading-relaxed">
+            {fim ? <>O teste acaba em <b>{fim.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</b>. </> : null}
+            Nada é cobrado sozinho: sem escolher um plano, a conta fica só para leitura, e você continua podendo ver e exportar tudo.
+          </p>
+        </Cartao>
+
+        <Cartao
+          titulo="Escolha o plano"
+          acao={
+            <div role="radiogroup" aria-label="Ciclo" className="flex rounded-full border border-pauta p-0.5 text-[calc(12px*var(--escala-letra))]">
+              {(["ANUAL", "MENSAL"] as const).map((opcao) => (
+                <button key={opcao} type="button" role="radio" aria-checked={ciclo === opcao} onClick={() => setCiclo(opcao)}
+                  className={`rounded-full px-3 py-1 ${ciclo === opcao ? "bg-primary text-primary-foreground" : "text-muted-fg"}`}>
+                  {opcao === "ANUAL" ? "Anual" : "Mensal"}
+                </button>
+              ))}
+            </div>
+          }
+        >
+          <div role="radiogroup" aria-label="Plano" className="grid gap-3 sm:grid-cols-2">
+            {planos.map((linha) => {
+              const porMes = ciclo === "ANUAL" ? Math.round(linha.anualCentavos / 12) : linha.mensalCentavos
+              const marcado = linha.codigo === plano?.codigo
+              return (
+                <button key={linha.codigo} type="button" role="radio" aria-checked={marcado} onClick={() => setEscolhido(linha.codigo)}
+                  className={`rounded-[var(--raio-cartao)] border p-4 text-left transition-colors ${marcado ? "border-primary bg-primary/5" : "border-pauta bg-papel-2"}`}>
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="text-[calc(15px*var(--escala-letra))] font-semibold">{linha.nome}</span>
+                    {linha.codigo === planoSugerido && <span className="rounded-full bg-positivo/10 px-2 py-0.5 text-[calc(11px*var(--escala-letra))] text-positivo">o que você usa</span>}
+                  </span>
+                  <span className="mt-1 block text-[calc(12px*var(--escala-letra))] leading-relaxed text-muted-fg">{linha.chamada}</span>
+                  <span className="numero mt-3 block text-[calc(26px*var(--escala-letra))] font-light leading-none">
+                    {formatarMoeda(porMes)}<span className="ml-1.5 font-sans text-[calc(12px*var(--escala-letra))] text-muted-fg">por mês</span>
+                  </span>
+                  <span className="mt-1.5 block text-[calc(12px*var(--escala-letra))] text-muted-fg">
+                    {ciclo === "ANUAL"
+                      ? <>{formatarMoeda(linha.anualCentavos)} por ano, ou {formatarMoeda(linha.mensalCentavos)} no mensal</>
+                      : <>ou {formatarMoeda(Math.round(linha.anualCentavos / 12))} por mês no anual ({formatarPercentual(descontoAnualBps(linha), 0)} a menos)</>}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {plano && (
+            <ul className="mt-4 space-y-1.5">
+              {plano.inclui.map((item) => (
+                <li key={item} className="flex gap-2 text-[calc(12px*var(--escala-letra))]"><Check className="mt-0.5 size-3.5 shrink-0 text-positivo" />{item}</li>
+              ))}
+            </ul>
+          )}
+
+          <button
+            type="button"
+            onClick={() => gateway && plano && contratar(gateway.provedor, plano.codigo)}
+            disabled={!gateway || !plano || ocupado}
+            className="mt-5 w-full rounded-full bg-primary px-5 py-3 text-[calc(14px*var(--escala-letra))] font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Assinar o {plano?.nome ?? "plano"}
+          </button>
+          <p className="mt-1.5 text-center text-[calc(12px*var(--escala-letra))] text-muted-fg">
+            {gateway
+              ? `${gateway.formasDePagamento}, pelo ${gateway.rotulo}. Cancela quando quiser.`
+              : "O pagamento ainda não está disponível neste app. Enquanto isso, o Tino continua funcionando inteiro."}
+          </p>
+        </Cartao>
+      </div>
     </div>
   )
 }
