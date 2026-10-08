@@ -8,6 +8,7 @@ import e from "./inicio.module.css"
 import { AbasDoInicio } from "./abas-do-inicio"
 import { ConferirNoInicio, type CapturaNoInicio } from "./conferir-no-inicio"
 import { LogoDaCompra } from "./logo-da-compra"
+import { ConviteNegocio } from "@/components/convite-negocio"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
@@ -38,6 +39,8 @@ function valorDoMes(transacoes: { competencia: string; tipo: string; valorCentav
 export default async function Painel() {
   const sessao = await sessaoDaPagina()
   const competencia = competenciaAtual()
+  // Quem já ligou o negócio não recebe o convite (passo 40).
+  const temNegocio = Boolean(await prisma.meiPerfil.findUnique({ where: { larId: sessao.larId }, select: { id: true } }))
   const mesesFuturos = [competencia, competenciaMaisMeses(competencia, 1), competenciaMaisMeses(competencia, 2)]
   const [panorama, pendentes, totaisPendentes, cartoes, recentes, compromissos, parcelamentos, usuario, contaPadrao, usoCartoes] = await Promise.all([
     montarPanorama(sessao.larId, competencia),
@@ -169,6 +172,8 @@ export default async function Painel() {
     </section>
 
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
+
+    {!temNegocio && <ConviteNegocio />}
 
     <AbasDoInicio carteira={
 <section className={estilos.painel} data-area="cartoes" data-multiplos={cartoes.length > 1 ? "sim" : "nao"} aria-labelledby="cartoes-titulo">

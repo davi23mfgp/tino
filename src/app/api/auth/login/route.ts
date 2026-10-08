@@ -47,7 +47,13 @@ export const POST = comPublica(async (requisicao: Request) => {
   if (!entradaPermitida(porta, usuario.admin)) return invalido
 
   // Só depois da senha: antes disso a resposta diria quais e-mails têm MEI.
-  if (produto === "mei" && !usuario.lar.meiPerfil) return erro(SEM_MEI, 409)
+  // Conta só pessoal no login MEI: a senha já confere, então em vez do beco sem
+  // saída a pessoa entra no pessoal e recebe o convite de ligar o negócio
+  // (passo 40). Com MFA o desafio é do produto pessoal e o convite não
+  // sobrevive à segunda etapa; esse caso segue com a recusa de antes.
+  const semNegocio = produto === "mei" && !usuario.lar.meiPerfil
+  if (semNegocio && usuario.mfaSegredo) return erro(SEM_MEI, 409)
+  const produtoDaSessao = semNegocio ? "pessoal" : produto
 
   if (usuario.mfaSegredo) {
     await criarDesafioMfa(usuario.id, dados.manterConectado !== false, produto)
@@ -70,11 +76,11 @@ export const POST = comPublica(async (requisicao: Request) => {
       membroId: usuario.membroId,
       papel: usuario.membro?.papel ?? "TITULAR",
       mfaVersao: usuario.mfaVersao,
-      produto,
+      produto: produtoDaSessao,
     }),
     dados.manterConectado !== false,
   )
 
   // Quem ligou o modo simples entra direto nos seis blocos (passo 50, opção A).
-  return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email, ...(produto === "mei" && usuario.modoSimples ? { inicio: "/loja/simples" } : {}) })
+  return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email, ...(semNegocio ? { semNegocio: true } : {}), ...(produto === "mei" && !semNegocio && usuario.modoSimples ? { inicio: "/loja/simples" } : {}) })
 })
