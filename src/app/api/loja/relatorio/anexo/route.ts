@@ -22,7 +22,11 @@ export const POST = comSessao(async (sessao, requisicao) => {
   if (!lido.ok) throw new ErroDeUso(lido.erro)
   const conteudo = Buffer.from(await arquivo.arrayBuffer())
   const dados = { nome: lido.valor.nome, tipo: lido.valor.tipo, tamanhoBytes: conteudo.length, conteudo }
-  await prisma.notaAnexada.upsert({ where: { vendaId: venda.id }, create: { vendaId: venda.id, ...dados }, update: dados })
+  // Quem anexa a nota respondeu que teve: a marca "não teve nota" sai, e se a nota for tirada depois a venda volta a pendente, não a "sem nota".
+  await prisma.$transaction([
+    prisma.notaAnexada.upsert({ where: { vendaId: venda.id }, create: { vendaId: venda.id, ...dados }, update: dados }),
+    prisma.vendaLoja.update({ where: { id: venda.id }, data: { semNota: false } }),
+  ])
   return ok({ ok: true })
 })
 

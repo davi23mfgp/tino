@@ -55,7 +55,7 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
         dia: diaNoFuso(venda.criadoEm, fuso),
         cliente: venda.cliente?.nome ?? null,
         totalCentavos: venda.totalCentavos,
-        status: statusDaNota({ notaEmitida, temAnexo: venda.notaAnexada !== null }),
+        status: statusDaNota({ notaEmitida, temAnexo: venda.notaAnexada !== null, semNota: venda.semNota }),
         notaNumero: notaEmitida ? (venda.notaFiscal?.numero ?? null) : null,
         notaEmitida,
         anexo: venda.notaAnexada,
@@ -66,7 +66,7 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
   const relatorio = montarRelatorio(
     brutas
       .filter((venda) => diaNoFuso(venda.criadoEm, fuso).slice(0, 7) === competencia)
-      .map((venda) => ({ totalCentavos: venda.totalCentavos, notaEmitida: venda.notaFiscal?.status === "EMITIDA", temAnexo: venda.notaAnexada !== null, itens: venda.itens.map((item) => ({ totalCentavos: item.totalCentavos, ehServico: item.servicoId !== null })) })),
+      .map((venda) => ({ totalCentavos: venda.totalCentavos, notaEmitida: venda.notaFiscal?.status === "EMITIDA", temAnexo: venda.notaAnexada !== null, semNota: venda.semNota, itens: venda.itens.map((item) => ({ totalCentavos: item.totalCentavos, ehServico: item.servicoId !== null })) })),
     lancado,
   )
   const usouLancamento = lancado !== null && lancado.comercioCentavos + lancado.servicosCentavos > 0
@@ -79,9 +79,13 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
     /** Quando o mês foi lançado à parte, o relatório vale o lançamento e as vendas abaixo não somam. */
     usouLancamento,
     vendas,
-    /** O "pendentes de nota": toda venda sem a nota em mãos. */
+    /** O "pendentes de nota": a venda que ninguém resolveu (sem nota anexada e sem "não teve nota"). */
     pendentes: vendas.filter((venda) => venda.status === "pendente").length,
     comNota: vendas.filter((venda) => venda.status === "com").length,
+    semNota: vendas.filter((venda) => venda.status === "sem").length,
+    /** Quanto o Balcão vendeu no mês, para avisar quando o lançamento à parte vale no lugar dele. */
+    balcaoCentavos: vendas.reduce((soma, venda) => soma + venda.totalCentavos, 0),
+    lancadoCentavos: lancado ? lancado.comercioCentavos + lancado.servicosCentavos : 0,
     notasEmitidas: vendas.filter((venda) => venda.notaEmitida).length,
     das: { registrado: Boolean(lancamento), pago: lancamento?.dasPago ?? false },
   }

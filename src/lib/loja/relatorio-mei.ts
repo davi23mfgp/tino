@@ -14,20 +14,22 @@ import type { Leitura } from "@/lib/loja/ligar-negocio"
  * `docs/pesquisas/2026-10-06-relatorio-para-o-contador.md`), que divergem sobre
  * o relatório ser obrigatório. A folha diz isso no rodapé.
  *
- * A regra de dois lados: venda COM NOTA é a que tem a nota em mãos, anexada
- * pelo dono ou emitida pelo próprio Tino; toda venda sem a nota em mãos é
- * PENDENTE. Não existe um terceiro "sem nota" dito pela pessoa: a nota some da
- * pasta, não da venda, e pendente é o que o contador vai cobrar. A pessoa tira
- * a pendência anexando a nota. Antes (primeira versão do dia) havia "com", "sem"
- * e "não marcado", e o "sem nota" virava resposta final: não era o que o Davi
- * queria.
+ * A regra: venda COM NOTA é a que tem a nota em mãos (anexada pelo dono ou
+ * emitida pelo Tino). SEM NOTA é a que o dono confirmou ("não teve nota"), e é
+ * a coluna que o Anexo X exige. PENDENTE é a que ninguém resolveu ainda, e o
+ * relatório a mostra à parte, porque pôr pendente em "sem nota" afirmaria algo
+ * que ninguém disse. A pendência sai anexando a nota ou confirmando que não
+ * teve. (Uma versão de 08/10 tinha só "com nota" e "pendente", e a venda de um
+ * cliente que não pede nota ficava pendente para sempre, sem saída; o relatório
+ * deixava de ter a coluna "sem nota" que o contador reconhece.)
  */
 
-export type StatusDaNota = "com" | "pendente"
+export type StatusDaNota = "com" | "sem" | "pendente"
 
-/** Nota emitida pelo Tino vale por si (o XML autorizado fica no banco); a anexada é a cópia que o dono guardou. */
-export function statusDaNota(venda: { notaEmitida: boolean; temAnexo: boolean }): StatusDaNota {
-  return venda.notaEmitida || venda.temAnexo ? "com" : "pendente"
+/** Nota emitida pelo Tino ou anexada vale mais que a marca "não teve nota". */
+export function statusDaNota(venda: { notaEmitida: boolean; temAnexo: boolean; semNota: boolean }): StatusDaNota {
+  if (venda.notaEmitida || venda.temAnexo) return "com"
+  return venda.semNota ? "sem" : "pendente"
 }
 
 export interface ItemParaClassificar { totalCentavos: number; ehServico: boolean }
@@ -51,24 +53,26 @@ export interface VendaDoMes {
   totalCentavos: number
   notaEmitida: boolean
   temAnexo: boolean
+  semNota: boolean
   itens: ItemParaClassificar[]
 }
 
-export interface LinhaDoRelatorio { comCentavos: number; pendenteCentavos: number }
+export interface LinhaDoRelatorio { comCentavos: number; semCentavos: number; pendenteCentavos: number }
 
 export interface RelatorioMensal {
   comercio: LinhaDoRelatorio
   industria: LinhaDoRelatorio
   servicos: LinhaDoRelatorio
   totalCentavos: number
-  /** Quanto do total ainda está sem a nota em mãos: é o que o contador vai cobrar. */
+  /** Quanto do total ninguém resolveu ainda (nem nota, nem "não teve nota"): é o que o contador vai cobrar. */
   pendenteCentavos: number
 }
 
-const vazia = (): LinhaDoRelatorio => ({ comCentavos: 0, pendenteCentavos: 0 })
+const vazia = (): LinhaDoRelatorio => ({ comCentavos: 0, semCentavos: 0, pendenteCentavos: 0 })
 
 function somar(linha: LinhaDoRelatorio, status: StatusDaNota, centavos: number) {
   if (status === "com") linha.comCentavos += centavos
+  else if (status === "sem") linha.semCentavos += centavos
   else linha.pendenteCentavos += centavos
 }
 
@@ -98,7 +102,7 @@ export function montarRelatorio(vendas: VendaDoMes[], lancado: { comercioCentavo
   }
 
   for (const linha of [relatorio.comercio, relatorio.industria, relatorio.servicos]) {
-    relatorio.totalCentavos += linha.comCentavos + linha.pendenteCentavos
+    relatorio.totalCentavos += linha.comCentavos + linha.semCentavos + linha.pendenteCentavos
     relatorio.pendenteCentavos += linha.pendenteCentavos
   }
   return relatorio
@@ -140,4 +144,27 @@ export function validarAnexo(arquivo: { nome: string; tipo: string; tamanho: num
   if (!extensoes) return { ok: false, erro: "Anexe a nota em PDF, XML, PNG ou JPG." }
   if (!extensoes.some((extensao) => nome.toLowerCase().endsWith(extensao))) return { ok: false, erro: "O nome do arquivo não combina com o tipo. Confira a extensão." }
   return { ok: true, valor: { nome, tipo: arquivo.tipo.toLowerCase() } }
+}
+
+export interface LembreteDoRelatorio { chave: string; tipo: string; titulo: string; texto: string; rota: string; acao: string }
+
+/**
+ * O lembrete do dia 20 (passo 41): o relatório do mês passado tem prazo no dia
+ * 20 e quase ninguém o faz, então o sino avisa enquanto há venda pendente. Sem
+ * pendência não há o que lembrar, e sem venda no mês também não (mês lançado à
+ * parte não tem onde anexar nota, e a tela explica isso). A chave leva o mês,
+ * mas não a contagem: o aviso é um só por mês e o texto acompanha o número.
+ * Depois do prazo o aviso segue, dizendo que passou, porque pendência velha
+ * continua valendo para o contador.
+ */
+export function lembreteDoRelatorio(entrada: { competencia: string; hoje: string; pendentes: number; vendas: number; prazo: string; nomeDoMes: string }): LembreteDoRelatorio | null {
+  if (entrada.vendas === 0 || entrada.pendentes === 0) return null
+  const [dia, mes, ano] = entrada.prazo.split("/").map(Number)
+  const [hojeAno, hojeMes, hojeDia] = entrada.hoje.split("-").map(Number)
+  const diasRestantes = Math.round((Date.UTC(ano, mes - 1, dia) - Date.UTC(hojeAno, hojeMes - 1, hojeDia)) / 86_400_000)
+  const quantas = `${entrada.pendentes} ${entrada.pendentes === 1 ? "venda" : "vendas"}`
+  const texto = diasRestantes >= 0
+    ? `Faltam ${quantas} sem nota anexada, e o relatório pede isso até ${entrada.prazo.slice(0, 5)}${diasRestantes <= 5 ? ` (${diasRestantes === 0 ? "é hoje" : `${diasRestantes} ${diasRestantes === 1 ? "dia" : "dias"}`})` : ""}. Anexe a nota ou diga que a venda não teve.`
+    : `Faltam ${quantas} sem nota anexada, e o prazo de ${entrada.prazo.slice(0, 5)} já passou. Resolva para o relatório ficar completo.`
+  return { chave: `relatorio:${entrada.competencia}`, tipo: "relatorio_mei", titulo: `Relatório de ${entrada.nomeDoMes}: ${entrada.pendentes} ${entrada.pendentes === 1 ? "venda pendente" : "vendas pendentes"} de nota`, texto, rota: "/loja/fechar-mes", acao: "Fechar o mês" }
 }

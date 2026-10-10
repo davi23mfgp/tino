@@ -1737,6 +1737,13 @@ model VendaLoja {
   canceladaEm DateTime?
   observacao  String?
 
+  /// "Não teve nota": a pessoa confirmou que esta venda saiu sem nota fiscal
+  /// (cliente que não pede). É diferente de pendente, que é a venda que
+  /// ninguém resolveu. O relatório do MEI tem as duas colunas, com nota e sem
+  /// nota, e só dá para preencher a segunda com uma resposta de verdade; nota
+  /// anexada ou emitida pelo Tino vale mais e anula esta marca.
+  semNota Boolean @default(false)
+
   criadoEm DateTime @default(now())
 
   itens        ItemVenda[]

@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { ChevronLeft, ChevronRight, Download, FileText, Paperclip, Printer } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, FileText, Package, Paperclip, Printer } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { rotuloCompetencia } from "@/lib/datas"
@@ -13,15 +13,16 @@ import { EsqueletoLinhas } from "@/components/ui/skeleton"
 import estilos from "./fechar.module.css"
 
 /**
- * Fechar o mês (passo 41, Davi, 08/10/2026). Duas colunas, como ele pediu: de um
- * lado as vendas COM NOTA (a nota anexada, ou emitida pelo Tino), do outro as
- * PENDENTES DE NOTA, que são todas as vendas sem a nota em mãos. A pessoa tira
- * a venda da pendência anexando a nota, e ela passa para a outra coluna. Não
- * existe "sem nota" como resposta: o relatório mostra o que está pendente, e o
- * contador cobra isso.
+ * Fechar o mês (passo 41, Davi, 08/10/2026). De um lado as vendas COM NOTA (a
+ * nota anexada, ou emitida pelo Tino), do outro as PENDENTES, que são as que
+ * ninguém resolveu. A pendência sai de dois jeitos: anexando a nota (a venda
+ * passa para "com nota") ou confirmando "não teve nota" (passa para "sem
+ * nota", numa lista menor embaixo). O relatório do Anexo X mostra as três
+ * colunas: com nota, sem nota e o que ainda está pendente. Pendente nunca é
+ * somado em "sem nota" por omissão.
  *
- * No celular as colunas viram duas seções, com as pendentes primeiro, porque é
- * nelas que a pessoa age.
+ * No celular as colunas viram seções, com as pendentes primeiro, porque é nelas
+ * que a pessoa age.
  */
 
 interface Venda { id: string; numero: number; dia: string; cliente: string | null; totalCentavos: number; status: StatusDaNota; notaNumero: number | null; notaEmitida: boolean; anexo: { nome: string; tamanhoBytes: number } | null }
@@ -34,6 +35,9 @@ interface Dados {
   vendas: Venda[]
   pendentes: number
   comNota: number
+  semNota: number
+  balcaoCentavos: number
+  lancadoCentavos: number
   das: { registrado: boolean; pago: boolean }
 }
 
@@ -73,6 +77,13 @@ export default function FecharMes() {
     finally { setOcupado(null) }
   }
 
+  async function naoTeveNota(vendaId: string, valor: boolean) {
+    setOcupado(vendaId)
+    try { await enviar("/api/loja/relatorio/nota", { vendaId, semNota: valor }, "PATCH"); await carregar(mes) }
+    catch (excecao) { setErro(excecao instanceof Error ? excecao.message : "Não consegui marcar.") }
+    finally { setOcupado(null) }
+  }
+
   async function tirarAnexo(vendaId: string) {
     setOcupado(vendaId)
     try { await enviar(`/api/loja/relatorio/anexo?vendaId=${vendaId}`, {}, "DELETE"); await carregar(mes) }
@@ -83,6 +94,7 @@ export default function FecharMes() {
   const nome = rotuloCompetencia(mes)
   const pendentes = dados?.vendas.filter((venda) => venda.status === "pendente") ?? []
   const comNota = dados?.vendas.filter((venda) => venda.status === "com") ?? []
+  const semNota = dados?.vendas.filter((venda) => venda.status === "sem") ?? []
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4">
@@ -102,12 +114,21 @@ export default function FecharMes() {
               <ul className="space-y-2.5 text-[calc(14px*var(--escala-letra))]">
                 <Item feito={dados.vendas.length > 0 || dados.usouLancamento} texto={dados.usouLancamento ? "Mês lançado à parte na tela MEI" : `${dados.vendas.length} ${dados.vendas.length === 1 ? "venda do Balcão" : "vendas do Balcão"} no mês`} />
                 <Item feito={dados.das.pago} texto={dados.das.registrado ? (dados.das.pago ? `DAS de ${nome} pago` : `DAS de ${nome} ainda não pago`) : `DAS de ${nome}: sem registro`} />
-                <Item feito={dados.vendas.length > 0 && dados.pendentes === 0} texto={dados.usouLancamento ? "Notas: o lançamento à parte não tem venda onde anexar" : dados.pendentes ? `${dados.pendentes} ${dados.pendentes === 1 ? "venda pendente" : "vendas pendentes"} de nota` : "Todas as vendas com a nota anexada"} />
+                <Item feito={dados.vendas.length > 0 && dados.pendentes === 0} texto={dados.pendentes ? `${dados.pendentes} ${dados.pendentes === 1 ? "venda pendente" : "vendas pendentes"} de nota` : dados.vendas.length ? "Nenhuma pendência de nota" : "Sem vendas para conferir a nota"} />
               </ul>
             </Cartao>
           </div>
 
-          {!dados.usouLancamento && (
+          {dados.usouLancamento && (
+            <div className={estilos.naoImprimir}>
+              <Aviso tom="atencao">
+                O relatório deste mês vale o que você lançou na tela MEI ({formatarMoeda(dados.lancadoCentavos)}), que não separa as vendas.
+                {dados.vendas.length > 0 ? ` O Balcão tem ${formatarMoeda(dados.balcaoCentavos)} em ${dados.vendas.length} ${dados.vendas.length === 1 ? "venda" : "vendas"}: para o relatório separar com nota e sem nota, zere o lançamento do mês em MEI e DAS e ele passa a valer as vendas.` : " Não há vendas no Balcão neste mês para anexar nota."}
+              </Aviso>
+            </div>
+          )}
+
+          {dados.vendas.length > 0 && (
             <div className={`${estilos.naoImprimir} grid gap-4 md:grid-cols-2 md:items-start`}>
               {/* Pendentes primeiro no celular (é onde se age); no computador, com nota à esquerda e pendentes à direita. */}
               <section aria-label="Pendentes de nota" className="order-1 md:order-2">
@@ -126,11 +147,12 @@ export default function FecharMes() {
                             <Paperclip className="size-4" aria-hidden />Anexar nota
                             <input type="file" accept={TIPOS_DO_ARQUIVO} className="sr-only" aria-label={`Anexar a nota da venda ${venda.numero}`} disabled={ocupado === venda.id} onChange={(evento) => { void anexar(venda.id, evento.target.files?.[0]); evento.target.value = "" }} />
                           </label>
+                          <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} border border-pauta`} onClick={() => void naoTeveNota(venda.id, true)}>Não teve nota</button>
                         </div>
                       ))}
                     </div>
                   )}
-                  <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">Anexe a cópia da nota (PDF, XML ou foto, até 3 MB) e a venda passa para &quot;com nota&quot;.</p>
+                  <p className="mt-3 text-[calc(12px*var(--escala-letra))] text-muted-fg">Anexe a cópia da nota (PDF, XML ou foto, até 3 MB) e a venda passa para &quot;com nota&quot;. Se não teve, diga &quot;não teve nota&quot; e ela sai dos pendentes.</p>
                 </Cartao>
               </section>
 
@@ -160,6 +182,21 @@ export default function FecharMes() {
             </div>
           )}
 
+          {semNota.length > 0 && (
+            <div className={estilos.naoImprimir}>
+              <Cartao titulo={`Sem nota · ${semNota.length}`} estatico>
+                <ul className="divide-y divide-pauta">
+                  {semNota.map((venda) => (
+                    <li key={venda.id} className="flex items-center justify-between gap-3 py-2.5 text-[calc(14px*var(--escala-letra))]">
+                      <span className="min-w-0">Venda {venda.numero}{venda.cliente ? ` · ${venda.cliente}` : ""}<span className="block text-[calc(12px*var(--escala-letra))] text-muted-fg">{dataCurta(venda.dia)} · {formatarMoeda(venda.totalCentavos)} · você disse que não teve nota</span></span>
+                      <button type="button" disabled={ocupado === venda.id} className={`${BOTAO} shrink-0 border border-pauta`} onClick={() => void naoTeveNota(venda.id, false)}>Desfazer</button>
+                    </li>
+                  ))}
+                </ul>
+              </Cartao>
+            </div>
+          )}
+
           {/* A folha do relatório: é o que sai na impressão. */}
           <section className={`${estilos.folha} ficha mx-auto w-full max-w-2xl p-4 sm:p-5`} aria-label="Relatório Mensal das Receitas Brutas">
             <div className="flex items-start justify-between gap-2">
@@ -169,8 +206,8 @@ export default function FecharMes() {
             <p className="mt-1 text-[calc(12px*var(--escala-letra))] text-muted-fg">{dados.empresa.razaoSocial ?? "Seu MEI"}{dados.empresa.cnpj ? ` · CNPJ ${formatarCnpj(dados.empresa.cnpj)}` : ""}</p>
 
             <div className="mt-3 text-[calc(13px*var(--escala-letra))]">
-              <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 border-b border-pauta pb-1.5 text-[calc(11.5px*var(--escala-letra))] text-muted-fg">
-                <span>Receita de {nome}</span><span className="text-right">com nota</span><span className="text-right">pendente de nota</span>
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 border-b border-pauta pb-1.5 text-[calc(11.5px*var(--escala-letra))] text-muted-fg">
+                <span>Receita de {nome}</span><span className="text-right">sem nota</span><span className="text-right">com nota</span><span className="text-right">pendente</span>
               </div>
               <Linha rotulo="Revenda de mercadorias (comércio)" linha={dados.relatorio.comercio} />
               <Linha rotulo="Venda de produtos que você fabrica (indústria)" linha={dados.relatorio.industria} />
@@ -179,9 +216,9 @@ export default function FecharMes() {
             </div>
 
             {dados.relatorio.pendenteCentavos > 0 && (
-              <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-atencao">{formatarMoeda(dados.relatorio.pendenteCentavos)} em vendas ainda sem a nota anexada. Anexe acima para a pendência sair do relatório.</p>
+              <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-atencao">{formatarMoeda(dados.relatorio.pendenteCentavos)} pendentes: ninguém anexou a nota nem confirmou que não teve. Resolva acima para o relatório ficar completo.</p>
             )}
-            {dados.usouLancamento && <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">Este mês foi lançado à parte na tela MEI, que não separa as vendas: o valor vale o lançamento e fica pendente, porque não há venda onde anexar a nota.</p>}
+            {dados.usouLancamento && <p className="mt-2 text-[calc(12px*var(--escala-letra))] text-muted-fg">Mês lançado à parte na tela MEI: o valor vale o lançamento e fica pendente, porque o lançamento não separa as vendas.</p>}
             <p className="mt-2 text-[calc(11.5px*var(--escala-letra))] leading-snug text-muted-fg">
               Modelo do Anexo X da Resolução CGSN 140/2018. Prazo: {dados.prazo}. Não se entrega a ninguém: guarde por 5 anos, junto das notas de compra e de venda. Indústria o Tino não separa: se você fabrica o que vende, diga ao contador. Regra lida em fontes secundárias em 08/10/2026 (os sites da Receita não abriram); confira no texto oficial com o seu contador.
             </p>
@@ -189,7 +226,8 @@ export default function FecharMes() {
 
           <div className={`${estilos.naoImprimir} mx-auto flex w-full max-w-2xl flex-wrap gap-2`}>
             <button type="button" className={`${BOTAO} inline-flex items-center gap-2 bg-primary font-semibold text-primary-foreground`} onClick={() => window.print()}><Printer className="size-4" aria-hidden />Imprimir ou salvar em PDF</button>
-            <a className={`${BOTAO} inline-flex items-center gap-2 border border-pauta`} href={`/api/loja/relatorio/planilha?mes=${mes}`}><Download className="size-4" aria-hidden />Vendas e notas (planilha)</a>
+            <a className={`${BOTAO} inline-flex items-center gap-2 border border-pauta`} href={`/api/loja/relatorio/pacote?mes=${mes}`}><Package className="size-4" aria-hidden />Pacote do contador (.zip)</a>
+            <a className={`${BOTAO} inline-flex items-center gap-2 border border-pauta`} href={`/api/loja/relatorio/planilha?mes=${mes}`}><Download className="size-4" aria-hidden />Planilha das vendas</a>
           </div>
         </>
       )}
@@ -209,8 +247,9 @@ function Item({ feito, texto }: { feito: boolean; texto: string }) {
 function Linha({ rotulo, linha }: { rotulo: string; linha: LinhaDoRelatorio }) {
   const valor = (centavos: number) => formatarMoeda(centavos).replace("R$ ", "")
   return (
-    <div className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-4 border-b border-pauta py-1.5">
+    <div className="grid grid-cols-[1fr_auto_auto_auto] items-baseline gap-x-3 border-b border-pauta py-1.5">
       <span>{rotulo}</span>
+      <span className="numero text-right">{valor(linha.semCentavos)}</span>
       <span className="numero text-right">{valor(linha.comCentavos)}</span>
       <span className="numero text-right text-atencao">{valor(linha.pendenteCentavos)}</span>
     </div>
