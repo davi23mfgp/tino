@@ -304,3 +304,89 @@ que mantêm) ficam em cerca de R$ 560, fora o seu tempo.
   confirma o enquadramento no CNAE do MEI do Davi.
 - **Não prometer resultado de busca.** Prometer só o que depende de você: o
   site no ar, o botão de WhatsApp funcionando e o Google Meu Negócio em dia.
+
+## Adendo 2 de 14/10/2026: dois pacotes, Básico no volume e Premium na qualidade
+
+Decisão do Davi: um site de preço básico, feito no volume, e outro Premium para
+quem quer qualidade. Isto **substitui** a tabela de três pacotes (Presença,
+Profissional, Completo) mais acima: dois pacotes são mais fáceis de explicar
+numa conversa de WhatsApp e deixam claro o que se ganha ao pagar mais.
+
+### Os dois pacotes
+
+| | **Básico** (volume) | **Premium** (qualidade) |
+|---|---|---|
+| Preço à vista | **R$ 250** | **R$ 1.800** (ou 3 x R$ 650), estimativa abaixo |
+| Mensalidade opcional | R$ 49 | R$ 99 |
+| Páginas | 1 | até 5 (início, serviços, sobre, galeria, contato) |
+| Visual | 1 de 3 modelos prontos, cor e logotipo do cliente | desenho sob medida, na identidade do negócio |
+| Texto | o cliente manda; você só ajusta | você escreve junto com o dono, em uma conversa |
+| Fotos | as que o cliente já tem | tratamento das fotos dele, e até 10 fotos novas se ele fizer o ensaio |
+| Domínio .com.br por 1 ano | sim, no nome do cliente | sim, mais **e-mail com o domínio** |
+| Google Meu Negócio | cadastro e ajuste | otimizado, com fotos e perguntas respondidas |
+| Extras | nenhum | agendamento ou catálogo, mapa, formulário, texto para busca local |
+| Ajustes | 1 rodada | 3 rodadas |
+| Prazo | 3 dias úteis | 10 a 15 dias úteis |
+| Quando entra | quem quer "estar no Google" | quem quer parecer o melhor da cidade |
+
+A fronteira entre os dois tem de ser nítida, para ninguém pedir "só mais uma
+coisa" no Básico: **o Básico é um modelo preenchido, o Premium é um projeto**.
+O que está fora do Básico vira Premium ou item avulso, com preço na hora.
+
+### Por que R$ 1.800 no Premium
+
+As faixas de mercado do estudo (blogs, fraca): institucional de R$ 2.500 a
+R$ 4.000; freelancer simples de R$ 500 a R$ 3.000; completo com SEO de R$ 5.000
+a R$ 15.000. Os R$ 1.800 ficam **abaixo do institucional de mercado e acima do
+freelancer simples**, que é onde cabe um profissional sozinho de Rio Preto que
+ainda não construiu nome. É uma estimativa minha: se nos primeiros cinco
+orçamentos ninguém reclamar do preço, suba para R$ 2.200; se a maioria pedir
+desconto, mantenha e reforce o que está incluso.
+
+### A conta, com tempo estimado por mim
+
+| | Básico | Premium |
+|---|---|---|
+| Receita por site | R$ 250 | R$ 1.800 |
+| Custo fixo (domínio) | R$ 40 | R$ 40 |
+| Sobra | R$ 210 | R$ 1.760 |
+| Horas de trabalho (estimativa) | 2 | 12 |
+| Sobra por hora | R$ 105 | R$ 146,67 |
+
+Um mês de exemplo, **sem dado de mercado**, só para dimensionar: 20 Básicos e 2
+Premiums dão R$ 5.000 mais R$ 3.600, ou R$ 8.600, menos R$ 880 de domínios,
+sobrando R$ 7.720 em cerca de 64 horas (R$ 120 por hora em média). O Premium
+paga mais por hora e o Básico paga mais por quantidade; o Básico também é o
+que alimenta o funil do Premium e do Tino.
+
+### Como fazer o volume sem se afogar
+
+1. **Um formulário de entrada** (no WhatsApp ou em formulário): nome do negócio,
+   o que faz, endereço, horário, WhatsApp, Instagram, 3 a 10 fotos, a cor de que
+   gosta. Sem isso você perde tempo indo e voltando.
+2. **Três modelos prontos**, trocando só cor, texto e fotos. O do Adilson é o
+   primeiro, se ele servir.
+3. **Lista de conferência** do que checar antes de publicar: WhatsApp abre,
+   mapa abre, telefone certo, letra legível no celular.
+4. **Capacidade declarada:** "este mês estou fazendo 10 sites Básicos". Fila
+   curta dá urgência e protege seu tempo.
+5. **Pagamento antes de publicar**, por Pix.
+
+### Como o Básico leva ao Premium e ao Tino
+
+- **Na entrega do Básico:** oferecer a manutenção (R$ 49) e, para quem presta
+  serviço, os 14 dias de teste do Tino.
+- **Em 30 a 60 dias:** convite do Premium **com os R$ 250 já pagos descontados**:
+  o cliente paga R$ 1.550 a mais, e o Básico vira entrada. É um motivo real
+  para ele aceitar: o dinheiro não foi "gasto à toa".
+- **Quem chega pedindo qualidade:** vá direto ao Premium, sem passar pelo
+  Básico, para não vender barato a quem pagaria mais.
+- **Quando alguém pedir o Premium pelo preço do Básico:** mostre a tabela. O
+  que ele quer está na coluna da direita.
+
+### Medir
+
+- **Quantos fecham o Básico** e **quantos sobem para o Premium em 60 dias.**
+  Meta de partida: 1 em cada 5. É suposição, não dado.
+- **Quanto tempo leva cada pacote**, com cronômetro nos primeiros cinco.
+- **Quantos compram direto o Premium**, sem passar pelo Básico.
