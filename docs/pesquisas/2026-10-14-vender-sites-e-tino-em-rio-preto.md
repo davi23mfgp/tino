@@ -390,3 +390,23 @@ que alimenta o funil do Premium e do Tino.
   Meta de partida: 1 em cada 5. É suposição, não dado.
 - **Quanto tempo leva cada pacote**, com cronômetro nos primeiros cinco.
 - **Quantos compram direto o Premium**, sem passar pelo Básico.
+
+## Adendo 3 de 14/10/2026: lista de prospecção e o site de referência
+
+O Davi mandou o site de referência (Velox Detailing, estética automotiva,
+`velox-detailing.vercel.app`). **O endereço não abre deste ambiente** (a rede
+bloqueia o domínio), então não vi o site e não descrevo o visual dele: se o
+Davi mandar capturas ou o código, o modelo do Básico sai dele.
+
+Pediu também uma lista de empresas que aparecem no Google e não têm site. **Não
+dá para entregar essa lista verificada daqui**: não tenho o Google Maps nem
+como ver o botão "Site" de cada negócio, e a busca que tenho só traz guias de
+telefone, que mostram nome e endereço, mas não dizem se o negócio tem site.
+Entreguei o que dá para entregar honestamente:
+
+- [`docs/vendas/prospeccao-rio-preto.csv`](../vendas/prospeccao-rio-preto.csv): a
+  planilha pronta, com 10 nomes de partida (estética automotiva, funilaria e
+  oficinas, todos **não conferidos**) e 40 linhas em branco.
+- [`docs/vendas/COMO-ACHAR-CLIENTES-DE-SITE.md`](../vendas/COMO-ACHAR-CLIENTES-DE-SITE.md):
+  as 10 buscas do Maps, na ordem do nicho do Velox, e a conferência de 2
+  minutos por negócio.
