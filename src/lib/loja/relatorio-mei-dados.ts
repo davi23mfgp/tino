@@ -38,7 +38,8 @@ export async function dadosDoRelatorio(larId: string, competencia: string) {
     lojas.length
       ? prisma.vendaLoja.findMany({
           where: { lojaId: { in: lojas.map((loja) => loja.id) }, cancelada: false, criadoEm: { gte: de, lt: ate } },
-          orderBy: { criadoEm: "asc" },
+          // Número como desempate: vendas no mesmo instante vinham em ordem solta, e o cartão da tela (uma venda por vez) pulava entre duas.
+          orderBy: [{ criadoEm: "asc" }, { numero: "asc" }],
           include: { itens: { select: { totalCentavos: true, servicoId: true } }, notaFiscal: { select: { status: true, numero: true } }, notaAnexada: { select: { nome: true, tamanhoBytes: true } }, cliente: { select: { nome: true } } },
         })
       : Promise.resolve([]),
