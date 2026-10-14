@@ -212,3 +212,95 @@ mês grátis para os dois, e serve para o cliente do site indicar outro.
 - As oficinas listadas vieram de guias de telefone, sem checar se têm site, e
   alguns telefones aparecem cortados nos guias.
 - Não conferi o enquadramento do site como atividade do MEI do Davi.
+
+## Adendo de 14/10/2026: a oferta de entrada de R$ 250
+
+Pedido do Davi: vender o site por volta de R$ 250, com o domínio e o necessário
+dentro desse valor, e ganhar mais que isso com outros serviços depois.
+
+### O que se confirmou e o que não
+
+| Dado | Valor | Fonte | Força |
+|---|---|---|---|
+| Domínio .com.br | R$ 40 por ano, no registro e na renovação | [Tudo sobre hospedagem de sites](https://tudosobrehospedagemdesites.com.br/registro-de-dominio/) (guia de 2026); a InfinitePay cita o mesmo valor | fraca (terceiros; confirmar no registro.br) |
+| Hospedagem na Vercel (plano grátis) | descrita como só para uso pessoal e não comercial; site de cliente pago conta como comercial; o plano pago custa US$ 20 por usuário ao mês | [Termos da Vercel](https://vercel.com/terms) e guias | fraca (o trecho do contrato não apareceu; a regra vem de resumos) |
+| Hospedagem na Cloudflare Pages (plano grátis) | análises dizem que não há proibição de uso comercial, com banda ilimitada e limite de 500 builds por mês | [comparativo de hospedagem estática](https://guptadeepak.com/tools/top-5-static-site-hosting-jamstack-platforms-2026/) | fraca (não conferi os termos da própria Cloudflare) |
+| Piso de preço de site por assinatura de operadora | Vivo Empresas: de R$ 7 a R$ 30 por mês, com domínio grátis (2022) | [Teletime](https://teletime.com.br/08/06/2022/vivo-lanca-ferramenta-de-construcao-de-sites-para-pmes/) | média (imprensa, dado de 2022) |
+
+Duas consequências. O domínio cabe folgado nos R$ 250. E **o site do Davi não
+deve ficar na Vercel grátis**: o próprio Tino está lá, mas site de cliente que
+paga é uso comercial. Hospedar em um serviço gratuito que permita uso comercial
+(confirmar os termos da Cloudflare Pages antes) ou pagar o plano.
+
+### A oferta: "Site Vitrine", R$ 250
+
+| Entra nos R$ 250 | Fica de fora (orçado à parte) |
+|---|---|
+| Uma página só: nome, o que faz, fotos que o cliente já tem, horário, mapa, botão de WhatsApp e link do Instagram | Mais páginas, logotipo, fotos novas, texto escrito do zero |
+| Domínio .com.br no **nome do cliente** por 1 ano (R$ 40, é o único custo fixo) | Renovação do domínio do 2º ano em diante |
+| Hospedagem sem custo | Loja virtual, agendamento, e-mail com o domínio |
+| Cadastro e ajuste do Google Meu Negócio, se ainda não existe | Anúncios pagos |
+| No ar em até 3 dias úteis, com 1 rodada de ajuste | Mais de 1 rodada de ajuste |
+
+Conta do Davi por site: R$ 250 menos R$ 40 de domínio, sobram **R$ 210** antes do
+seu tempo. Com uma página-modelo reaproveitada (a do Adilson serve), em 2 horas de
+trabalho dá R$ 105 por hora; em 4 horas, R$ 52,50 por hora. Estimativa minha: o
+tempo real aparece nos primeiros cinco sites.
+
+Regra para o preço baixo não virar prejuízo: **pagamento antes de publicar** (Pix),
+escopo escrito na mensagem, e tudo fora da tabela acima recebe preço na hora, sem
+vergonha. Preço de entrada atrai gente que pesquisa preço; o que protege é o
+escopo travado.
+
+### A escada: o que vender depois (a razão de existir dos R$ 250)
+
+| Degrau | Quando oferecer | Valor | Por que o cliente aceita |
+|---|---|---|---|
+| **Manutenção** (renovação do domínio, até 2 ajustes de texto ou foto por mês, Google Meu Negócio em dia) | No dia da entrega | R$ 39 a R$ 59 por mês (estimativa; o piso das operadoras é R$ 7 a R$ 30, mas elas não atendem em Rio Preto no WhatsApp) | Ele não quer aprender a mexer no site |
+| **Google Meu Negócio caprichado** com 10 fotos e perguntas respondidas | Em 30 dias | R$ 150 a R$ 200 uma vez (estimativa) | É o que mais traz ligação de quem procura "perto de mim" |
+| **Upgrade para o Profissional** (até 5 páginas) | Em 60 dias, com os R$ 250 já pagos descontados | R$ 1.200 a R$ 1.500 menos R$ 250 (faixas de mercado do estudo) | O primeiro site já provou que funciona |
+| **Tino** | Para quem presta serviço ou vende, na entrega | R$ 49,90 por mês no Meu negócio (preço do app hoje), 14 dias de teste | Orçamento por link, ordem de serviço, Fechar o mês; a receita é toda do Davi |
+| **Extras sob demanda** | Quando pedirem | Logotipo, cartão digital com QR, pacote de posts para Instagram: preço na hora | Eles já confiam em você |
+
+### Quanto isso rende, com hipóteses
+
+Conta para **10 clientes** que compram o Site Vitrine. As taxas de adesão abaixo
+são **suposições minhas para testar**, não dados de mercado (não achei taxa
+publicada de cobrança sem entrada nem de adesão a manutenção).
+
+| Linha | Hipótese | Conta | Valor |
+|---|---|---|---|
+| Site Vitrine | 10 clientes | 10 x R$ 250 | R$ 2.500 |
+| Manutenção por 12 meses | 4 de 10 aceitam, a R$ 49 | 4 x 12 x R$ 49 | R$ 2.352 |
+| Google Meu Negócio | 3 de 10 compram, a R$ 175 | 3 x R$ 175 | R$ 525 |
+| Upgrade para o Profissional | 2 de 10, a R$ 1.000 depois do desconto | 2 x R$ 1.000 | R$ 2.000 |
+| Tino por 12 meses | 2 de 10 assinam, a R$ 49,90 | 2 x 12 x R$ 49,90 | R$ 1.197,60 |
+| **Total no primeiro ano** | | | **R$ 8.574,60** |
+
+São R$ 857,46 por cliente, contra R$ 250 da venda de entrada: **3,4 vezes**. O
+que mais pesa é o upgrade (R$ 2.000) e a manutenção (R$ 2.352). Se ninguém
+aceitar a manutenção, o total cai para R$ 6.222,60, ainda 2,5 vezes a entrada.
+Os custos fixos (R$ 40 de domínio por cliente por ano, R$ 40 de renovação dos 4
+que mantêm) ficam em cerca de R$ 560, fora o seu tempo.
+
+### O que testar nos primeiros 10 clientes
+
+1. Quantos aceitam a manutenção **quando ela é oferecida na entrega**, e não
+   depois. Se menos de 2 em 10, tente a variante com contrato: R$ 250 de
+   entrada e R$ 39 por mês por 12 meses, vendida como "site por assinatura".
+   Essa variante rende mais por cliente, mas costuma converter menos.
+2. Quanto tempo você gastou por site. Se passar de 4 horas, o R$ 250 não fecha
+   a conta e o preço sobe para R$ 350 ou o escopo encolhe.
+3. Quantos dos que fecham o site abrem o teste do Tino.
+
+### Cuidados específicos desta oferta
+
+- **Domínio no nome do cliente.** Ele cria a conta no registro.br com o CPF ou
+  CNPJ dele e você guia o passo a passo. Domínio no seu nome vira refém e
+  problema quando ele quiser sair.
+- **Termos da hospedagem.** Confirmar o uso comercial antes de publicar o
+  primeiro site de cliente (ver a tabela acima).
+- **Nota fiscal.** O serviço de R$ 250 também precisa de nota, e o contador
+  confirma o enquadramento no CNAE do MEI do Davi.
+- **Não prometer resultado de busca.** Prometer só o que depende de você: o
+  site no ar, o botão de WhatsApp funcionando e o Google Meu Negócio em dia.
