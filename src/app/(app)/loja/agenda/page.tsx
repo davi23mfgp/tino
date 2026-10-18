@@ -12,8 +12,10 @@ import { showToast } from "@/components/ui/toast"
 
 import { Reais, Selo } from "../clientes/comum"
 import base from "../clientes/clientes.module.css"
-import { NovoCompromisso, OrdemDeServico, type ClienteSimples, type OrdemParaEditar } from "./dialogos"
+import { NovoCompromisso, OrdemDeServico, type ClienteSimples, type ModoAssistencia, type OrdemParaEditar } from "./dialogos"
+import { tipoDaSubarea } from "@/lib/loja/assistencia"
 import { FichaDaOrdem } from "./ficha-os"
+import { PecaAoTino } from "./peca-ao-tino"
 import estilos from "./agenda.module.css"
 
 interface OrdemDaLista {
@@ -28,7 +30,8 @@ interface OrdemDaLista {
 }
 
 interface DadosDaAgenda {
-  loja: { nome: string }
+  loja: { nome: string; area: string | null; subarea: string | null }
+  modelosUsados: string[]
   hoje: string
   dia: string
   semana: { dia: string; nome: string; numero: string; quantidade: number }[]
@@ -118,6 +121,11 @@ function AgendaDoDia() {
     }
   }
 
+  // A área Assistência abre a OS pela entrada do aparelho (passo 39).
+  const assistencia = useMemo<ModoAssistencia | null>(
+    () => (dados?.loja.area === "assistencia" ? { tipoInicial: tipoDaSubarea(dados.loja.subarea), modelosUsados: dados.modelosUsados } : null),
+    [dados],
+  )
   const abertas = useMemo(() => dados?.ordens.filter((ordem) => ordem.etapa !== "ENTREGUE") ?? [], [dados])
   const diaAtual = dados?.semana.find((linha) => linha.dia === dados.dia)
   const tituloDoDia = dados && diaAtual
@@ -183,6 +191,8 @@ function AgendaDoDia() {
           </nav>
 
           <div className={estilos.meio}>
+            <PecaAoTino aoMarcar={(marcado) => { if (marcado === dados.dia) void carregar(dia); else setDia(marcado) }} />
+
             <div className={estilos.faixa} role="group" aria-label="Dias da semana">
               {dados.semana.map((linha) => (
                 <button key={linha.dia} type="button" className={estilos.diaFaixa} aria-pressed={linha.dia === dados.dia} data-hoje={linha.dia === dados.hoje ? "" : undefined} onClick={() => setDia(linha.dia)} aria-label={`${NOMES[linha.nome] ?? linha.nome} ${linha.numero}, ${linha.quantidade} na agenda`}>
@@ -253,6 +263,7 @@ function AgendaDoDia() {
         clientes={dados?.clientes ?? []}
         orcamentoId={ordemDialogo?.orcamentoId ?? null}
         ordem={ordemDialogo?.ordem ?? null}
+        assistencia={assistencia}
       />
     </div>
   )

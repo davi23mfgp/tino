@@ -40,7 +40,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     // O papel vem do banco, não do token: o token vale 30 dias, e tirar o papel
     // de alguém precisa valer no próximo clique. `avatarUrl` pela mesma razão:
     // trocar a foto não deveria esperar o token vencer para aparecer.
-    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true, termosVersao: true } }),
+    prisma.usuario.findUnique({ where: { id: sessao.usuarioId }, select: { admin: true, avatarUrl: true, termosVersao: true, modoSimples: true } }),
   ])
 
   // Lar apagado com token ainda válido: manda para o login em vez de estourar.
@@ -78,6 +78,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           <Navegacao
             mei={mei}
             apenasLoja={apenasLoja}
+            simples={mei && !apenasLoja && Boolean(usuario?.modoSimples)}
             nome={sessao.nome}
             avatarUrl={usuario?.avatarUrl ?? null}
           />

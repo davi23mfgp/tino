@@ -28,6 +28,7 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false, mod
   const [manterConectado, setManterConectado] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [entrando, setEntrando] = useState(false)
+  const [semNegocio, setSemNegocio] = useState(false)
   const erroGoogle = parametros.get("erro")
 
   async function entrar(evento: React.FormEvent) {
@@ -42,8 +43,14 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false, mod
         router.refresh()
         return
       }
-      const resposta = await enviar<{ precisaMfa?: boolean }>("/api/auth/login", { email, senha, manterConectado, produto: modoMei ? "mei" : "pessoal" })
-      router.push(resposta.precisaMfa ? (modoMei ? "/login/mei/mfa" : "/login/mfa") : (modoMei ? "/loja" : "/painel"))
+      const resposta = await enviar<{ precisaMfa?: boolean; inicio?: string; semNegocio?: boolean }>("/api/auth/login", { email, senha, manterConectado, produto: modoMei ? "mei" : "pessoal" })
+      if (resposta.semNegocio) {
+        // Entrou no pessoal com a senha certa; falta só decidir se liga o negócio.
+        setSemNegocio(true)
+        setEntrando(false)
+        return
+      }
+      router.push(resposta.precisaMfa ? (modoMei ? "/login/mei/mfa" : "/login/mfa") : (resposta.inicio ?? (modoMei ? "/loja" : "/painel")))
       router.refresh()
     } catch (excecao) {
       setErro(excecao instanceof Error ? excecao.message : "Não consegui entrar.")
@@ -62,6 +69,14 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false, mod
             <p>{modoAdmin ? "Entrada restrita, com senha e código." : modoMei ? "Seu negócio, em um só lugar." : "Seu dinheiro te espera."}</p>
           </header>
 
+          {semNegocio ? (
+            <div className={`${estilos.formulario} flex flex-col gap-3`} role="status">
+              <h2 className="text-lg font-semibold">Esta conta ainda não tem o Tino negócio</h2>
+              <p>Você já entrou com a senha certa. Quer ligar o negócio nela?</p>
+              <button type="button" className={estilos.primario} onClick={() => { router.push("/ligar-negocio"); router.refresh() }}>Ligar agora</button>
+              <button type="button" className={estilos.google} onClick={() => { router.push("/painel"); router.refresh() }}>Ir para o Tino pessoal</button>
+            </div>
+          ) : (
           <form onSubmit={entrar} className={estilos.formulario}>
             <label htmlFor="email-login">E-mail</label>
             <div className={estilos.campo}><Mail size={17} aria-hidden="true" /><input id="email-login" type="email" value={email} onChange={(evento) => setEmail(evento.target.value)} placeholder="seu@email.com" autoComplete="email" required /></div>
@@ -70,14 +85,15 @@ export default function FormularioLogin({ googleDisponivel, modoMei = false, mod
 
             {!modoAdmin && <div className={estilos.opcoes}>
               <label className={estilos.lembrar}><input type="checkbox" checked={manterConectado} onChange={(evento) => setManterConectado(evento.target.checked)} /><span className={estilos.caixa}><Check size={13} strokeWidth={3} /></span>Manter conectado</label>
-              <a href="mailto:davi23mfgp@gmail.com?subject=Recuperar%20acesso%20ao%20Tino" className={estilos.link}>Esqueci a senha</a>
+              <Link href={modoMei ? "/esqueci-senha?mei=1" : "/esqueci-senha"} className={estilos.link}>Esqueci a senha</Link>
             </div>}
 
             {(erro || (erroGoogle && mensagensGoogle[erroGoogle])) && <p className={estilos.erro} role="alert">{erro || mensagensGoogle[erroGoogle!]}</p>}
             <button type="submit" disabled={entrando} className={estilos.primario}>{entrando ? "Entrando…" : "Entrar"}</button>
           </form>
+          )}
 
-          {!modoAdmin && <>
+          {!modoAdmin && !semNegocio && <>
           <div className={estilos.divisor}><span>ou</span></div>
           {googleDisponivel ? <a className={estilos.google} href={`/api/auth/google?produto=${modoMei ? "mei" : "pessoal"}&manter=${manterConectado ? "1" : "0"}`}><span className={estilos.googleIcone} aria-hidden="true">G</span>Continuar com Google</a> : <Link className={estilos.google} href={modoMei ? "/login/mei?erro=google-indisponivel" : "/login?erro=google-indisponivel"}><span className={estilos.googleIcone} aria-hidden="true">G</span>Continuar com Google</Link>}
           <p className={estilos.cadastro}>Ainda não tem conta? <Link href={modoMei ? "/cadastro/mei" : "/cadastro"}>Criar conta grátis por 14 dias</Link></p>

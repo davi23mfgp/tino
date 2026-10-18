@@ -185,6 +185,7 @@ export const GRUPO_LOJA: GrupoNav = {
     { rota: "/loja/contas", rotulo: "Contas a pagar", Icone: Receipt },
     { rota: "/loja/financas", rotulo: "Finanças da loja", Icone: Wallet },
     { rota: "/mei", rotulo: "MEI e DAS", Icone: Store },
+    { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     { rota: "/loja/dados", rotulo: "Dados da empresa", Icone: Settings },
   ],
 }
@@ -227,8 +228,18 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 }
 
 /** Título da página no cabeçalho — mesma lista das abas, nunca um mapa à parte. */
-/** Telas que não estão no menu mas precisam de título no topo. */
-const TITULOS_FORA_DO_MENU: Record<string, string> = { "/loja/comecar": "Seu negócio" }
+/** Telas que não estão no menu mas precisam de título no topo; sem nome aqui, o topo dizia só "Tino" (inventário de 07/10/2026). */
+const TITULOS_FORA_DO_MENU: Record<string, string> = {
+  "/loja/comecar": "Seu negócio",
+  "/ligar-negocio": "Ligar o negócio",
+  "/loja/simples": "Início",
+  "/loja/maquininha": "Conferir a maquininha",
+  "/loja/fechar-mes": "Fechar o mês",
+  "/loja/minha-conta": "Minha conta",
+  "/lancar": "Anotar",
+  "/regras": "Regras",
+  "/assinatura": "Assinatura",
+}
 
 export function tituloDaRota(grupos: GrupoNav[], caminho: string): string | null {
   if (TITULOS_FORA_DO_MENU[caminho]) return TITULOS_FORA_DO_MENU[caminho]

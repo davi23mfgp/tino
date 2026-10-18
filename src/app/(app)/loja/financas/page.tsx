@@ -305,9 +305,12 @@ export default function FinancasDaLoja() {
         </>
       )}
 
-      <button type="button" className={estilos.taxasLink} onClick={() => setTaxas(true)}>
-        Taxas da maquininha
-      </button>
+      <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+        <button type="button" className={estilos.taxasLink} onClick={() => setTaxas(true)}>
+          Taxas da maquininha
+        </button>
+        <Link href="/loja/maquininha" className={estilos.taxasLink}>Conferir a maquininha</Link>
+      </div>
 
       <TaxasDaMaquininha aberta={taxas} aoFechar={() => setTaxas(false)} />
     </div>

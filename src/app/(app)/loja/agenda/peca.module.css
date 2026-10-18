@@ -1,0 +1,44 @@
+/* "Peça ao Tino", passo 48 (A e B juntas, Davi, 07/10/2026). O traço fino
+   da entrada do aparelho: linha de 1px quase transparente, peso leve, cor só
+   no botão de mandar, no que o Tino entendeu e no "Marcar". As falas do Tino
+   ficam à esquerda, sem fundo forte; as da pessoa, à direita, em verde, como
+   a conversa do canvas. */
+.peca { --linha:color-mix(in oklab, var(--foreground), transparent 90%); --linha-forte:color-mix(in oklab, var(--foreground), transparent 80%); --fundo-campo:color-mix(in oklab, var(--foreground), transparent 96%); display:grid; gap:10px; min-width:0; }
+
+.linha { display:flex; align-items:center; gap:8px; min-height:54px; padding:5px 6px 5px 16px; border-radius:999px; border:1px solid var(--linha-forte); background:var(--fundo-campo); transition:border-color .15s, box-shadow .15s; }
+.linha:focus-within { border-color:color-mix(in oklab, oklch(var(--primary)), transparent 30%); box-shadow:0 0 0 3px color-mix(in oklab, oklch(var(--primary)), transparent 85%); }
+.campo { flex:1; min-width:0; min-height:42px !important; padding:0 !important; border:0 !important; border-radius:0 !important; background:transparent !important; box-shadow:none !important; color:var(--foreground); font:inherit; font-size:calc(15.5px * var(--escala-letra)); font-weight:450; }
+.campo::placeholder { color:var(--texto-3); font-weight:400; }
+.campo:focus { outline:none; }
+.enviar { flex:none; width:42px; height:42px; min-height:42px !important; padding:0 !important; border-radius:50%; border:0; display:inline-flex; align-items:center; justify-content:center; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); }
+.enviar svg { width:19px; height:19px; stroke-width:2.4; }
+.enviar:disabled { opacity:.45; }
+
+.conversa { display:flex; flex-direction:column; gap:8px; }
+.fala { max-width:85%; margin:0; padding:10px 14px; border-radius:20px; font-size:calc(14.5px * var(--escala-letra)); line-height:1.45; overflow-wrap:anywhere; }
+.fala[data-de="voce"] { align-self:flex-end; border-bottom-right-radius:6px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:500; }
+.fala[data-de="tino"] { align-self:flex-start; border-bottom-left-radius:6px; border:1px solid var(--linha); background:var(--fundo-campo); }
+
+.opcoes { display:flex; flex-wrap:wrap; gap:8px; }
+.opcao { min-height:40px !important; padding:0 14px !important; border-radius:999px; border:1px solid var(--linha-forte); background:transparent; color:inherit; font-size:calc(13.5px * var(--escala-letra)); font-weight:500; font-variant-numeric:tabular-nums; }
+.opcao:hover:not(:disabled) { border-color:color-mix(in oklab, oklch(var(--primary)), transparent 40%); }
+.opcao:disabled { opacity:.5; }
+
+.proposta, .feito { display:grid; gap:10px; padding:16px 18px; border-radius:18px; border:1px solid var(--linha); background:color-mix(in oklab, var(--foreground), transparent 98.5%); }
+.proposta { border-color:color-mix(in oklab, oklch(var(--primary)), transparent 65%); }
+.olho { margin:0; font-size:calc(11.5px * var(--escala-letra)); font-weight:550; letter-spacing:.14em; text-transform:uppercase; color:var(--texto-3); }
+.proposta h3 { margin:0; font-size:calc(19px * var(--escala-letra)); font-weight:550; letter-spacing:-.01em; overflow-wrap:anywhere; }
+.dado { display:flex; align-items:center; gap:10px; margin:0; font-size:calc(15px * var(--escala-letra)); font-weight:450; font-variant-numeric:tabular-nums; }
+.dado svg { width:18px; height:18px; flex:none; color:var(--texto-3); }
+.nota { margin:0; font-size:calc(12.5px * var(--escala-letra)); line-height:1.45; color:var(--texto-3); }
+.ok { display:flex; align-items:center; gap:8px; margin:0; font-size:calc(14.5px * var(--escala-letra)); }
+.ok svg { width:17px; height:17px; flex:none; color:var(--positivo); stroke-width:2.4; }
+
+.botoes { display:flex; flex-wrap:wrap; gap:8px; }
+.botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; flex:1 1 auto; min-height:44px !important; padding:0 16px !important; border-radius:999px; border:1px solid var(--linha-forte); background:transparent; color:inherit; font-size:calc(14px * var(--escala-letra)); font-weight:550; text-decoration:none; white-space:nowrap; }
+.botao svg { width:16px; height:16px; flex:none; }
+.botao[data-principal] { border-color:transparent; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
+.botao:disabled { opacity:.55; }
+.outro { justify-self:start; min-height:36px !important; padding:0 !important; border:0; background:none; color:oklch(var(--primary)); font-size:calc(13.5px * var(--escala-letra)); font-weight:600; }
+
+@media (min-width:1024px) { .botoes .botao { flex:0 0 auto; } }

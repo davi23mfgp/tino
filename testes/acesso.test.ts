@@ -66,8 +66,14 @@ describe("rotas da conta MEI", () => {
       assert.equal(rotaPermitidaNoMei(caminho), true, caminho)
     }
   })
+  it("abre Investimentos, igual ao pessoal, com as APIs que a tela usa", () => {
+    for (const caminho of ["/investir", "/api/investir/objetivo", "/api/carteira/retrato", "/api/cdi", "/api/mercado", "/api/contas", "/api/transacoes"]) {
+      assert.equal(rotaPermitidaNoMei(caminho), true, caminho)
+    }
+    assert.equal(rotaPermitida("FUNCIONARIO_LOJA", "/investir"), false)
+  })
   it("recusa telas e APIs pessoais", () => {
-    for (const caminho of ["/painel", "/cartoes", "/configuracoes", "/api/panorama", "/api/transacoes", "/lojas-vizinhas"]) {
+    for (const caminho of ["/painel", "/cartoes", "/configuracoes", "/api/panorama", "/api/orcamento", "/lojas-vizinhas"]) {
       assert.equal(rotaPermitidaNoMei(caminho), false, caminho)
     }
   })

@@ -9,7 +9,7 @@
 import type { SeveridadeAlerta } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { formatarDecimal, formatarMoeda } from "@/lib/dinheiro"
+import { formatarDecimal, formatarMoeda, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
 import { diasEntre, formatarData } from "@/lib/datas"
@@ -132,7 +132,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       tipo: "reserva_baixa",
       severidade: panorama.reserva.mesesDeFolga < 1 ? "CRITICO" : "ATENCAO",
       titulo: "Reserva abaixo do objetivo",
-      texto: `Hoje a reserva sustenta ${panorama.reserva.mesesDeFolga} mês(es) do seu custo essencial. O alvo do seu lar é ${panorama.lar.mesesReserva} meses (${formatarMoeda(panorama.reserva.idealCentavos)}).`,
+      texto: `Hoje a reserva sustenta ${textoDeMeses(panorama.reserva.mesesDeFolga)} do seu custo essencial. O alvo do seu lar é ${panorama.lar.mesesReserva} meses (${formatarMoeda(panorama.reserva.idealCentavos)}).`,
       acaoRota: "/reserva",
       chave: `reserva_baixa:${mes}`,
     })
@@ -167,7 +167,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       tipo: "estrategia_divida",
       severidade: "INFO",
       titulo: "Trocar a ordem de pagamento economiza juros",
-      texto: `Atacando primeiro a dívida de maior juro, você pagaria ${formatarMoeda(panorama.dividas.plano.economiaAvalancheCentavos)} a menos em juros e terminaria ${Math.abs(panorama.dividas.plano.mesesAMais)} mês(es) antes.`,
+      texto: `Atacando primeiro a dívida de maior juro, você pagaria ${formatarMoeda(panorama.dividas.plano.economiaAvalancheCentavos)} a menos em juros e terminaria ${textoDeMeses(Math.abs(panorama.dividas.plano.mesesAMais), 0)} antes.`,
       acaoRota: "/dividas",
       chave: `estrategia_divida:${mes}`,
     })
@@ -293,6 +293,24 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
 }
 
 /**
+ * Avisos de ESTADO do mês (a reserva está baixa, a dívida está alta, a
+ * estratégia mudaria o fim da dívida): o de um mês substitui o do mês
+ * anterior. Cada mês tem chave própria, e o de setembro continuava na lista
+ * em outubro ao lado do novo, dizendo a mesma coisa com números velhos
+ * (inventário de 07/10/2026). Os de EVENTO (categoria estourada em setembro,
+ * fatura acima do limite) ficam: aconteceram e não deixam de ter acontecido.
+ */
+export const AVISOS_DE_ESTADO = ["reserva_baixa", "divida_alta", "estrategia_divida", "mes_no_vermelho", "sem_categoria"] as const
+
+/** Das chaves de estado, as que não são do mês corrente: saem da lista. */
+export function chavesSuperadas(chaves: string[], competencia: string): string[] {
+  return chaves.filter((chave) => {
+    const [tipo, mes] = chave.split(":")
+    return (AVISOS_DE_ESTADO as readonly string[]).includes(tipo) && mes !== competencia
+  })
+}
+
+/**
  * Recalcula e persiste os alertas do lar.
  *
  * `skipDuplicates` no índice (larId, chave) é o que torna a função idempotente:
@@ -342,6 +360,14 @@ export async function atualizarAlertas(larId: string) {
       update: mudouOMotivo ? { ...conteudo, dispensadoEm: null } : conteudo,
     })
   }
+
+  // Arquiva (não apaga) o aviso de estado de mês passado, como "Limpar tudo".
+  const abertos = await prisma.alerta.findMany({
+    where: { larId, dispensadoEm: null, OR: AVISOS_DE_ESTADO.map((tipo) => ({ chave: { startsWith: `${tipo}:` } })) },
+    select: { chave: true },
+  })
+  const superadas = chavesSuperadas(abertos.map((linha) => linha.chave), panorama.competencia)
+  if (superadas.length) await prisma.alerta.updateMany({ where: { larId, chave: { in: superadas } }, data: { dispensadoEm: new Date() } })
 
   // Antes só trazia os não lidos — o painel de notificações do topo
   // (`barra-topo.tsx`) agora tem aba "Todas", que precisa ver os já lidos

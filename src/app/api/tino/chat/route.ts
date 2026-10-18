@@ -6,6 +6,8 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { responderPorRegras } from "@/lib/tino/chat"
 import { ehBuscaDeDocumento, procurarDocumento } from "@/lib/tino/documentos"
 import { modeloDisponivel, responderComModeloStream, type TurnoConversa } from "@/lib/tino/modelo"
+import { contextoTributario } from "@/lib/loja/mei-ano"
+import { ehPerguntaDeSituacao, ehPerguntaTributaria, responderTributario, textoDaResposta } from "@/lib/regras-mei"
 
 // O chat lê o panorama inteiro do banco a cada pergunta: resposta financeira
 // vale pelo número atual, não por um cache de minutos atrás.
@@ -46,6 +48,17 @@ export const POST = comSessao(async (sessao, requisicao) => {
       data: { conversaId: conversa.id, papel: "ASSISTENTE", texto },
     })
     return ok({ texto, fonte: "regras", conversaId: conversa.id })
+  }
+
+  // Dúvida de imposto vem antes do motor de regras e nunca vai ao modelo de
+  // linguagem: responde o catálogo, com a fonte e a data, ou "caso de
+  // contador" (passo 49, opção C). "Como está o meu MEI?" é situação, não
+  // regra, e segue para o painel.
+  if (ehPerguntaTributaria(pergunta) && !ehPerguntaDeSituacao(pergunta)) {
+    const tributaria = responderTributario(pergunta, await contextoTributario(sessao.larId))
+    const texto = textoDaResposta(tributaria)
+    await prisma.mensagem.create({ data: { conversaId: conversa.id, papel: "ASSISTENTE", texto } })
+    return ok({ texto, fonte: "regras", conversaId: conversa.id, chave: tributaria.chave, procureContador: tributaria.procureContador })
   }
 
   const panorama = await montarPanorama(sessao.larId, competenciaAtual())

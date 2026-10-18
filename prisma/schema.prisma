@@ -423,6 +423,26 @@ model Usuario {
   /// continuaria abrindo a conta mesmo depois de a pessoa perder o acesso.
   sessoesValidasDesde DateTime?
 
+  /// Recuperar senha (06/10/2026). Só o hash do token fica no banco: quem lê
+  /// o banco não consegue usar o link. Um pedido por vez; o novo substitui o
+  /// anterior, e usar o link apaga os dois campos.
+  /// De onde veio o cadastro ({ fonte, meio, campanha, ref, entrada, site, em }),
+  /// ver `src/lib/origem-cadastro.ts`. Nulo para quem entrou antes de 06/10/2026.
+  origemCadastro           Json?
+
+  /// Modo simples (passo 50, opção A): seis blocos grandes no lugar da Visão
+  /// geral, para quem tem pouca prática. Fica na conta, não no aparelho: quem
+  /// liga uma vez não precisa ligar de novo no celular novo.
+  modoSimples   Boolean @default(false)
+  /// Quem a pessoa chama no botão "Pedir ajuda" (o WhatsApp dela, por link).
+  ajudaNome     String?
+  ajudaTelefone String?
+  /// Código de indicação (item 2.6). Nasce quando a pessoa abre a tela de
+  /// indicar; quem se cadastra pelo link leva o código em `origemCadastro.ref`.
+  codigoIndicacao          String?   @unique
+  redefinicaoSenhaHash     String?   @unique
+  redefinicaoSenhaExpiraEm DateTime?
+
   /// Segredo TOTP cifrado com chave separada do JWT. Códigos de recuperação
   /// ficam apenas como hash e são consumidos uma vez, dentro de transação.
   mfaSegredo          String?
@@ -930,8 +950,10 @@ model MeiPerfil {
   /// porque muda por lei e por atividade — transportador de carga tem outro.
   limiteAnualCentavos Int @default(8100000)
 
-  /// Valor do DAS mensal em centavos — muda todo ano com o salário mínimo.
-  dasMensalCentavos Int @default(7580)
+  /// DAS mensal em centavos, quando a pessoa informou. Vazio: vale a tabela do
+  /// ano pela atividade (`dasDoMes`). Já teve padrão de R$ 75,80, que não era
+  /// o DAS de ano nenhum e aparecia como fato.
+  dasMensalCentavos Int?
   diaVencimentoDas  Int @default(20)
 
   /// Pró-labore: quanto o MEI transfere do CNPJ para a PF todo mês.
@@ -1243,6 +1265,11 @@ model Loja {
   /// que o provedor de emissão confirmou o certificado configurado do lado
   /// dele, para a tela saber se já dá para tentar emitir.
   certificadoConfiguradoEm DateTime?
+  /// Chave Pix da loja (item 2.3), já no formato do Pix (`normalizarChavePix`).
+  /// Com ela, o link do orçamento, da OS e do fiado leva o Pix pronto.
+  chavePix                 String?
+  /// Cidade que o BR Code pede (campo 60 do padrão); o banco do cliente mostra.
+  cidade                   String?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -1579,6 +1606,32 @@ model OrdemServicoLoja {
   /// [{ "texto": string, "feito": boolean }]
   checklist     Json              @default("[]")
 
+  /// Entrada do aparelho (passo 39, área Assistência técnica). Ficam nulos nas
+  /// OS de outras áreas, que continuam só com `objeto` e `naEntrada`.
+  aparelhoModelo String?
+  aparelhoCor    String?
+  /// IMEI ou número de série: é o que prova, na entrega, que o aparelho é o mesmo.
+  aparelhoSerie  String?
+  /// celular, tablet, notebook... decide a lista de peças conferidas.
+  aparelhoTipo   String?
+  /// ["Chip", "Capinha"]: o que ficou junto com o aparelho.
+  acessorios     Json      @default("[]")
+  /// { "tela": "ok" | "defeito" | "nao_testado" }. Peça fora do mapa não foi testada.
+  estadoEntrada  Json      @default("{}")
+  /// PADRAO, NUMERO ou NENHUMA. A senha em si fica cifrada e é apagada na
+  /// entrega: guardar senha de celular depois do serviço não tem motivo (LGPD).
+  senhaTipo      String?
+  senhaCifrada   String?
+  /// O cliente conferiu a entrada pelo link, ou disse o que está errado.
+  entradaConferidaEm DateTime?
+  entradaContestada  String?
+  /// Retorno em garantia: a OS de antes, do mesmo aparelho, ainda nos 90
+  /// dias. Liga as duas para a ficha mostrar o histórico e a loja contar
+  /// quanto conserto volta.
+  garantiaDeId String?
+  garantiaDe   OrdemServicoLoja?  @relation("RetornoEmGarantia", fields: [garantiaDeId], references: [id], onDelete: SetNull)
+  retornos     OrdemServicoLoja[] @relation("RetornoEmGarantia")
+
   orcamentoId String?        @unique
   orcamento   OrcamentoLoja? @relation(fields: [orcamentoId], references: [id], onDelete: SetNull)
   vendaId     String?        @unique
@@ -1684,16 +1737,42 @@ model VendaLoja {
   canceladaEm DateTime?
   observacao  String?
 
+  /// "Não teve nota": a pessoa confirmou que esta venda saiu sem nota fiscal
+  /// (cliente que não pede). É diferente de pendente, que é a venda que
+  /// ninguém resolveu. O relatório do MEI tem as duas colunas, com nota e sem
+  /// nota, e só dá para preencher a segunda com uma resposta de verdade; nota
+  /// anexada ou emitida pelo Tino vale mais e anula esta marca.
+  semNota Boolean @default(false)
+
   criadoEm DateTime @default(now())
 
   itens        ItemVenda[]
   pagamentos   PagamentoVenda[]
   notaFiscal   NotaFiscalVenda?
+  notaAnexada  NotaAnexada?
   orcamento    OrcamentoLoja?
   ordemServico OrdemServicoLoja?
 
   @@unique([lojaId, numero])
   @@index([lojaId, criadoEm])
+}
+
+/// A nota que o dono anexa a uma venda marcada "com nota" (passo 41: "os com
+/// nota quero a nota em anexo"). É para a nota emitida fora do Tino (portal da
+/// prefeitura ou da Receita), que o relatório do MEI manda guardar junto: o
+/// Tino guarda a cópia, não a recria nem a lê. Uma por venda; anexar de novo
+/// troca a anterior. O arquivo fica no banco porque o app não tem armazenamento
+/// de arquivos, e o limite de tamanho (`validarAnexo`) mantém isso barato.
+model NotaAnexada {
+  id      String    @id @default(cuid())
+  vendaId String    @unique
+  venda   VendaLoja @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+
+  nome         String
+  tipo         String
+  tamanhoBytes Int
+  conteudo     Bytes
+  criadoEm     DateTime @default(now())
 }
 
 /// Nota fiscal (NFC-e) de uma venda, emitida por API de terceiro.

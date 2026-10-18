@@ -13,6 +13,8 @@ import { Switch } from "@/components/ui/switch"
 import { showToast } from "@/components/ui/toast"
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
+import { CartaoRelatorioMei } from "@/components/cartao-relatorio-mei"
+import { SUGESTOES_MEI, TinoDock } from "@/components/tino-dock"
 import estilos from "./mei.module.css"
 
 /**
@@ -40,7 +42,7 @@ interface Mes {
   balcaoCentavos: number
   faturamentoCentavos: number
   fonte: "lancado" | "balcao" | "nenhum"
-  das: { vencimento: string; situacao: "pago" | "atrasado" | "a vencer"; registrado: boolean; valorCentavos: number }
+  das: { vencimento: string; situacao: "pago" | "atrasado" | "a vencer"; registrado: boolean; valorCentavos: number | null }
 }
 
 interface Perfil {
@@ -48,7 +50,10 @@ interface Perfil {
   atividade: string
   dataAbertura: string | null
   limiteAnualCentavos: number
-  dasMensalCentavos: number
+  /// O que vale: o informado ou, sem ele, a tabela do ano. `null` no caminhoneiro sem valor informado.
+  dasMensalCentavos: number | null
+  dasInformadoCentavos: number | null
+  dasDaTabela: boolean
   diaVencimentoDas: number
   proLaboreCentavos: number
   limiteAnualEfetivoCentavos: number
@@ -201,7 +206,7 @@ export default function Mei() {
         receitaComercioCentavos: mes.lancamento?.receitaComercioCentavos ?? 0,
         receitaServicosCentavos: mes.lancamento?.receitaServicosCentavos ?? 0,
         dasPago: true,
-        dasValorCentavos: mes.das.valorCentavos,
+        dasValorCentavos: mes.das.valorCentavos ?? undefined,
         observacao: mes.lancamento?.observacao ?? undefined,
       })
       showToast(`DAS de ${rotuloCompetencia(mes.competencia)} pago.`)
@@ -235,6 +240,8 @@ export default function Mei() {
           {perfil.razaoSocial ?? "Seu MEI"} · {ATIVIDADE[perfil.atividade] ?? perfil.atividade.toLowerCase()} · {ano}
         </p>
         <Link href="/loja/dados" className={estilos.dadosEmpresa}>Dados da empresa</Link>
+        {/* Dúvida do MEI na conversa com o Tino (passo 49, opção C). */}
+        <TinoDock gatilho="botao" rota="/api/mei/pergunta" sugestoes={SUGESTOES_MEI} descricao="Dúvidas do MEI, com a regra, a fonte e a data." />
         <button type="button" className={estilos.botao} onClick={() => setLancar("novo")}>
           <Plus aria-hidden />
           Lançar mês
@@ -242,6 +249,8 @@ export default function Mei() {
       </div>
 
       {erro && <p className={estilos.erro}>{erro}</p>}
+
+      <CartaoRelatorioMei />
 
       <div className={estilos.quatro}>
         {situacao.disponivelCentavos >= 0 ? (
@@ -268,7 +277,7 @@ export default function Mei() {
           </Quadro>
         ) : aVencer.length > 0 ? (
           <Quadro rotulo="Próximo DAS" apoio={`${nomeDoMes(aVencer[0].competencia).toLowerCase()} · vence ${ddmm(aVencer[0].das.vencimento)}`}>
-            <Reais centavos={aVencer[0].das.valorCentavos} />
+            {aVencer[0].das.valorCentavos === null ? "valor da guia" : <Reais centavos={aVencer[0].das.valorCentavos} />}
           </Quadro>
         ) : (
           <Quadro rotulo="DAS" apoio="nada a pagar agora">
@@ -315,7 +324,8 @@ export default function Mei() {
 
         <section className={`${estilos.bloco} ${estilos.lista}`} aria-labelledby="titulo-das">
           <h2 id="titulo-das">
-            DAS · {formatarMoeda(perfil.dasMensalCentavos)} por mês, todo dia {perfil.diaVencimentoDas}
+            DAS · {perfil.dasMensalCentavos === null ? "informe o valor da sua guia" : `${formatarMoeda(perfil.dasMensalCentavos)} por mês`}, todo dia {perfil.diaVencimentoDas}
+            {perfil.dasDaTabela && <small className={estilos.dica}> (tabela de 2026 para a sua atividade; confira na guia)</small>}
           </h2>
           {dasDaLista.length === 0 && <p className={estilos.dica}>Nenhum DAS a mostrar ainda.</p>}
           {dasDaLista.map((mes) => (
@@ -329,7 +339,7 @@ export default function Mei() {
                   · {mes.das.situacao === "pago" ? "vencia" : mes.das.situacao === "atrasado" ? "venceu" : "vence"} {ddmm(mes.das.vencimento)}
                 </small>
               </span>
-              <span className={estilos.valor}>{formatarMoeda(mes.das.valorCentavos)}</span>
+              <span className={estilos.valor}>{mes.das.valorCentavos === null ? "sem valor" : formatarMoeda(mes.das.valorCentavos)}</span>
               {mes.das.situacao !== "pago" && (
                 <button type="button" className={estilos.paguei} onClick={() => void pagar(mes)} disabled={ocupado} aria-label={`Paguei o DAS de ${rotuloCompetencia(mes.competencia)}`}>
                   <Check aria-hidden />
@@ -370,7 +380,7 @@ export default function Mei() {
         </div>
       </div>
 
-      <LancarMes alvo={lancar} dasPadrao={perfil.dasMensalCentavos} aoFechar={() => setLancar(null)} aoSalvar={carregar} hoje={hoje} />
+      <LancarMes alvo={lancar} dasPadrao={perfil.dasMensalCentavos ?? 0} aoFechar={() => setLancar(null)} aoSalvar={carregar} hoje={hoje} />
       <DadosDoMei aberto={editarPerfil} perfil={perfil} aoFechar={() => setEditarPerfil(false)} aoSalvar={carregar} />
     </div>
   )
@@ -500,7 +510,7 @@ function DadosDoMei({ aberto, perfil, aoFechar, aoSalvar }: { aberto: boolean; p
     setForm({
       abertura: perfil.dataAbertura?.slice(0, 10) ?? "",
       limite: reais(perfil.limiteAnualCentavos),
-      das: reais(perfil.dasMensalCentavos),
+      das: perfil.dasInformadoCentavos === null ? "" : reais(perfil.dasInformadoCentavos),
       dia: String(perfil.diaVencimentoDas),
       proLabore: reais(perfil.proLaboreCentavos),
     })
@@ -516,7 +526,7 @@ function DadosDoMei({ aberto, perfil, aoFechar, aoSalvar }: { aberto: boolean; p
         {
           dataAbertura: form.abertura,
           limiteAnualCentavos: paraCentavos(form.limite),
-          dasMensalCentavos: paraCentavos(form.das),
+          dasMensalCentavos: form.das.trim() ? paraCentavos(form.das) : null,
           diaVencimentoDas: Number(form.dia),
           proLaboreCentavos: paraCentavos(form.proLabore),
         },
@@ -554,7 +564,7 @@ function DadosDoMei({ aberto, perfil, aoFechar, aoSalvar }: { aberto: boolean; p
             <div className={estilos.dois}>
               <label className={estilos.campo}>
                 DAS por mês (R$)
-                <Input inputMode="decimal" required value={form.das} onChange={(evento) => setForm({ ...form, das: evento.target.value })} />
+                <Input inputMode="decimal" placeholder={perfil.dasDaTabela && perfil.dasMensalCentavos !== null ? `${reais(perfil.dasMensalCentavos)} (tabela)` : "da sua guia"} value={form.das} onChange={(evento) => setForm({ ...form, das: evento.target.value })} />
               </label>
               <label className={estilos.campo}>
                 Vence todo dia

@@ -23,6 +23,7 @@ import {
   Wand2,
   Wallet,
   Landmark,
+  Store,
 } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
@@ -135,6 +136,8 @@ export default function Configuracoes() {
   const [contagens, setContagens] = useState<{ categorias: number; regras: number; avisos: number; totalAvisos: number } | null>(null)
   const [openFinance, setOpenFinance] = useState<{ provedor: string; sandbox: boolean; conexoes: Conexao[] } | null>(null)
 
+  // Quem ainda não ligou o Tino negócio vê a linha "Seu negócio" (passo 40, opção A).
+  const [semNegocio, setSemNegocio] = useState(false)
   const [dialogo, setDialogo] = useState<null | "perfil" | "contas" | "nova" | "avisos" | "atalho" | "dados" | "suporte" | "banco">(null)
   const [cartaoEmEdicao, setCartaoEmEdicao] = useState<Conta | null>(null)
   const [excluirCartaoDireto, setExcluirCartaoDireto] = useState(false)
@@ -167,6 +170,10 @@ export default function Configuracoes() {
       totalAvisos: vigias.length,
     })
   }
+
+  useEffect(() => {
+    buscar<{ ativo: boolean }>("/api/mei").then((mei) => setSemNegocio(!mei.ativo)).catch(() => undefined)
+  }, [])
 
   useEffect(() => {
     buscar<Usuario>("/api/usuario").then(setUsuario).catch(() => undefined)
@@ -274,6 +281,18 @@ export default function Configuracoes() {
             </span>
           )}
         </section>
+
+        {semNegocio && (
+          <Link href="/ligar-negocio" className={estilos.bloco} aria-label="Seu negócio: ligar o Tino negócio">
+            <span className={estilos.cabecalho}>
+              <Quadro cor="oklch(0.62 0.16 150)"><Store /></Quadro>
+              <span>
+                <strong className="block text-[calc(16px*var(--escala-letra))]">Seu negócio</strong>
+                <span className="block text-[calc(13px*var(--escala-letra))] text-muted-fg">Tem MEI? Ligue o Tino negócio nesta mesma conta.</span>
+              </span>
+            </span>
+          </Link>
+        )}
 
         <section className={estilos.bloco} aria-labelledby="titulo-contas">
           <div className={estilos.cabecalho}>

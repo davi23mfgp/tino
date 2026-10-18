@@ -3,6 +3,8 @@ import type { StatusAssinatura } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
 import { diasDeTesteVigentes } from "@/lib/parametros"
+import { opcoesDeGateway } from "@/lib/pagamento"
+import { liberarSeNaoHaCobranca } from "@/lib/acesso-sem-cobranca"
 
 /**
  * Se a conta pode usar o Tino hoje.
@@ -23,6 +25,12 @@ import { diasDeTesteVigentes } from "@/lib/parametros"
  *   cliente que ia pagar. O provedor ainda está tentando nesse período.
  * - **Teste vencido ou cancelada:** bloqueado.
  *
+ * - **Sem gateway configurado:** tudo liberado (Davi, 18/10/2026: "libere as
+ *   contas após os 14 dias, só deixe válido quando estiver ativo os
+ *   pagamentos"). Barrar quem não tem como pagar não cobra ninguém, só
+ *   afasta cliente; o corte começa sozinho quando a chave do Mercado Pago ou
+ *   da Stripe entrar no ambiente.
+ *
  * O bloqueio **nunca** fecha o caminho de ver o que o Tino guarda, exportar e
  * apagar a conta. Isso é direito do titular (LGPD, art. 18) e não pode
  * depender de estar pagando.
@@ -40,7 +48,19 @@ export interface EstadoDoAcesso {
   testeAteEm?: Date | null
 }
 
-export async function estadoDoAcesso(usuarioId: string): Promise<EstadoDoAcesso> {
+/** Se existe algum jeito de a pessoa pagar hoje. */
+export function pagamentoAtivo(): boolean {
+  return opcoesDeGateway().some((opcao) => opcao.configurado)
+}
+
+export async function estadoDoAcesso(
+  usuarioId: string,
+  cobrancaLigada: boolean = pagamentoAtivo(),
+): Promise<EstadoDoAcesso> {
+  return liberarSeNaoHaCobranca(await estadoPeloStatus(usuarioId), cobrancaLigada)
+}
+
+async function estadoPeloStatus(usuarioId: string): Promise<EstadoDoAcesso> {
   const assinatura = await prisma.assinatura.findUnique({ where: { usuarioId } })
 
   // Conta criada antes de o teste existir no código: trata como teste ainda

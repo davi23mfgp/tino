@@ -5,6 +5,7 @@ import { COOKIE_SESSAO } from "@/lib/cookie-sessao"
 import { rotaPermitida, type PapelDeAcesso } from "@/lib/acesso"
 import { origemPermitida } from "@/lib/origem-segura"
 import { politicaDeConteudo } from "@/lib/politica-conteudo"
+import { COOKIE_ORIGEM, DIAS_ORIGEM, codificarOrigem, decidirOrigem, decodificarOrigem, lerChegada } from "@/lib/origem-cadastro"
 
 /**
  * Barra o funcionário da loja fora de tela pessoal, por URL — não só por menu.
@@ -30,7 +31,26 @@ export async function proxy(requisicao: NextRequest) {
   resposta.headers.set("Content-Security-Policy", politica)
   // Uma resposta HTML não pode reutilizar o nonce da requisição anterior.
   if (!requisicao.nextUrl.pathname.startsWith("/api/")) resposta.headers.set("Cache-Control", "private, no-store")
+  marcarOrigem(requisicao, resposta)
   return resposta
+}
+
+/**
+ * Guarda de onde a pessoa chegou, para o cadastro gravar (item 1.6, regras em
+ * `lib/origem-cadastro.ts`). Só em página aberta de verdade por quem ainda
+ * não entrou: troca de tela dentro do app (RSC) e quem já tem conta não dizem
+ * nada sobre como a pessoa conheceu o Tino.
+ */
+function marcarOrigem(requisicao: NextRequest, resposta: NextResponse) {
+  if (requisicao.method !== "GET" || requisicao.nextUrl.pathname.startsWith("/api/")) return
+  if (requisicao.headers.has("rsc") || requisicao.headers.has("next-router-prefetch")) return
+  if (requisicao.cookies.has(COOKIE_SESSAO)) return
+  const atual = decodificarOrigem(requisicao.cookies.get(COOKIE_ORIGEM)?.value)
+  const gravar = decidirOrigem(atual, lerChegada(requisicao.nextUrl, requisicao.headers.get("referer"), new Date()))
+  if (!gravar) return
+  resposta.cookies.set(COOKIE_ORIGEM, codificarOrigem(gravar), {
+    httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: DIAS_ORIGEM * 86_400,
+  })
 }
 
 async function decidirAcesso(requisicao: NextRequest, cabecalhos: Headers) {

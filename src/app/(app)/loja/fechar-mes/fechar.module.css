@@ -1,0 +1,8 @@
+/* Na impressão (ou "salvar como PDF") sai só a folha do relatório: o menu, os botões e as outras telas ficam de fora. */
+@media print {
+  :global(body) * { visibility: hidden; }
+  .folha, .folha * { visibility: visible; }
+  .folha { position: absolute; left: 0; top: 0; width: 100%; background: #fff !important; color: #000 !important; border: none !important; box-shadow: none !important; }
+  .folha * { color: #000 !important; border-color: #999 !important; }
+  .naoImprimir { display: none !important; }
+}

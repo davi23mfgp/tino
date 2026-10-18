@@ -1,25 +1,27 @@
-/* Contraste e relevo com superfícies opacas: o conteúdo de trás não atravessa. */
+/* Contraste e relevo com superfícies opacas: o conteúdo de trás não atravessa.
+   `--superficie-flutuante`, não `--papel-solido`: o tema de vidro deixa este
+   com 6% de opacidade, e a tela de trás aparecia através dos avisos. */
 .painel {
   max-width:400px !important;
-  background:var(--papel-solido) !important;
+  background:var(--superficie-flutuante) !important;
   backdrop-filter:none;
   border-color:color-mix(in oklab,var(--foreground),transparent 90%);
   box-shadow:0 28px 70px -18px #0009,inset 0 1px 0 color-mix(in oklab,var(--foreground),transparent 85%);
 }
 .painel [role=tablist] { background:color-mix(in oklab,var(--foreground),transparent 95%); border-radius:14px; }
 .painel [role=tab] { font-size:calc(12px * var(--escala-letra)); font-weight:500; }
-.painel [role=tab][aria-selected=true] { background:color-mix(in oklab,var(--papel-solido),var(--foreground) 13%); box-shadow:0 3px 7px -3px #0005,inset 0 1px 0 color-mix(in oklab,var(--foreground),transparent 85%); }
+.painel [role=tab][aria-selected=true] { background:color-mix(in oklab,var(--superficie-flutuante),var(--foreground) 13%); box-shadow:0 3px 7px -3px #0005,inset 0 1px 0 color-mix(in oklab,var(--foreground),transparent 85%); }
 .painel .aviso {
   border:1px solid color-mix(in oklab,var(--foreground),transparent 83%);
   border-radius:16px;
-  background:linear-gradient(145deg,color-mix(in oklab,var(--papel-solido),var(--foreground) 13%),color-mix(in oklab,var(--papel-solido),var(--foreground) 6%));
+  background:linear-gradient(145deg,color-mix(in oklab,var(--superficie-flutuante),var(--foreground) 13%),color-mix(in oklab,var(--superficie-flutuante),var(--foreground) 6%));
   box-shadow:0 9px 14px -9px #0009,0 2px 3px #0002,inset 0 1px 0 color-mix(in oklab,var(--foreground),transparent 82%),inset 0 -1px 0 #0002;
   gap:10px;
   padding:10px 12px 2px;
   margin-bottom:12px;
 }
-.painel .aviso[data-lido=true] { opacity:1; background:linear-gradient(145deg,color-mix(in oklab,var(--papel-solido),var(--foreground) 8%),var(--papel-solido)); }
-.painel .aviso > span { background:linear-gradient(145deg,color-mix(in oklab,var(--papel-solido),var(--foreground) 24%),color-mix(in oklab,var(--papel-solido),var(--foreground) 10%)); width:32px; height:32px; border-radius:10px; margin-top:2px; color:var(--foreground); border:1px solid color-mix(in oklab,var(--foreground),transparent 86%); box-shadow:0 3px 5px -2px #0005,inset 0 1px 0 color-mix(in oklab,var(--foreground),transparent 75%); }
+.painel .aviso[data-lido=true] { opacity:1; background:linear-gradient(145deg,color-mix(in oklab,var(--superficie-flutuante),var(--foreground) 8%),var(--superficie-flutuante)); }
+.painel .aviso > span { background:linear-gradient(145deg,color-mix(in oklab,var(--superficie-flutuante),var(--foreground) 24%),color-mix(in oklab,var(--superficie-flutuante),var(--foreground) 10%)); width:32px; height:32px; border-radius:10px; margin-top:2px; color:var(--foreground); border:1px solid color-mix(in oklab,var(--foreground),transparent 86%); box-shadow:0 3px 5px -2px #0005,inset 0 1px 0 color-mix(in oklab,var(--foreground),transparent 75%); }
 .painel .aviso > span svg { width:21px; height:21px; stroke-width:1.5; }
 .painel .aviso[data-severidade=CRITICO] > span { color:var(--negativo); }
 .painel .aviso h2 { font-size:calc(14px * var(--escala-letra)); font-weight:600; color:var(--foreground); letter-spacing:-.015em; }
@@ -31,6 +33,6 @@
 .ler { display:flex; align-items:center; gap:5px; min-height:44px; margin-left:auto; color:var(--texto-2); font-size:calc(10px * var(--escala-letra)); }
 .ler:hover:not(:disabled) { color:var(--acao); }
 .ler:focus-visible,.painel .aviso a:focus-visible { outline:2px solid var(--acao); outline-offset:2px; border-radius:6px; }
-.painel footer { background:var(--papel-solido); border-color:var(--pauta); }
+.painel footer { background:var(--superficie-flutuante); border-color:var(--pauta); }
 .painel > div:has(> article) { scrollbar-width:thin; scrollbar-color:var(--pauta) transparent; }
 @media(max-width:450px) { .painel .aviso { padding-left:12px; padding-right:12px; gap:10px; } .painel .aviso > span { width:36px; height:36px; } }

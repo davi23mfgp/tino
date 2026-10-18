@@ -1,11 +1,105 @@
 > **ERP MEI:** leia [a visão, as referências ZIP e o histórico da retomada](RETOMAR-ERP-MEI-2026-10-02.md) antes de continuar. As seções históricas abaixo podem não refletir o estado mais recente.
 
+## 07/10/2026: entrada do aparelho na Assistência técnica (passo 39, opções A e C juntas)
+
+O Davi escolheu A e C juntas, com a busca de modelo pelo começo do nome, o QR
+de acompanhamento e, depois de ver, "sofisticado, moderno, fino e bem
+dimensionado". Vale só para negócio da área Assistência; as outras áreas
+seguem com a OS de texto livre.
+
+- **01 Aparelho:** busca em 740 modelos (celular, tablet, notebook,
+  videogame, relógio, fone e eletrônicos), pelo começo de qualquer palavra
+  e sem precisar de espaço ("a5", "note12", "ip 15 pro", "ps5"), com os
+  modelos que a loja já atendeu em cima. Roda no aparelho, em 0,1 ms. O
+  escolhido decide o tipo, e o tipo decide as peças e o que pode ficar
+  junto. IMEI conferido pelo dígito verificador na hora.
+- **02 O que ficou junto** e **03 Como chegou:** no desenho do celular, um
+  toque marca defeito, outro marca que funciona, outro volta a não testado.
+  O que ninguém tocou fica "não testado", nunca "funciona" (regra 3); o botão
+  "Testei: o resto funciona" é a pessoa quem toca.
+- **04 Senha:** padrão (pontos na ordem) ou digitada, cifrada com a chave do
+  servidor e o link da OS; só aparece no "Ver senha" por 30 segundos, nunca
+  no link do cliente, e é apagada na entrega.
+- **05 Serviço:** o que fazer (com os serviços mais comuns sugeridos), prazo,
+  valor e observação.
+- **Ficha:** o aparelho, a conferência do cliente, a garantia depois da
+  entrega e o **QR de acompanhamento** (sempre preto no branco), com
+  "Imprimir comprovante" (folha A4 com QR, como chegou, regras do CDC e
+  assinaturas; testado em PDF: uma página).
+- **Link do cliente** (`/s/...`): como o aparelho chegou, "Está certo" ou
+  "Tem coisa errada" (vira aviso no sino), e a garantia de 90 dias contada
+  da entrega (CDC, art. 26). Mostra só o final do IMEI.
+- Testado no Chromium, 390 e 1280, escuro e claro: cadastro de assistência,
+  busca, IMEI errado e certo, desenho, padrão, OS aberta, senha vista,
+  cliente conferindo, pronto, entregue, senha apagada (404), garantia nos
+  dois lados, segunda resposta do cliente recusada (409).
+- Regras em `src/lib/loja/assistencia.ts` e `modelos.ts`, testadas em
+  `testes/entrada-aparelho.test.ts`, com prova de que cada teste falha se a
+  regra mudar.
+- **Aparelho esquecido** (07/10): o sino avisa quando a OS está pronta há
+  7, 30 e 60 dias (só o marco mais recente), e a ficha mostra "Pronto há N
+  dias" com o lembrete pronto para o WhatsApp, mais firme depois de 30 dias.
+  O Tino não sugere vender o aparelho: a cláusula é tida como abusiva.
+- **Retorno em garantia** (07/10): na entrada, ao digitar o IMEI (ou com o
+  mesmo cliente e o mesmo modelo, que a tela diz ser mais fraco), o Tino
+  procura OS entregue há menos de 90 dias e propõe "Marcar como retorno";
+  quem marca é a loja. A OS nova fica ligada à antiga (`garantiaDeId`,
+  migration `20261007150000_retorno_em_garantia`), e a ficha, o link do
+  cliente e o comprovante dizem "Retorno em garantia da OS 0001". O servidor
+  confere de novo que a garantia vale antes de ligar.
+- Testado no Chromium, 390 e 1280: aviso no sino, lembrete na ficha com a
+  mensagem, proposta de garantia pelo IMEI, vínculo na ficha e no link.
+  Regras em `testes/retorno-e-esquecido.test.ts`, com prova de que falham
+  se a regra mudar.
+- **Falta:** foto do aparelho (depois das conversas com os donos); registrar
+  que o lembrete foi mandado; quanto conserto volta em garantia por mês (não
+  há faixa de referência com fonte, então o número não aparece ainda). O
+  campo de prazo usa o calendário do navegador.
+
+## 06/10/2026: origem do cadastro, parte automática (item 1.6)
+
+- O proxy guarda num cookie de 30 dias (`tino_origem`, httpOnly) de onde a
+  pessoa chegou: `utm_source`, `utm_medium`, `utm_campaign`, `ref`, a
+  primeira página e só o domínio do site de onde clicou. Só para quem não
+  entrou, só em página aberta de verdade (troca de tela do app não conta).
+- Vale a primeira chegada; chegada com campanha ou indicação substitui a sem
+  marca, nunca o contrário (`decidirOrigem`, testado em
+  `testes/origem-cadastro.test.ts`, com prova de que o teste falha se a
+  regra mudar).
+- O cadastro por e-mail e pelo Google grava em `Usuario.origemCadastro`
+  (migration `20261006210000_origem_do_cadastro`) e apaga o cookie.
+- Política de privacidade diz o que o cookie guarda; versão dos termos
+  subiu para 2026-10-06, então quem já tem conta vê o aviso uma vez.
+- Testado no Chromium: chegou pelo anúncio do Instagram, voltou pela busca do
+  Google, cadastrou; ficou gravado o anúncio, com `l.instagram.com` como site.
+  O cadastro pelo Google não foi testado no navegador (o Google não abre
+  daqui); o código é o mesmo caminho.
+- **Falta:** a pergunta "Como você conheceu o Tino?" (canvas) e mostrar a
+  origem no painel do admin (item 6.5).
+
+## 06/10/2026: recuperar senha por e-mail (item 1.9)
+
+- "Esqueci a senha" (login pessoal, login MEI) abre `/esqueci-senha`; o
+  e-mail com o link sai pelo Resend, que já era dependência dos convites.
+- O link vale 30 minutos e uma vez só; no banco fica só o hash
+  (`redefinicaoSenhaHash`, migration `20261006200000_recuperar_senha`).
+- A resposta é a mesma, exista o e-mail ou não; cinco pedidos por hora por
+  e-mail e por endereço.
+- Trocar a senha derruba as sessões abertas e libera o bloqueio de login.
+- Admin não recupera por aqui (continua `ADMIN_REDEFINIR_SENHA`).
+- O endereço do link vem da Vercel, nunca do cabeçalho `Host`.
+- Testado no navegador: senha nova entra (200), a antiga não (401), o mesmo
+  link de novo é recusado (400).
+- **Falta (Davi):** `RESEND_API_KEY` e `EMAIL_REMETENTE` na Vercel. Sem as
+  duas, a tela diz que o envio não está ligado e mostra o e-mail do Davi,
+  em vez de fingir que mandou.
+
 ## 06/10/2026: Tino por área e vários negócios (opção A do passo 38)
 
 O Davi escolheu a opção A (modo pronto, como o Square). Estudo em `docs/pesquisas/2026-10-06-escolha-de-area-e-varios-negocios.md`.
 
-- **"O que você faz?"** em `/loja/comecar`: as 10 áreas do plano, a subárea (ou "Outro"), "Minha área não está aqui" com texto livre, e a caixa "Seu Tino ___ vem assim" ao lado. A caixa só lista o que o Tino já faz para o tipo da área (`oQueVem` em `src/lib/loja/areas.ts`): serviço ganha OS, orçamento e agenda; comércio ganha prateleira e fiado; quem faz os dois ganha o DAS separando as partes.
-- **Cadastro MEI** (e-mail e Google) leva a `/loja/comecar?inicio=1` (passo 2 de 3) e depois aos dados da empresa. Negócio antigo sem área vê o aviso "Diga o que você faz" na Visão geral.
+- **"Qual é o seu segmento?"** (era "O que você faz?"; o Davi pediu a troca no mesmo dia) em `/loja/comecar`: as 10 áreas do plano, a subárea (ou "Outro"), "Meu segmento não está aqui" com texto livre, e a caixa "Seu Tino ___ vem assim" ao lado. A caixa só lista o que o Tino já faz para o tipo da área (`oQueVem` em `src/lib/loja/areas.ts`): serviço ganha OS, orçamento e agenda; comércio ganha prateleira e fiado; quem faz os dois ganha o DAS separando as partes.
+- **Cadastro MEI** (e-mail e Google) leva a `/loja/comecar?inicio=1` (passo 2 de 3) e depois aos dados da empresa. Negócio antigo sem área vê o aviso "Escolha o seu segmento" na Visão geral.
 - **Vários negócios:** o nome do negócio fica no topo, com a seta; abre a lista com Casa, os negócios (com a área) e "Novo negócio". O negócio aberto fica num cookie e só vale se for do próprio lar (`negocioAtivo`); `lojaDoLar` passou a respeitá-lo, então todas as telas da loja seguem a troca.
 - **Mesmo CNPJ:** com mais de um negócio no MEI, a lista avisa que as vendas somam no mesmo limite. A tela do MEI soma o Balcão de todos os negócios do lar.
 - Área é campo da loja (`area`, `subarea`), migration `20261006190000_area_do_negocio`. Muda o que o app destaca, nunca o cálculo.
@@ -131,7 +225,8 @@ Só abrem para usuário com `admin = true`. Para qualquer outra sessão devolvem
 
 ## Fila do Claude Design (29/09/2026)
 
-Canvas parte 3: https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi. Uma tela por
+Canvas parte 3: https://claude.ai/artifact/RKncch3jJ637GJaPyeQPUi (passos 30 a 47);
+parte 4: https://claude.ai/artifact/JKqHBG2CQs8BoQqM7rEdAB (passo 48 em diante). Uma tela por
 vez: o Davi escolhe, a escolha é implementada, testada e enviada, e só então
 vem a próxima.
 
@@ -144,8 +239,8 @@ Esperando escolha (já desenhados, hoje e três caminhos):
 6. Passo 35 · Entrar (L1, L2, L3), com "Esqueci a senha", que ainda não existe
 
 A desenhar depois:
-7. Assinatura
-8. Notificações
+7. Assinatura (desenhada: canvas parte 4, passo 52, em escolha)
+8. Notificações (desenhada: canvas parte 4, passo 54, em escolha; a gaveta translúcida, o "mês(es)" e o aviso repetido já foram corrigidos)
 9. Faturas por mês (Cartões): foi mudado direto em 29/09 antes da regra
    "design só depois do canvas"; entra no canvas para o Davi aprovar ou
    voltar ao que era.

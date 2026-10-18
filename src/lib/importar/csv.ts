@@ -19,7 +19,7 @@ export interface ResultadoCsv {
 }
 
 /** Separador é o candidato que mais aparece na primeira linha não vazia. */
-function detectarSeparador(linha: string): string {
+export function detectarSeparador(linha: string): string {
   const candidatos = [";", ",", "\t", "|"]
   let melhor = ","
   let maior = 0
@@ -34,7 +34,7 @@ function detectarSeparador(linha: string): string {
 }
 
 /** Divide respeitando aspas — descrição com vírgula dentro é comum. */
-function dividirLinha(linha: string, separador: string): string[] {
+export function dividirLinha(linha: string, separador: string): string[] {
   const campos: string[] = []
   let atual = ""
   let dentroDeAspas = false
@@ -77,7 +77,7 @@ const SINONIMOS = {
   categoria: ["categoria", "category", "tipo"],
 }
 
-function acharColuna(cabecalho: string[], chaves: string[]): number {
+export function acharColuna(cabecalho: string[], chaves: string[]): number {
   const normalizado = cabecalho.map(NORMALIZAR)
   for (const chave of chaves) {
     const exato = normalizado.indexOf(chave)

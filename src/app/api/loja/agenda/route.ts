@@ -24,7 +24,7 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const de = new Date(Date.parse(`${semana[0]!.dia}T00:00:00Z`) - 86_400_000)
   const ate = new Date(Date.parse(`${semana[6]!.dia}T00:00:00Z`) + 2 * 86_400_000)
 
-  const [compromissos, ordens, passos, clientes] = await Promise.all([
+  const [compromissos, ordens, passos, clientes, usados] = await Promise.all([
     prisma.compromissoLoja.findMany({
       where: { lojaId: loja.id, inicioEm: { gte: de, lt: ate } },
       include: { cliente: { select: { nome: true } }, ordem: { select: { numero: true } } },
@@ -39,6 +39,10 @@ export const GET = comSessao(async (sessao, requisicao) => {
       select: { id: true, nome: true, proximoPasso: true, proximoPassoEm: true },
     }),
     prisma.clienteLoja.findMany({ where: { lojaId: loja.id }, orderBy: { nome: "asc" }, select: { id: true, nome: true, telefone: true } }),
+    // Os modelos que a loja já atendeu sobem para o topo da busca da entrada.
+    prisma.ordemServicoLoja.findMany({
+      where: { lojaId: loja.id, aparelhoModelo: { not: null } }, orderBy: { criadoEm: "desc" }, take: 200, select: { aparelhoModelo: true },
+    }),
   ])
 
   const fontes = {
@@ -48,12 +52,13 @@ export const GET = comSessao(async (sessao, requisicao) => {
   }
   const contagem = contarPorDia(semana, fontes, agora, fuso)
   return ok({
-    loja: { nome: loja.nome },
+    loja: { nome: loja.nome, area: loja.area, subarea: loja.subarea },
     hoje,
     dia,
     semana: semana.map((d) => ({ ...d, quantidade: contagem[d.dia] ?? 0 })),
     itens: itensDoDia(dia, fontes, agora, fuso),
     ordens: ordens.map(({ linkToken: _token, ...o }) => o),
     clientes,
+    modelosUsados: [...new Set(usados.map((linha) => linha.aparelhoModelo!))].slice(0, 40),
   })
 })

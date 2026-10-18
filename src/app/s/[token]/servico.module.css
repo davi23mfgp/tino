@@ -9,3 +9,19 @@
 .passos li[data-estado="agora"] { color:#1d231e; }
 .passos li[data-estado="agora"] > span { border:2px solid #1f6b36; }
 .passos li[data-estado="agora"] > b { font-weight:700; }
+
+/* A entrada do aparelho (passo 39): o cliente vê como deixou e confere. */
+.entrada { display:flex; flex-direction:column; gap:10px; padding-top:6px; border-top:1px solid rgb(29 35 30 / 11%); }
+.entrada h2 { margin:6px 0 0; font-size:17px; font-weight:700; }
+.aparelho { margin:0; font-size:15px; font-weight:600; }
+.aparelho small { font-weight:400; color:#55605a; }
+.pecas { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px; }
+.pecas li { display:grid; grid-template-columns:22px minmax(0,1fr); grid-template-rows:auto auto; column-gap:8px; align-items:center; padding:9px 10px; border-radius:12px; background:#eef1ee; font-size:14px; font-weight:600; }
+.pecas li > span { grid-row:1 / span 2; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; background:#c8cfc9; color:#1d231e; }
+.pecas li > small { grid-column:2; font-size:12px; font-weight:400; color:#55605a; }
+.pecas li[data-estado="ok"] > span { background:#1f6b36; color:#fff; }
+.pecas li[data-estado="defeito"] { background:#fbe5e2; }
+.pecas li[data-estado="defeito"] > span { background:#b3261e; color:#fff; }
+.contestar { display:flex; flex-direction:column; gap:8px; }
+.contestar label { font-size:14.5px; font-weight:600; }
+.contestar textarea { font:inherit; font-size:15px; padding:12px; border-radius:14px; border:1px solid rgb(29 35 30 / 22%); background:#fff; color:#1d231e; resize:vertical; }

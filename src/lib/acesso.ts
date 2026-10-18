@@ -18,11 +18,11 @@ export type PapelDeAcesso = "TITULAR" | "CONJUGE" | "DEPENDENTE" | "CONVIDADO" |
 
 // "/api/erros": a tela do funcionário também quebra, e o erro dele tem de
 // chegar ao registro do admin como o de qualquer um.
-const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/o", "/s", "/api/orcamento-publico", "/login", "/seguranca", "/api/auth/mfa", "/api/auth/logout", "/termos", "/privacidade", "/api/erros"]
+const LIBERADO_PARA_FUNCIONARIO = ["/loja", "/api/loja", "/o", "/s", "/api/orcamento-publico", "/api/servico-publico", "/login", "/seguranca", "/api/auth/mfa", "/api/auth/logout", "/termos", "/privacidade", "/api/erros"]
 
 /// Vive sob "/loja" mas é resultado/lucro do negócio, não operação de balcão —
 /// checado antes do prefixo geral, senão "começa com /loja" liberaria sozinho.
-const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta", "/loja/clientes", "/api/loja/clientes", "/api/loja/orcamentos", "/loja/agenda", "/api/loja/agenda", "/api/loja/ordens", "/api/loja/avisos", "/loja/comecar", "/api/loja/negocios", "/api/loja/area"]
+const BLOQUEADO_MESMO_NA_LOJA = ["/loja/financas", "/api/loja/demonstrativo", "/api/loja/funcionario", "/loja/minha-conta", "/loja/dados", "/loja/painel", "/loja/dados", "/api/loja/painel", "/api/loja/cadastro", "/api/loja/meta", "/loja/clientes", "/api/loja/clientes", "/api/loja/orcamentos", "/loja/agenda", "/api/loja/agenda", "/api/loja/ordens", "/api/loja/avisos", "/loja/comecar", "/api/loja/negocios", "/api/loja/area", "/api/loja/analises", "/api/loja/indicacao", "/api/indicacao", "/api/loja/maquininha", "/loja/simples", "/api/loja/modo-simples", "/loja/maquininha", "/loja/fechar-mes", "/api/loja/relatorio"]
 
 function combinaAlgumPrefixo(caminho: string, prefixos: string[]): boolean {
   return prefixos.some((prefixo) => caminho === prefixo || caminho.startsWith(`${prefixo}/`))
@@ -37,7 +37,12 @@ export function rotaPermitida(papel: PapelDeAcesso, caminho: string): boolean {
 
 // A conta MEI usa o mesmo mecanismo de login, mas suas telas e APIs são do
 // negócio. Bloquear por URL evita que um link antigo abra a vida pessoal.
-const LIBERADO_PARA_MEI = ["/loja", "/mei", "/assinatura", "/seguranca", "/termos", "/privacidade", "/api/loja", "/api/mei", "/api/assinatura", "/api/usuario", "/api/auth", "/api/seguranca", "/api/suporte", "/api/erros"]
+//
+// Investimentos é a mesma tela do pessoal (Davi, 08/10/2026: "se for
+// investimentos deixe o mesmo que o pessoal"). Ela precisa de contas e de
+// lançamentos para registrar aporte, então `/api/contas` e `/api/transacoes`
+// entram junto: são as únicas APIs pessoais abertas à conta MEI, e só por isso.
+const LIBERADO_PARA_MEI = ["/investir", "/api/investir", "/api/carteira", "/api/cdi", "/api/mercado", "/api/contas", "/api/transacoes", "/loja", "/mei", "/assinatura", "/seguranca", "/termos", "/privacidade", "/api/loja", "/api/mei", "/api/assinatura", "/api/usuario", "/api/auth", "/api/seguranca", "/api/suporte", "/api/erros", "/api/indicacao"]
 
 export function rotaPermitidaNoMei(caminho: string): boolean {
   return combinaAlgumPrefixo(caminho, LIBERADO_PARA_MEI)

@@ -21,7 +21,7 @@ const ICONE_DO_ITEM: Record<ItemQueVem["icone"], typeof Wrench> = {
 }
 
 /**
- * "O que você faz?" (opção A do passo 38, Davi, 06/10/2026). A área deixa o
+ * "Qual é o seu segmento?" (opção A do passo 38, Davi, 06/10/2026). A área deixa o
  * Tino com a cara do negócio, como os modos do Square; a caixa ao lado diz o
  * que já vem pronto, só com o que existe hoje (`oQueVem`).
  */
@@ -76,11 +76,11 @@ export default function Comecar() {
           <span>Passo 2 de 3</span>
         </div>}
         <div className={estilos.titulo}>
-          <h1>O que você faz?</h1>
+          <h1>Qual é o seu segmento?</h1>
           <p>{nome ? `O Tino arruma o ${nome} para o seu tipo de negócio.` : "O Tino se arruma para o seu tipo de negócio."}</p>
         </div>
 
-        <div className={estilos.areas} role="group" aria-label="Área do negócio">
+        <div className={estilos.areas} role="group" aria-label="Segmento do negócio">
           {AREAS.map((item) => {
             const Icone = ICONE_DA_AREA[item.id]
             return (
@@ -90,7 +90,7 @@ export default function Comecar() {
             )
           })}
         </div>
-        {!ehOutra && <button type="button" className={estilos.outra} onClick={() => escolherArea(OUTRA_AREA.id)}>Minha área não está aqui</button>}
+        {!ehOutra && <button type="button" className={estilos.outra} onClick={() => escolherArea(OUTRA_AREA.id)}>Meu segmento não está aqui</button>}
 
         {escolhida && !ehOutra && (
           <>
@@ -104,9 +104,9 @@ export default function Comecar() {
         )}
         {ehOutra && (
           <label className={estilos.coluna}>
-            <span className={estilos.pergunta}>Com o que você trabalha?</span>
+            <span className={estilos.pergunta}>Escreva o seu segmento</span>
             <input className={estilos.campo} value={outraTexto} onChange={(evento) => setOutraTexto(evento.target.value)} maxLength={60} placeholder="Ex.: fotografia de festas" />
-            <span className={base.dica}>O Tino vem com tudo ligado. Com a sua resposta, a gente vê que áreas criar depois.</span>
+            <span className={base.dica}>O Tino vem com tudo ligado. Com a sua resposta, a gente vê que segmentos criar depois.</span>
           </label>
         )}
 
@@ -121,7 +121,7 @@ export default function Comecar() {
               return <li key={item.texto}><Icone aria-hidden /><span>{item.texto}</span></li>
             })}
           </ul>
-          <p>Dá para trocar a área depois, sem perder nada.</p>
+          <p>Dá para trocar o segmento depois, sem perder nada.</p>
         </section>
       )}
 
