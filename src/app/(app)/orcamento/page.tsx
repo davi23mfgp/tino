@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react"
+import { ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { competenciaAtual, rotuloCompetencia, ultimasCompetencias, competenciaMaisMeses } from "@/lib/datas"
@@ -48,6 +48,7 @@ interface Linha {
 
 interface Orcamento {
   competencia: string
+  herdadoDe?: string | null
   linhas: Linha[]
   semOrcamento: { categoria: Categoria; gastoCentavos: number }[]
   limiteTotalCentavos: number
@@ -62,7 +63,6 @@ export default function OrcamentoPagina() {
   const [competencia, setCompetencia] = useState(competenciaAtual())
   const [dados, setDados] = useState<Orcamento | null>(null)
   const [rascunho, setRascunho] = useState<Record<string, string>>({})
-  const [repetir, setRepetir] = useState(0)
   const [ocupado, setOcupado] = useState(false)
   const [mensagem, setMensagem] = useState<string | null>(null)
   // Categorias sem limite em que a pessoa tocou "+ limite": sobem para a lista
@@ -109,7 +109,7 @@ export default function OrcamentoPagina() {
 
       const resultado = await enviar<{ mesesAfetados: number }>(
         "/api/orcamento",
-        { competencia, linhas, repetirMeses: repetir },
+        { competencia, linhas, repetirMeses: 0 },
         "PUT",
       )
       setMensagem(
@@ -124,6 +124,31 @@ export default function OrcamentoPagina() {
       setMensagem(texto)
       setErroAjuste(texto)
       return false
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  /**
+   * Tirar o limite, deste mês em diante. Num mês que ainda herda os limites,
+   * grava antes os outros neste mês, senão eles continuariam vindo do mês
+   * anterior com a categoria tirada junto.
+   */
+  async function tirarLimite(categoria: Categoria) {
+    setOcupado(true)
+    try {
+      if (dados?.herdadoDe) {
+        const sem = { ...rascunho }
+        delete sem[categoria.id]
+        const linhas = Object.entries(sem).filter(([, valor]) => valor.trim()).map(([categoriaId, valor]) => ({ categoriaId, limiteCentavos: paraCentavos(valor) }))
+        if (linhas.length) await enviar("/api/orcamento", { competencia, linhas, repetirMeses: 0 }, "PUT")
+      }
+      await buscar(`/api/orcamento?competencia=${competencia}&categoriaId=${encodeURIComponent(categoria.id)}`, { method: "DELETE" })
+      setAjuste(null)
+      setMensagem(`Limite de ${categoria.nome} tirado deste mês em diante.`)
+      await carregar()
+    } catch (falha) {
+      setErroAjuste(falha instanceof Error ? falha.message : "Não consegui tirar o limite.")
     } finally {
       setOcupado(false)
     }
@@ -252,6 +277,9 @@ export default function OrcamentoPagina() {
       </div>
 
       {mensagem && <p className={estilos.mensagem} role="status">{mensagem}</p>}
+      {dados?.herdadoDe && ordenadas.length > 0 && (
+        <p className={estilos.mensagem} role="status">Os mesmos limites de {rotuloCompetencia(dados.herdadoDe).split(" ")[0]}. Mude o que quiser; o resto continua igual.</p>
+      )}
 
       {(ordenadas.length > 0 || novas.length > 0) && (
         <section className={estilos.bloco}>
@@ -330,9 +358,14 @@ export default function OrcamentoPagina() {
             if (await salvar({ ...rascunho, [ajuste.id]: valorAjuste })) setAjuste(null)
           }}>
             <label>Limite da categoria (R$)<input autoFocus inputMode="decimal" value={valorAjuste} onChange={(evento) => { setValorAjuste(evento.target.value); setErroAjuste("") }} placeholder="0,00" disabled={ocupado} /></label>
-            <label>Valer para<select value={String(repetir)} disabled={ocupado} onChange={(evento) => setRepetir(Number(evento.target.value))}>{[0, 2, 5, 11].map((n) => <option key={n} value={n}>{n === 0 ? "Só este mês" : `Por ${n + 1} meses`}</option>)}</select></label>
+            {/* Sem "Valer para": o limite vale deste mês em diante, e os meses
+                novos herdam sozinhos (revisão de 19/10). */}
+            <small className={estilos.dicaAjuste}>Vale para {rotuloCompetencia(competencia).split(" ")[0]} e os próximos meses, até você mudar.</small>
             {erroAjuste && <p role="alert">{erroAjuste}</p>}
             <div><button type="button" disabled={ocupado} onClick={() => setAjuste(null)}>Cancelar</button><button type="submit" disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar limite"}</button></div>
+            {ajuste && limiteDe(ajuste.id) > 0 && (
+              <button type="button" className={estilos.tirarLimite} disabled={ocupado} onClick={() => void tirarLimite(ajuste)}>Tirar o limite de {ajuste.nome}</button>
+            )}
           </form>
         </DialogContent>
       </Dialog>
@@ -354,13 +387,7 @@ export default function OrcamentoPagina() {
           mudar, lá embaixo na lista. */}
       {alterado && (
         <div className={estilos.salvar}>
-          <label className={estilos.valerPara}>
-            <span className="sr-only">Valer para</span>
-            <select value={String(repetir)} onChange={(evento) => setRepetir(Number(evento.target.value))}>
-              {[0, 2, 5, 11].map((n) => <option key={n} value={n}>{n === 0 ? "Só este mês" : `Por ${n + 1} meses`}</option>)}
-            </select>
-            <ChevronDown aria-hidden />
-          </label>
+          <span className={estilos.valerPara}>Vale daqui em diante</span>
           <button type="button" onClick={() => void salvar()} disabled={ocupado}>{ocupado ? "Salvando…" : "Salvar limites"}</button>
         </div>
       )}
