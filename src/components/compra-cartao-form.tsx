@@ -15,7 +15,10 @@ export function CompraCartaoForm({contaId,categorias,compra,parcelamento,fechar,
   const [categoria,setCategoria]=useState(compra?.categoriaId??parcelamento?.categoriaId??"")
   const [quantidade,setQuantidade]=useState("1")
   const [pagas,setPagas]=useState(String(parcelamento?.parcelasPagas??0))
-  const [primeiroMes,setPrimeiroMes]=useState(new Date().toISOString().slice(0,7))
+  // Vazio: a primeira parcela segue o fechamento do cartão, como a compra à
+  // vista. Antes vinha o mês atual, e a parcelada depois do fechamento caía
+  // numa fatura já fechada (revisão de 19/10).
+  const [primeiroMes,setPrimeiroMes]=useState("")
   // Vazio quer dizer "usa a regra do cartão". Só quem sabe que a compra caiu
   // noutra fatura preenche isto — por isso o campo vive recolhido.
   const [fatura,setFatura]=useState("")
@@ -23,7 +26,7 @@ export function CompraCartaoForm({contaId,categorias,compra,parcelamento,fechar,
   async function salvar(e:React.FormEvent) {e.preventDefault();setOcupado(true);setErro("");try {
     if(parcelamento) await enviar(`/api/parcelamentos/${parcelamento.id}`,{descricao,categoriaId:categoria||null,parcelasPagas:Number(pagas)},"PATCH")
     else if(compra) await enviar(`/api/transacoes/${compra.id}`,{descricao,valorCentavos:paraCentavos(valor),data,categoriaId:categoria||null},"PATCH")
-    else if(Number(quantidade)>1) await enviar("/api/parcelamentos",{contaId,descricao,valorTotalCentavos:paraCentavos(valor),parcelasTotal:Number(quantidade),dataCompra:data,primeiraCompetencia:primeiroMes,categoriaId:categoria||null})
+    else if(Number(quantidade)>1) await enviar("/api/parcelamentos",{contaId,descricao,valorTotalCentavos:paraCentavos(valor),parcelasTotal:Number(quantidade),dataCompra:data,primeiraCompetencia:primeiroMes||undefined,categoriaId:categoria||null})
     else await enviar("/api/transacoes",{contaId,descricao,valorCentavos:paraCentavos(valor),data,categoriaId:categoria||null,tipo:"DESPESA",competenciaFatura:fatura||undefined})
     salvou();fechar()
   }catch(e){setErro(e instanceof Error?e.message:"Não foi possível salvar.")}finally{setOcupado(false)}}
@@ -32,7 +35,7 @@ export function CompraCartaoForm({contaId,categorias,compra,parcelamento,fechar,
     {!parcelamento&&<><label className="text-sm">Valor total (R$)<Input required inputMode="decimal" value={valor} onChange={e=>setValor(e.target.value)} /></label><label className="text-sm">Data da compra<Input required type="date" value={data} onChange={e=>setData(e.target.value)} /></label></>}
     <div className="sm:col-span-2"><SeletorCategoria opcoes={categorias} valor={categoria||null} aoMudar={id=>setCategoria(id??"")}/></div>
     {!compra&&!parcelamento&&<label className="block text-sm">Parcelas<Input type="number" min="1" max="120" required value={quantidade} onChange={e=>setQuantidade(e.target.value)}/></label>}
-    {!compra&&!parcelamento&&Number(quantidade)>1&&<><label className="block text-sm">Primeira fatura<Input type="month" required value={primeiroMes} onChange={e=>setPrimeiroMes(e.target.value)}/></label><p className="text-sm text-muted-fg">Gera a previsão de parcelas. A fatura importada confirma os lançamentos.</p></>}
+    {!compra&&!parcelamento&&Number(quantidade)>1&&<details className="text-sm sm:col-span-2"><summary className="flex min-h-11 cursor-pointer items-center text-muted-fg">A primeira parcela caiu em outra fatura?</summary><label className="mt-2 block">Mês da primeira fatura<Input type="month" value={primeiroMes} onChange={e=>setPrimeiroMes(e.target.value)}/></label><p className="mt-1 text-muted-fg">Em branco, o Tino usa o fechamento e o vencimento do cartão.</p></details>}
     {!compra&&!parcelamento&&Number(quantidade)<=1&&<details className="text-sm sm:col-span-2"><summary className="flex min-h-11 cursor-pointer items-center text-muted-fg">Essa compra caiu em outra fatura?</summary><label className="mt-2 block">Mês da fatura<Input type="month" value={fatura} onChange={e=>setFatura(e.target.value)}/></label><p className="mt-1 text-muted-fg">Em branco, o Tino usa o fechamento e o vencimento do cartão.</p></details>}
     {parcelamento&&<label className="block text-sm">Parcelas pagas<Input type="number" required min="0" max={parcelamento.parcelasTotal} value={pagas} onChange={e=>setPagas(e.target.value)}/></label>}
     {erro&&<p role="alert" className="text-sm text-negativo">{erro}</p>}
