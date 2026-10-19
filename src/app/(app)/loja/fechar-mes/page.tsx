@@ -190,7 +190,7 @@ export default function FecharMes() {
 
           {/* A folha do relatório: é o que sai na impressão. */}
             <div className="space-y-4">
-          <section className={`${estilos.folha} ficha w-full p-4 sm:p-5`} aria-label="Relatório Mensal das Receitas Brutas">
+          <section className={`${estilos.folha} folha-relatorio-mei ficha w-full p-4 sm:p-5`} aria-label="Relatório Mensal das Receitas Brutas">
             <div className="flex items-start justify-between gap-2">
               <h3 className="text-[calc(16px*var(--escala-letra))] font-semibold">Relatório Mensal das Receitas Brutas</h3>
               <span className="shrink-0 rounded-full bg-foreground/[0.07] px-2.5 py-0.5 text-xs text-muted-fg">{nome}</span>
