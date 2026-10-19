@@ -125,8 +125,12 @@ export default function Fiado() {
     try {
       // Uma baixa por venda, como a rota pede: pagamento sem dizer de qual
       // compra deixaria o app adivinhando qual quitar.
-      for (const vendaId of vendaIds) await enviar("/api/loja/fiado", { vendaId })
-      showToast(vendaIds.length === 1 ? "Compra recebida" : `${vendaIds.length} compras recebidas`)
+      const baixados: string[] = []
+      for (const vendaId of vendaIds) baixados.push(...(await enviar<{ pagamentoIds: string[] }>("/api/loja/fiado", { vendaId })).pagamentoIds)
+      // "Recebi" fica colado na linha: um toque errado tem de ter volta.
+      showToast(vendaIds.length === 1 ? "Compra recebida" : `${vendaIds.length} compras recebidas`, {
+        action: { label: "Desfazer", onClick: () => void enviar("/api/loja/fiado", { pagamentoIds: baixados }, "DELETE").then(carregar) },
+      })
       await carregar()
     } catch (falha) {
       showToast(falha instanceof Error ? falha.message : "Não consegui dar baixa.", { variant: "error" })

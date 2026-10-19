@@ -54,6 +54,23 @@ export const POST = comSessao(async (sessao, requisicao) => {
   })
 
   return ok({
+    pagamentoIds: emAberto.map((pagamento) => pagamento.id),
     recebidoCentavos: emAberto.reduce((soma, pagamento) => soma + pagamento.valorCentavos, 0),
   })
+})
+
+/**
+ * Desfaz um "Recebi" tocado por engano. Volta só os pagamentos que aquela
+ * baixa marcou (a tela guarda os ids), não tudo que a venda já recebeu:
+ * reabrir uma parte paga de verdade cobraria o cliente duas vezes.
+ */
+export const DELETE = comSessao(async (sessao, requisicao) => {
+  const dados = await corpo<{ pagamentoIds: string[] }>(requisicao)
+  if (!Array.isArray(dados.pagamentoIds) || dados.pagamentoIds.length === 0) throw new ErroDeUso("Diga o que desfazer.")
+  const loja = await lojaDoLar(sessao.larId)
+  const { count } = await prisma.pagamentoVenda.updateMany({
+    where: { id: { in: dados.pagamentoIds.map(String) }, forma: "FIADO", recebidoEm: { not: null }, venda: { lojaId: loja.id } },
+    data: { recebidoEm: null },
+  })
+  return ok({ reabertos: count })
 })
