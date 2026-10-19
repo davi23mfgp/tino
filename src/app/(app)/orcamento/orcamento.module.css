@@ -137,3 +137,5 @@
 .dicaBase a { color:var(--acao); text-decoration:underline; text-underline-offset:3px; }
 .tirarLimite { min-height:44px; margin-top:4px; color:var(--negativo); font-weight:600; font-size:14px; }
 .dicaAjuste { display:block; font-size:13px; line-height:1.45; color:var(--texto-3); }
+/* Valor do limite grande, como na compra do cartão e na conta fixa (revisão de 19/10). */
+.ajusteLimite input { height:56px !important; font-size:calc(24px * var(--escala-letra)) !important; font-weight:300; font-variant-numeric:tabular-nums; }

@@ -85,3 +85,7 @@
 @keyframes passarCotacoes { to { transform:translateX(-50%); } }
 /* Movimento contínuo solicitado para a fita; o controle de pausa permanece disponível.
    Não trocar por rolagem manual nem ocultar o controle neste componente. */
+/* "Aportar ou resgatar" escrito no pé do cartão (revisão de 19/10): a pista de
+   que dá para tocar, em vez de uma frase de instrução no fim da lista. */
+.acaoCartao { display:flex; align-items:center; justify-content:flex-end; gap:4px; margin-top:10px; padding-top:10px; border-top:1px solid color-mix(in oklab, currentColor, transparent 85%); font-size:calc(13px * var(--escala-letra)); font-weight:650; opacity:.85; }
+.acaoCartao svg { width:16px; height:16px; }

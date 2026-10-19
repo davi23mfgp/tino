@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Pause, Play, Bitcoin, Building2, CandlestickChart, Globe, Landmark, Wallet, type LucideIcon } from "lucide-react"
+import { Pause, Play, Bitcoin, Building2, CandlestickChart, Globe, Landmark, Wallet, type LucideIcon, ChevronRight } from "lucide-react"
 
 import { formatarMoeda } from "@/lib/dinheiro"
 import type { IndicadorDoMercado, Periodo, SerieDeAtivo } from "@/lib/mercado"
@@ -283,20 +283,19 @@ export function CartoesDeAtivos({
                         <small>Sobre o aportado</small>
                         <strong>{ganhoSobreAportado > 0 ? "+" : "−"}{formatarMoeda(Math.abs(ganhoSobreAportado))}</strong>
                       </>
-                    ) : (
-                      <>
-                        <small>{ativo.ticker ? "Resultado" : "Rende pelo contrato"}</small>
-                        <strong>sem dado</strong>
-                      </>
-                    )}
+                    ) : null}
                   </span>
                 </span>
+                {/* "Sem dado" em todo cartão era só barulho, e a tela precisava
+                    escrever "toque num investimento" porque nada parecia
+                    tocável. Agora o cartão diz o que faz (revisão de 19/10). */}
+                <span className={estilos.acaoCartao}>Aportar ou resgatar<ChevronRight aria-hidden /></span>
               </button>
             </li>
           )
         })}
       </ul>
-      <p className={estilos.fonte}>Toque num investimento para aportar ou resgatar. Preços do Yahoo Finance, com atraso de até 15 minutos.</p>
+      <p className={estilos.fonte}>Preços do Yahoo Finance, com atraso de até 15 minutos.</p>
     </section>
   )
 }

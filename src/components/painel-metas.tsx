@@ -20,11 +20,18 @@ export async function PainelMetas() {
  // responde "onde estou" quando a pessoa abre a tela.
  const ativas=metas.filter(m=>m.status==="ATIVA"&&m.saldoCentavos<m.alvoCentavos)
   .sort((a,b)=>(a.alvoCentavos-a.saldoCentavos)-(b.alvoCentavos-b.saldoCentavos))
- const avisos=ativas.map(m=>{
-  const percentual=m.alvoCentavos>0?Math.floor(m.saldoCentavos*100/m.alvoCentavos):0
-  const prazo=m.dataAlvo?`até ${MES_CURTO[m.dataAlvo.getUTCMonth()]} ${m.dataAlvo.getUTCFullYear()}`:"sem prazo"
-  return {id:m.id,titulo:`Faltam ${semCentavosZerados(m.alvoCentavos-m.saldoCentavos)} para ${m.nome}`,apoio:`${percentual}% guardado · ${prazo}`,percentual}
- })
+ // O bloco do alto resume todas as metas; cada uma tem o seu cartão logo
+ // abaixo. Antes ele repetia a primeira meta com outros números do mesmo dado,
+ // e a pessoa via a mesma meta duas vezes (revisão de uso, 19/10).
+ const guardado=ativas.reduce((s,m)=>s+m.saldoCentavos,0)
+ const alvo=ativas.reduce((s,m)=>s+m.alvoCentavos,0)
+ const proxima=ativas[0]
+ const avisos=proxima?[{
+  id:"resumo",
+  titulo:`${semCentavosZerados(guardado)} guardados em ${ativas.length} ${ativas.length===1?"meta":"metas"}`,
+  apoio:`faltam ${semCentavosZerados(alvo-guardado)} no total · a mais perto de fechar: ${proxima.nome}${proxima.dataAlvo?`, até ${MES_CURTO[proxima.dataAlvo.getUTCMonth()]} ${proxima.dataAlvo.getUTCFullYear()}`:""}`,
+  percentual:alvo>0?Math.floor(guardado*100/alvo):0,
+ }]:[]
  return <div className="space-y-5"><CarrosselDeMetas
   avisos={avisos}
   vazio={metas.length===0
