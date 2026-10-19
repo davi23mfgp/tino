@@ -10,7 +10,17 @@ import { SimboloCategoria } from "@/components/seletor-categoria"
 import { OrcamentoCasal } from "@/components/orcamento-casal"
 import { DivisaoDaRenda } from "@/components/divisao-da-renda"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { MontarBase, type RespostaDaBase } from "@/components/montar-base"
 import estilos from "./orcamento.module.css"
+
+/**
+ * Gastos do dia a dia que a lista pronta oferece (passo 55). Ficam de fora
+ * aluguel, luz e o resto que vence todo mês: isso é Contas fixas, e repetir aqui
+ * faria as duas abas parecerem a mesma coisa (Davi, 19/10/2026).
+ */
+const BASE_DO_ORCAMENTO = ["Supermercado", "Restaurante", "Delivery", "Combustível", "Aplicativos de transporte", "Farmácia",
+  "Lazer e eventos", "Vestuário", "Cuidados pessoais", "Compras online", "Padaria e café", "Pet"]
+const MARCADAS_DE_INICIO = new Set(["Supermercado", "Restaurante", "Combustível", "Farmácia", "Lazer e eventos"])
 
 /**
  * Orçamento por categoria.
@@ -58,6 +68,20 @@ export default function OrcamentoPagina() {
   // Categorias sem limite em que a pessoa tocou "+ limite": sobem para a lista
   // com o campo aberto, mesmo antes de ter valor digitado.
   const [abertas, setAbertas] = useState<Set<string>>(new Set())
+  const [categoriasDespesa, setCategoriasDespesa] = useState<(Categoria & { tipo?: string; icone?: string | null })[]>([])
+
+  useEffect(() => {
+    buscar<(Categoria & { tipo?: string; icone?: string | null })[]>("/api/categorias")
+      .then((lista) => setCategoriasDespesa(lista.filter((categoria) => categoria.tipo === "DESPESA")))
+      .catch(() => setCategoriasDespesa([]))
+  }, [])
+
+  /** Grava os limites da lista pronta junto com os que já existiam no mês. */
+  async function salvarBase(respostas: RespostaDaBase[]) {
+    const limites = { ...rascunho }
+    for (const resposta of respostas) limites[resposta.id] = paraTexto(resposta.valorCentavos)
+    if (!(await salvar(limites))) throw new Error("Não consegui salvar os limites. Tente de novo.")
+  }
 
   const carregar = useCallback(async () => {
     const resposta = await buscar<Orcamento>(`/api/orcamento?competencia=${competencia}`)
@@ -261,7 +285,22 @@ export default function OrcamentoPagina() {
         </section>
       )}
 
-      {dados && ordenadas.length === 0 && novas.length === 0 && semLimite.length === 0 && (
+      {dados && ordenadas.length === 0 && novas.length === 0 && !alterado && categoriasDespesa.length > 0 && (
+        <MontarBase
+          itens={(BASE_DO_ORCAMENTO.map((nome) => categoriasDespesa.find((categoria) => categoria.nome === nome)).filter((categoria): categoria is NonNullable<typeof categoria> => Boolean(categoria))).map((categoria) => ({
+            id: categoria.id, nome: categoria.nome, icone: <SimboloCategoria categoria={categoria} />, marcado: MARCADAS_DE_INICIO.has(categoria.nome),
+            dica: "Sem histórico, o Tino não sugere número. Depois de um mês lançando, \"Usar histórico\" mostra quanto você gastou de verdade.",
+          }))}
+          pergunta="Onde você quer controlar o gasto?"
+          perguntaDoItem={(nome) => `Quanto quer gastar com ${nome} por mês?`}
+          rotuloValor="Limite do mês"
+          rotuloPular="Sem limite para esta"
+          rotuloConcluir={(quantidade) => `Salvar ${quantidade} limite${quantidade === 1 ? "" : "s"}`}
+          rodapeGrade={<p className={estilos.dicaBase}>Aluguel, luz e o que vence todo mês ficam em <a href="/recorrencias">Contas fixas</a>.</p>}
+          aoConcluir={salvarBase}
+        />
+      )}
+      {dados && ordenadas.length === 0 && novas.length === 0 && semLimite.length === 0 && categoriasDespesa.length === 0 && (
         <div className={estilos.vazioCompacto}><Sparkles aria-hidden /><div><strong>Comece seu orçamento</strong><p>Use os atalhos acima para trazer limites ou histórico.</p></div></div>
       )}
 
