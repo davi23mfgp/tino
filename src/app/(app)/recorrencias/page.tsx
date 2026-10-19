@@ -379,12 +379,13 @@ export default function Recorrencias() {
             <DialogDescription>{form?.id ? "Muda as próximas; o que já foi lançado no extrato fica como está." : "Entra uma vez e alimenta projeção, reserva e plano."}</DialogDescription>
           </DialogHeader>
           {form && <form onSubmit={salvar} className={estilos.formulario}>
-            <label>Descrição<Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="aluguel, luz, salário" required /></label>
-            <label>Valor (R$)<Input value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required inputMode="decimal" /></label>
-            <label>Entrada ou saída<SelectNative value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as "RECEITA" | "DESPESA" })}><option value="DESPESA">sai da conta</option><option value="RECEITA">entra na conta</option></SelectNative></label>
+            {/* Valor primeiro e grande; "entrada ou saída" saiu do formulário,
+                porque a aba (Saídas ou Entradas) já diz (revisão de 19/10). */}
+            <label data-largo>Valor (R$)<Input value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required inputMode="decimal" autoFocus={!form.id} className={estilos.valorGrande} /></label>
+            <label data-largo>{form.tipo === "RECEITA" ? "De onde vem" : "O que é"}<Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder={form.tipo === "RECEITA" ? "salário, pró-labore" : "aluguel, luz, internet"} required /></label>
             <label>Dia do vencimento<Input value={form.dia} onChange={(e) => setForm({ ...form, dia: e.target.value })} inputMode="numeric" /></label>
             <label>Repete<SelectNative value={form.periodicidade} onChange={(e) => setForm({ ...form, periodicidade: e.target.value })}>{PERIODOS.map((periodo) => <option key={periodo.valor} value={periodo.valor}>{periodo.rotulo}</option>)}</SelectNative></label>
-            <label>Conta<SelectNative value={form.contaId} onChange={(e) => setForm({ ...form, contaId: e.target.value })}>{contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}</SelectNative></label>
+            {contas.length > 1 && <label>{form.tipo === "RECEITA" ? "Cai na conta" : "Sai da conta"}<SelectNative value={form.contaId} onChange={(e) => setForm({ ...form, contaId: e.target.value })}>{contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}</SelectNative></label>}
             <label data-largo>Categoria<SelectNative value={form.categoriaId} onChange={(e) => setForm({ ...form, categoriaId: e.target.value })}><option value="">sem categoria</option>{categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}</SelectNative></label>
             {contas.length === 0 && <p role="status" data-largo>Cadastre uma conta em <a href="/configuracoes">Configurações</a> antes de adicionar uma conta fixa.</p>}
             <label data-largo className={estilos.interruptor}>
