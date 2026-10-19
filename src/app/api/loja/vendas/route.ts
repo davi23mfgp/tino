@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { trazerDeVolta } from "@/lib/loja/clientes"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
 import { caixaAberto, lojaDoLar, proximoNumero, regrasDeRecebimento } from "@/lib/loja/dados"
 import { calcularPagamento, conferirVenda, descontarTroco, dividirFaturamentoMei, totalDaVenda } from "@/lib/loja/venda"
@@ -145,6 +146,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
         orderBy: { criadoEm: "asc" },
       })
     : null
+  await trazerDeVolta(existente)
   const cliente = existente
     ? dados.clienteTelefone && !existente.telefone
       ? await prisma.clienteLoja.update({ where: { id: existente.id }, data: { telefone: dados.clienteTelefone } })

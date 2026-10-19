@@ -31,13 +31,13 @@ function inteiro(valor: unknown, campo: string): number {
  */
 export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) => {
   const { id } = await contexto.params
-  const dados = await corpo<{ ncm?: string | null; nome?: unknown; precoCentavos?: unknown; estoqueMinimo?: unknown; sku?: string | null; categoriaId?: string | null; fornecedorId?: string | null; descricao?: string | null; imagemUrl?: string | null; marca?: string | null; unidade?: string | null }>(requisicao)
+  const dados = await corpo<{ ncm?: string | null; nome?: unknown; precoCentavos?: unknown; estoqueMinimo?: unknown; sku?: string | null; categoriaId?: string | null; fornecedorId?: string | null; descricao?: string | null; imagemUrl?: string | null; marca?: string | null; unidade?: string | null; ativo?: boolean }>(requisicao)
 
   const loja = await lojaDoLar(sessao.larId)
   const produto = await prisma.produtoLoja.findFirst({ where: { id, lojaId: loja.id } })
   if (!produto) throw new ErroDeUso("Produto não encontrado nesta loja.", 404)
 
-  const mudancas: { ncm?: string | null; nome?: string; precoCentavos?: number; estoqueMinimo?: number | null; sku?: string | null; categoriaId?: string | null; fornecedorId?: string | null; descricao?: string | null; imagemUrl?: string | null; marca?: string | null; unidade?: string | null } = {}
+  const mudancas: { ncm?: string | null; nome?: string; precoCentavos?: number; estoqueMinimo?: number | null; sku?: string | null; categoriaId?: string | null; fornecedorId?: string | null; descricao?: string | null; imagemUrl?: string | null; marca?: string | null; unidade?: string | null; ativo?: boolean } = {}
   if ("ncm" in dados) {
     const ncm = dados.ncm?.replace(/\D/g, "") || null
     if (ncm && !ncmValido(tabelaNcm, ncm)) throw new ErroDeUso("Esse NCM não existe na tabela oficial.")
@@ -71,6 +71,10 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
       mudancas[chave] = valor?.trim() || null
     }
   }
+
+  // Tirar da prateleira é desativar, nunca apagar: as vendas antigas e os
+  // movimentos de estoque apontam para o produto e somem do relatório sem ele.
+  if ("ativo" in dados) mudancas.ativo = dados.ativo === true
 
   return ok(await prisma.produtoLoja.update({ where: { id }, data: mudancas }))
 })

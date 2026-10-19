@@ -15,7 +15,7 @@ const CARTAO = ["DEBITO", "CREDITO_VISTA", "CREDITO_PARCELADO"] as const
 /** Cliente com as compras dos últimos 8 meses (os 6 da análise mais as 6 semanas do "sumido"). */
 export async function clientesParaAnalise(lojaId: string, agora: Date): Promise<ClienteParaAnalise[]> {
   const clientes = await prisma.clienteLoja.findMany({
-    where: { lojaId },
+    where: { lojaId, arquivado: false },
     select: {
       id: true, nome: true, telefone: true,
       vendas: {

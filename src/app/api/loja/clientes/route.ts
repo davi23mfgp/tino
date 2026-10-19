@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
-import { clientesComOrcamentos, fiadoPorCliente, paraResumo } from "@/lib/loja/clientes"
+import { clientesComOrcamentos, fiadoPorCliente, paraResumo, trazerDeVolta } from "@/lib/loja/clientes"
 import { emAberto, paraRetomarHoje, resumoDoCliente, taxaDeFechamento } from "@/lib/loja/orcamento"
 import { campo, validar, z } from "@/lib/validar"
 
@@ -58,6 +58,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     where: { lojaId: loja.id, nome: { equals: nome, mode: "insensitive" } },
     orderBy: { criadoEm: "asc" },
   })
+  await trazerDeVolta(existente)
   if (existente) return ok({ cliente: existente, existente: true })
   const cliente = await prisma.clienteLoja.create({
     data: { lojaId: loja.id, nome, telefone: dados.telefone || null, email: dados.email || null, observacao: dados.observacao || null },

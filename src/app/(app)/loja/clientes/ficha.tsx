@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Check, Clock, ExternalLink, FileText, Link2, MessageCircle, Pencil, Phone, Plus, ShoppingBag, Wrench, X } from "lucide-react"
+import { ArrowLeft, Check, Clock, ExternalLink, FileText, Link2, MessageCircle, Pencil, Phone, Plus, ShoppingBag, Trash2, Wrench, X } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -23,13 +23,14 @@ function paraCampo(data: Date) {
 const ANDANDO = ["rascunho", "enviado", "visto", "vencido", "aprovado"]
 
 export function FichaDoCliente({
-  clienteId, atualizar, compartilharAoAbrir, aoVoltar, aoMudar, aoEditar, aoNovoOrcamento,
+  clienteId, atualizar, compartilharAoAbrir, aoVoltar, aoMudar, aoTirar, aoEditar, aoNovoOrcamento,
 }: {
   clienteId: string
   atualizar: number
   compartilharAoAbrir: string | null
   aoVoltar: () => void
   aoMudar: () => void
+  aoTirar: (id: string) => void
   aoEditar: (orcamento: OrcamentoDaFicha & { clienteId: string }) => void
   aoNovoOrcamento: (cliente: { id: string; nome: string }) => void
 }) {
@@ -45,6 +46,7 @@ export function FichaDoCliente({
   const [detalhe, setDetalhe] = useState("")
   const [ocupado, setOcupado] = useState(false)
   const [contato, setContato] = useState<{ nome: string; telefone: string; email: string; observacao: string } | null>(null)
+  const [tirando, setTirando] = useState(false)
 
   const carregar = useCallback(async () => {
     try {
@@ -77,6 +79,30 @@ export function FichaDoCliente({
     const alvo = ficha.orcamentos.find((linha) => linha.id === compartilharAoAbrir)
     if (alvo && (alvo.status === "RASCUNHO" || alvo.status === "ENVIADO")) void mandarLink(alvo)
   }, [ficha, compartilharAoAbrir]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Tirar da lista: a rota exclui quem foi cadastro errado e arquiva quem tem
+   * história. Arquivado volta com o Desfazer, para o toque errado não custar
+   * o cliente.
+   */
+  async function tirarDaLista() {
+    setOcupado(true)
+    try {
+      const { resultado } = await enviar<{ resultado: "arquivado" | "excluido" }>(`/api/loja/clientes/${clienteId}`, {}, "DELETE")
+      setContato(null)
+      setTirando(false)
+      aoTirar(clienteId)
+      if (resultado === "excluido") showToast("Cliente excluído")
+      else showToast("Cliente arquivado", {
+        description: "As compras e o fiado continuam no caixa.",
+        action: { label: "Desfazer", onClick: () => void enviar(`/api/loja/clientes/${clienteId}`, { arquivado: false }, "PATCH").then(aoMudar) },
+      })
+    } catch (falha) {
+      showToast(falha instanceof Error ? falha.message : "Não consegui tirar da lista.", { variant: "error" })
+    } finally {
+      setOcupado(false)
+    }
+  }
 
   async function executar(operacao: () => Promise<unknown>, sucesso?: string) {
     setOcupado(true)
@@ -141,7 +167,7 @@ export function FichaDoCliente({
         <div className={estilos.acoes}>
           {cliente.telefone && <a className={`${estilos.botao} ${estilos.pequeno}`} href={`tel:${cliente.telefone.replace(/[^\d+]/g, "")}`}><Phone aria-hidden />Ligar</a>}
           {cliente.telefone && <a className={`${estilos.botao} ${estilos.pequeno}`} href={linkDoWhatsApp(cliente.telefone, `Olá, ${primeiroNome}!`)} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden />WhatsApp</a>}
-          <button type="button" className={`${estilos.botao} ${estilos.pequeno}`} onClick={() => setContato({ nome: cliente.nome, telefone: cliente.telefone ?? "", email: cliente.email ?? "", observacao: cliente.observacao ?? "" })}><Pencil aria-hidden />Editar contato</button>
+          <button type="button" className={`${estilos.botao} ${estilos.pequeno}`} onClick={() => setContato({ nome: cliente.nome, telefone: cliente.telefone ?? "", email: cliente.email ?? "", observacao: cliente.observacao ?? "" })}><Pencil aria-hidden />Editar ou tirar</button>
         </div>
       </div>
       {(cliente.email || cliente.observacao) && <p className={estilos.dica}>{[cliente.email, cliente.observacao].filter(Boolean).join(" · ")}</p>}
@@ -255,7 +281,7 @@ export function FichaDoCliente({
 
       <button type="button" className={estilos.botao} style={{ justifySelf: "start" }} onClick={() => aoNovoOrcamento({ id: cliente.id, nome: cliente.nome })}><Plus aria-hidden />Novo orçamento para {primeiroNome}</button>
 
-      <Dialog open={contato !== null} onOpenChange={(abrir) => !abrir && setContato(null)}>
+      <Dialog open={contato !== null} onOpenChange={(abrir) => { if (!abrir) { setContato(null); setTirando(false) } }}>
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>
             <DialogTitle>Contato de {primeiroNome}</DialogTitle>
@@ -277,6 +303,15 @@ export function FichaDoCliente({
                 <label className={estilos.campo}>E-mail<Input type="email" value={contato.email} onChange={(e) => setContato({ ...contato, email: e.target.value })} maxLength={254} /></label>
                 <label className={estilos.campo}>Observação<Input value={contato.observacao} onChange={(e) => setContato({ ...contato, observacao: e.target.value })} maxLength={500} placeholder="Prefere WhatsApp à tarde" /></label>
                 <button type="submit" className={estilos.botao} data-principal disabled={ocupado}>Salvar</button>
+                {tirando ? (
+                  <div className={estilos.confirmarTirar} role="group" aria-label="Confirmar">
+                    <p>{ficha.compras.quantidade > 0 || ficha.orcamentos.length > 0 ? `${primeiroNome} sai da lista e da agenda. As compras e o fiado continuam no caixa.` : `${primeiroNome} não tem compra nem orçamento: o cadastro é apagado.`}</p>
+                    <button type="button" className={estilos.botao} onClick={() => setTirando(false)}>Voltar</button>
+                    <button type="button" className={estilos.botao} data-perigo disabled={ocupado} onClick={() => void tirarDaLista()}><Trash2 aria-hidden />Tirar da lista</button>
+                  </div>
+                ) : (
+                  <button type="button" className={estilos.tirar} onClick={() => setTirando(true)}><Trash2 aria-hidden />Tirar {primeiroNome} da lista</button>
+                )}
               </form>
             )}
           </DialogBody>

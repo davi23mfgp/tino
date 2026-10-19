@@ -38,7 +38,7 @@ export const GET = comSessao(async (sessao, requisicao) => {
       where: { lojaId: loja.id, proximoPasso: { not: null }, proximoPassoEm: { gte: de, lt: ate } },
       select: { id: true, nome: true, proximoPasso: true, proximoPassoEm: true },
     }),
-    prisma.clienteLoja.findMany({ where: { lojaId: loja.id }, orderBy: { nome: "asc" }, select: { id: true, nome: true, telefone: true } }),
+    prisma.clienteLoja.findMany({ where: { lojaId: loja.id, arquivado: false }, orderBy: { nome: "asc" }, select: { id: true, nome: true, telefone: true } }),
     // Os modelos que a loja já atendeu sobem para o topo da busca da entrada.
     prisma.ordemServicoLoja.findMany({
       where: { lojaId: loja.id, aparelhoModelo: { not: null } }, orderBy: { criadoEm: "desc" }, take: 200, select: { aparelhoModelo: true },

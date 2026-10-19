@@ -1440,6 +1440,9 @@ model ClienteLoja {
   /// 36). É o que põe o cliente em "Para retomar hoje"; sem data, não cobra.
   proximoPasso   String?
   proximoPassoEm DateTime?
+  /// Arquivar em vez de apagar quando há venda ou orçamento: a história do
+  /// caixa e do fiado não pode perder o nome de quem comprou.
+  arquivado      Boolean   @default(false)
   criadoEm       DateTime  @default(now())
 
   vendas        VendaLoja[]

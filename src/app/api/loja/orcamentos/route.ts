@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ErroDeUso, ok } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
-import { conferirItens, conferirValores, novoToken, proximoNumeroDeOrcamento } from "@/lib/loja/clientes"
+import { conferirItens, conferirValores, novoToken, proximoNumeroDeOrcamento, trazerDeVolta } from "@/lib/loja/clientes"
 import { ESQUEMA_CONDICOES, ESQUEMA_ITENS, validadeAPartirDeHoje } from "@/lib/loja/orcamento-entrada"
 import { campo, validar, z } from "@/lib/validar"
 
@@ -44,6 +44,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     const nome = dados.clienteNome?.trim().replace(/\s+/g, " ")
     if (!nome) throw new ErroDeUso("Diga para quem é o orçamento.")
     const existente = await prisma.clienteLoja.findFirst({ where: { lojaId: loja.id, nome: { equals: nome, mode: "insensitive" } }, orderBy: { criadoEm: "asc" } })
+    await trazerDeVolta(existente)
     clienteId = existente
       ? existente.id
       : (await prisma.clienteLoja.create({ data: { lojaId: loja.id, nome, telefone: dados.clienteTelefone || null } })).id

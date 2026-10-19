@@ -52,9 +52,17 @@ export async function fiadoPorCliente(lojaId: string): Promise<Map<string, numbe
   return mapa
 }
 
+/**
+ * Quem foi arquivado e volta a comprar (mesmo nome no Balcão, na OS ou no
+ * orçamento) reaparece na lista: arquivar é "sumiu daqui", não "proibido".
+ */
+export async function trazerDeVolta(cliente: { id: string; arquivado: boolean } | null) {
+  if (cliente?.arquivado) await prisma.clienteLoja.update({ where: { id: cliente.id }, data: { arquivado: false } })
+}
+
 export async function clientesComOrcamentos(lojaId: string) {
   return prisma.clienteLoja.findMany({
-    where: { lojaId },
+    where: { lojaId, arquivado: false },
     orderBy: { nome: "asc" },
     include: { orcamentos: { select: SELECAO_RESUMO, orderBy: { criadoEm: "desc" } } },
   })
