@@ -103,3 +103,18 @@ export function origemDaRequisicao(requisicao: Request): OrigemCadastro | null {
   const par = cabecalho.split(/;\s*/).find((item) => item.startsWith(`${COOKIE_ORIGEM}=`))
   return decodificarOrigem(par?.slice(COOKIE_ORIGEM.length + 1))
 }
+
+/**
+ * As respostas de "Como você conheceu o Tino?". Lista de negócio de bairro,
+ * não de SaaS: grupo de WhatsApp entra em redes, fornecedor que indicou entra
+ * em indicação. "Contador" é o canal da Fase 5, por isso pede o nome.
+ */
+export const RESPOSTAS_ORIGEM = [
+  { id: "indicacao", rotulo: "Alguém me indicou", quem: "Quem indicou? (opcional)" },
+  { id: "link", rotulo: "Recebi um orçamento ou OS do Tino", quem: null },
+  { id: "contador", rotulo: "Meu contador", quem: "Nome do escritório (opcional)" },
+  { id: "anuncio", rotulo: "Vi um anúncio", quem: null },
+  { id: "busca", rotulo: "Procurei na internet", quem: null },
+  { id: "redes", rotulo: "Redes sociais ou grupo de WhatsApp", quem: null },
+  { id: "outro", rotulo: "Outro jeito", quem: "Qual? (opcional)" },
+] as const
