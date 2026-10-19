@@ -461,7 +461,9 @@ function ReceberPorEmail({ contaId, aoEscolher }: { contaId: string; aoEscolher:
     }
   }
 
-  if (!dados && !erro) return null
+  // Desligado no servidor, a linha só dizia "ainda não ativado no servidor":
+  // texto de quem programa, sem nada que a pessoa possa fazer (revisão de 19/10).
+  if (!dados?.configurado && !erro) return null
   return (
     <section className={`${estilos.bloco} ${estilos.email}`} data-desligado={!dados?.configurado || undefined}>
       <div>

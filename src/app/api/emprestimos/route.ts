@@ -81,3 +81,15 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   return ok(analise)
 })
+
+/**
+ * Apagar uma proposta guardada. Antes não havia como: a proposta do banco que
+ * não interessava mais ficava na comparação para sempre (revisão de 19/10).
+ */
+export const DELETE = comSessao(async (sessao, requisicao) => {
+  const id = new URL(requisicao.url).searchParams.get("id")
+  if (!id) throw new ErroDeUso("Informe qual proposta apagar.")
+  const { count } = await prisma.simulacaoEmprestimo.deleteMany({ where: { id, larId: sessao.larId } })
+  if (count === 0) throw new ErroDeUso("Proposta não encontrada.", 404)
+  return ok({ removida: true })
+})

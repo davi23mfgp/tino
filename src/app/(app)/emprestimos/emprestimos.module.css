@@ -86,3 +86,4 @@
 .controles .guardar button { min-height:44px; border-radius:12px; font-size:calc(12px * var(--escala-letra)); font-weight:500; background:color-mix(in oklab,var(--acao),transparent 88%); border:1px solid color-mix(in oklab,var(--acao),transparent 75%); color:var(--acao); }
 @media(min-width:1000px) { .configuracao { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); } .controles .duasColunas { padding-left:24px; border-left:1px solid var(--pauta); } }
 @media(max-width:520px) { .controles { padding:16px; } .controles .prazos { grid-template-columns:repeat(4,minmax(0,1fr)); } .controles .guardar { grid-template-columns:1fr; } .controles .valorDigitado input { width:9ch; font-size:calc(20px * var(--escala-letra)); } }
+.apagarProposta { display:inline-flex; align-items:center; gap:6px; min-height:44px; margin-top:4px; color:var(--negativo); font-size:calc(13px * var(--escala-letra)); font-weight:600; }

@@ -251,10 +251,12 @@ export default function Simulador() {
           <p className={estilos.manchete}>{erro ? "Não consegui montar seu cenário." : "Calculando onde você chega…"}</p>
         ) : (
           <p className={estilos.manchete}>
-            Em {meses} meses você tem <em data-piora={comparacao.base.patrimonioFinalCentavos < 0 || undefined}>{formatarMoeda(comparacao.base.patrimonioFinalCentavos)}</em>.
+            Em {meses} meses seu patrimônio fica em <em data-piora={comparacao.base.patrimonioFinalCentavos < 0 || undefined}>{formatarMoeda(comparacao.base.patrimonioFinalCentavos)}</em>.
           </p>
         )}
-        <p className={estilos.apoio}>Saldo menos dívidas, pela sua média de gastos e pelas parcelas já contratadas.</p>
+        {/* "Você tem" com número negativo fazia parecer falta de dinheiro, com o
+            gráfico subindo ao lado (revisão de 19/10): o número é patrimônio. */}
+        <p className={estilos.apoio}>Patrimônio é o que você tem menos o que deve, pela sua média de gastos e pelas parcelas já contratadas.</p>
         <div className={estilos.janelas} role="group" aria-label="Prazo da simulação">
           {JANELAS.map((janela) => (
             <button key={janela} type="button" aria-pressed={meses === janela} onClick={() => setMeses(janela)}>
