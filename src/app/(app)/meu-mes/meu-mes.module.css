@@ -1,0 +1,60 @@
+/* Meu mês (passo 59b, D): planilha de custo fixo e custo variável. Células
+   limpas, cabeçalho fino e o total na última linha, como numa planilha, com
+   o número em Space Grotesk do site. Verde é o fixo, azul o variável. */
+.pagina { --cor-fixo: oklch(var(--primary)); --cor-variavel: oklch(0.72 0.14 250); display:grid; gap:16px; min-width:0; max-width:1180px; margin:auto; padding-bottom:90px; }
+.pagina > * { min-width:0; }
+.pagina b, .num { font-family:var(--fonte-display), var(--font-ios), system-ui, sans-serif; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+
+.quadros { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+.quadro { display:grid; gap:4px; min-width:0; padding:12px 14px; border-radius:20px; border:1px solid var(--vidro-borda); background:var(--papel-1); }
+.quadro small { display:inline-flex; align-items:center; gap:6px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.quadro small i { width:8px; height:8px; border-radius:2px; background:var(--cor); }
+.quadro b { font-size:clamp(16px, 4.8vw, calc(24px * var(--escala-letra))); font-weight:500; white-space:nowrap; }
+.barra { display:flex; gap:3px; height:10px; border-radius:99px; overflow:hidden; background:color-mix(in oklab, var(--foreground), transparent 90%); }
+.barra i { display:block; height:100%; }
+.referencia { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.referencia[data-alerta] { color:var(--negativo); }
+
+.acoes { display:flex; flex-wrap:wrap; gap:8px; }
+.botao { display:inline-flex; align-items:center; gap:8px; min-height:46px; padding:0 18px; border-radius:99px; font-size:calc(15px * var(--escala-letra)); font-weight:650; border:1px solid var(--vidro-borda); background:transparent; color:inherit; cursor:pointer; }
+.botao[data-principal] { background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); border-color:transparent; }
+.botao svg { width:17px; height:17px; }
+.dica { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+
+.secoes { display:grid; gap:22px; }
+@media (min-width:1024px) { .secoes { grid-template-columns:repeat(2, minmax(0,1fr)); align-items:start; gap:20px; } }
+.secao { display:grid; gap:10px; min-width:0; }
+.titulo { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.titulo span { display:inline-flex; align-items:center; gap:8px; min-width:0; }
+.titulo i { flex:none; width:10px; height:10px; border-radius:3px; background:var(--cor); }
+.titulo h2 { font-size:calc(17px * var(--escala-letra)); font-weight:700; white-space:nowrap; }
+.titulo small { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); white-space:nowrap; }
+.titulo b { font-size:calc(17px * var(--escala-letra)); font-weight:500; white-space:nowrap; }
+
+.planilha { border-radius:18px; overflow:hidden; border:1px solid var(--vidro-borda); background:var(--papel-1); }
+.linha { display:grid; grid-template-columns:var(--colunas); border-bottom:1px solid color-mix(in oklab, var(--foreground), transparent 90%); }
+.linha > * { display:flex; align-items:center; min-width:0; min-height:48px; padding:0 12px; font-size:calc(14.5px * var(--escala-letra)); }
+.linha > * + * { justify-content:flex-end; border-left:1px solid color-mix(in oklab, var(--foreground), transparent 90%); text-align:right; }
+.cabecalho > * { min-height:36px; font-size:calc(11.5px * var(--escala-letra)); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+.total { border-bottom:0; background:color-mix(in oklab, var(--cor), transparent 88%); }
+.total > * { font-weight:700; }
+.celula { width:100%; height:100%; border:0; background:none; color:inherit; font:inherit; text-align:inherit; cursor:text; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0; }
+.celula:hover { background:color-mix(in oklab, var(--foreground), transparent 95%); }
+.celula[data-nome] { font-weight:600; }
+.vazio { color:oklch(var(--primary)); font-weight:650; }
+.apagado { color:var(--texto-3); }
+.pago { color:oklch(var(--primary)); }
+.estouro { color:var(--negativo); }
+.edicao { display:flex; align-items:center; gap:6px; width:100%; }
+.edicao input { width:100%; min-width:0; height:36px; padding:0 8px; border-radius:10px; border:1.5px solid oklch(var(--primary)); background:var(--papel-solido, var(--background)); color:inherit; font:inherit; text-align:inherit; }
+.tirar { flex:none; display:grid; place-items:center; width:34px; height:34px; border-radius:10px; border:0; background:color-mix(in oklab, var(--negativo), transparent 86%); color:var(--negativo); cursor:pointer; }
+.tirar svg { width:16px; height:16px; }
+.nova { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 12px; border:0; background:none; color:oklch(var(--primary)); font-weight:650; font-size:calc(14px * var(--escala-letra)); cursor:pointer; }
+.nova svg { width:15px; height:15px; }
+.novaForm { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px; }
+.novaForm > :first-child { grid-column:1 / -1; }
+.novaForm input, .novaForm select { height:44px; padding:0 12px; border-radius:12px; border:1px solid var(--vidro-borda); background:var(--papel-1); color:inherit; font:inherit; min-width:0; }
+.novaForm button { height:44px; }
+.soWeb { display:none !important; }
+@media (min-width:1024px) { .soWeb { display:flex !important; } }
+.erro { color:var(--negativo); font-size:14px; }

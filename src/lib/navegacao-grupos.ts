@@ -11,7 +11,6 @@ import {
   ListChecks,
   PiggyBank,
   Receipt,
-  Repeat,
   Settings,
   TrendingDown,
   Tags,
@@ -124,8 +123,8 @@ export const GRUPOS_NAV: GrupoNav[] = [
     titulo: "Planejar",
     pergunta: "Orcamento, contas fixas, metas e reserva",
     itens: [
-      { rota: "/orcamento", rotulo: "Orçamento", Icone: PiggyBank },
-      { rota: "/recorrencias", rotulo: "Contas fixas", Icone: Repeat },
+      // Orçamento e Contas fixas viraram uma planilha só (passo 59b, D).
+      { rota: "/meu-mes", rotulo: "Meu mês", Icone: PiggyBank },
       { rota: "/metas", rotulo: "Metas", Icone: Target },
       { rota: "/reserva", rotulo: "Reserva de emergência", Icone: Wallet },
     ],
@@ -231,6 +230,8 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 /** Título da página no cabeçalho — mesma lista das abas, nunca um mapa à parte. */
 /** Telas que não estão no menu mas precisam de título no topo; sem nome aqui, o topo dizia só "Tino" (inventário de 07/10/2026). */
 const TITULOS_FORA_DO_MENU: Record<string, string> = {
+  "/orcamento": "Orçamento",
+  "/recorrencias": "Contas fixas",
   "/loja/comecar": "Seu negócio",
   "/ligar-negocio": "Ligar o negócio",
   "/loja/simples": "Início",

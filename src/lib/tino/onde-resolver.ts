@@ -13,9 +13,9 @@ export interface Destino {
 
 /// Pelas prioridades do diagnóstico (`Prioridade.chave`).
 export const ONDE_RESOLVER: Record<string, Destino> = {
-  "cheque-especial": { href: "/orcamento", texto: "Direcionar a sobra" },
+  "cheque-especial": { href: "/meu-mes", texto: "Direcionar a sobra" },
   renegociar: { href: "/dividas", texto: "Ver minhas dívidas" },
-  folga: { href: "/orcamento", texto: "Onde cortar" },
+  folga: { href: "/meu-mes", texto: "Onde cortar" },
   reserva: { href: "/reserva", texto: "Montar a reserva" },
   classificar: { href: "/transacoes", texto: "Classificar pendentes" },
   manter: { href: "/metas", texto: "Escolher uma meta" },
@@ -27,6 +27,6 @@ export const ONDE_RESOLVER_INDICADOR: Record<string, Destino> = {
   endividamento: { href: "/dividas", texto: "Ver minhas dívidas" },
   "taxa-poupanca": { href: "/investir", texto: "Quanto dá para guardar" },
   liquidez: { href: "/reserva", texto: "Montar a reserva" },
-  "custo-fixo": { href: "/recorrencias", texto: "Rever contas fixas" },
-  essencial: { href: "/orcamento", texto: "Ajustar o orçamento" },
+  "custo-fixo": { href: "/meu-mes", texto: "Rever contas fixas" },
+  essencial: { href: "/meu-mes", texto: "Ajustar o orçamento" },
 }

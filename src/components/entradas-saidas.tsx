@@ -173,7 +173,7 @@ export function EntradasESaidas({
             <span>Gastos acima da estimativa<b className="valor-sensivel">{formatarMoeda(custoVariavelCentavos)}</b></span>
           </div>
           {temRenda && excessoFixo > 0 && <p className={estilos.leitura}><b className="valor-sensivel" data-tom={tomDoFixo}>{formatarMoeda(excessoFixo)}</b> acima da referência mensal.</p>}
-          <Link className={estilos.acao} href="/recorrencias">Rever contas fixas →</Link>
+          <Link className={estilos.acao} href="/meu-mes">Rever contas fixas →</Link>
           <details className={estilos.explicacao}><summary>Como calculamos</summary><p>Fixos estimados e parcelas mensais. O variável considera os gastos do mês que excedem esses fixos; não é a classificação individual de cada compra.</p></details>
         </section>
       )}

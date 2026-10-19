@@ -457,7 +457,7 @@ export default function Simulador() {
           {simulando && diferenca > 0 && (
             <div className={estilos.acoes}>
               <Link href="/metas" className={estilos.acaoPrincipal}>Transformar em meta</Link>
-              <Link href="/orcamento" className={estilos.acaoSecundaria}>Virar orçamento</Link>
+              <Link href="/meu-mes" className={estilos.acaoSecundaria}>Virar orçamento</Link>
             </div>
           )}
 

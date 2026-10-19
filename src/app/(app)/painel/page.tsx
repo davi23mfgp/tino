@@ -238,7 +238,7 @@ export default async function Painel() {
             <ul className={e.legenda}>{fatias.map((fatia) => (
               <li key={fatia.nome}><i style={{ background: fatia.cor }} /><span>{fatia.nome}</span><small>{Math.round((fatia.centavos / Math.max(1, totalFatias)) * 100)}%</small><b className="valor-sensivel">{formatarMoeda(fatia.centavos)}</b></li>
             ))}</ul>
-            {estouros.length > 0 && <p className={e.estouros}><span>passaram do orçamento:</span>{estouros.map((linha) => <Link key={linha.categoriaId} href="/orcamento" className={e.chip} data-tom="negativo">{linha.nome} {linha.percentual}%</Link>)}</p>}
+            {estouros.length > 0 && <p className={e.estouros}><span>passaram do orçamento:</span>{estouros.map((linha) => <Link key={linha.categoriaId} href="/meu-mes" className={e.chip} data-tom="negativo">{linha.nome} {linha.percentual}%</Link>)}</p>}
           </> : <p className={e.vazio}>Os gastos do mês aparecem aqui.</p>}
         </section>
 

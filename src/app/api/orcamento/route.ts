@@ -84,6 +84,16 @@ export const PUT = comSessao(async (sessao, requisicao) => {
   const competencia = lerCompetencia(dados.competencia, competenciaAtual())
   const meses = Math.max(0, Math.min(dados.repetirMeses ?? 0, 24))
 
+  // O mês sem limite próprio mostra os herdados (GET). Salvar uma linha só
+  // criaria o mês com ela e apagaria da tela todas as outras: antes, o mês
+  // ganha cópia do que herdava, e a linha nova muda por cima.
+  const comLinhas = await prisma.orcamento.findMany({ where: { larId: sessao.larId, competencia: { lte: competencia } }, distinct: ["competencia"], select: { competencia: true } })
+  const base = competenciaDosLimites(comLinhas.map((linha) => linha.competencia), competencia)
+  if (base && base !== competencia) {
+    const herdadas = await prisma.orcamento.findMany({ where: { larId: sessao.larId, competencia: base }, select: { categoriaId: true, limiteCentavos: true } })
+    await prisma.orcamento.createMany({ data: herdadas.map((linha) => ({ larId: sessao.larId, competencia, categoriaId: linha.categoriaId, limiteCentavos: linha.limiteCentavos })), skipDuplicates: true })
+  }
+
   await prisma.$transaction(
     Array.from({ length: meses + 1 }).flatMap((_, deslocamento) => {
       const alvo = competenciaMaisMeses(competencia, deslocamento)
