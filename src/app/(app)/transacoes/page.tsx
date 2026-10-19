@@ -414,8 +414,8 @@ export default function Transacoes() {
         )}
 
         <div className={estilos.lista}>
-          {porDia(transacoes).map((grupo) => (
-            <section key={grupo.dia} className={estilos.grupoDia} hidden={grupo.itens.every((item) => ocultos.has(item.id))}>
+          {porDia(transacoes.filter((transacao) => !ocultos.has(transacao.id))).map((grupo) => (
+            <section key={grupo.dia} className={estilos.grupoDia}>
               <h3>
                 <span>{rotuloDia(grupo.dia)}</span>
                 <b className={cn("numero valor-sensivel", grupo.totalCentavos > 0 && "text-positivo")}>
@@ -426,7 +426,7 @@ export default function Transacoes() {
                 {grupo.itens.map((transacao) => {
                   const transferencia = transacao.tipo === "TRANSFERENCIA"
                   return (
-                    <li key={transacao.id} className={estilos.linha} hidden={ocultos.has(transacao.id)}>
+                    <li key={transacao.id} className={estilos.linha}>
                       {/* A linha inteira abre a ficha (passo 57): antes o nome e o
                           valor se editavam tocando no texto, sem pista, e excluir
                           não existia. A seta no fim diz que dá para tocar. */}
