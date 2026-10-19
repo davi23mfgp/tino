@@ -103,6 +103,7 @@ export default function Recorrencias() {
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState("")
   const [erroFormulario, setErroFormulario] = useState("")
+  const [valorDoMes, setValorDoMes] = useState<{ recorrencia: Recorrencia; valor: string; erro: string } | null>(null)
 
   const carregar = useCallback(async () => {
     const [resposta, listaContas, listaCategorias] = await Promise.all([
@@ -198,18 +199,42 @@ export default function Recorrencias() {
     await carregar()
   }
 
-  /** Lança a ocorrência do período. Idempotente: dois cliques não geram duas contas. */
-  async function lancar(recorrencia: Recorrencia) {
+  /**
+   * Lança a ocorrência do período. Idempotente: dois cliques não geram duas
+   * contas. Conta de valor variável (luz, água) pergunta antes quanto veio:
+   * lançar o valor do mês passado punha no extrato um número que ninguém pagou
+   * (revisão de 19/10).
+   */
+  async function lancar(recorrencia: Recorrencia, valorCentavos?: number) {
     if (ocupado) return
+    if (recorrencia.valorVariavel && valorCentavos === undefined) {
+      setValorDoMes({ recorrencia, valor: formatarDecimal(recorrencia.valorCentavos / 100, 2), erro: "" })
+      return
+    }
     setOcupado(true)
     try {
-      await enviar("/api/recorrencias", { id: recorrencia.id }, "PUT")
-      showToast(`${recorrencia.descricao} lançada no extrato`, { description: `${formatarMoeda(recorrencia.valorCentavos)} · ${dataCurta(recorrencia.proximaData)}` })
+      const lancada = await enviar<{ id?: string; jaLancado?: boolean }>("/api/recorrencias", { id: recorrencia.id, ...(valorCentavos !== undefined ? { valorCentavos } : {}) }, "PUT")
+      setValorDoMes(null)
+      if (lancada?.jaLancado) showToast(`${recorrencia.descricao} já estava lançada neste mês`)
+      else showToast(`${recorrencia.descricao} lançada no extrato`, {
+        description: `${formatarMoeda(valorCentavos ?? recorrencia.valorCentavos)} · ${dataCurta(recorrencia.proximaData)}`,
+        action: lancada?.id ? { label: "Desfazer", onClick: () => void desfazerLancamento(recorrencia, lancada.id as string) } : undefined,
+      })
       await carregar()
     } catch (erro) {
       showToast("Não foi possível concluir", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
     } finally {
       setOcupado(false)
+    }
+  }
+
+  async function desfazerLancamento(recorrencia: Recorrencia, transacaoId: string) {
+    try {
+      await enviar("/api/recorrencias", { id: recorrencia.id, desfazer: transacaoId, valorAnterior: recorrencia.valorCentavos }, "PUT")
+      showToast(`${recorrencia.descricao} saiu do extrato`)
+      await carregar()
+    } catch (erro) {
+      showToast("Não consegui desfazer", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
     }
   }
 
@@ -369,6 +394,24 @@ export default function Recorrencias() {
             {erroFormulario && <p role="alert" data-largo data-erro>{erroFormulario}</p>}
             <button className={estilos.salvar} disabled={ocupado || !form.contaId} data-largo>{ocupado ? "Salvando…" : form.id ? "Salvar" : "Adicionar"}</button>
             {recorrenciaEditada && <button type="button" className={estilos.remover} data-largo onClick={() => remover(recorrenciaEditada)}><Trash2 aria-hidden />Remover conta fixa</button>}
+          </form>}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={valorDoMes !== null} onOpenChange={(aberto) => { if (!ocupado && !aberto) setValorDoMes(null) }}>
+        <DialogContent className={estilos.dialogo} largura="curta">
+          <DialogHeader>
+            <DialogTitle>{valorDoMes?.recorrencia.descricao}: quanto veio este mês?</DialogTitle>
+            <DialogDescription>O valor muda todo mês. Já deixei o da última vez; troque pelo da conta nova.</DialogDescription>
+          </DialogHeader>
+          {valorDoMes && <form className={estilos.formulario} onSubmit={(evento) => {
+            evento.preventDefault()
+            const centavos = paraCentavos(valorDoMes.valor)
+            if (!(centavos > 0)) return setValorDoMes({ ...valorDoMes, erro: "Escreva o valor da conta, maior que zero." })
+            void lancar(valorDoMes.recorrencia, centavos)
+          }}>
+            <label data-largo>Valor (R$)<Input autoFocus inputMode="decimal" value={valorDoMes.valor} onChange={(e) => setValorDoMes({ ...valorDoMes, valor: e.target.value, erro: "" })} /></label>
+            {valorDoMes.erro && <p role="alert" data-largo data-erro>{valorDoMes.erro}</p>}
+            <button className={estilos.salvar} disabled={ocupado} data-largo>{ocupado ? "Lançando…" : "Lançar no extrato"}</button>
           </form>}
         </DialogContent>
       </Dialog>
