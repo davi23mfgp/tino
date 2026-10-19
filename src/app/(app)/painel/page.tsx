@@ -81,6 +81,11 @@ export default async function Painel() {
     where: { id: { in: pendentes.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)) } },
     select: { id: true, nome: true },
   })).map((linha) => [linha.id, linha.nome]))
+  // Todas as categorias de gasto vão junto para o Conferir escolher ali mesmo:
+  // "escolha em Anotar" obrigava a sair do Início por uma compra só.
+  const categoriasDeGasto = pendentes.length === 0 ? [] : await prisma.categoria.findMany({
+    where: { larId: sessao.larId, tipo: "DESPESA" }, select: { id: true, nome: true, grupo: true, icone: true }, orderBy: { nome: "asc" },
+  })
   const capturasNoInicio: CapturaNoInicio[] = pendentes.map((linha) => ({
     id: linha.id,
     estabelecimento: linha.estabelecimento,
@@ -206,7 +211,7 @@ export default async function Painel() {
     </section>
     }>
       <div className={e.grupo} data-grupo="hoje">
-        {capturasNoInicio.length > 0 && <ConferirNoInicio capturas={capturasNoInicio} total={quantidadePendente} contaPadraoId={contaPadrao?.id ?? null} />}
+        {capturasNoInicio.length > 0 && <ConferirNoInicio capturas={capturasNoInicio} total={quantidadePendente} contaPadraoId={contaPadrao?.id ?? null} categorias={categoriasDeGasto} />}
 
 
         <section className={e.bloco} data-area="recentes" aria-labelledby="recentes-titulo">

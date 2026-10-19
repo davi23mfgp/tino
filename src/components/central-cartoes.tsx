@@ -84,7 +84,6 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje, cartaoInic
   }
 
   return <div className={estilos.pagina}>
-    <Link href="/milhas" className="inline-flex min-h-11 items-center gap-2 text-sm text-positivo">Pontos e milhas →</Link>
     {/* Cartões (Davi, 25/09: opção B do canvas com a fatura da B3 e o limite
         dentro do cartão). A pilha de carteira escondia metade de cada cartão
         atrás do seguinte, e o nome do cartão aparecia três vezes na tela: no

@@ -1,4 +1,6 @@
 "use client"
+
+import Link from "next/link"
 import { MarcaPersonalizada } from "@/components/identidades-visuais"
 import { CLASSE_DIALOGO_LOJA, EscolherLoja } from "@/components/escolher-loja"
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -409,7 +411,11 @@ export default function Transacoes() {
               <button type="button" className={CLASSE_BOTAO} onClick={limparFiltros}>
                 Limpar filtros
               </button>
-            ) : undefined}
+            ) : (
+              // Extrato vazio sem filtro era beco sem saída: dizia "adicione"
+              // sem dizer onde. O botão leva direto para Anotar.
+              <Link href="/lancar" className={CLASSE_BOTAO}>Anotar um gasto ou entrada</Link>
+            )}
           />
         )}
 
