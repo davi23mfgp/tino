@@ -2,7 +2,8 @@
 
 import { CompromissosMetas } from "@/components/compromissos-metas"
 import { useCallback, useEffect, useState } from "react"
-import { Check, Plus, Trash2 } from "lucide-react"
+import { Building2, Check, Droplet, Dumbbell, Flame, GraduationCap, HeartPulse, Home, MonitorPlay, Plus, ShieldCheck, Smartphone, Trash2, Wifi, Zap } from "lucide-react"
+import type { ReactNode } from "react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarDecimal, formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
@@ -13,7 +14,14 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { SelectNative } from "@/components/ui/select-native"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { MontarBase, type RespostaDaBase } from "@/components/montar-base"
+import { BASE_CONTAS_FIXAS } from "@/lib/base-contas-fixas"
 import estilos from "./recorrencias.module.css"
+
+const ICONE_DA_BASE: Record<string, ReactNode> = {
+  aluguel: <Home />, condominio: <Building2 />, luz: <Zap />, agua: <Droplet />, internet: <Wifi />, celular: <Smartphone />,
+  gas: <Flame />, saude: <HeartPulse />, escola: <GraduationCap />, assinaturas: <MonitorPlay />, academia: <Dumbbell />, seguro: <ShieldCheck />,
+}
 
 /**
  * Contas fixas (Davi, 27/09: opção A do canvas com o texto da B nas linhas —
@@ -157,6 +165,39 @@ export default function Recorrencias() {
     }
   }
 
+  /**
+   * Salva o que a pessoa respondeu na lista pronta (passo 55). Uma por vez, e
+   * não em paralelo: se a terceira falhar, as duas primeiras já ficaram e a
+   * mensagem diz qual parou, em vez de um erro sem saber o que entrou.
+   */
+  async function salvarBase(respostas: RespostaDaBase[]) {
+    const contaId = contas[0]?.id
+    if (!contaId) throw new Error("Cadastre uma conta em Configurações antes de adicionar contas fixas.")
+    let feitas = 0
+    for (const resposta of respostas) {
+      const item = BASE_CONTAS_FIXAS.find((base) => base.id === resposta.id)
+      if (!item) continue
+      try {
+        await enviar("/api/recorrencias", {
+          descricao: item.nome,
+          valorCentavos: resposta.valorCentavos,
+          tipo: "DESPESA",
+          periodicidade: "MENSAL",
+          diaVencimento: resposta.dia ?? 10,
+          contaId,
+          categoriaId: categorias.find((categoria) => categoria.nome === item.categoria)?.id,
+          valorVariavel: item.variavel,
+        })
+        feitas += 1
+      } catch (erro) {
+        await carregar()
+        throw new Error(`${feitas} salva${feitas === 1 ? "" : "s"}; parou em ${item.nome}: ${erro instanceof Error ? erro.message : "tente de novo"}.`)
+      }
+    }
+    showToast(`${feitas} conta${feitas === 1 ? "" : "s"} fixa${feitas === 1 ? "" : "s"} adicionada${feitas === 1 ? "" : "s"}`)
+    await carregar()
+  }
+
   /** Lança a ocorrência do período. Idempotente: dois cliques não geram duas contas. */
   async function lancar(recorrencia: Recorrencia) {
     if (ocupado) return
@@ -258,7 +299,19 @@ export default function Recorrencias() {
             <button type="button" role="radio" aria-checked={lado === "DESPESA"} onClick={() => setLado("DESPESA")}>Saídas · {despesas.length}</button>
             <button type="button" role="radio" aria-checked={lado === "RECEITA"} onClick={() => setLado("RECEITA")}>Entradas · {receitas.length}</button>
           </div>
-          {lista.length === 0 ? (
+          {lista.length === 0 && lado === "DESPESA" && contas.length > 0 ? (
+            <MontarBase
+              itens={BASE_CONTAS_FIXAS.map((item) => ({ id: item.id, nome: item.nome, icone: ICONE_DA_BASE[item.id], dica: item.dica }))}
+              pergunta="Quais destas você paga todo mês?"
+              perguntaDoItem={(nome) => `Você paga ${nome}?`}
+              rotuloValor="Valor da última conta"
+              comDia
+              rotuloPular="Não pago, pular"
+              rotuloConcluir={(quantidade) => `Adicionar ${quantidade} conta${quantidade === 1 ? "" : "s"}`}
+              rodapeGrade={<p className={estilos.apoio}>Não achou a sua? <button type="button" className={estilos.ligacao} onClick={abrirNova}>Escrever outra conta</button></p>}
+              aoConcluir={salvarBase}
+            />
+          ) : lista.length === 0 ? (
             <div className={estilos.vazio}>
               <p>{lado === "DESPESA" ? "Nenhuma conta que sai todo mês." : "Nenhuma entrada fixa. Salário e pró-labore entram aqui."}</p>
               <button type="button" onClick={abrirNova}><Plus aria-hidden />{lado === "DESPESA" ? "Nova conta" : "Nova entrada"}</button>
