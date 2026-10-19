@@ -28,3 +28,28 @@
 .tipos button { min-height:38px !important; padding:0 14px !important; border-radius:999px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%) !important; font-size:calc(13px * var(--escala-letra)); color:var(--texto-2); }
 .tipos button[aria-pressed="true"] { border-color:transparent !important; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-weight:650; }
 .rotulo { font-size:calc(13px * var(--escala-letra)); font-weight:600; }
+
+/* Passo 56, opção B. */
+.escolhido[data-colorido] { padding:14px; border-radius:20px; background:linear-gradient(135deg, color-mix(in oklab, var(--cor-banco), transparent 45%), color-mix(in oklab, var(--cor-banco), transparent 82%)); border:1px solid color-mix(in oklab, var(--cor-banco), transparent 55%); }
+.escolhido[data-colorido] .logo { width:52px; height:52px; border-radius:15px; }
+.tipos { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+.tipos button { display:grid !important; justify-items:center; align-content:center; gap:6px; min-height:84px !important; padding:10px 4px !important; border-radius:18px !important; text-align:center; font-size:max(11px, calc(11.5px * var(--escala-letra))) !important; font-weight:600; line-height:1.2; }
+.tipos button svg { width:22px; height:22px; }
+.tipos button[aria-pressed="true"] { background:color-mix(in oklab, var(--acao), transparent 86%) !important; border:1.5px solid var(--acao) !important; color:var(--foreground) !important; }
+.tipos button[aria-pressed="true"] svg { color:var(--acao); }
+.saldoGrande { display:flex; align-items:baseline; gap:8px; padding:12px 18px; border-radius:20px; border:1.5px solid color-mix(in oklab, var(--foreground), transparent 80%); background:color-mix(in oklab, var(--foreground), transparent 96%); cursor:text; }
+.saldoGrande:focus-within { border-color:var(--acao); }
+.saldoGrande span { font-size:18px; color:var(--texto-3); }
+.saldoGrande input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--foreground); font-size:calc(32px * var(--escala-letra)); font-weight:300; font-variant-numeric:tabular-nums; }
+.dica { font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }
+.adicionar { min-height:54px; border-radius:999px; background:oklch(var(--primary)); color:oklch(var(--primary-foreground)); font-size:calc(16px * var(--escala-letra)); font-weight:700; }
+.adicionar:disabled { opacity:.5; }
+/* O campo grande puxava a janela para fora da tela no celular (achado no teste
+   de 19/10): largura presa à coluna, e os tipos em duas colunas no estreito. */
+.saldoGrande { width:100%; box-sizing:border-box; min-width:0; }
+.saldoGrande input { width:100%; }
+.tipos button { min-width:0; }
+@media (max-width:480px) {
+  .tipos { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .tipos button { display:flex !important; align-items:center !important; align-content:center; justify-content:flex-start; gap:10px; height:auto !important; min-height:56px !important; max-height:64px; padding:0 12px !important; text-align:left; font-size:calc(13px * var(--escala-letra)) !important; }
+}
