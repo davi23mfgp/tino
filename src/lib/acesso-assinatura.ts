@@ -25,11 +25,11 @@ import { liberarSeNaoHaCobranca } from "@/lib/acesso-sem-cobranca"
  *   cliente que ia pagar. O provedor ainda está tentando nesse período.
  * - **Teste vencido ou cancelada:** bloqueado.
  *
- * - **Sem gateway configurado:** tudo liberado (Davi, 18/10/2026: "libere as
+ * - **Cobrança desligada:** tudo liberado (Davi, 18/10/2026: "libere as
  *   contas após os 14 dias, só deixe válido quando estiver ativo os
  *   pagamentos"). Barrar quem não tem como pagar não cobra ninguém, só
- *   afasta cliente; o corte começa sozinho quando a chave do Mercado Pago ou
- *   da Stripe entrar no ambiente.
+ *   afasta cliente; o corte só começa quando `COBRANCA_ATIVA=sim` estiver no
+ *   ambiente, com a chave do Mercado Pago ou da Stripe.
  *
  * O bloqueio **nunca** fecha o caminho de ver o que o Tino guarda, exportar e
  * apagar a conta. Isso é direito do titular (LGPD, art. 18) e não pode
@@ -48,9 +48,17 @@ export interface EstadoDoAcesso {
   testeAteEm?: Date | null
 }
 
-/** Se existe algum jeito de a pessoa pagar hoje. */
+/**
+ * Se o Davi ligou a cobrança.
+ *
+ * Chave de gateway sozinha não basta: a Vercel já pode ter a chave (de teste,
+ * ou colada para a tela de planos funcionar) sem ele querer barrar ninguém.
+ * Foi o que aconteceu em 19/10/2026: com a chave no ambiente, o teste vencido
+ * bloqueava mesmo ele tendo pedido o contrário. Ligar a cobrança é um ato
+ * dele, `COBRANCA_ATIVA=sim`, e ainda exige um gateway configurado.
+ */
 export function pagamentoAtivo(): boolean {
-  return opcoesDeGateway().some((opcao) => opcao.configurado)
+  return process.env.COBRANCA_ATIVA === "sim" && opcoesDeGateway().some((opcao) => opcao.configurado)
 }
 
 export async function estadoDoAcesso(
