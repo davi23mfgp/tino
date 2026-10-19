@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { saldosDasContas } from "@/lib/saldos-das-contas"
 import { CLASSES } from "@/lib/tino/investir"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
 
@@ -9,35 +10,12 @@ export const GET = comSessao(async (sessao) => {
     include: { membro: true, conexao: { select: { instituicao: true, status: true, ultimaSync: true } } },
   })
 
-  // O saldo é sempre derivado dos lançamentos, nunca um campo gravado: campo de
-  // saldo desatualiza no primeiro lançamento editado ou apagado.
-  const movimentos = await prisma.transacao.groupBy({
-    by: ["contaId", "tipo"],
-    where: { larId: sessao.larId, pago: true, tipo: { in: ["RECEITA", "DESPESA"] } },
-    _sum: { valorCentavos: true },
-  })
-
-  // Transferência move saldo entre contas sem ser receita nem despesa. A ponta
-  // de destino é a que aponta para a de origem — mesma regra usada no panorama,
-  // para as duas telas nunca mostrarem saldos diferentes.
-  const transferencias = await prisma.transacao.findMany({
-    where: { larId: sessao.larId, pago: true, tipo: "TRANSFERENCIA" },
-    select: { contaId: true, valorCentavos: true, transferenciaParId: true },
-  })
-
-  const somar = (contaId: string, tipo: string) =>
-    movimentos.find((m) => m.contaId === contaId && m.tipo === tipo)?._sum.valorCentavos ?? 0
+  const saldos = await saldosDasContas(sessao.larId, contas)
 
   return ok(
     contas.map((conta) => ({
       ...conta,
-      saldoCentavos:
-        conta.saldoInicialCentavos +
-        somar(conta.id, "RECEITA") -
-        somar(conta.id, "DESPESA") +
-        transferencias
-          .filter((linha) => linha.contaId === conta.id)
-          .reduce((soma, linha) => soma + (linha.transferenciaParId ? linha.valorCentavos : -linha.valorCentavos), 0),
+      saldoCentavos: saldos.get(conta.id) ?? conta.saldoInicialCentavos,
     })),
   )
 })

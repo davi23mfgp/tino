@@ -63,3 +63,16 @@ function somaUmMes(competencia: string): string {
   const { ano, mes } = partesCompetencia(competencia)
   return mes === 12 ? `${ano + 1}-01` : `${ano}-${String(mes + 1).padStart(2, "0")}`
 }
+
+/**
+ * Em que fatura cai a primeira parcela de uma compra parcelada.
+ *
+ * Até 19/10/2026 a parcelada usava o mês da compra (e a tela mandava sempre o
+ * mês atual), enquanto a compra à vista seguia o fechamento do cartão: a
+ * parcelada feita depois do fechamento caía numa fatura já fechada. Agora as
+ * duas seguem a mesma regra; o mês informado à mão só vale quando a pessoa
+ * diz que a compra caiu em outra fatura.
+ */
+export function primeiraFaturaDaCompra(dataCompra: Date, cartao: CartaoParaFatura, informada?: string | null): string {
+  return informada || competenciaDoCartao(dataCompra, cartao) || competenciaDe(dataCompra)
+}

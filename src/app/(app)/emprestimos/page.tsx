@@ -10,6 +10,8 @@ import { Cartao } from "@/components/ui/painel"
 import { ReguaDoIndicador } from "@/components/regua-do-indicador"
 import { REFERENCIA_COMPROMETIMENTO } from "@/lib/tino/leitura-dividas"
 import { cn } from "@/lib/utils"
+import { showToast } from "@/components/ui/toast"
+import { Trash2 } from "lucide-react"
 
 /**
  * Decisão de empréstimo — desenho escolhido pelo Davi em 23/09 no canvas: o
@@ -170,6 +172,19 @@ export default function Emprestimos() {
     setValorDigitado((centavos / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
   }
 
+  /** Excluir com Desfazer (passo 57): some na hora, o DELETE sai em 5 s. */
+  function excluirProposta(id: string, nome: string) {
+    const antes = salvas
+    setSalvas((atual) => atual.filter((simulacao) => simulacao.id !== id))
+    let desfeito = false
+    showToast(`${nome} excluída`, { action: { label: "Desfazer", onClick: () => { desfeito = true; setSalvas(antes) } } })
+    setTimeout(async () => {
+      if (desfeito) return
+      try { await buscar(`/api/emprestimos?id=${encodeURIComponent(id)}`, { method: "DELETE" }) }
+      catch (falha) { setSalvas(antes); showToast("Não consegui excluir a proposta", { description: falha instanceof Error ? falha.message : "Tente novamente.", variant: "error" }) }
+    }, 5000)
+  }
+
   const parecer = analise ? VEREDITO[analise.veredito] : null
   const tetoRegua = Math.max(10_000_000, Math.ceil(valorCentavos / 1_000_000) * 1_000_000)
 
@@ -313,6 +328,11 @@ export default function Emprestimos() {
                   <p className={local.linhaProposta}><span>CET</span><b>{formatarPercentual(proposta.cetMensalBps)} a.m.</b></p>
                   <p className={local.linhaProposta}><span>Devolve no total</span><b>{formatarMoeda(proposta.totalPagoCentavos)}</b></p>
                   {cor && <p className={local.seloProposta} data-cor={cor.cor}><i aria-hidden />{cor.texto}</p>}
+                  {proposta.id !== "atual" && (
+                    <button type="button" className={local.apagarProposta} onClick={() => excluirProposta(proposta.id, proposta.titulo)}>
+                      <Trash2 aria-hidden size={14} />Excluir proposta
+                    </button>
+                  )}
                 </article>
               )
             })}

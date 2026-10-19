@@ -90,7 +90,7 @@ export const NUCLEO: GrupoNav[] = [
     titulo: "Extrato",
     pergunta: "Extrato, anotar e importar",
     itens: [
-      { rota: "/transacoes", rotulo: "Transações", Icone: Receipt },
+      { rota: "/transacoes", rotulo: "Extrato", Icone: Receipt },
       // "Entrada automática" saiu em 28/09/2026: sem Open Finance (decisão do
       // Davi), a tela só repetia os caminhos que já moram em Anotar e Importar.
       { rota: "/capturas", rotulo: "Anotar", Icone: Zap },
@@ -99,9 +99,9 @@ export const NUCLEO: GrupoNav[] = [
   },
   {
     chave: "cartoes",
-    titulo: "Cartões",
+    titulo: "Bancos",
     pergunta: "Faturas, limites e parcelas",
-    itens: [{ rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard }, { rota: "/milhas", rotulo: "Pontos e milhas", Icone: Flag }],
+    itens: [{ rota: "/cartoes", rotulo: "Bancos", Icone: CreditCard }, { rota: "/milhas", rotulo: "Pontos e milhas", Icone: Flag }],
   },
   {
     chave: "perfil",

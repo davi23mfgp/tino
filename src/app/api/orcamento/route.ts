@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { ErroDeUso, comSessao, corpo, lerCompetencia, ok } from "@/lib/api"
 import { campo, validar, z } from "@/lib/validar"
 import { competenciaAtual, competenciaMaisMeses, janelaDoMes, ultimasCompetencias } from "@/lib/datas"
+import { competenciaDosLimites } from "@/lib/orcamento-herdado"
 
 export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
@@ -10,8 +11,14 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const lar = await prisma.lar.findUniqueOrThrow({ where: { id: sessao.larId }, select: { diaInicioMes: true } })
   const janela = janelaDoMes(competencia, lar.diaInicioMes)
 
+  // O mês sem limite próprio mostra os do último mês que tinha (ver
+  // `competenciaDosLimites`). `herdadoDe` diz de onde vieram, para a tela avisar.
+  const meses = await prisma.orcamento.findMany({ where: { larId: sessao.larId, competencia: { lte: competencia } }, distinct: ["competencia"], select: { competencia: true } })
+  const base = competenciaDosLimites(meses.map((linha) => linha.competencia), competencia)
+  const herdadoDe = base && base !== competencia ? base : null
+
   const [orcamentos, gastos, categorias] = await Promise.all([
-    prisma.orcamento.findMany({ where: { larId: sessao.larId, competencia }, include: { categoria: true } }),
+    base ? prisma.orcamento.findMany({ where: { larId: sessao.larId, competencia: base }, include: { categoria: true } }) : Promise.resolve([]),
     prisma.transacao.groupBy({
       by: ["categoriaId"],
       where: { larId: sessao.larId, tipo: "DESPESA", data: { gte: janela.de, lte: janela.ate } },
@@ -47,6 +54,7 @@ export const GET = comSessao(async (sessao, requisicao) => {
 
   return ok({
     competencia,
+    herdadoDe,
     linhas,
     semOrcamento,
     limiteTotalCentavos: linhas.reduce((soma, linha) => soma + linha.limiteCentavos, 0),
@@ -100,6 +108,14 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     }),
   )
 
+  // Mudar um limite vale daqui em diante: os meses seguintes que já tinham
+  // limite próprio (de um "Repetir" antigo) mudam junto, senão a pessoa mudaria
+  // o mercado em outubro e em novembro voltaria o valor velho.
+  const depois = competenciaMaisMeses(competencia, meses)
+  await prisma.$transaction(dados.linhas.map((linha) =>
+    prisma.orcamento.updateMany({ where: { larId: sessao.larId, categoriaId: linha.categoriaId, competencia: { gt: depois } }, data: { limiteCentavos: linha.limiteCentavos } }),
+  ))
+
   return ok({ salvo: true, mesesAfetados: meses + 1 })
 })
 
@@ -136,4 +152,17 @@ export const POST = comSessao(async (sessao, requisicao) => {
   })
 
   return ok({ competencia, sugestoes: sugestoes.sort((a, b) => b.sugestaoCentavos - a.sugestaoCentavos) })
+})
+
+/**
+ * Tirar o limite de uma categoria, deste mês em diante. Antes não existia:
+ * apagar o valor no campo não mudava nada, porque o salvamento ignora vazio.
+ */
+export const DELETE = comSessao(async (sessao, requisicao) => {
+  const url = new URL(requisicao.url)
+  const competencia = lerCompetencia(url.searchParams.get("competencia"), competenciaAtual())
+  const categoriaId = url.searchParams.get("categoriaId")
+  if (!categoriaId) throw new ErroDeUso("Informe a categoria.")
+  const { count } = await prisma.orcamento.deleteMany({ where: { larId: sessao.larId, categoriaId, competencia: { gte: competencia } } })
+  return ok({ removidos: count })
 })

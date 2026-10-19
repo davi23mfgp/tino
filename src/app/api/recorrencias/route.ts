@@ -85,10 +85,38 @@ export const POST = comSessao(async (sessao, requisicao) => {
  * clicar duas vezes em "paguei" não gera duas contas de luz.
  */
 export const PUT = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ id: string; valorCentavos?: number; data?: string }>(requisicao)
+  const dados = await corpo<{ id: string; valorCentavos?: number; data?: string; desfazer?: string; valorAnterior?: number }>(requisicao)
 
   const recorrencia = await prisma.recorrencia.findFirst({ where: { id: dados.id, larId: sessao.larId } })
   if (!recorrencia) return ok({ erro: "Recorrência não encontrada." }, 404)
+
+  // "Desfazer" do lançamento (revisão de 19/10): apaga o que entrou no extrato
+  // e volta a conta para o vencimento e o valor de antes. Sem isso, quem
+  // tocava no ✓ sem querer ficava com a conta pulada para o mês seguinte.
+  if (dados.desfazer) {
+    const lancada = await prisma.transacao.findFirst({ where: { id: dados.desfazer, larId: sessao.larId, recorrenciaId: recorrencia.id } })
+    if (!lancada) return ok({ erro: "Lançamento não encontrado." }, 404)
+    const anterior = await prisma.transacao.findFirst({
+      where: { larId: sessao.larId, recorrenciaId: recorrencia.id, id: { not: lancada.id } },
+      orderBy: { data: "desc" }, select: { valorCentavos: true },
+    })
+    await prisma.$transaction([
+      prisma.transacao.delete({ where: { id: lancada.id } }),
+      prisma.recorrencia.update({
+        where: { id: recorrencia.id },
+        data: {
+          proximaData: lancada.data,
+          ativa: true,
+          // O valor de antes vem da tela, que o tinha na mão; sem ele, o do
+          // lançamento anterior. Sem nenhum dos dois, fica como está.
+          ...(recorrencia.valorVariavel && (Number.isSafeInteger(dados.valorAnterior) && (dados.valorAnterior as number) > 0 || anterior)
+            ? { valorCentavos: Number.isSafeInteger(dados.valorAnterior) && (dados.valorAnterior as number) > 0 ? dados.valorAnterior as number : (anterior as { valorCentavos: number }).valorCentavos }
+            : {}),
+        },
+      }),
+    ])
+    return ok({ desfeito: true })
+  }
 
   const data = dados.data ? new Date(dados.data) : recorrencia.proximaData
   const competencia = competenciaDe(data)

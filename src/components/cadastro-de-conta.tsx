@@ -1,11 +1,11 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Landmark, Plus, Search, Wallet } from "lucide-react"
+import { CreditCard, Landmark, PiggyBank, Plus, Search, TrendingUp, Wallet } from "lucide-react"
 
 import { enviar } from "@/lib/cliente"
 import { paraCentavos } from "@/lib/dinheiro"
-import { BANCOS_PERFIL, encontrarBanco, normalizarBanco } from "@/lib/bancos-perfil"
+import { BANCOS_PERFIL, corDoBanco, encontrarBanco, normalizarBanco } from "@/lib/bancos-perfil"
 import { useIdentidadeVisual } from "@/components/identidades-visuais"
 import { showToast } from "@/components/ui/toast"
 import { Input } from "@/components/ui/input"
@@ -29,12 +29,13 @@ const BANDEIRAS = [
 
 /// Dinheiro não aparece aqui: tem o próprio quadrado na grade, porque não
 /// tem banco para escolher antes.
+/* O tipo em cartões com ícone (passo 56, opção B): pílulas só de texto
+   pediam leitura; o ícone diz o tipo de relance. */
 const TIPOS = [
-  { valor: "CORRENTE", rotulo: "Conta corrente" },
-  { valor: "CARTAO_CREDITO", rotulo: "Cartão de crédito" },
-  { valor: "POUPANCA", rotulo: "Poupança" },
-  { valor: "INVESTIMENTO", rotulo: "Investimento" },
-  
+  { valor: "CORRENTE", rotulo: "Conta corrente", Icone: Landmark },
+  { valor: "CARTAO_CREDITO", rotulo: "Cartão de crédito", Icone: CreditCard },
+  { valor: "POUPANCA", rotulo: "Poupança", Icone: PiggyBank },
+  { valor: "INVESTIMENTO", rotulo: "Investimento", Icone: TrendingUp },
 ]
 
 /**
@@ -242,7 +243,9 @@ export function CadastroDeConta({
 
   return (
     <form onSubmit={salvar} className="grid gap-4">
-      <div className={estilos.escolhido}>
+      {/* O topo leva a cor do banco (passo 56, opção B): a conta se acha de
+          longe, como nas carteiras de cartão. */}
+      <div className={estilos.escolhido} data-colorido={!dinheiro || undefined} style={!dinheiro ? ({ "--cor-banco": corDoBanco(nova.instituicao) } as React.CSSProperties) : undefined}>
         {dinheiro ? (
           <span className={estilos.logo} data-neutro>
             <Wallet aria-hidden />
@@ -259,10 +262,11 @@ export function CadastroDeConta({
       <fieldset disabled={salvando} className="grid min-w-0 gap-4">
         {!dinheiro && (
           <div className="grid gap-2">
-            <span className={estilos.rotulo}>Tipo</span>
+            <span className={estilos.rotulo}>Que tipo?</span>
             <div className={estilos.tipos} role="group" aria-label="Tipo">
               {TIPOS.map((tipo) => (
                 <button key={tipo.valor} type="button" aria-pressed={nova.tipo === tipo.valor} onClick={() => mudarTipo(tipo.valor)}>
+                  <tipo.Icone aria-hidden />
                   {tipo.rotulo}
                 </button>
               ))}
@@ -283,8 +287,24 @@ export function CadastroDeConta({
               />
             </Field>
           )}
-          <Field>
-            <FieldLabel htmlFor="conta-nome">Nome da conta</FieldLabel>
+          {nova.tipo !== "CARTAO_CREDITO" && <Field className="sm:col-span-2">
+            <FieldLabel htmlFor="conta-saldo">Quanto tem nela hoje</FieldLabel>
+            {/* Saldo em número grande, como o valor do Pix: é o dado que mais
+                importa aqui, e o campo pequeno parecia opcional. */}
+            <label className={estilos.saldoGrande} htmlFor="conta-saldo">
+              <span aria-hidden>R$</span>
+              <input
+                inputMode="decimal"
+                id="conta-saldo"
+                value={nova.saldo}
+                onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
+                placeholder="0,00"
+              />
+            </label>
+            <small className={estilos.dica}>Olhe no app do banco. Pode deixar em branco e pôr depois.</small>
+          </Field>}
+          <Field className="sm:col-span-2">
+            <FieldLabel htmlFor="conta-nome">Nome (aparece no extrato)</FieldLabel>
             <Input
               id="conta-nome"
               value={nova.nome}
@@ -296,16 +316,7 @@ export function CadastroDeConta({
               required
             />
           </Field>
-          {nova.tipo !== "CARTAO_CREDITO" && <Field>
-            <FieldLabel htmlFor="conta-saldo">Saldo atual (R$)</FieldLabel>
-            <Input
-              inputMode="decimal"
-              id="conta-saldo"
-              value={nova.saldo}
-              onChange={(evento) => setNova({ ...nova, saldo: evento.target.value })}
-              placeholder="0,00"
-            />
-          </Field>}
+
           {nova.tipo === "CARTAO_CREDITO" && (
             <>
               <Field>
@@ -346,11 +357,11 @@ export function CadastroDeConta({
           {erro}
         </p>
       )}
-      <div className="flex justify-end gap-2">
+      <div className="grid gap-2">
+        <button disabled={salvando} className={estilos.adicionar}>{salvando ? "Salvando…" : nova.tipo === "CARTAO_CREDITO" ? "Adicionar cartão" : "Adicionar conta"}</button>
         <Button type="button" variant="ghost" disabled={salvando} onClick={aoCancelar}>
           Cancelar
         </Button>
-        <Button disabled={salvando}>{salvando ? "Salvando…" : "Adicionar"}</Button>
       </div>
     </form>
   )

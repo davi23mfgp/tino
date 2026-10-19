@@ -103,6 +103,7 @@ export default function Recorrencias() {
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState("")
   const [erroFormulario, setErroFormulario] = useState("")
+  const [valorDoMes, setValorDoMes] = useState<{ recorrencia: Recorrencia; valor: string; erro: string } | null>(null)
 
   const carregar = useCallback(async () => {
     const [resposta, listaContas, listaCategorias] = await Promise.all([
@@ -198,18 +199,42 @@ export default function Recorrencias() {
     await carregar()
   }
 
-  /** Lança a ocorrência do período. Idempotente: dois cliques não geram duas contas. */
-  async function lancar(recorrencia: Recorrencia) {
+  /**
+   * Lança a ocorrência do período. Idempotente: dois cliques não geram duas
+   * contas. Conta de valor variável (luz, água) pergunta antes quanto veio:
+   * lançar o valor do mês passado punha no extrato um número que ninguém pagou
+   * (revisão de 19/10).
+   */
+  async function lancar(recorrencia: Recorrencia, valorCentavos?: number) {
     if (ocupado) return
+    if (recorrencia.valorVariavel && valorCentavos === undefined) {
+      setValorDoMes({ recorrencia, valor: formatarDecimal(recorrencia.valorCentavos / 100, 2), erro: "" })
+      return
+    }
     setOcupado(true)
     try {
-      await enviar("/api/recorrencias", { id: recorrencia.id }, "PUT")
-      showToast(`${recorrencia.descricao} lançada no extrato`, { description: `${formatarMoeda(recorrencia.valorCentavos)} · ${dataCurta(recorrencia.proximaData)}` })
+      const lancada = await enviar<{ id?: string; jaLancado?: boolean }>("/api/recorrencias", { id: recorrencia.id, ...(valorCentavos !== undefined ? { valorCentavos } : {}) }, "PUT")
+      setValorDoMes(null)
+      if (lancada?.jaLancado) showToast(`${recorrencia.descricao} já estava lançada neste mês`)
+      else showToast(`${recorrencia.descricao} lançada no extrato`, {
+        description: `${formatarMoeda(valorCentavos ?? recorrencia.valorCentavos)} · ${dataCurta(recorrencia.proximaData)}`,
+        action: lancada?.id ? { label: "Desfazer", onClick: () => void desfazerLancamento(recorrencia, lancada.id as string) } : undefined,
+      })
       await carregar()
     } catch (erro) {
       showToast("Não foi possível concluir", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
     } finally {
       setOcupado(false)
+    }
+  }
+
+  async function desfazerLancamento(recorrencia: Recorrencia, transacaoId: string) {
+    try {
+      await enviar("/api/recorrencias", { id: recorrencia.id, desfazer: transacaoId, valorAnterior: recorrencia.valorCentavos }, "PUT")
+      showToast(`${recorrencia.descricao} saiu do extrato`)
+      await carregar()
+    } catch (erro) {
+      showToast("Não consegui desfazer", { description: erro instanceof Error ? erro.message : "Tente novamente.", variant: "error" })
     }
   }
 
@@ -354,12 +379,13 @@ export default function Recorrencias() {
             <DialogDescription>{form?.id ? "Muda as próximas; o que já foi lançado no extrato fica como está." : "Entra uma vez e alimenta projeção, reserva e plano."}</DialogDescription>
           </DialogHeader>
           {form && <form onSubmit={salvar} className={estilos.formulario}>
-            <label>Descrição<Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder="aluguel, luz, salário" required /></label>
-            <label>Valor (R$)<Input value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required inputMode="decimal" /></label>
-            <label>Entrada ou saída<SelectNative value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as "RECEITA" | "DESPESA" })}><option value="DESPESA">sai da conta</option><option value="RECEITA">entra na conta</option></SelectNative></label>
+            {/* Valor primeiro e grande; "entrada ou saída" saiu do formulário,
+                porque a aba (Saídas ou Entradas) já diz (revisão de 19/10). */}
+            <label data-largo>Valor (R$)<Input value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" required inputMode="decimal" autoFocus={!form.id} className={estilos.valorGrande} /></label>
+            <label data-largo>{form.tipo === "RECEITA" ? "De onde vem" : "O que é"}<Input value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} placeholder={form.tipo === "RECEITA" ? "salário, pró-labore" : "aluguel, luz, internet"} required /></label>
             <label>Dia do vencimento<Input value={form.dia} onChange={(e) => setForm({ ...form, dia: e.target.value })} inputMode="numeric" /></label>
             <label>Repete<SelectNative value={form.periodicidade} onChange={(e) => setForm({ ...form, periodicidade: e.target.value })}>{PERIODOS.map((periodo) => <option key={periodo.valor} value={periodo.valor}>{periodo.rotulo}</option>)}</SelectNative></label>
-            <label>Conta<SelectNative value={form.contaId} onChange={(e) => setForm({ ...form, contaId: e.target.value })}>{contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}</SelectNative></label>
+            {contas.length > 1 && <label>{form.tipo === "RECEITA" ? "Cai na conta" : "Sai da conta"}<SelectNative value={form.contaId} onChange={(e) => setForm({ ...form, contaId: e.target.value })}>{contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}</SelectNative></label>}
             <label data-largo>Categoria<SelectNative value={form.categoriaId} onChange={(e) => setForm({ ...form, categoriaId: e.target.value })}><option value="">sem categoria</option>{categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}</SelectNative></label>
             {contas.length === 0 && <p role="status" data-largo>Cadastre uma conta em <a href="/configuracoes">Configurações</a> antes de adicionar uma conta fixa.</p>}
             <label data-largo className={estilos.interruptor}>
@@ -369,6 +395,24 @@ export default function Recorrencias() {
             {erroFormulario && <p role="alert" data-largo data-erro>{erroFormulario}</p>}
             <button className={estilos.salvar} disabled={ocupado || !form.contaId} data-largo>{ocupado ? "Salvando…" : form.id ? "Salvar" : "Adicionar"}</button>
             {recorrenciaEditada && <button type="button" className={estilos.remover} data-largo onClick={() => remover(recorrenciaEditada)}><Trash2 aria-hidden />Remover conta fixa</button>}
+          </form>}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={valorDoMes !== null} onOpenChange={(aberto) => { if (!ocupado && !aberto) setValorDoMes(null) }}>
+        <DialogContent className={estilos.dialogo} largura="curta">
+          <DialogHeader>
+            <DialogTitle>{valorDoMes?.recorrencia.descricao}: quanto veio este mês?</DialogTitle>
+            <DialogDescription>O valor muda todo mês. Já deixei o da última vez; troque pelo da conta nova.</DialogDescription>
+          </DialogHeader>
+          {valorDoMes && <form className={estilos.formulario} onSubmit={(evento) => {
+            evento.preventDefault()
+            const centavos = paraCentavos(valorDoMes.valor)
+            if (!(centavos > 0)) return setValorDoMes({ ...valorDoMes, erro: "Escreva o valor da conta, maior que zero." })
+            void lancar(valorDoMes.recorrencia, centavos)
+          }}>
+            <label data-largo>Valor (R$)<Input autoFocus inputMode="decimal" value={valorDoMes.valor} onChange={(e) => setValorDoMes({ ...valorDoMes, valor: e.target.value, erro: "" })} /></label>
+            {valorDoMes.erro && <p role="alert" data-largo data-erro>{valorDoMes.erro}</p>}
+            <button className={estilos.salvar} disabled={ocupado} data-largo>{ocupado ? "Lançando…" : "Lançar no extrato"}</button>
           </form>}
         </DialogContent>
       </Dialog>

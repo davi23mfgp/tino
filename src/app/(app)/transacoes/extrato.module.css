@@ -50,7 +50,14 @@
 /* Uma linha por lançamento, como na opção A: ícone, nome em cima, conta e
    categoria embaixo, valor à direita. A categoria era uma terceira coluna de
    botão e, no celular, uma terceira linha — cada lançamento ocupava 110px. */
-.linha { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; align-items: center; gap: 12px; min-height: 60px; padding: 6px 0; border-bottom: 1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+.linha { border-bottom: 1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
+/* A linha inteira é o botão que abre a ficha (passo 57); a seta no fim é a
+   pista de que dá para tocar, como em Categorias. */
+.abrir { display: grid; grid-template-columns: 40px minmax(0,1fr) auto 16px; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 6px 0; text-align: left; color: inherit; border-radius: 12px; }
+.abrir:hover .descricao { text-decoration: underline; text-underline-offset: 3px; }
+.abrir:focus-visible { outline: 2px solid var(--acao); outline-offset: 2px; }
+.seta { width: 16px; height: 16px; color: var(--texto-3); }
+.semCategoria { color: var(--acao); font-weight: 600; }
 .grupoDia li:last-child { border-bottom: 0; }
 .simbolo { display: grid; place-items: center; flex-shrink: 0; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border-radius: 999px; background: color-mix(in oklab, var(--foreground), transparent 92%); }
 .simbolo>:first-child:not(:last-child)+* { display: none; }
@@ -69,3 +76,7 @@
   .valor, .moeda { font-size: 13px !important; }
 }
 .simbolo:disabled { opacity: 1; cursor: default; }
+
+/* O nome da categoria corta com reticências em vez de passar por cima do valor. */
+.sub { overflow: hidden; }
+.sub > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

@@ -1,12 +1,14 @@
 "use client"
 
+import { FichaDivida, type DividaDaFicha, type EdicaoDeDivida } from "@/components/ficha-divida"
+import { showToast } from "@/components/ui/toast"
 import Link from "next/link"
 import estilos from "../analise/avancadas.module.css"
 import topo from "./dividas.module.css"
 import pesos from "@/components/peso-do-juro.module.css"
 import { Button } from "@/components/ui/button"
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react"
-import { Plus, Landmark, ArrowUpRight } from "lucide-react"
+import { Plus, Landmark, ArrowUpRight, Pencil } from "lucide-react"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
@@ -117,6 +119,8 @@ export default function Dividas() {
   const [simulando, setSimulando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [nova, setNova] = useState(VAZIO)
+  const [aberta, setAberta] = useState<Divida | null>(null)
+  const [ocultas, setOcultas] = useState<Set<string>>(new Set())
   const [abrirForm, setAbrirForm] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [frase, setFrase] = useState("")
@@ -239,6 +243,42 @@ export default function Dividas() {
   // quem paga R$ 5.000 por mês e demais para quem paga R$ 300.
   const tetoExtra = Math.max(100_000, Math.ceil(((base?.parcelaMensalCentavos ?? 0) || 1) / 50_000) * 50_000)
   const simulacaoEmDia = extraSimulado === extraCentavos
+
+  async function salvarDivida(id: string, parcial: EdicaoDeDivida) {
+    try {
+      await enviar(`/api/dividas/${id}`, parcial, "PATCH")
+      if (parcial.quitada) showToast("Dívida quitada", { description: "Saiu do plano de pagamento. Parabéns." })
+      await carregar()
+      setAberta((atual) => (atual && atual.id === id ? { ...atual, ...parcial } as Divida : atual))
+      return true
+    } catch (excecao) {
+      showToast("Não consegui salvar a dívida", { description: excecao instanceof Error ? excecao.message : "Tente novamente.", variant: "error" })
+      return false
+    }
+  }
+
+  /** Excluir com Desfazer, sem "tem certeza?" (passo 57). O DELETE sai depois de 5 s. */
+  function excluirDivida(divida: DividaDaFicha) {
+    const id = divida.id
+    setAberta(null)
+    setOcultas((atual) => new Set(atual).add(id))
+    let desfeito = false
+    const voltar = () => setOcultas((atual) => { const novo = new Set(atual); novo.delete(id); return novo })
+    showToast(`${divida.credor} excluída`, {
+      description: "Os pagamentos já lançados continuam no extrato.",
+      action: { label: "Desfazer", onClick: () => { desfeito = true; voltar() } },
+    })
+    setTimeout(async () => {
+      if (desfeito) return
+      try {
+        await enviar(`/api/dividas/${id}`, {}, "DELETE")
+        await carregar()
+      } catch (excecao) {
+        voltar()
+        showToast("Não consegui excluir a dívida", { description: excecao instanceof Error ? excecao.message : "Tente novamente.", variant: "error" })
+      }
+    }, 5000)
+  }
 
   const formulario = abrirForm && (
           <form onSubmit={criar} className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -425,7 +465,7 @@ export default function Dividas() {
         )}
 
         <div className={topo.lista}>
-          {naOrdem.map((divida) => {
+          {naOrdem.filter((divida) => !ocultas.has(divida.id)).map((divida) => {
             const tipo = TIPOS.find((opcao) => opcao.valor === divida.tipo)?.rotulo ?? divida.tipo
             const detalhes = [
               divida.parcelasTotal ? `${divida.parcelasPagas} de ${divida.parcelasTotal}` : tipo,
@@ -450,7 +490,12 @@ export default function Dividas() {
                   </div>
                 ) : null}
                 {divida.observacao && <p className={topo.observacao}>{divida.observacao}</p>}
-                <Link href="/plano" className={topo.acaoDivida}>Ver plano de pagamento <ArrowUpRight size={14} aria-hidden /></Link>
+                {/* Editar e excluir moram na ficha (passo 57); o botão diz isso
+                    escrito, porque o cartão inteiro não parecia tocável. */}
+                <div className={topo.acoesDivida}>
+                  <button type="button" onClick={() => setAberta(divida)}><Pencil size={14} aria-hidden />Editar ou excluir</button>
+                  <Link href="/plano" className={topo.acaoDivida}>Ver plano <ArrowUpRight size={14} aria-hidden /></Link>
+                </div>
               </div>
             )
           })}
@@ -522,6 +567,7 @@ export default function Dividas() {
           <p className={topo.conclusaoComparacao}>{comparativo.avalanche.totalJurosCentavos === comparativo.bolaDeNeve.totalJurosCentavos ? "Neste cenário, as duas estratégias têm o mesmo custo de juros." : `Neste cenário, ${comparativo.avalanche.totalJurosCentavos < comparativo.bolaDeNeve.totalJurosCentavos ? "maior juro primeiro" : "menor saldo primeiro"} economiza ${formatarMoeda(Math.abs(comparativo.avalanche.totalJurosCentavos - comparativo.bolaDeNeve.totalJurosCentavos))} em juros.`}</p>
         </Cartao>
       )}
+      <FichaDivida divida={aberta} aoFechar={() => setAberta(null)} aoSalvar={salvarDivida} aoExcluir={excluirDivida} />
     </div>
   )
 }

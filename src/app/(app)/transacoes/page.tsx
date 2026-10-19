@@ -9,11 +9,11 @@ import { buscar, enviar, TRANSACOES_ATUALIZADAS } from "@/lib/cliente"
 import { competenciaAtual, competenciaMaisMeses, rotuloCompetencia, ultimasCompetencias } from "@/lib/datas"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { Vazio } from "@/components/ui/painel"
-import { EditavelTexto, EditavelMoeda } from "@/components/ui/editavel"
+import { FichaLancamento, type LancamentoDaFicha } from "@/components/ficha-lancamento"
 import { showToast } from "@/components/ui/toast"
 import { EsqueletoLinhas } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { SeletorCategoria, SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
+import { SimboloCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import { porDia, rotuloDia } from "@/lib/extrato-dias"
 import { FaixaDeDias, type DiaComMovimento } from "@/components/faixa-de-dias"
 import { FiltrosDoExtrato, nomeCurtoDaConta, type ContaDoFiltro, type TipoDoFiltro } from "@/components/filtros-do-extrato"
@@ -56,6 +56,10 @@ export default function Transacoes() {
   const [dias, setDias] = useState<DiaComMovimento[]>([])
   const [busca, setBusca] = useState("")
   const [lojaDe, setLojaDe] = useState<Transacao | null>(null)
+  const [aberto, setAberto] = useState<Transacao | null>(null)
+  // Excluídos que ainda podem voltar com "Desfazer": somem da lista na hora e
+  // só saem do banco depois de 5 segundos.
+  const [ocultos, setOcultos] = useState<Set<string>>(new Set())
   const [semCategoria, setSemCategoria] = useState(false)
   const [tipo, setTipo] = useState<TipoDoFiltro>("todos")
   const [categoriaFiltro, setCategoriaFiltro] = useState<string | null>(null)
@@ -206,24 +210,55 @@ export default function Transacoes() {
 
   async function salvarEdicao(
     id: string,
-    parcial: Partial<Pick<Transacao, "descricao" | "valorCentavos" | "categoriaId">> & { criarRegra?: boolean },
-  ) {
-    if (salvamentoEmCurso.current) return
+    parcial: Partial<Pick<Transacao, "descricao" | "valorCentavos" | "categoriaId" | "data">> & { criarRegra?: boolean },
+  ): Promise<boolean> {
+    if (salvamentoEmCurso.current) return false
     salvamentoEmCurso.current = true
     setSalvando(id)
     try {
       await enviar(`/api/transacoes/${id}`, parcial, "PATCH")
+      // A ficha aberta mostra o valor novo sem esperar a lista recarregar.
+      setAberto((atual) => (atual && atual.id === id ? { ...atual, ...parcial, categoria: parcial.categoriaId !== undefined ? categorias.find((c) => c.id === parcial.categoriaId) ?? null : atual.categoria } as Transacao : atual))
       // A revisão usa os filtros atuais, mesmo se eles mudarem enquanto o PATCH termina.
       atualizar()
+      return true
     } catch (falha) {
       showToast("Não consegui salvar", {
         description: falha instanceof Error ? falha.message : "Tente novamente.",
         variant: "error",
       })
+      return false
     } finally {
       salvamentoEmCurso.current = false
       setSalvando(null)
     }
+  }
+
+  /**
+   * Excluir sem "tem certeza?": o lançamento some na hora e o Desfazer fica
+   * 5 segundos na tela (revisão de uso, 19/10/2026). Só depois o DELETE sai;
+   * se o servidor recusar (aporte de meta, por exemplo), ele volta com o motivo.
+   */
+  function excluir(lancamento: LancamentoDaFicha) {
+    const id = lancamento.id
+    setAberto(null)
+    setOcultos((atual) => new Set(atual).add(id))
+    let desfeito = false
+    const voltar = () => setOcultos((atual) => { const novo = new Set(atual); novo.delete(id); return novo })
+    showToast(`${lancamento.descricao} excluído`, {
+      description: formatarMoeda(lancamento.valorCentavos),
+      action: { label: "Desfazer", onClick: () => { desfeito = true; voltar() } },
+    })
+    setTimeout(async () => {
+      if (desfeito) return
+      try {
+        await buscar(`/api/transacoes/${id}`, { method: "DELETE" })
+        atualizar()
+      } catch (falha) {
+        voltar()
+        showToast("Não consegui excluir", { description: falha instanceof Error ? falha.message : "Tente novamente.", variant: "error" })
+      }
+    }, 5000)
   }
 
   const ocupado = carregando || carregandoMais || salvando !== null
@@ -379,7 +414,7 @@ export default function Transacoes() {
         )}
 
         <div className={estilos.lista}>
-          {porDia(transacoes).map((grupo) => (
+          {porDia(transacoes.filter((transacao) => !ocultos.has(transacao.id))).map((grupo) => (
             <section key={grupo.dia} className={estilos.grupoDia}>
               <h3>
                 <span>{rotuloDia(grupo.dia)}</span>
@@ -392,58 +427,28 @@ export default function Transacoes() {
                   const transferencia = transacao.tipo === "TRANSFERENCIA"
                   return (
                     <li key={transacao.id} className={estilos.linha}>
-                      {/* O ícone é um botão: "Qual loja é esta?" — a pessoa diz a loja
-                          uma vez e as compras iguais saem com o logo. */}
-                      <button
-                        type="button"
-                        className={estilos.simbolo}
-                        aria-label={`Escolher a loja de ${transacao.descricao}`}
-                        disabled={transferencia}
-                        onClick={() => setLojaDe(transacao)}
-                      >
-                        <MarcaPersonalizada nome={transacao.descricao} original={textoDoBanco(transacao)} />
-                        <SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} />
+                      {/* A linha inteira abre a ficha (passo 57): antes o nome e o
+                          valor se editavam tocando no texto, sem pista, e excluir
+                          não existia. A seta no fim diz que dá para tocar. */}
+                      <button type="button" className={estilos.abrir} onClick={() => setAberto(transacao)} aria-label={`Abrir ${transacao.descricao}, ${formatarMoeda(transacao.valorCentavos)}`}>
+                        <span className={estilos.simbolo}>
+                          <MarcaPersonalizada nome={transacao.descricao} original={textoDoBanco(transacao)} />
+                          <SimboloCategoria categoria={transacao.categoria} tipo={transacao.tipo} />
+                        </span>
+                        <span className={estilos.texto}>
+                          <span className={estilos.descricao}>{transacao.descricao}</span>
+                          <span className={estilos.sub}>
+                            <span>{nomeCurtoDaConta(transacao.conta.nome)}</span>
+                            <span aria-hidden>·</span>
+                            <span className={cn(!transacao.categoria && !transferencia && estilos.semCategoria)}>{transferencia ? "Transferência" : transacao.categoria?.nome ?? "sem categoria"}</span>
+                          </span>
+                        </span>
+                        <span className={cn(estilos.valor, "numero valor-sensivel", transacao.tipo === "RECEITA" && "text-positivo", transferencia && "text-muted-fg")}>
+                          {transferencia ? "" : transacao.tipo === "RECEITA" ? "+" : "-"}{formatarMoeda(transacao.valorCentavos)}
+                        </span>
+                        <ChevronRight aria-hidden className={estilos.seta} />
                       </button>
-                      <div className={estilos.texto}>
-                        {/* Nome, valor e categoria continuam editáveis no toque,
-                            como antes; só a categoria deixou de ser uma coluna
-                            de botão e virou o fim da linha de baixo. */}
-                        <EditavelTexto
-                          valor={transacao.descricao}
-                          aoSalvar={(descricao) => salvarEdicao(transacao.id, { descricao })}
-                          desabilitado={ocupado}
-                          className={estilos.descricao}
-                        />
-                        <p className={estilos.sub}>
-                          <span>{nomeCurtoDaConta(transacao.conta.nome)}</span>
-                          <span aria-hidden>·</span>
-                          {transferencia ? (
-                            <span>Transferência</span>
-                          ) : (
-                            <SeletorCategoria
-                              opcoes={categorias} valor={transacao.categoriaId} rotulo={`Categoria de ${transacao.descricao}`} vazio="sem categoria"
-                              desabilitado={ocupado || carregandoCategorias || erroCategorias} className={estilos.categoria}
-                              aoMudar={categoriaId => void salvarEdicao(transacao.id, {categoriaId, criarRegra: categoriaId !== null})}
-                            />
-                          )}
-                        </p>
-                      </div>
-                      <div className={cn(estilos.valor, transacao.tipo === "RECEITA" && "text-positivo", transferencia && "text-muted-fg")}>
-                        {transferencia ? (
-                          <span className="numero">{formatarMoeda(transacao.valorCentavos)}</span>
-                        ) : (
-                          <>
-                            <span aria-label={transacao.tipo === "RECEITA" ? "Entrada" : "Saída"}>{transacao.tipo === "RECEITA" ? "+" : "-"}</span>
-                            <EditavelMoeda
-                              valorCentavos={transacao.valorCentavos}
-                              aoSalvar={(valorCentavos) => salvarEdicao(transacao.id, { valorCentavos })}
-                              desabilitado={ocupado}
-                              className={estilos.moeda}
-                            />
-                          </>
-                        )}
-                        {salvando === transacao.id && <span role="status" className="sr-only">Salvando…</span>}
-                      </div>
+                      {salvando === transacao.id && <span role="status" className="sr-only">Salvando…</span>}
                     </li>
                   )
                 })}
@@ -470,6 +475,14 @@ export default function Transacoes() {
         )}
       </section>
 
+      <FichaLancamento
+        lancamento={aberto}
+        categorias={categorias}
+        aoFechar={() => setAberto(null)}
+        aoSalvar={salvarEdicao}
+        aoExcluir={excluir}
+        aoEscolherLoja={(lancamento) => { setAberto(null); setLojaDe(transacoes.find((t) => t.id === lancamento.id) ?? null) }}
+      />
       <Dialog open={lojaDe !== null} onOpenChange={(aberto) => !aberto && setLojaDe(null)}>
         <DialogContent className={`sm:max-w-[560px] ${CLASSE_DIALOGO_LOJA}`}>
           <DialogHeader>

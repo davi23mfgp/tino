@@ -71,12 +71,16 @@ export function IndicadoresDaAnalise({ indicadores }: { indicadores: Indicador[]
       const referencia = indicador.escala
         ? `${indicador.escala.menorMelhor ? "Até" : "A partir de"} ${indicador.chave === "liquidez" ? `${indicador.escala.bom} meses` : `${indicador.escala.bom / 100}%`}`
         : "Sem faixa de referência"
-      const estado = indicador.faixa === "BOM" ? "Adequado" : indicador.faixa === "SEM_DADO" ? (indicador.escala ? "Sem dado" : "Contexto") : SELO[indicador.faixa]
+      // Com número na tela, "Sem dado" contradizia o próprio quadro (13% e
+      // "Sem dado" juntos, revisão de 19/10). O número existe: é estimado pela
+      // renda informada, e a etiqueta diz isso em vez de dar nota a ele.
+      const estimado = indicador.faixa === "SEM_DADO" && Boolean(indicador.escala)
+      const estado = indicador.faixa === "BOM" ? "Adequado" : indicador.faixa === "SEM_DADO" ? (estimado ? "Estimado" : "Contexto") : SELO[indicador.faixa]
       return <article key={indicador.chave} className={estilos.cartao} data-faixa={indicador.faixa}>
         <header><h3>{indicador.nome}</h3><span className={estilos.estadoCompacto}><i aria-hidden />{estado}</span></header>
         <b className={`${estilos.valor} valor-sensivel`}>{indicador.valor}</b>
         {indicador.escala ? <Regua numero={indicador.numero} escala={indicador.escala} /> : <span className={estilos.semRegua} />}
-        <p className={estilos.referenciaCurta}>{referencia}</p>
+        <p className={estilos.referenciaCurta}>{estimado ? `Pela renda que você informou · ${referencia.toLowerCase()}` : referencia}</p>
         <footer className={estilos.rodapeIndicador}>
           <details><summary>Referência</summary><p>{indicador.referencia}</p><p>{indicador.leitura}</p></details>
           {destino && <Link href={destino.href} aria-label={`${destino.texto}: ${indicador.nome}`}>Abrir →</Link>}

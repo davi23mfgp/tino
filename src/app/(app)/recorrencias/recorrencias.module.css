@@ -86,3 +86,4 @@
 .nomeComLogo strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .nomeComLogo > img, .nomeComLogo > span { width:22px !important; height:22px !important; min-width:22px; border-radius:6px !important; font-size:14px !important; }
 .ligacao { color:var(--acao); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+.valorGrande { height:56px !important; font-size:calc(24px * var(--escala-letra)) !important; font-weight:300; font-variant-numeric:tabular-nums; }

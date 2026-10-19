@@ -174,13 +174,17 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{n
   </>
 }
 
+// Telas com seletor de mês próprio: o mês atual no cabeçalho contradizia o mês
+// escolhido ("outubro de 2026" no alto, setembro na lista; revisão de 19/10).
+const TEM_MES_PROPRIO = ["/transacoes", "/orcamento", "/cartoes"]
+
 export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja,mei}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean;mei?:boolean}) {
   const caminho=usePathname()
   const titulo=tituloDaRota(apenasLoja ? [GRUPO_LOJA_FUNCIONARIO] : todosOsGrupos(Boolean(mei)),caminho) ?? "Tino"
   // No celular o Início traz o sino e a conta dentro do bloco branco do topo
   // (Davi, 23/09); a barra ali repetiria os dois e o título "Início".
   return <header className={caminho==="/painel" ? "app-header app-header-inicio" : "app-header"}>
-    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1>{mei && !apenasLoja ? <TrocaDeNegocio /> : <p>{apenasLoja || mei ? "Seu negócio, organizado." : competencia}</p>}</div>
+    <div className="app-header-title"><h1>{caminho==="/painel" ? "Início" : titulo}</h1>{mei && !apenasLoja ? <TrocaDeNegocio /> : <p>{apenasLoja || mei ? "Seu negócio, organizado." : TEM_MES_PROPRIO.some((rota) => caminho.startsWith(rota)) ? null : competencia}</p>}</div>
     <div className="app-header-actions">
       {/* Barra, nao icone: o botao redondo so com a lupa nao dizia o que faz nem
           que existe atalho. A forma de barra e a mesma do resto do app e ja

@@ -27,12 +27,13 @@ import { corDoBanco } from "@/lib/bancos-perfil"
 import { useJanela } from "@/lib/usar-largura"
 import { ROTULO_BANDEIRA } from "@/lib/bandeiras"
 
-export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string; hoje: string }) {
+export function CentralCartoes({ cartoes, categorias, mesAtual, hoje, cartaoInicial }: { cartoes: DadosCartao[]; categorias: { id: string; nome: string }[]; mesAtual: string; hoje: string; cartaoInicial?: string }) {
   const router = useRouter()
-  const [id, setId] = useState(cartoes[0]?.id ?? "")
+  const inicial = cartoes.find((c) => c.id === cartaoInicial) ?? cartoes[0]
+  const [id, setId] = useState(inicial?.id ?? "")
   // Abre na fatura que está recebendo compras, não na que tem o nome do mês
   // do calendário: em 24/09, num cartão que vence dia 6, esta já venceu.
-  const [mes, setMes] = useState(() => (cartoes[0] ? faturaAberta(cartoes[0], hoje) : mesAtual))
+  const [mes, setMes] = useState(() => (inicial ? faturaAberta(inicial, hoje) : mesAtual))
   const carrossel = useRef<HTMLElement>(null)
   const rolagem = useRef<number | undefined>(undefined)
   const [categoria, setCategoria] = useState("")
@@ -249,7 +250,7 @@ export function CentralCartoes({ cartoes, categorias, mesAtual, hoje }: { cartoe
       </div>
     </div>
 
-    <Dialog open={form !== null} onOpenChange={(aberto) => !aberto && setForm(null)}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>{form?.compra || form?.parcelamento ? "Editar compra" : "Nova compra"}</DialogTitle><DialogDescription>Registre no cartão selecionado.</DialogDescription></DialogHeader>{form && <CompraCartaoForm contaId={cartao.id} categorias={categorias} compra={form.compra} parcelamento={form.parcelamento} fechar={() => setForm(null)} salvou={() => router.refresh()} embutido />}
+    <Dialog open={form !== null} onOpenChange={(aberto) => !aberto && setForm(null)}><DialogContent className={estilos.modal}><DialogHeader><DialogTitle>{form?.compra || form?.parcelamento ? "Editar compra" : "Nova compra"}</DialogTitle><DialogDescription>{form?.compra || form?.parcelamento ? "Mude o que precisar e salve." : `Vai para a fatura do ${cartao.nome}.`}</DialogDescription></DialogHeader>{form && <CompraCartaoForm contaId={cartao.id} nomeCartao={cartao.nome} categorias={categorias} compra={form.compra} parcelamento={form.parcelamento} fechar={() => setForm(null)} salvou={() => router.refresh()} embutido />}
       {/* Apagar mora aqui desde que a lixeira saiu de cada linha da lista. */}
       {(form?.compra || form?.parcelamento) && <button type="button" className={estilos.excluirCompra} onClick={() => { const alvo = form.compra ? { id: form.compra.id, nome: form.compra.descricao, tipo: "transacoes" as const } : { id: form.parcelamento!.id, nome: form.parcelamento!.descricao, tipo: "parcelamentos" as const }; setForm(null); setExcluir(alvo) }}><Trash2 aria-hidden />Excluir compra</button>}
     </DialogContent></Dialog>

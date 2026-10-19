@@ -1,6 +1,6 @@
+import { primeiraFaturaDaCompra } from "@/lib/competencia-cartao"
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
-import { competenciaDe } from "@/lib/datas"
 import { compromissosFuturos, criarParcelamento, resumoParcelamentos } from "@/lib/parcelamentos"
 
 export const GET = comSessao(async (sessao, requisicao) => {
@@ -73,7 +73,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     parcelasTotal: Math.max(1, Number(exigir(dados.parcelasTotal, "Informe o número de parcelas"))),
     parcelasPagas: dados.parcelasPagas ?? 0,
     dataCompra,
-    primeiraCompetencia: dados.primeiraCompetencia ?? competenciaDe(dataCompra),
+    primeiraCompetencia: primeiraFaturaDaCompra(dataCompra, conta, dados.primeiraCompetencia),
     // O dia da parcela é o vencimento do cartão: é nele que o dinheiro sai.
     diaVencimento: dados.diaVencimento ?? conta.diaVencimento ?? 10,
   })
