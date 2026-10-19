@@ -2,15 +2,13 @@ import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { competenciaAtual } from "@/lib/datas"
-import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
 import { CentralCartoes } from "@/components/central-cartoes"
 import { Bancos, type ProdutoDoBanco } from "@/components/bancos"
 import { saldosDasContas } from "@/lib/saldos-das-contas"
 import { cicloDaFatura, faturaAberta, limiteDoCartao, resumoDoMes } from "@/lib/cartoes"
 export const dynamic = "force-dynamic"
-export const metadata: Metadata = { title: "Bancos · Tino" }
-export default async function Cartoes({ searchParams }: { searchParams: Promise<{ cartao?: string; aba?: string }> }) {
+export const metadata: Metadata = { title: "Cartões · Tino" }
+export default async function Cartoes({ searchParams }: { searchParams: Promise<{ cartao?: string; aba?: string; bancos?: string }> }) {
   const sessao = await sessaoDaPagina()
   const pedido = await searchParams
   const [contas, categorias] = await Promise.all([
@@ -32,13 +30,10 @@ export default async function Cartoes({ searchParams }: { searchParams: Promise<
   // "Hoje" no fuso de quem usa: às 22h de 5/10 em São Paulo já é dia 6 em UTC,
   // e a fatura que vence dia 6 sairia do limite um dia antes.
   const hoje = new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })
-  // Com um cartão escolhido (ou uma aba pedida por link antigo), abre a fatura
-  // como antes; sem, a lista por banco (passo 58, A).
-  if (pedido.cartao || pedido.aba) {
-    return <>
-      <Link href="/cartoes" className="mb-3 inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold"><ChevronLeft aria-hidden className="size-5" />Bancos</Link>
-      <CentralCartoes cartoes={cartoes} categorias={categorias} mesAtual={competenciaAtual()} hoje={hoje} cartaoInicial={pedido.cartao} />
-    </>
+  // Cartões abre direto nos cartões (Davi, 19/10: "Bancos é só pra cadastro,
+  // deixe como estava antes"). A lista por banco mora em /bancos, nos Ajustes.
+  if (!pedido.bancos) {
+    return <CentralCartoes cartoes={cartoes} categorias={categorias} mesAtual={competenciaAtual()} hoje={hoje} cartaoInicial={pedido.cartao} />
   }
   const todas = await prisma.conta.findMany({ where: { larId: sessao.larId, arquivada: false }, orderBy: { criadoEm: "asc" }, select: { id: true, nome: true, tipo: true, instituicao: true, saldoInicialCentavos: true } })
   const saldos = await saldosDasContas(sessao.larId, todas)

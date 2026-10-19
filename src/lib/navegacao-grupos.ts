@@ -25,6 +25,7 @@ import {
   Wallet,
   Wand2,
   Zap,
+  Landmark,
 } from "lucide-react"
 
 import { rotaPermitida } from "@/lib/acesso"
@@ -99,9 +100,9 @@ export const NUCLEO: GrupoNav[] = [
   },
   {
     chave: "cartoes",
-    titulo: "Bancos",
+    titulo: "Cartões",
     pergunta: "Faturas, limites e parcelas",
-    itens: [{ rota: "/cartoes", rotulo: "Bancos", Icone: CreditCard }, { rota: "/milhas", rotulo: "Pontos e milhas", Icone: Flag }],
+    itens: [{ rota: "/cartoes", rotulo: "Cartões", Icone: CreditCard }, { rota: "/milhas", rotulo: "Pontos e milhas", Icone: Flag }],
   },
   {
     chave: "perfil",
@@ -154,7 +155,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
     chave: "ajustes",
     titulo: "Ajustes",
     pergunta: "Configuracoes e categorias",
-    itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }, { rota: "/categorias", rotulo: "Categorias e ícones", Icone: Tags }],
+    itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }, { rota: "/bancos", rotulo: "Bancos e contas", Icone: Landmark }, { rota: "/categorias", rotulo: "Categorias e ícones", Icone: Tags }],
   },
 ]
 
