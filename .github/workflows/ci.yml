@@ -25,7 +25,7 @@ jobs:
   conferir:
     name: Tipos e testes
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       JWT_SECRET: segredo-de-mentira-so-para-a-ci-000000
       NEXT_TELEMETRY_DISABLED: "1"
@@ -41,5 +41,12 @@ jobs:
         run: npm run tipos
       - name: Testes
         run: npm test
+      # Mesmo compilador da Vercel. Sem este passo, um CSS que o dev aceita e o
+      # build recusa derrubou dois deploys (18 e 19/10/2026) com a CI verde.
+      - name: Build de produção
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+        run: npx next build --webpack
       - name: Auditoria de dependências em produção
         run: npm audit --omit=dev --audit-level=high

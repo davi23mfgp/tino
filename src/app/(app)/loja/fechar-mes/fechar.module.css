@@ -1,6 +1,7 @@
-/* Na impressão (ou "salvar como PDF") sai só a folha do relatório: o menu, os botões e as outras telas ficam de fora. */
+/* Na impressão (ou "salvar como PDF") sai só a folha do relatório: o menu, os botões e as outras telas ficam de fora.
+   A regra que esconde o resto da página mora em globals.css (`folha-relatorio-mei`): o build de produção recusa
+   seletor sem classe local num módulo, e `:global(body) *` derrubou dois deploys da Vercel em 18 e 19/10/2026. */
 @media print {
-  :global(body) * { visibility: hidden; }
   .folha, .folha * { visibility: visible; }
   .folha { position: absolute; left: 0; top: 0; width: 100%; background: #fff !important; color: #000 !important; border: none !important; box-shadow: none !important; }
   .folha * { color: #000 !important; border-color: #999 !important; }
