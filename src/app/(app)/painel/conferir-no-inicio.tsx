@@ -9,6 +9,7 @@ import { enviar } from "@/lib/cliente"
 import { formatarMoeda } from "@/lib/dinheiro"
 import { showToast } from "@/components/ui/toast"
 import { AnotarRapidoHoje } from "@/components/anotar-rapido"
+import { SeletorCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 
 import estilos from "./inicio.module.css"
 
@@ -30,13 +31,15 @@ export interface CapturaNoInicio {
  * é na própria tela: "Não foi" descarta, "Confirmar" lança, com as mesmas
  * chamadas da tela Anotar. O resto da fila continua lá, no "ver todas".
  */
-export function ConferirNoInicio({ capturas, total, contaPadraoId }: { capturas: CapturaNoInicio[]; total: number; contaPadraoId: string | null }) {
+export function ConferirNoInicio({ capturas, total, contaPadraoId, categorias }: { capturas: CapturaNoInicio[]; total: number; contaPadraoId: string | null; categorias: CategoriaSelecionavel[] }) {
   const router = useRouter()
   const [ocupado, setOcupado] = useState(false)
   const [feitas, setFeitas] = useState<string[]>([])
+  const [escolhidas, setEscolhidas] = useState<Record<string, string | null>>({})
   const restantes = capturas.filter((captura) => !feitas.includes(captura.id))
   const atual = restantes[0]
   if (!atual) return null
+  const categoriaId = atual.id in escolhidas ? escolhidas[atual.id] : atual.categoriaId
 
   async function decidir(confirmar: boolean) {
     setOcupado(true)
@@ -45,10 +48,10 @@ export function ConferirNoInicio({ capturas, total, contaPadraoId }: { capturas:
         await enviar("/api/capturas", {
           capturaId: atual.id,
           contaId: atual.contaId ?? contaPadraoId ?? undefined,
-          categoriaId: atual.categoriaId ?? undefined,
+          categoriaId: categoriaId ?? undefined,
           valorCentavos: atual.valorCentavos ?? undefined,
           descricao: atual.estabelecimento ?? undefined,
-          criarRegra: Boolean(atual.categoriaId),
+          criarRegra: Boolean(categoriaId),
         })
         showToast(`${atual.estabelecimento ?? "Compra"} lançada`, { description: formatarMoeda(atual.valorCentavos ?? 0) })
       } else {
@@ -77,7 +80,9 @@ export function ConferirNoInicio({ capturas, total, contaPadraoId }: { capturas:
             <div className="min-w-0"><strong>{atual.estabelecimento ?? "Sem descrição"}</strong><small>{atual.quando} · {atual.via}</small></div>
           </div>
           <p className={estilos.valorConferir}><Reais centavos={atual.valorCentavos ?? 0} /></p>
-          <p className={estilos.categoriaConferir}>{atual.categoriaNome ? <>categoria <span>{atual.categoriaNome}</span></> : <em>sem categoria: escolha em Anotar</em>}</p>
+          <div className={estilos.categoriaConferir}>
+            <SeletorCategoria opcoes={categorias} valor={categoriaId} aoMudar={(id) => setEscolhidas((atuais) => ({ ...atuais, [atual.id]: id }))} vazio="escolher a categoria" desabilitado={ocupado} />
+          </div>
           <div className={estilos.botoesConferir}>
             <button type="button" disabled={ocupado} onClick={() => void decidir(false)}><X aria-hidden />Não foi</button>
             <button type="button" disabled={ocupado} onClick={() => void decidir(true)} data-principal><Check aria-hidden />Confirmar</button>
