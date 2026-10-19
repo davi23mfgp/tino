@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { ClipboardCheck, Plus, Search, Truck } from "lucide-react"
+import { ClipboardCheck, Plus, Search, Trash2, Truck } from "lucide-react"
+import { showToast } from "@/components/ui/toast"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual, paraCentavos } from "@/lib/dinheiro"
@@ -428,6 +429,25 @@ export default function Prateleira() {
     }
   }
 
+  async function tirarDaPrateleira() {
+    if (!aberto || salvando) return
+    const { id, nome } = aberto
+    setSalvando(true)
+    try {
+      await enviar(`/api/loja/produtos/${id}`, { ativo: false }, "PATCH")
+      fechar()
+      await carregar()
+      showToast(`${nome} saiu da Prateleira`, {
+        description: "As vendas antigas continuam no relatório.",
+        action: { label: "Desfazer", onClick: () => void enviar(`/api/loja/produtos/${id}`, { ativo: true }, "PATCH").then(carregar) },
+      })
+    } catch (falha) {
+      setErro(falha instanceof Error ? falha.message : "Não consegui tirar.")
+    } finally {
+      setSalvando(false)
+    }
+  }
+
   const botao = (rotulo: string, Icone: typeof Plus, aoTocar: () => void, principal = false) => (
     <button type="button" className={estilos.botao} data-principal={principal || undefined} data-icone={!principal || undefined} onClick={aoTocar} aria-label={rotulo}>
       <Icone aria-hidden />
@@ -624,6 +644,9 @@ export default function Prateleira() {
                       </label>
                     </div>
                     <p className={estilos.dica}>O custo vem das entradas de mercadoria (custo médio). Para mudar, registre a próxima entrada com o custo novo.</p>
+                    <button type="button" className={estilos.tirar} onClick={() => void tirarDaPrateleira()} disabled={salvando}>
+                      <Trash2 aria-hidden />Tirar da Prateleira
+                    </button>
                     <div className="flex justify-end gap-2">
                       <Button type="button" variant="ghost" onClick={() => setEditando(null)} disabled={salvando}>
                         Cancelar
