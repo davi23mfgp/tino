@@ -224,6 +224,13 @@ export default function Clientes() {
                 compartilharAoAbrir={compartilhar}
                 aoVoltar={() => abrir(null)}
                 aoMudar={() => void carregar()}
+                aoTirar={(id) => {
+                  // Tira da lista já, sem esperar a recarga: senão a escolha
+                  // automática do computador reabria a ficha de quem saiu.
+                  setDados((atual) => atual && { ...atual, clientes: atual.clientes.filter((c) => c.id !== id), retomar: atual.retomar.filter((r) => r.clienteId !== id) })
+                  abrir(null)
+                  void carregar()
+                }}
                 aoEditar={(orcamento) => setEditor({ orcamento })}
                 aoNovoOrcamento={(cliente) => setEditor({ cliente })}
               />

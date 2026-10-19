@@ -57,6 +57,7 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
       observacao: campo.texto(500).nullable().optional(),
       proximoPasso: campo.texto(140).nullable().optional(),
       proximoPassoEm: campo.data().nullable().optional(),
+      arquivado: z.boolean().optional(),
     }),
     await corpo(requisicao),
   )
@@ -69,8 +70,31 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
       ...(dados.telefone !== undefined ? { telefone: dados.telefone || null } : {}),
       ...(dados.email !== undefined ? { email: dados.email || null } : {}),
       ...(dados.observacao !== undefined ? { observacao: dados.observacao || null } : {}),
+      ...(dados.arquivado !== undefined ? { arquivado: dados.arquivado } : {}),
       ...(dados.proximoPasso !== undefined ? { proximoPasso: dados.proximoPasso || null, proximoPassoEm: dados.proximoPasso ? dados.proximoPassoEm : null } : {}),
     },
   })
   return ok({ cliente: atualizado })
+})
+
+/**
+ * Excluir de vez só quem nunca comprou, nem teve orçamento, OS ou horário:
+ * foi cadastro errado. Quem tem história vai para arquivado, porque apagar
+ * levaria junto a venda do caixa e o fiado que ainda deve.
+ */
+export const DELETE = comSessao<Contexto>(async (sessao, _requisicao, contexto) => {
+  const { id } = await contexto.params
+  const { cliente } = await clienteDaLoja(sessao.larId, id)
+  const [vendas, orcamentos, ordens, compromissos] = await Promise.all([
+    prisma.vendaLoja.count({ where: { clienteId: cliente.id } }),
+    prisma.orcamentoLoja.count({ where: { clienteId: cliente.id } }),
+    prisma.ordemServicoLoja.count({ where: { clienteId: cliente.id } }),
+    prisma.compromissoLoja.count({ where: { clienteId: cliente.id } }),
+  ])
+  if (vendas + orcamentos + ordens + compromissos > 0) {
+    await prisma.clienteLoja.update({ where: { id: cliente.id }, data: { arquivado: true } })
+    return ok({ resultado: "arquivado" as const })
+  }
+  await prisma.clienteLoja.delete({ where: { id: cliente.id } })
+  return ok({ resultado: "excluido" as const })
 })

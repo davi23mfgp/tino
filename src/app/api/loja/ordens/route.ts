@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ErroDeUso, ok } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
-import { novoToken } from "@/lib/loja/clientes"
+import { novoToken, trazerDeVolta } from "@/lib/loja/clientes"
 import { proximoNumeroDeOrdem } from "@/lib/loja/ordens"
 import { campo, validar, z } from "@/lib/validar"
 import { esquemaDoAparelho, gravacaoDoAparelho } from "@/lib/loja/entrada-aparelho"
@@ -55,6 +55,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     const nome = dados.clienteNome?.trim().replace(/\s+/g, " ")
     if (!nome) throw new ErroDeUso("Diga de quem é o serviço.")
     const existente = await prisma.clienteLoja.findFirst({ where: { lojaId: loja.id, nome: { equals: nome, mode: "insensitive" } }, orderBy: { criadoEm: "asc" } })
+    await trazerDeVolta(existente)
     clienteId = existente?.id ?? (await prisma.clienteLoja.create({ data: { lojaId: loja.id, nome, telefone: dados.clienteTelefone || null } })).id
   }
   // Com a entrada do aparelho, o "o que ficou com a loja" sai do modelo e da

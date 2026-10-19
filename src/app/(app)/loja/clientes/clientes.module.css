@@ -129,3 +129,15 @@
 .motivos { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
 .motivo { min-height:44px !important; border-radius:14px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); background:none; color:inherit; font-size:calc(13.5px * var(--escala-letra)); }
 .motivo[aria-pressed="true"] { border-color:oklch(var(--primary)); background:color-mix(in oklab, oklch(var(--primary)), transparent 85%); font-weight:650; }
+
+/* Tirar da lista fica embaixo e discreto: é raro, e não pode ser o botão
+   que o polegar acha primeiro depois do Salvar. */
+.tirar {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; margin-top: 4px; border: 0; background: none;
+  color: var(--negativo); font-size: 14px; cursor: pointer;
+}
+.tirar svg { width: 16px; height: 16px; }
+.confirmarTirar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.confirmarTirar p { grid-column: 1 / -1; margin: 0; font-size: 14px; }
+.confirmarTirar [data-perigo] { background: var(--negativo); color: #fff; border-color: transparent; }
