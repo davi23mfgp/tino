@@ -427,7 +427,7 @@ function FormasDeJuntar({
           <p className={estilos.nota}>
             {sobraCentavos > 0
               ? <>Em média sobram {formatarMoeda(sobraCentavos)} por mês: entradas menos saídas dos últimos meses.</>
-              : <>Em média não sobra nada: as saídas passam das entradas em {formatarMoeda(Math.abs(sobraCentavos))} por mês. <Link href="/orcamento">Ver onde cortar</Link></>}
+              : <>Em média não sobra nada: as saídas passam das entradas em {formatarMoeda(Math.abs(sobraCentavos))} por mês. <Link href="/meu-mes">Ver onde cortar</Link></>}
           </p>
         )}
 

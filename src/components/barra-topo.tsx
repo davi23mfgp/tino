@@ -176,7 +176,7 @@ export function AcoesDaConta({nome,admin,avatarUrl,apenasLoja,mei,sobreClaro}:{n
 
 // Telas com seletor de mês próprio: o mês atual no cabeçalho contradizia o mês
 // escolhido ("outubro de 2026" no alto, setembro na lista; revisão de 19/10).
-const TEM_MES_PROPRIO = ["/transacoes", "/orcamento", "/cartoes"]
+const TEM_MES_PROPRIO = ["/transacoes", "/orcamento", "/cartoes", "/meu-mes"]
 
 export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja,mei}:{nome:string;admin?:boolean;avatarUrl?:string|null;competencia?:string;apenasLoja?:boolean;mei?:boolean}) {
   const caminho=usePathname()

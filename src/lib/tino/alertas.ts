@@ -108,7 +108,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       severidade: "ATENCAO",
       titulo: `${linha.nome} passou do orçamento`,
       texto: `Você planejou ${formatarMoeda(linha.limiteCentavos)} e já gastou ${formatarMoeda(linha.gastoCentavos)} (${linha.percentual}%).`,
-      acaoRota: "/orcamento",
+      acaoRota: "/meu-mes",
       chave: `orcamento_estourado:${mes}:${linha.categoriaId}`,
     })
   }
@@ -121,7 +121,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       severidade: "INFO",
       titulo: `${linha.nome} está em ${linha.percentual}% do orçamento`,
       texto: `Restam ${formatarMoeda(linha.limiteCentavos - linha.gastoCentavos)} até o limite que você definiu.`,
-      acaoRota: "/orcamento",
+      acaoRota: "/meu-mes",
       chave: `orcamento_perto:${mes}:${linha.categoriaId}`,
     })
   }
@@ -219,7 +219,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
             ? `${proximaDespesa.descricao} vence hoje`
             : `${proximaDespesa.descricao} vence em ${dias} dia${dias === 1 ? "" : "s"}`,
         texto: `${formatarMoeda(proximaDespesa.valorCentavos)}, em ${formatarData(proximaDespesa.proximaData)}.`,
-        acaoRota: "/recorrencias",
+        acaoRota: "/meu-mes",
         // A chave leva a data: a próxima ocorrência do MESMO fixo, mês que
         // vem, é um vencimento diferente e merece avisar de novo.
         chave: `vencimento_proximo:${proximaDespesa.id}:${formatarData(proximaDespesa.proximaData)}`,
