@@ -3,6 +3,7 @@
  * categoriza e grava — tudo numa transação só.
  */
 
+import { movimentosInternos } from "@/lib/importar/movimento-interno"
 import { createHash } from "crypto"
 
 import { prisma } from "@/lib/prisma"
@@ -63,7 +64,11 @@ export function impressaoDigital(params: {
   return createHash("sha256").update(base).digest("hex").slice(0, 32)
 }
 
-export interface PreviaLancamento extends LancamentoBruto {
+export interface PreviaLancamento extends Omit<LancamentoBruto, "tipo"> {
+  /// TRANSFERENCIA: pagamento de fatura no extrato (ver `movimentosInternos`).
+  tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
+  /// Por que o Tino deixou fora ou virou transferência: a prévia mostra.
+  interno?: string
   hashImport: string
   possivelDuplicada?: boolean
   duplicada: boolean
@@ -169,7 +174,10 @@ export async function previaImportacao(params: {
     }
 
     if (naoReconhecidas > 0) {
-      avisos.push(`${naoReconhecidas} linha(s) do PDF não foram reconhecidas. Confira o extrato antes de confirmar.`)
+      // Mostra o texto das linhas: só o número obrigava a reler o PDF inteiro
+      // para achar qual era (relatório de primeiro uso, 21/10/2026).
+      const exemplos = resultado.naoReconhecidas.slice(0, 3).map((linha) => `"${linha.slice(0, 80)}"`).join("; ")
+      avisos.push(`${naoReconhecidas === 1 ? "1 linha do PDF não foi reconhecida" : `${naoReconhecidas} linhas do PDF não foram reconhecidas`}: ${exemplos}${naoReconhecidas > 3 ? " e outras" : ""}. Confira se alguma é um lançamento antes de confirmar.`)
     }
     if (params.faturaCartao && !conferencia && brutos.length > 0) {
       avisos.push("A fatura não traz um total legível para conferir a soma. Confira linha a linha antes de importar.")
@@ -254,6 +262,35 @@ export async function previaImportacao(params: {
     }
   })
 
+  // Já lançado em OUTRA conta (fatura importada no cartão antigo, compra
+  // anotada à mão): o hash só olha a mesma conta, e a fatura Visa do Davi
+  // mostrou "Já existiam: 0" com 72 compras já no app (21/10/2026).
+  if (lancamentos.length > 0) {
+    const datas = lancamentos.map((l) => l.data.getTime())
+    const deOutras = await prisma.transacao.findMany({
+      where: { larId: params.larId, contaId: { not: params.contaId }, data: { gte: new Date(Math.min(...datas) - 86_400_000), lte: new Date(Math.max(...datas) + 86_400_000) } },
+      select: { data: true, valorCentavos: true, descricao: true, descricaoOriginal: true, conta: { select: { nome: true } } },
+    })
+    const letras = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/gi, "").toLowerCase()
+    for (const linha of lancamentos) {
+      if (linha.duplicada) continue
+      const dia = linha.data.toISOString().slice(0, 10)
+      const minha = letras(linha.descricao).slice(0, 6)
+      const igual = deOutras.find((t) => t.valorCentavos === linha.valorCentavos && t.data.toISOString().slice(0, 10) === dia
+        && minha.length >= 3 && letras(t.descricaoOriginal ?? t.descricao).includes(minha))
+      if (igual) { linha.duplicada = true; linha.interno = `já está em ${igual.conta.nome} (mesmo dia e valor)` }
+    }
+  }
+
+  // Pagamento de fatura e Pix no crédito não são gasto nem renda.
+  const internos = movimentosInternos(lancamentos, params.faturaCartao ?? false)
+  for (const [indice, decisao] of internos) {
+    const linha = lancamentos[indice] as PreviaLancamento
+    linha.interno = decisao.motivo
+    if (decisao.acao === "fora") linha.duplicada = true
+    else { linha.tipo = "TRANSFERENCIA"; linha.categoriaId = undefined; linha.categoriaNome = undefined }
+  }
+
   // O que regra, dicionário e ramo do banco não cobriram vai para a IA — só
   // gasto, sem transferência para pessoa, e só com categorias do próprio lar.
   const semCategoria = lancamentos.filter(
@@ -287,13 +324,22 @@ export async function previaImportacao(params: {
     )
   }
 
+  // O período só aparecia em letra pequena: o extrato de jan a jun entrou
+  // como se fosse o mês atual (relatório de primeiro uso, 21/10/2026).
+  if (lancamentos.length > 0 && !params.faturaCartao) {
+    const tempos = lancamentos.map((l) => l.data.getTime())
+    const ultimo = new Date(Math.max(...tempos))
+    const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { timeZone: "UTC" })
+    const inicioDoMes = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1))
+    if (ultimo < inicioDoMes) avisos.push(`Este arquivo vai de ${fmt(new Date(Math.min(...tempos)))} a ${fmt(ultimo)} e não chega ao mês atual. Os lançamentos entram nos meses deles; para o mês de agora, importe um extrato mais recente.`)
+  }
   if(lancamentos.some(l=>l.possivelDuplicada))avisos.push("Há possíveis repetições de gastos recebidos do celular. Foram desmarcadas; confira e selecione apenas se forem compras diferentes.")
   return {
     formato,
     total: lancamentos.length,
     novas: lancamentos.filter((lancamento) => !lancamento.duplicada).length,
     duplicadas: lancamentos.filter((lancamento) => lancamento.duplicada).length,
-    semCategoria: lancamentos.filter((lancamento) => !lancamento.categoriaId && !lancamento.duplicada).length,
+    semCategoria: lancamentos.filter((lancamento) => !lancamento.categoriaId && !lancamento.duplicada && lancamento.tipo !== "TRANSFERENCIA").length,
     lancamentos,
     avisos,
     conferencia,
@@ -321,7 +367,7 @@ export async function confirmarImportacao(params: {
     descricao: string
     descricaoOriginal?: string
     valorCentavos: number
-    tipo: "RECEITA" | "DESPESA"
+    tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
     categoriaId?: string | null
     hashImport: string
     duplicada?: boolean

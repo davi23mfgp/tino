@@ -11,6 +11,10 @@ export const GET = comSessao(async (sessao) => {
   })
 
   const saldos = await saldosDasContas(sessao.larId, contas)
+  // A conta do CNPJ nasce no cadastro do MEI, antes das pessoais, e por ser a
+  // mais antiga virava a padrão de contas fixas, renda e importação sem a
+  // pessoa saber. As telas usam a primeira da lista: a do negócio vai para o fim.
+  contas.sort((a, b) => Number(a.tipo === "PJ_MEI") - Number(b.tipo === "PJ_MEI"))
 
   return ok(
     contas.map((conta) => ({

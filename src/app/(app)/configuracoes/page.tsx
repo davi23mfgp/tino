@@ -151,7 +151,7 @@ export default function Configuracoes() {
     // /api/open-finance, e quando o provedor não sobe (Open Finance está
     // desligado, sem chaves) a lista de contas falhava junto, com a mensagem
     // "Não consegui carregar suas contas" para quem nunca usou Open Finance.
-    setContas((await buscar<Conta[]>("/api/contas")).filter((conta) => conta.tipo !== "PJ_MEI"))
+    setContas(await buscar<Conta[]>("/api/contas"))
     buscar<{ provedor: string; sandbox: boolean; conexoes: Conexao[] }>("/api/open-finance")
       .then(setOpenFinance)
       .catch(() => setOpenFinance(null))

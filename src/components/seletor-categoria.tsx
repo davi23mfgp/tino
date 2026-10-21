@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { enviar } from "@/lib/cliente"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog"
@@ -42,30 +43,54 @@ export function SeletorCategoria({ opcoes, valor, aoMudar, rotulo = "Categoria",
 }) {
   const [aberto, setAberto] = useState(false)
   const [busca, setBusca] = useState("")
+  // Categoria criada aqui entra na lista na hora, sem esperar a tela recarregar.
+  const [criadas, setCriadas] = useState<CategoriaSelecionavel[]>([])
+  const [criando, setCriando] = useState(false)
   const normalizar = (texto: string) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  opcoes = [...opcoes, ...criadas.filter(c => !opcoes.some(o => o.id === c.id))]
   const selecionada = opcoes.find(categoria => categoria.id === valor)
+  // "Transferência" existe como entrada e como saída; com o mesmo nome duas
+  // vezes na lista, a pessoa não sabia qual escolher.
+  const repetidos = new Set(opcoes.map(c => c.nome).filter((nome, i, todos) => todos.indexOf(nome) !== i))
+  const nomeDe = (c: CategoriaSelecionavel) => repetidos.has(c.nome) && c.tipo ? `${c.nome} (${c.tipo === "RECEITA" ? "entrada" : c.tipo === "DESPESA" ? "saída" : "entre contas"})` : c.nome
   const grupos = new Map<string, CategoriaSelecionavel[]>()
   for (const categoria of opcoes) {
     const grupo = GRUPOS_CATEGORIA[categoria.grupo ?? "OUTROS"] ?? categoria.grupo ?? "Outros"
     if (!normalizar(categoria.nome + " " + grupo).includes(normalizar(busca))) continue
     grupos.set(grupo, [...(grupos.get(grupo) ?? []), categoria])
   }
-  function escolher(id: string | null) { aoMudar(id); setAberto(false) }
+  // Fecha a janela antes de avisar a tela. Na prévia da importação, com o
+  // filtro "Sem categoria", a escolha tira a linha da lista e desmonta este
+  // seletor: desmontado com a janela aberta, o diálogo deixava a página toda
+  // sem clique (relatório de primeiro uso, 21/10/2026).
+  async function criar(nome: string) {
+    setCriando(true)
+    try {
+      const tipo = opcoes.find(o => o.tipo)?.tipo === "RECEITA" ? "RECEITA" : "DESPESA"
+      const nova = await enviar<CategoriaSelecionavel>("/api/categorias", { nome, tipo })
+      setCriadas(atuais => [...atuais, { ...nova, tipo }])
+      escolher(nova.id)
+    } finally { setCriando(false) }
+  }
+  function escolher(id: string | null) { setAberto(false); window.setTimeout(() => aoMudar(id), 180) }
   return <Dialog open={aberto} onOpenChange={valor => { setAberto(valor); if(valor) setBusca("") }}>
     <DialogTrigger asChild><Button variant="outline" disabled={desabilitado} aria-label={rotulo} className={className}>
-      <span className="truncate">{selecionada ? `${selecionada.icone && /\p{Extended_Pictographic}/u.test(selecionada.icone) ? selecionada.icone + " " : ""}${selecionada.nome}` : vazio}</span>
+      <span className="truncate">{selecionada ? `${selecionada.icone && /\p{Extended_Pictographic}/u.test(selecionada.icone) ? selecionada.icone + " " : ""}${nomeDe(selecionada)}` : vazio}</span>
     </Button></DialogTrigger>
     <DialogContent className="max-w-md">
       <DialogHeader><DialogTitle>{rotulo}</DialogTitle><DialogDescription>Busque pelo nome ou escolha um grupo.</DialogDescription></DialogHeader>
       <DialogBody>
-        <Input aria-label="Buscar categoria" placeholder="Buscar categoria ou grupo" value={busca} onChange={evento => setBusca(evento.target.value)} />
+        {/* Enter escolhe o primeiro resultado: cada lançamento eram três cliques. */}
+        <Input aria-label="Buscar categoria" placeholder="Buscar categoria ou grupo" value={busca} onChange={evento => setBusca(evento.target.value)}
+          onKeyDown={evento => { if (evento.key !== "Enter") return; evento.preventDefault(); const primeira = [...grupos.values()][0]?.[0]; if (primeira) escolher(primeira.id) }} />
         <div className="mt-3 flex max-h-[50dvh] flex-col gap-4 overflow-y-auto">
           <Button variant="ghost" onClick={() => escolher(null)}>{vazio}</Button>
-          {grupos.size === 0 && <p role="status" className="py-4 text-sm">Nenhuma categoria encontrada.</p>}
+          {grupos.size === 0 && <div role="status" className="grid gap-2 py-4 text-sm"><p>Nenhuma categoria encontrada.</p>
+            {busca.trim() && <Button variant="secondary" disabled={criando} onClick={() => void criar(busca.trim())}>Criar a categoria “{busca.trim()}”</Button>}</div>}
           {[...grupos].map(([grupo, categorias]) => <section key={grupo} aria-label={grupo}>
             <h3 className="mb-1 text-sm font-semibold">{grupo}</h3>
             {categorias.map(categoria => <Button key={categoria.id} variant={categoria.id === valor ? "secondary" : "ghost"} aria-pressed={categoria.id === valor} onClick={() => escolher(categoria.id)} className="h-auto min-h-11 w-full justify-start whitespace-normal py-2 text-left">
-              <SimboloCategoria categoria={categoria} /><span className="min-w-0 break-words">{categoria.nome}</span>
+              <SimboloCategoria categoria={categoria} /><span className="min-w-0 break-words">{nomeDe(categoria)}</span>
             </Button>)}
           </section>)}
         </div>

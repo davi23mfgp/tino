@@ -212,7 +212,7 @@ export default function Transacoes() {
 
   async function salvarEdicao(
     id: string,
-    parcial: Partial<Pick<Transacao, "descricao" | "valorCentavos" | "categoriaId" | "data">> & { criarRegra?: boolean },
+    parcial: Partial<Pick<Transacao, "descricao" | "valorCentavos" | "categoriaId" | "data">> & { criarRegra?: boolean; contaId?: string },
   ): Promise<boolean> {
     if (salvamentoEmCurso.current) return false
     salvamentoEmCurso.current = true
@@ -220,7 +220,7 @@ export default function Transacoes() {
     try {
       await enviar(`/api/transacoes/${id}`, parcial, "PATCH")
       // A ficha aberta mostra o valor novo sem esperar a lista recarregar.
-      setAberto((atual) => (atual && atual.id === id ? { ...atual, ...parcial, categoria: parcial.categoriaId !== undefined ? categorias.find((c) => c.id === parcial.categoriaId) ?? null : atual.categoria } as Transacao : atual))
+      setAberto((atual) => (atual && atual.id === id ? { ...atual, ...parcial, categoria: parcial.categoriaId !== undefined ? categorias.find((c) => c.id === parcial.categoriaId) ?? null : atual.categoria, conta: parcial.contaId ? { ...atual.conta, nome: contas.find((c) => c.id === parcial.contaId)?.nome ?? atual.conta.nome } : atual.conta } as Transacao : atual))
       // A revisão usa os filtros atuais, mesmo se eles mudarem enquanto o PATCH termina.
       atualizar()
       return true
@@ -486,6 +486,7 @@ export default function Transacoes() {
         categorias={categorias}
         aoFechar={() => setAberto(null)}
         aoSalvar={salvarEdicao}
+        contas={contas}
         aoExcluir={excluir}
         aoEscolherLoja={(lancamento) => { setAberto(null); setLojaDe(transacoes.find((t) => t.id === lancamento.id) ?? null) }}
       />

@@ -112,7 +112,9 @@ export function Navegacao({ mei, apenasLoja, nome, simples }: { mei?: boolean; a
         {extras.map(grupo => {
           const dentro = grupo.itens.some(item => estaAtivo(caminho, item.rota))
           return <details key={grupo.chave} open={dentro} className="app-nav-grupo">
-            <summary className="app-nav-item"><ChevronRight className="size-4 shrink-0" aria-hidden /><span>{grupo.titulo}</span></summary>
+            {/* Clicar no grupo também abre a primeira tela dele: só expandir parecia
+                que o clique não tinha feito nada (relatório de 21/10/2026). */}
+            <summary className="app-nav-item" onClick={() => { if (!dentro) router.push(grupo.itens[0].rota) }}><ChevronRight className="size-4 shrink-0" aria-hidden /><span>{grupo.titulo}</span></summary>
             <div className="space-y-1 pl-3">
               {grupo.itens.map(item => {
                 const ativo = estaAtivo(caminho, item.rota)

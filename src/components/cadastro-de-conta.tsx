@@ -43,10 +43,13 @@ const TIPOS = [
  * mundo chamaria a conta assim mesmo; digitar "Cartão Nubank" depois de
  * tocar no logo do Nubank e em "Cartão de crédito" era trabalho repetido.
  */
-function nomeSugerido(banco: string, tipo: string) {
+function nomeSugerido(banco: string, tipo: string, bandeira = "") {
   if (tipo === "DINHEIRO") return "Carteira"
   if (!banco) return ""
-  if (tipo === "CARTAO_CREDITO") return `Cartão ${banco}`
+  // Com a bandeira no nome, dois cartões do mesmo banco não ficam iguais
+  // ("Cartão Itaú" duas vezes, relatório de 21/10/2026).
+  const rotuloBandeira = BANDEIRAS.find((b) => b.valor === bandeira)?.rotulo
+  if (tipo === "CARTAO_CREDITO") return rotuloBandeira ? `${banco} ${rotuloBandeira}` : `Cartão ${banco}`
   if (tipo === "POUPANCA") return `Poupança ${banco}`
   if (tipo === "INVESTIMENTO") return `Investimentos ${banco}`
   if (tipo === "PJ_MEI") return `${banco} MEI`
@@ -213,9 +216,9 @@ export function CadastroDeConta({
               <small>{banco.nome}</small>
             </button>
           ))}
-          {semLogo.length > 0 && <p className={estilos.secao}>Corretoras sem logo no catálogo</p>}
+          {semLogo.length > 0 && <p className={estilos.secao}>Sem logo no catálogo</p>}
           {semLogo.map((banco) => (
-            <button key={banco.nome} type="button" role="listitem" className={estilos.banco} onClick={() => escolher(banco.nome, "INVESTIMENTO")}>
+            <button key={banco.nome} type="button" role="listitem" className={estilos.banco} onClick={() => escolher(banco.nome, banco.investimento ? "INVESTIMENTO" : undefined)}>
               <Logo nome={banco.nome} />
               <small>{banco.nome}</small>
             </button>
@@ -338,7 +341,7 @@ export function CadastroDeConta({
               </Field>
               <Field>
                 <FieldLabel htmlFor="conta-bandeira">Bandeira</FieldLabel>
-                <SelectNative id="conta-bandeira" value={nova.bandeira} onChange={(evento) => setNova({ ...nova, bandeira: evento.target.value })}>
+                <SelectNative id="conta-bandeira" value={nova.bandeira} onChange={(evento) => setNova({ ...nova, bandeira: evento.target.value, nome: nomeEditado ? nova.nome : nomeSugerido(nova.instituicao, nova.tipo, evento.target.value) })}>
                   <option value="">Não informar</option>
                   {BANDEIRAS.map((bandeira) => (
                     <option key={bandeira.valor} value={bandeira.valor}>

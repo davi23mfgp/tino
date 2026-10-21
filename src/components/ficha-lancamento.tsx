@@ -26,13 +26,16 @@ export interface LancamentoDaFicha {
   categoriaId: string | null
   categoria?: { nome: string; icone?: string | null } | null
   conta: { nome: string }
+  contaId?: string
 }
 
 interface Props {
   lancamento: LancamentoDaFicha | null
   categorias: CategoriaSelecionavel[]
   aoFechar: () => void
-  aoSalvar: (id: string, parcial: { descricao?: string; valorCentavos?: number; data?: string; categoriaId?: string | null; criarRegra?: boolean }) => Promise<boolean>
+  aoSalvar: (id: string, parcial: { descricao?: string; valorCentavos?: number; data?: string; contaId?: string; categoriaId?: string | null; criarRegra?: boolean }) => Promise<boolean>
+  /// Contas para mover o lançamento: compra gravada no cartão errado não tinha como mudar (21/10/2026).
+  contas?: { id: string; nome: string; arquivada?: boolean }[]
   aoExcluir: (lancamento: LancamentoDaFicha) => void
   aoEscolherLoja: (lancamento: LancamentoDaFicha) => void
 }
@@ -40,11 +43,12 @@ interface Props {
 const dataLonga = (iso: string) =>
   new Date(`${iso.slice(0, 10)}T12:00:00Z`).toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "long", timeZone: "UTC" })
 
-export function FichaLancamento({ lancamento, categorias, aoFechar, aoSalvar, aoExcluir, aoEscolherLoja }: Props) {
+export function FichaLancamento({ lancamento, categorias, aoFechar, aoSalvar, aoExcluir, aoEscolherLoja, contas = [] }: Props) {
   const [editando, setEditando] = useState(false)
   const [descricao, setDescricao] = useState("")
   const [valor, setValor] = useState("")
   const [data, setData] = useState("")
+  const [contaId, setContaId] = useState("")
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState("")
 
@@ -55,6 +59,7 @@ export function FichaLancamento({ lancamento, categorias, aoFechar, aoSalvar, ao
     setDescricao(lancamento.descricao)
     setValor(formatarDecimal(lancamento.valorCentavos / 100, 2))
     setData(lancamento.data.slice(0, 10))
+    setContaId(lancamento.contaId ?? "")
   }, [lancamento])
 
   if (!lancamento) return <FichaPadrao aberta={false} aoFechar={aoFechar} titulo="Lançamento"><span /></FichaPadrao>
@@ -69,10 +74,11 @@ export function FichaLancamento({ lancamento, categorias, aoFechar, aoSalvar, ao
     if (!(centavos > 0)) return setErro("O valor tem de ser maior que zero.")
     setSalvando(true)
     setErro("")
-    const parcial: { descricao?: string; valorCentavos?: number; data?: string } = {}
+    const parcial: { descricao?: string; valorCentavos?: number; data?: string; contaId?: string } = {}
     if (descricao.trim() !== lancamento.descricao) parcial.descricao = descricao.trim()
     if (centavos !== lancamento.valorCentavos) parcial.valorCentavos = centavos
     if (data && data !== lancamento.data.slice(0, 10)) parcial.data = `${data}T12:00:00.000Z`
+    if (contaId && contaId !== lancamento.contaId) parcial.contaId = contaId
     const ok = Object.keys(parcial).length === 0 ? true : await aoSalvar(lancamento.id, parcial)
     setSalvando(false)
     if (ok) setEditando(false)
@@ -112,6 +118,13 @@ export function FichaLancamento({ lancamento, categorias, aoFechar, aoSalvar, ao
             <label className="grid gap-1.5 text-sm text-muted-fg">Valor (R$)<Input value={valor} onChange={(e) => setValor(e.target.value)} inputMode="decimal" /></label>
             <label className="grid gap-1.5 text-sm text-muted-fg">Data<Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label>
           </div>
+          {contas.length > 1 && lancamento.contaId && !transferencia && (
+            <label className="grid gap-1.5 text-sm text-muted-fg">Conta ou cartão
+              <select value={contaId} onChange={(e) => setContaId(e.target.value)} className="h-11 rounded-[var(--raio-campo)] border border-input bg-transparent px-3 text-foreground">
+                {contas.filter((c) => !c.arquivada || c.id === lancamento.contaId).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+              </select>
+            </label>
+          )}
         </div>
       ) : (
         <>
