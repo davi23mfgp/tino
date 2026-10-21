@@ -3,6 +3,7 @@
  * categoriza e grava — tudo numa transação só.
  */
 
+import { movimentosInternos } from "@/lib/importar/movimento-interno"
 import { createHash } from "crypto"
 
 import { prisma } from "@/lib/prisma"
@@ -63,7 +64,11 @@ export function impressaoDigital(params: {
   return createHash("sha256").update(base).digest("hex").slice(0, 32)
 }
 
-export interface PreviaLancamento extends LancamentoBruto {
+export interface PreviaLancamento extends Omit<LancamentoBruto, "tipo"> {
+  /// TRANSFERENCIA: pagamento de fatura no extrato (ver `movimentosInternos`).
+  tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
+  /// Por que o Tino deixou fora ou virou transferência: a prévia mostra.
+  interno?: string
   hashImport: string
   possivelDuplicada?: boolean
   duplicada: boolean
@@ -257,6 +262,15 @@ export async function previaImportacao(params: {
     }
   })
 
+  // Pagamento de fatura e Pix no crédito não são gasto nem renda.
+  const internos = movimentosInternos(lancamentos, params.faturaCartao ?? false)
+  for (const [indice, decisao] of internos) {
+    const linha = lancamentos[indice] as PreviaLancamento
+    linha.interno = decisao.motivo
+    if (decisao.acao === "fora") linha.duplicada = true
+    else { linha.tipo = "TRANSFERENCIA"; linha.categoriaId = undefined; linha.categoriaNome = undefined }
+  }
+
   // O que regra, dicionário e ramo do banco não cobriram vai para a IA — só
   // gasto, sem transferência para pessoa, e só com categorias do próprio lar.
   const semCategoria = lancamentos.filter(
@@ -296,7 +310,7 @@ export async function previaImportacao(params: {
     total: lancamentos.length,
     novas: lancamentos.filter((lancamento) => !lancamento.duplicada).length,
     duplicadas: lancamentos.filter((lancamento) => lancamento.duplicada).length,
-    semCategoria: lancamentos.filter((lancamento) => !lancamento.categoriaId && !lancamento.duplicada).length,
+    semCategoria: lancamentos.filter((lancamento) => !lancamento.categoriaId && !lancamento.duplicada && lancamento.tipo !== "TRANSFERENCIA").length,
     lancamentos,
     avisos,
     conferencia,
@@ -324,7 +338,7 @@ export async function confirmarImportacao(params: {
     descricao: string
     descricaoOriginal?: string
     valorCentavos: number
-    tipo: "RECEITA" | "DESPESA"
+    tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
     categoriaId?: string | null
     hashImport: string
     duplicada?: boolean

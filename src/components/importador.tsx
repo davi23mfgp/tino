@@ -22,7 +22,8 @@ interface LancamentoPrevia {
   descricao: string
   descricaoSugerida: string
   valorCentavos: number
-  tipo: "RECEITA" | "DESPESA"
+  tipo: "RECEITA" | "DESPESA" | "TRANSFERENCIA"
+  interno?: string
   possivelDuplicada?: boolean
   hashImport: string
   duplicada: boolean
@@ -329,7 +330,7 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
   const datas = previa.lancamentos.map((l) => l.data).sort()
   const periodo = datas.length ? (diaCurto(datas[0]) === diaCurto(datas[datas.length - 1]) ? `em ${diaCurto(datas[0])}` : `de ${diaCurto(datas[0])} a ${diaCurto(datas[datas.length - 1])}`) : ""
 
-  const visiveis = previa.lancamentos.filter((l) => filtro === "todos" || (filtro === "sem-categoria" ? !l.categoriaId && !l.duplicada : l.duplicada))
+  const visiveis = previa.lancamentos.filter((l) => filtro === "todos" || (filtro === "sem-categoria" ? !l.categoriaId && !l.duplicada && l.tipo !== "TRANSFERENCIA" : l.duplicada))
   // Agrupado por dia, na ordem em que o banco mandou (a mais nova primeiro).
   const porDia = new Map<string, LancamentoPrevia[]>()
   for (const l of visiveis) porDia.set(l.data.slice(0, 10), [...(porDia.get(l.data.slice(0, 10)) ?? []), l])
@@ -379,7 +380,7 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
         <div className={estilos.filtros} role="group" aria-label="Filtrar a prévia">
           <button type="button" aria-pressed={filtro === "todos"} onClick={() => aoFiltrar("todos")}>Todos · {previa.total}</button>
           <button type="button" aria-pressed={filtro === "sem-categoria"} data-alerta={previa.semCategoria > 0 || undefined} onClick={() => aoFiltrar("sem-categoria")}>Sem categoria · {previa.semCategoria}</button>
-          <button type="button" aria-pressed={filtro === "existiam"} onClick={() => aoFiltrar("existiam")}>Já existiam · {previa.duplicadas}</button>
+          <button type="button" aria-pressed={filtro === "existiam"} onClick={() => aoFiltrar("existiam")}>Já existiam ou ficam fora · {previa.duplicadas}</button>
         </div>
         {dias.length === 0 ? (
           <p className={estilos.vazio}>{filtro === "sem-categoria" ? "Todos os lançamentos novos têm categoria." : "Nenhum lançamento aqui."}</p>
@@ -392,7 +393,19 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
                   <div key={l.hashImport} className={estilos.linha} data-fora={l.duplicada || undefined}>
                     <div>
                       <strong>{l.descricaoSugerida}</strong>
-                      {l.duplicada && !l.possivelDuplicada ? (
+                      {l.interno ? (
+                        // Movimento entre as próprias contas: o motivo fica
+                        // escrito, e o que ficou fora pode entrar com um toque.
+                        <>
+                          <small>{l.tipo === "TRANSFERENCIA" ? "transferência" : "fica fora"}: {l.interno}</small>
+                          {l.tipo !== "TRANSFERENCIA" && (
+                            <label className={estilos.incluir}>
+                              <Checkbox aria-label={`Incluir ${l.descricaoSugerida} mesmo assim`} checked={!l.duplicada} onChange={(evento) => aoMudar(l.hashImport, { duplicada: !evento.target.checked })} />
+                              incluir mesmo assim
+                            </label>
+                          )}
+                        </>
+                      ) : l.duplicada && !l.possivelDuplicada ? (
                         <small>já importado antes</small>
                       ) : (
                         <SeletorCategoria
