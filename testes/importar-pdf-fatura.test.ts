@@ -187,3 +187,10 @@ describe("lerData recusa data impossível", () => {
     assert.equal(dia(lerData("29/02/2028")!), "2028-02-29")
   })
 })
+
+it("extrato de conta: SALDO DO DIA é informativo e não vira entrada", () => {
+  const texto = ["28/06/2026 PIX RECEBIDO JOAO 150,00", "29/06/2026 SALDO DO DIA 2.398,42", "29/06/2026 PAY -COMPR 28/06 -59,68", "30/06/2026 SALDO ANTERIOR 1.000,00"].join("\n")
+  const { lancamentos } = interpretarTextoPdf(texto, { hoje })
+  assert.equal(lancamentos.some((l) => /saldo/i.test(l.descricao)), false)
+  assert.equal(lancamentos.length, 2)
+})

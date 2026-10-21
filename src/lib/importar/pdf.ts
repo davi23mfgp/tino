@@ -21,6 +21,8 @@ import { lerData } from "@/lib/datas"
 import { paraCentavos } from "@/lib/dinheiro"
 import type { LancamentoBruto } from "@/lib/importar/ofx"
 
+const SALDO_INFORMATIVO = /^\s*(saldo (do dia|anteri|total|final|em c\/c|dispon)|sdo cta)/i
+
 export interface ConferenciaFatura {
   /// Soma que a própria fatura declara (ex.: "Lançamentos atuais", "Despesas do mês").
   informadoCentavos: number
@@ -131,6 +133,8 @@ function lerExtrato(linhas: string[], anoPadrao: number) {
       .replace(casaValor[0], "")
       .replace(/\s{2,}/g, " ")
       .trim()
+    // "SALDO DO DIA" tem data e valor como um lançamento, mas é só o saldo.
+    if (SALDO_INFORMATIVO.test(descricao)) continue
 
     // Alguns bancos marcam o sinal com "D"/"C" no fim em vez do menos.
     const marcador = casaValor[2]
@@ -232,6 +236,10 @@ function lerFatura(linhas: string[], hoje: Date) {
     const valorCentavos = paraCentavos(casaValor[3])
     // "Saldo restante da fatura anterior R$ 0,00": informativo, não é lançamento.
     if (valorCentavos === 0) return
+    // Extrato de conta (Itaú e outros) imprime o saldo de cada dia com data e
+    // valor, igual a um lançamento. Lido como entrada, o "SALDO DO DIA" de 31
+    // dias somava dezenas de receitas que nunca existiram.
+    if (SALDO_INFORMATIVO.test(texto)) return
 
     const dataImpressa = ano ? lerData(`${dia}/${mes}/${ano}`) : dataSemAno(dia, mes, ancora)
     if (!dataImpressa) {
