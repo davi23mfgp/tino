@@ -25,6 +25,7 @@ interface Fixa {
 interface Variavel { categoriaId: string; nome: string; limiteCentavos: number; gastoCentavos: number }
 interface Dados {
   competencia: string
+  rendaOrigem: "entradas" | "cadastro" | null
   fixas: Fixa[]
   variaveis: Variavel[]
   resumo: ResumoMeuMes
@@ -139,7 +140,7 @@ export default function MeuMes() {
             <i style={{ flex: Math.max(0, 10_000 - resumo.fixoBps - resumo.variavelBps) }} />
           </div>
           <p className={estilos.referencia} data-alerta={resumo.fixoAcimaDaReferencia || undefined}>
-            De {formatarMoeda(resumo.rendaCentavos)} de renda: fixo {pct(resumo.fixoBps)} · variável {pct(resumo.variavelBps)}. Referência: fixo até {pct(FIXO_REFERENCIA_BPS)} da renda.
+            De {formatarMoeda(resumo.rendaCentavos)} de renda{dados.rendaOrigem === "cadastro" ? " (a que você informou no cadastro; cadastre as entradas fixas para o Tino usar o valor real)" : ""}: fixo {pct(resumo.fixoBps)} · variável {pct(resumo.variavelBps)}. Referência: fixo até {pct(FIXO_REFERENCIA_BPS)} da renda.
           </p>
         </>
       ) : (

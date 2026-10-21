@@ -44,16 +44,24 @@ export function SeletorCategoria({ opcoes, valor, aoMudar, rotulo = "Categoria",
   const [busca, setBusca] = useState("")
   const normalizar = (texto: string) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
   const selecionada = opcoes.find(categoria => categoria.id === valor)
+  // "Transferência" existe como entrada e como saída; com o mesmo nome duas
+  // vezes na lista, a pessoa não sabia qual escolher.
+  const repetidos = new Set(opcoes.map(c => c.nome).filter((nome, i, todos) => todos.indexOf(nome) !== i))
+  const nomeDe = (c: CategoriaSelecionavel) => repetidos.has(c.nome) && c.tipo ? `${c.nome} (${c.tipo === "RECEITA" ? "entrada" : c.tipo === "DESPESA" ? "saída" : "entre contas"})` : c.nome
   const grupos = new Map<string, CategoriaSelecionavel[]>()
   for (const categoria of opcoes) {
     const grupo = GRUPOS_CATEGORIA[categoria.grupo ?? "OUTROS"] ?? categoria.grupo ?? "Outros"
     if (!normalizar(categoria.nome + " " + grupo).includes(normalizar(busca))) continue
     grupos.set(grupo, [...(grupos.get(grupo) ?? []), categoria])
   }
-  function escolher(id: string | null) { aoMudar(id); setAberto(false) }
+  // Fecha a janela antes de avisar a tela. Na prévia da importação, com o
+  // filtro "Sem categoria", a escolha tira a linha da lista e desmonta este
+  // seletor: desmontado com a janela aberta, o diálogo deixava a página toda
+  // sem clique (relatório de primeiro uso, 21/10/2026).
+  function escolher(id: string | null) { setAberto(false); window.setTimeout(() => aoMudar(id), 180) }
   return <Dialog open={aberto} onOpenChange={valor => { setAberto(valor); if(valor) setBusca("") }}>
     <DialogTrigger asChild><Button variant="outline" disabled={desabilitado} aria-label={rotulo} className={className}>
-      <span className="truncate">{selecionada ? `${selecionada.icone && /\p{Extended_Pictographic}/u.test(selecionada.icone) ? selecionada.icone + " " : ""}${selecionada.nome}` : vazio}</span>
+      <span className="truncate">{selecionada ? `${selecionada.icone && /\p{Extended_Pictographic}/u.test(selecionada.icone) ? selecionada.icone + " " : ""}${nomeDe(selecionada)}` : vazio}</span>
     </Button></DialogTrigger>
     <DialogContent className="max-w-md">
       <DialogHeader><DialogTitle>{rotulo}</DialogTitle><DialogDescription>Busque pelo nome ou escolha um grupo.</DialogDescription></DialogHeader>
@@ -65,7 +73,7 @@ export function SeletorCategoria({ opcoes, valor, aoMudar, rotulo = "Categoria",
           {[...grupos].map(([grupo, categorias]) => <section key={grupo} aria-label={grupo}>
             <h3 className="mb-1 text-sm font-semibold">{grupo}</h3>
             {categorias.map(categoria => <Button key={categoria.id} variant={categoria.id === valor ? "secondary" : "ghost"} aria-pressed={categoria.id === valor} onClick={() => escolher(categoria.id)} className="h-auto min-h-11 w-full justify-start whitespace-normal py-2 text-left">
-              <SimboloCategoria categoria={categoria} /><span className="min-w-0 break-words">{categoria.nome}</span>
+              <SimboloCategoria categoria={categoria} /><span className="min-w-0 break-words">{nomeDe(categoria)}</span>
             </Button>)}
           </section>)}
         </div>

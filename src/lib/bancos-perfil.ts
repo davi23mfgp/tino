@@ -80,6 +80,8 @@ export const BANCOS_PERFIL: BancoPerfil[] = [
   { nome: "RecargaPay", aliases: [], logo: "/bancos/recargapay.png", cor: "#fc843c" },
   { nome: "Wise", aliases: ["transferwise"] },
   { nome: "N26", aliases: ["banco n26"] },
+  { nome: "bunq", aliases: ["bunq bank"] },
+  { nome: "Millennium", aliases: ["millennium bcp", "bcp", "millenium"] },
   { nome: "American Express", aliases: ["amex"] },
   { nome: "Chase", aliases: ["jpmorgan chase"] },
   { nome: "HSBC", aliases: ["hongkong shanghai banking"] },

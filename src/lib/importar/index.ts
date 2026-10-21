@@ -169,7 +169,10 @@ export async function previaImportacao(params: {
     }
 
     if (naoReconhecidas > 0) {
-      avisos.push(`${naoReconhecidas} linha(s) do PDF não foram reconhecidas. Confira o extrato antes de confirmar.`)
+      // Mostra o texto das linhas: só o número obrigava a reler o PDF inteiro
+      // para achar qual era (relatório de primeiro uso, 21/10/2026).
+      const exemplos = resultado.naoReconhecidas.slice(0, 3).map((linha) => `"${linha.slice(0, 80)}"`).join("; ")
+      avisos.push(`${naoReconhecidas === 1 ? "1 linha do PDF não foi reconhecida" : `${naoReconhecidas} linhas do PDF não foram reconhecidas`}: ${exemplos}${naoReconhecidas > 3 ? " e outras" : ""}. Confira se alguma é um lançamento antes de confirmar.`)
     }
     if (params.faturaCartao && !conferencia && brutos.length > 0) {
       avisos.push("A fatura não traz um total legível para conferir a soma. Confira linha a linha antes de importar.")
