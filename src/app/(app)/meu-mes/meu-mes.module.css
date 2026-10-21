@@ -58,3 +58,5 @@
 .soWeb { display:none !important; }
 @media (min-width:1024px) { .soWeb { display:flex !important; } }
 .erro { color:var(--negativo); font-size:14px; }
+
+.campoFim { grid-column:1 / -1; display:grid; gap:4px; font-size:calc(12.5px * var(--escala-letra)); color:var(--texto-3); }

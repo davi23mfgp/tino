@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { showToast } from "@/components/ui/toast"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Check, ChevronDown, FileText, Mail, Upload } from "lucide-react"
 
@@ -197,16 +198,38 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
   }
 
   /** Muda uma linha da prévia e refaz as contagens a partir da lista. */
+  // O aviso sai fora do setPrevia: em desenvolvimento o React roda a
+  // atualização duas vezes, e o aviso aparecia repetido.
+  const avisoEmMassa = useRef(0)
+  useEffect(() => {
+    const iguais = avisoEmMassa.current
+    if (!iguais) return
+    avisoEmMassa.current = 0
+    showToast(`Mais ${iguais} ${iguais === 1 ? "lançamento igual recebeu" : "lançamentos iguais receberam"} a mesma categoria`)
+  })
   function mudarLinha(hash: string, mudanca: Partial<LancamentoPrevia>) {
     setPrevia((atual) => {
       if (!atual) return atual
-      const lancamentos = atual.lancamentos.map((l) => (l.hashImport === hash ? { ...l, ...mudanca } : l))
+      // Categoria escolhida vale para as outras linhas com a mesma descrição
+      // ainda sem categoria: categorizar 150 compras uma por uma era inviável
+      // (relatório de primeiro uso, 21/10/2026). Só preenche vazio, nunca
+      // troca o que a pessoa ou a regra já escolheu.
+      const alvo = atual.lancamentos.find((l) => l.hashImport === hash)
+      const chave = (texto: string) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/gi, "").toLowerCase()
+      const emMassa = mudanca.categoriaId && alvo ? chave(alvo.descricaoSugerida) : null
+      let iguais = 0
+      const lancamentos = atual.lancamentos.map((l) => {
+        if (l.hashImport === hash) return { ...l, ...mudanca }
+        if (emMassa && !l.categoriaId && !l.duplicada && l.tipo === alvo?.tipo && chave(l.descricaoSugerida) === emMassa) { iguais++; return { ...l, ...mudanca } }
+        return l
+      })
+      if (iguais > 0) avisoEmMassa.current = iguais
       return {
         ...atual,
         lancamentos,
         novas: lancamentos.filter((l) => !l.duplicada).length,
         duplicadas: lancamentos.filter((l) => l.duplicada).length,
-        semCategoria: lancamentos.filter((l) => !l.categoriaId && !l.duplicada).length,
+        semCategoria: lancamentos.filter((l) => !l.categoriaId && !l.duplicada && l.tipo !== "TRANSFERENCIA").length,
       }
     })
   }

@@ -206,12 +206,16 @@ function NovaFixa({ contaId, aoSalvar, aoCancelar }: { contaId: string | null; a
   const [nome, setNome] = useState("")
   const [valor, setValor] = useState("")
   const [dia, setDia] = useState("10")
+  // "Termina em" (mês): academia até janeiro, parcela que acaba. Sem fim, a
+  // conta seguia na projeção para sempre (relatório de primeiro uso).
+  const [fim, setFim] = useState("")
   if (!contaId) return <p className={estilos.dica}>Cadastre uma conta em Ajustes, Bancos e contas, para lançar as contas fixas nela.</p>
   return (
-    <form className={`${estilos.planilha} ${estilos.novaForm}`} onSubmit={(e) => { e.preventDefault(); if (nome.trim()) aoSalvar({ descricao: nome.trim(), valorCentavos: paraCentavos(valor || "0"), diaVencimento: Math.min(31, Math.max(1, Number(dia) || 10)), contaId }) }}>
+    <form className={`${estilos.planilha} ${estilos.novaForm}`} onSubmit={(e) => { e.preventDefault(); if (nome.trim()) aoSalvar({ descricao: nome.trim(), valorCentavos: paraCentavos(valor || "0"), diaVencimento: Math.min(31, Math.max(1, Number(dia) || 10)), contaId, fimEm: fim ? new Date(Date.UTC(Number(fim.slice(0, 4)), Number(fim.slice(5, 7)), 0, 12)).toISOString() : null }) }}>
       <input autoFocus placeholder="Nome (ex.: Aluguel)" value={nome} onChange={(e) => setNome(e.target.value)} maxLength={120} aria-label="Nome" />
       <input inputMode="decimal" placeholder="Valor" value={valor} onChange={(e) => setValor(e.target.value)} aria-label="Valor" />
       <input inputMode="numeric" placeholder="Dia" value={dia} onChange={(e) => setDia(e.target.value)} aria-label="Dia do vencimento" />
+      <label className={estilos.campoFim}>Termina em (opcional)<input type="month" value={fim} onChange={(e) => setFim(e.target.value)} aria-label="Termina em" /></label>
       <button type="button" className={estilos.botao} onClick={aoCancelar}>Cancelar</button>
       <button type="submit" className={estilos.botao} data-principal>Adicionar</button>
     </form>

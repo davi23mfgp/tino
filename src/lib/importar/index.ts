@@ -262,6 +262,26 @@ export async function previaImportacao(params: {
     }
   })
 
+  // Já lançado em OUTRA conta (fatura importada no cartão antigo, compra
+  // anotada à mão): o hash só olha a mesma conta, e a fatura Visa do Davi
+  // mostrou "Já existiam: 0" com 72 compras já no app (21/10/2026).
+  if (lancamentos.length > 0) {
+    const datas = lancamentos.map((l) => l.data.getTime())
+    const deOutras = await prisma.transacao.findMany({
+      where: { larId: params.larId, contaId: { not: params.contaId }, data: { gte: new Date(Math.min(...datas) - 86_400_000), lte: new Date(Math.max(...datas) + 86_400_000) } },
+      select: { data: true, valorCentavos: true, descricao: true, descricaoOriginal: true, conta: { select: { nome: true } } },
+    })
+    const letras = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/gi, "").toLowerCase()
+    for (const linha of lancamentos) {
+      if (linha.duplicada) continue
+      const dia = linha.data.toISOString().slice(0, 10)
+      const minha = letras(linha.descricao).slice(0, 6)
+      const igual = deOutras.find((t) => t.valorCentavos === linha.valorCentavos && t.data.toISOString().slice(0, 10) === dia
+        && minha.length >= 3 && letras(t.descricaoOriginal ?? t.descricao).includes(minha))
+      if (igual) { linha.duplicada = true; linha.interno = `já está em ${igual.conta.nome} (mesmo dia e valor)` }
+    }
+  }
+
   // Pagamento de fatura e Pix no crédito não são gasto nem renda.
   const internos = movimentosInternos(lancamentos, params.faturaCartao ?? false)
   for (const [indice, decisao] of internos) {
