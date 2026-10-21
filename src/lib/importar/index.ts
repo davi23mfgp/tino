@@ -324,6 +324,15 @@ export async function previaImportacao(params: {
     )
   }
 
+  // O período só aparecia em letra pequena: o extrato de jan a jun entrou
+  // como se fosse o mês atual (relatório de primeiro uso, 21/10/2026).
+  if (lancamentos.length > 0 && !params.faturaCartao) {
+    const tempos = lancamentos.map((l) => l.data.getTime())
+    const ultimo = new Date(Math.max(...tempos))
+    const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { timeZone: "UTC" })
+    const inicioDoMes = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1))
+    if (ultimo < inicioDoMes) avisos.push(`Este arquivo vai de ${fmt(new Date(Math.min(...tempos)))} a ${fmt(ultimo)} e não chega ao mês atual. Os lançamentos entram nos meses deles; para o mês de agora, importe um extrato mais recente.`)
+  }
   if(lancamentos.some(l=>l.possivelDuplicada))avisos.push("Há possíveis repetições de gastos recebidos do celular. Foram desmarcadas; confira e selecione apenas se forem compras diferentes.")
   return {
     formato,
