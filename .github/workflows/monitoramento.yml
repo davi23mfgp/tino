@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Conferir idade do último backup restaurado
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const titulo = '[Monitor Tino] Backup ausente ou atrasado';
@@ -71,7 +71,7 @@ jobs:
           JS
       - name: Abrir ou resolver alerta de indisponibilidade
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RESULTADO: ${{ steps.saude.outcome }}
         with:
