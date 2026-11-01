@@ -34,7 +34,7 @@ jobs:
           node scripts/restaurar-backup.mjs .backups/*.dump.enc
           psql "$RESTAURACAO_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1 FROM "Usuario" LIMIT 0' > /dev/null
           psql "$RESTAURACAO_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1 FROM "Transacao" LIMIT 0' > /dev/null
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: backup-cifrado-${{ github.run_id }}
           path: .backups/*.dump.enc
