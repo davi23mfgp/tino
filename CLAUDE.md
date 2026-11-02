@@ -188,6 +188,13 @@ escritório só na Fase 5. A lista completa está em `docs/PLANO-FASES.md`.
   estranhas no computador. Testar e mandar captura dos dois, e do tema
   claro no celular.
 - Vidro líquido e gradiente continuam em todos os temas.
+- **Tudo que mudar no desenho passa pelo Claude Design antes** (Davi,
+  02/11/2026: "tudo que mudar me mostre do claude design para aprovar").
+  Vale também para limpeza e reorganização de telas, não só tela nova.
+- **Skills do projeto** (02/11/2026): `frontend-design` (Anthropic) para a
+  direção visual, `find-skills` (Vercel) para achar skill que falte, e
+  `cavecrew` com os agentes `cavecrew-*` em `.claude/agents` para busca e
+  revisão de código com resposta curta.
 - **Mudança de desenho só depois do canvas** (29/09/2026: "nas coisas que
   pedir pra mexer que é design não mexa sem antes ver no Claude Design").
   Mesmo quando o Davi descreve o jeito exato, a mudança visual vai primeiro
