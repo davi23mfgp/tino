@@ -230,6 +230,7 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 /** Título da página no cabeçalho — mesma lista das abas, nunca um mapa à parte. */
 /** Telas que não estão no menu mas precisam de título no topo; sem nome aqui, o topo dizia só "Tino" (inventário de 07/10/2026). */
 const TITULOS_FORA_DO_MENU: Record<string, string> = {
+  "/montar": "Montar o seu Tino",
   "/orcamento": "Orçamento",
   "/recorrencias": "Contas fixas",
   "/loja/comecar": "Seu negócio",
