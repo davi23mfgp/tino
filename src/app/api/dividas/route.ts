@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma"
-import { ErroDeUso, comSessao, corpo, exigir, ok } from "@/lib/api"
+import { ErroDeUso, comSessao, corpo, ok } from "@/lib/api"
+import { campo, validar, z } from "@/lib/validar"
+import { TipoDivida } from "@prisma/client"
 import { compararEstrategias, ordenarDividas, planejarQuitacao } from "@/lib/financeiro"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
@@ -41,47 +43,40 @@ export const GET = comSessao(async (sessao, requisicao) => {
   })
 })
 
-/**
- * Centavos vindos do cliente.
- *
- * `Number("muito")` é `NaN`, e `Math.abs(NaN)` continua `NaN`: o valor chegava
- * inteiro no Prisma, o Postgres recusava e a pessoa via "algo deu errado" com
- * status 500 — erro de servidor para um dado que ela digitou. Agora é 400 com
- * o nome do campo.
- */
-function inteiroDeDinheiro(valor: unknown, rotulo: string) {
-  const numero = Math.abs(Number(exigir(valor, rotulo)))
-  if (!Number.isFinite(numero) || !Number.isSafeInteger(numero) || numero > 2_147_483_647) {
-    throw new ErroDeUso(`${rotulo}: use um valor em centavos.`)
-  }
-  return numero
-}
-
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{
-    credor: string
-    tipo?: string
-    saldoDevedorCentavos: number
-    jurosMensalBps?: number
-    parcelaCentavos?: number
-    parcelasTotal?: number
-    parcelasPagas?: number
-    diaVencimento?: number
-    observacao?: string
-  }>(requisicao)
+  // Antes os números entravam crus: taxa negativa, parcela fracionada e tipo
+  // inventado chegavam ao banco ou viravam erro 500 (auditoria, 10/11/2026).
+  // Mesmo critério da edição em `dividas/[id]`.
+  const dados = validar(
+    z.object({
+      credor: campo.textoObrigatorio(120),
+      tipo: z.enum(TipoDivida).default("OUTRO"),
+      saldoDevedorCentavos: campo.centavos(),
+      jurosMensalBps: campo.bps().optional(),
+      parcelaCentavos: campo.centavos().optional(),
+      parcelasTotal: campo.inteiro(1, 600).nullish(),
+      parcelasPagas: campo.inteiro(0, 600).optional(),
+      diaVencimento: campo.dia().optional(),
+      observacao: campo.texto(500).nullish(),
+    }),
+    await corpo(requisicao),
+  )
+  if (dados.parcelasTotal != null && (dados.parcelasPagas ?? 0) > dados.parcelasTotal) {
+    throw new ErroDeUso("Parcelas pagas não pode passar do total.")
+  }
 
   const divida = await prisma.divida.create({
     data: {
       larId: sessao.larId,
-      credor: exigir(dados.credor, "Informe para quem você deve").trim(),
-      tipo: (dados.tipo ?? "OUTRO") as never,
-      saldoDevedorCentavos: inteiroDeDinheiro(dados.saldoDevedorCentavos, "Informe o saldo devedor"),
+      credor: dados.credor,
+      tipo: dados.tipo,
+      saldoDevedorCentavos: dados.saldoDevedorCentavos,
       jurosMensalBps: dados.jurosMensalBps ?? 0,
       parcelaCentavos: dados.parcelaCentavos ?? 0,
       parcelasTotal: dados.parcelasTotal ?? null,
       parcelasPagas: dados.parcelasPagas ?? 0,
       diaVencimento: dados.diaVencimento ?? 10,
-      observacao: dados.observacao ?? null,
+      observacao: dados.observacao || null,
     },
   })
 
