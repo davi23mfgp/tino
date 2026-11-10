@@ -463,7 +463,8 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
   )
 }
 
-interface FaturasRecebidas { configurado: boolean; endereco: string | null; arquivos: { id: string; arquivoNome: string; criadoEm: string }[] }
+interface LeituraDaFatura { situacao: string; texto: string; totalCentavos?: number }
+interface FaturasRecebidas { configurado: boolean; endereco: string | null; temSenha?: boolean; arquivos: { id: string; arquivoNome: string; criadoEm: string; leitura?: LeituraDaFatura | null }[] }
 
 /**
  * Receber a fatura por e-mail: uma linha. Antes era um cartão inteiro no topo
@@ -473,15 +474,49 @@ function ReceberPorEmail({ contaId, aoEscolher }: { contaId: string; aoEscolher:
   const [dados, setDados] = useState<FaturasRecebidas | null>(null)
   const [erro, setErro] = useState("")
   const [abrindo, setAbrindo] = useState(false)
+  const [senha, setSenha] = useState("")
+  const [feito, setFeito] = useState("")
+  const [vez, setVez] = useState(0)
 
   useEffect(() => {
     const controle = new AbortController()
-    setDados(null)
+    if (vez === 0) setDados(null)
     buscar<FaturasRecebidas>(`/api/faturas-email?contaId=${encodeURIComponent(contaId)}`, { signal: controle.signal })
       .then(setDados)
       .catch(() => { if (!controle.signal.aborted) setErro("Não foi possível carregar as faturas recebidas.") })
     return () => controle.abort()
-  }, [contaId])
+  }, [contaId, vez])
+
+  // A senha vai e não volta: a tela só sabe se existe uma guardada. Guardar de
+  // novo troca; guardar vazio apaga.
+  async function guardarSenha(valor: string) {
+    setAbrindo(true)
+    setErro("")
+    try {
+      await enviar("/api/faturas-email", { contaId, senha: valor }, "PUT")
+      setSenha("")
+      setVez((atual) => atual + 1)
+    } catch {
+      setErro("Não foi possível guardar a senha.")
+    } finally {
+      setAbrindo(false)
+    }
+  }
+
+  async function confirmar(id: string) {
+    setAbrindo(true)
+    setErro("")
+    setFeito("")
+    try {
+      const resposta = await enviar<{ importacao: { importadas?: number } }>(`/api/faturas-email/${id}`, {}, "POST")
+      setFeito(resposta.importacao.importadas ? `Fatura lançada: ${resposta.importacao.importadas} lançamentos.` : "Fatura lançada.")
+    } catch (excecao) {
+      setErro(excecao instanceof Error && excecao.message ? excecao.message : "Não foi possível lançar. Abra em Conferir.")
+    } finally {
+      setAbrindo(false)
+      setVez((atual) => atual + 1)
+    }
+  }
 
   async function abrir(id: string, nome: string) {
     setAbrindo(true)
@@ -512,10 +547,36 @@ function ReceberPorEmail({ contaId, aoEscolher }: { contaId: string; aoEscolher:
       {dados?.arquivos.map((recebido) => (
         <div key={recebido.id}>
           <span aria-hidden><FileText /></span>
-          <p>{recebido.arquivoNome}<small>chegou em {new Date(recebido.criadoEm).toLocaleDateString("pt-BR")}</small></p>
+          <p>{recebido.arquivoNome}<small>chegou em {new Date(recebido.criadoEm).toLocaleDateString("pt-BR")}{recebido.leitura ? `. ${recebido.leitura.texto}` : ""}{recebido.leitura?.situacao === "PRONTA" && recebido.leitura.totalCentavos != null ? ` Total novo: ${(recebido.leitura.totalCentavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.` : ""}</small></p>
           <button type="button" disabled={abrindo} onClick={() => void abrir(recebido.id, recebido.arquivoNome)}>Conferir</button>
+          {recebido.leitura?.situacao === "PRONTA" && <button type="button" disabled={abrindo} onClick={() => void confirmar(recebido.id)}>Confirmar</button>}
         </div>
       ))}
+      {dados?.configurado && (
+        <form onSubmit={(evento) => { evento.preventDefault(); if (senha.trim()) void guardarSenha(senha) }}>
+          <div>
+            <span aria-hidden><FileText /></span>
+            <p>
+              Senha do PDF
+              <small>{dados.temSenha ? "guardada e cifrada. A fatura que chegar é lida sozinha e espera o seu Confirmar." : "guarde uma vez e a fatura que chegar é lida sozinha. Costuma ser parte do CPF."}</small>
+            </p>
+            {dados.temSenha && <button type="button" disabled={abrindo} onClick={() => void guardarSenha("")}>Apagar</button>}
+          </div>
+          <div>
+            <input
+              type="password"
+              autoComplete="off"
+              aria-label="Senha do PDF da fatura"
+              placeholder={dados.temSenha ? "trocar a senha" : "senha da fatura"}
+              value={senha}
+              onChange={(evento) => setSenha(evento.target.value)}
+              className="min-h-11 min-w-0 flex-1 rounded-[var(--raio-campo)] border border-pauta bg-transparent px-3 text-[calc(14px*var(--escala-letra))]"
+            />
+            <button type="submit" disabled={abrindo || !senha.trim()}>Guardar</button>
+          </div>
+        </form>
+      )}
+      {feito && <p role="status" className="text-[calc(13px*var(--escala-letra))]">{feito}</p>}
       {erro && <p role="alert" className={estilos.erro}>{erro}</p>}
     </section>
   )

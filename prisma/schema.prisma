@@ -515,6 +515,11 @@ model Conta {
   /// Regra de acúmulo e saldo informado pelo usuário, por cartão.
   pontosConfiguracao Json?
 
+  /// Senha do PDF da fatura, cifrada (`cifrarSegredo`, contexto com o id da
+  /// conta). Existe para a fatura que chega por e-mail ser lida sozinha. Nunca
+  /// sai do servidor: a tela só sabe se há senha guardada.
+  senhaFaturaCifrada String?
+
   orcamentoMensalCentavos Int?
   id                      String    @id @default(cuid())
   larId                   String
@@ -2110,6 +2115,10 @@ model FaturaRecebida {
   arquivoNome String
   conteudo    Bytes
   status      String   @default("PENDENTE")
+  /// O que a leitura automática achou (ver `ResumoDaFatura`). Nulo: ainda não
+  /// foi lida. Guarda só contagem e totais; os lançamentos são relidos na
+  /// confirmação, para o duplicado ser conferido contra o extrato daquela hora.
+  leitura     Json?
   criadoEm    DateTime @default(now())
 
   @@unique([eventoId, contaId, arquivoNome])
