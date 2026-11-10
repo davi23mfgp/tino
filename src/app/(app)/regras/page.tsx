@@ -190,6 +190,7 @@ export default function Regras() {
               <form id="form-nova-regra" onSubmit={criar}>
                 <DialogBody className="grid gap-3">
                   <input
+                    aria-label="Quando a descrição tiver"
                     value={nova.padrao}
                     onChange={(evento) => setNova({ ...nova, padrao: evento.target.value })}
                     placeholder="texto procurado (ex.: IFOOD)"
@@ -207,6 +208,7 @@ export default function Regras() {
                     />
                   </div>
                   <input
+                    aria-label="Mostrar com o nome"
                     value={nova.renomearPara}
                     onChange={(evento) => setNova({ ...nova, renomearPara: evento.target.value })}
                     placeholder="renomear para (opcional)"
