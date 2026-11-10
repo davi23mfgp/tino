@@ -188,6 +188,13 @@ Apontados pelo revisor, a conferir antes de corrigir:
 45. Rodapé sem CNPJ, contato nem endereço. Cookie de origem gravado sem aviso.
 46. Números fixos no código do site ("vence em 7 dias", "R$ 423").
 
+## Andamento
+
+- **Lote 1, 10/11/2026:** corrigidos os achados 1, 2, 3, 4, 7, 8, 9, 10, 11, 12
+  e 35, cada um reproduzido antes. Achado 6 confirmado, esperando o Davi
+  decidir a confirmação de e-mail. A corrida de dois toques em conta fixa
+  (parte do 12) não se reproduziu no teste local.
+
 ## O que já é único, e o que falta para parecer
 
 O estudo de 10/11 (`2026-11-10-revisao-geral-tino-pessoal.md`) comparou com

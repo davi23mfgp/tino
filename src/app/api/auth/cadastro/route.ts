@@ -65,46 +65,65 @@ export const POST = comPublica(async (requisicao: Request) => {
   const jaExiste = await prisma.usuario.findUnique({ where: { email }, select: { id: true } })
   if (jaExiste) return erro("Já existe uma conta com esse e-mail.", 409)
 
-  const lar = await prisma.lar.create({
-    data: {
-      nome: dados.nomeLar?.trim() || `Finanças de ${nome.split(" ")[0]}`,
-      tipo: dados.tipoLar ?? "SOLO",
-    },
-  })
+  // Do lar ao teste são seis gravações, e o semeio não roda dentro de uma
+  // transação do banco. Se uma falhava no meio, a pessoa ficava com um usuário
+  // sem categorias nem teste, e a nova tentativa batia em "já existe uma conta"
+  // (auditoria, 10/11/2026). Na falha, o lar inteiro sai (o resto cai junto em
+  // cascata) e a pessoa pode tentar de novo.
+  let larCriado: string | null = null
+  let criado: { lar: { id: string }; membro: { id: string; papel: string }; usuario: { id: string } }
+  try {
+    criado = await (async () => {
+    const lar = await prisma.lar.create({
+      data: {
+        nome: dados.nomeLar?.trim() || `Finanças de ${nome.split(" ")[0]}`,
+        tipo: dados.tipoLar ?? "SOLO",
+      },
+    })
+    larCriado = lar.id
 
-  const membro = await prisma.membro.create({
-    data: { larId: lar.id, nome, papel: "TITULAR" },
-  })
+    const membro = await prisma.membro.create({
+      data: { larId: lar.id, nome, papel: "TITULAR" },
+    })
 
-  const origemCadastro = origemDaRequisicao(requisicao) as Prisma.InputJsonValue | null
-  const usuario = await prisma.usuario.create({
-    data: {
-      email,
-      nome,
-      senhaHash: await hashSenha(senha),
-      larId: lar.id,
-      membroId: membro.id,
-      termosVersao: VERSAO_TERMOS,
-      termosAceitosEm: new Date(),
-      origemCadastro: origemCadastro ?? undefined,
-    },
-  })
+    const origemCadastro = origemDaRequisicao(requisicao) as Prisma.InputJsonValue | null
+    const usuario = await prisma.usuario.create({
+      data: {
+        email,
+        nome,
+        senhaHash: await hashSenha(senha),
+        larId: lar.id,
+        membroId: membro.id,
+        termosVersao: VERSAO_TERMOS,
+        termosAceitosEm: new Date(),
+        origemCadastro: origemCadastro ?? undefined,
+      },
+    })
 
-  // Categorias e contas padrão nascem junto: app de finanças que abre vazio
-  // faz o usuário desistir antes do primeiro lançamento.
-  await semearLar(lar.id, { modoMei: dados.modoMei ?? false })
+    // Categorias e contas padrão nascem junto: app de finanças que abre vazio
+    // faz o usuário desistir antes do primeiro lançamento.
+    await semearLar(lar.id, { modoMei: dados.modoMei ?? false })
 
-  if (dados.modoMei) {
-    const cnpj = dados.cnpj!.replace(/\D/g, "")
-    const telefoneContato = dados.telefoneContato!.replace(/\D/g, "")
-    await prisma.meiPerfil.update({ where: { larId: lar.id }, data: { cnpj, razaoSocial: dados.razaoSocial!.trim(), atividade: dados.atividade as never } })
-    await prisma.loja.create({ data: { larId: lar.id, nome: dados.razaoSocial!.trim(), cnpj, telefoneContato } })
+    if (dados.modoMei) {
+      const cnpj = dados.cnpj!.replace(/\D/g, "")
+      const telefoneContato = dados.telefoneContato!.replace(/\D/g, "")
+      await prisma.meiPerfil.update({ where: { larId: lar.id }, data: { cnpj, razaoSocial: dados.razaoSocial!.trim(), atividade: dados.atividade as never } })
+      await prisma.loja.create({ data: { larId: lar.id, nome: dados.razaoSocial!.trim(), cnpj, telefoneContato } })
+    }
+
+    // O teste começa aqui e tem data de fim gravada. Antes a tela dizia "você
+    // está no teste de 14 dias" e nada criava a assinatura: não havia data para
+    // vencer, e o teste nunca terminava.
+    await abrirTeste(usuario.id, dados.modoMei ? "loja" : "pessoal")
+
+      return { lar, membro, usuario }
+    })()
+  } catch (excecao) {
+    if (larCriado) await prisma.lar.delete({ where: { id: larCriado } }).catch(() => null)
+    throw excecao
   }
+  const { lar, membro, usuario } = criado
 
-  // O teste começa aqui e tem data de fim gravada. Antes a tela dizia "você
-  // está no teste de 14 dias" e nada criava a assinatura: não havia data para
-  // vencer, e o teste nunca terminava.
-  await abrirTeste(usuario.id, dados.modoMei ? "loja" : "pessoal")
   await registrarAcesso(requisicao, usuario.id, "CADASTRO")
 
   await gravarCookieSessao(
