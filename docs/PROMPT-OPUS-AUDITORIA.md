@@ -118,14 +118,31 @@ critério do Lote 1: sessão, dono do registro, validação de dinheiro, limite,
 transação onde duas escritas têm de valer juntas. Acrescente os achados ao
 documento da auditoria antes de corrigir.
 
-## Decisões que são do Davi (pergunte, não decida)
+## O que o Davi já decidiu (10/11/2026)
 
-- Reembolso proporcional depois dos 7 dias (o Termo público está com
-  "[A DEFINIR]").
-- Qual provedor de pagamento liga primeiro: hoje a Assinatura diz que o
-  pagamento não está disponível.
-- Logos de banco de verdade no site.
-- Confirmação de e-mail no cadastro.
+- **Sem reembolso proporcional depois dos 7 dias.** O Termo já foi corrigido.
+- **Mercado Pago primeiro.** O código está em `lib/pagamento/mercadopago.ts`.
+  Prepare o caminho inteiro (assinar, webhook, cancelar, excluir a conta
+  cancela no provedor, achado 8) e teste com o ambiente de teste do Mercado
+  Pago se houver credencial de teste; sem ela, diga exatamente o que falta. As
+  chaves de produção o Davi coloca na Vercel: nunca peça que ele cole chave no
+  chat. Stripe fica para depois.
+- **Logos de banco reais no site: pode usar.** Não troque.
+- **Tamanho da letra: você projeta.** É o passo 62 do canvas, antes de
+  qualquer outro passo visual, porque muda todas as telas. Entregue três
+  escalas (a de hoje e duas novas) aplicadas às mesmas quatro telas (Início,
+  Extrato, Balcão, barra de baixo do celular), em 390 e 1280, tema escuro e
+  claro. Critério: nenhum texto útil abaixo de 14 px no celular, rótulo da
+  barra de baixo legível sem óculos, alvo de toque de 44 px, e o Início ainda
+  cabendo o essencial na primeira tela. Diga em quem se inspirou (Nubank,
+  Apple, o modo simples da própria loja). O código só muda depois da escolha
+  do Davi, e de uma vez, pelo token `--escala-letra` e pelos tamanhos fixos
+  (`text-xs`, `text-sm`, `text-[11px]`, px em CSS module) que hoje o ignoram.
+
+## Ainda é do Davi (pergunte, não decida)
+
+- Confirmação de e-mail no cadastro (achado 6).
+- Frase de posicionamento do site (passo 69).
 
 ## Como entregar
 

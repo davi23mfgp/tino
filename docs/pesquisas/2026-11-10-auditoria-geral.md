@@ -239,13 +239,20 @@ telas órfãs e nomes (os nomes novos saem do passo 63 e 64); do grupo D, rótul
 de campo e palavras de contador; do grupo F, itens 42, 44, 45 e 46. O roteiro
 está em `docs/PROMPT-OPUS-AUDITORIA.md`.
 
-## Decisões que são do Davi
+## Decisões do Davi (10/11/2026)
 
-1. Reembolso proporcional depois dos 7 dias: sim ou não (item 5).
-2. Pagamento: qual provedor liga primeiro (item 13).
-3. Logos de banco no site: trocar por fictício (item 43).
-4. A frase "O Tino diz a data." como posicionamento único.
-5. Subir a letra (ele pediu a calibração de 0,85 em outro momento).
+1. **Reembolso proporcional depois dos 7 dias: não.** Termo corrigido no mesmo
+   dia (item 5 resolvido).
+2. **Pagamento: Mercado Pago primeiro.** O código já existe
+   (`lib/pagamento/mercadopago.ts`); falta o Davi colocar
+   `MERCADO_PAGO_ACCESS_TOKEN` e `MERCADO_PAGO_WEBHOOK_SECRET` na Vercel. O
+   Stripe fica para depois.
+3. **Logos de banco no site: pode usar.** Ficam as marcas reais (item 43
+   fechado por decisão dele; o risco de marca de terceiro continua anotado).
+4. **Frase de posicionamento: ainda não decidida.** A proposta foi explicada
+   de novo; esperando resposta.
+5. **Tamanho da letra: o Opus projeta a escala nova** (passo 62 do canvas),
+   com a escolha final do Davi.
 
 ## Limites desta auditoria
 
