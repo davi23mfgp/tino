@@ -250,7 +250,7 @@ export default async function Painel() {
             <h2 id="saude-titulo">Saúde do dinheiro</h2>
             <Link href="/analise" className={e.linkCabeca}>Ver análise →</Link>
           </div>
-          {semDados ? <p className={e.vazio}>Ainda sem dados. A nota aparece depois dos primeiros lançamentos: <Link href="/importar" className="underline">traga o extrato do banco</Link> ou <Link href="/capturas" className="underline">anote um gasto</Link>.</p> : <><div className={e.saudeCorpo}>
+          {semDados ? <p className={e.vazio}>Ainda sem dados. A nota aparece depois dos primeiros lançamentos. <Link href="/montar" className="underline">Montar o seu Tino em 5 passos</Link>.</p> : <><div className={e.saudeCorpo}>
             <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}>
               <span className={e.notaLinha}><strong>{diagnostico.nota}</strong><small className={e.notaMaximo}>/ 100</small></span>
             </div>
@@ -272,7 +272,7 @@ export default async function Painel() {
       <div className={e.grupo} data-grupo="futuro">
         <section className={e.bloco} data-area="fluxo" aria-labelledby="fluxo-titulo">
           <Cabeca id="fluxo-titulo" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" apoio="o que sobra ou falta em cada mês" />
-          {semDados && mesesFluxo.every((mes) => mes.sobra === 0) ? <p className={e.vazio}>Ainda sem dados. A projeção aparece quando houver renda, contas fixas ou lançamentos.</p> : <><div className={e.numerosFluxo}>
+          {semDados && mesesFluxo.every((mes) => mes.sobra === 0) ? <p className={e.vazio}>Ainda sem dados. A projeção aparece quando houver renda, contas fixas ou lançamentos. <Link href="/montar" className="underline">Montar o seu Tino</Link>.</p> : <><div className={e.numerosFluxo}>
             <div><small>Sobra média, 6 meses</small><Reais centavos={panorama.medias.sobraCentavos} tamanho="grande" sinal tom={panorama.medias.sobraCentavos >= 0 ? "positivo" : "negativo"} /></div>
             {proximoMes && <div><small>Se nada mudar, em {proximoMes.rotulo}</small><Reais centavos={proximoMes.sobra} tamanho="medio" sinal tom={proximoMes.sobra >= 0 ? "positivo" : "negativo"} /></div>}
           </div>

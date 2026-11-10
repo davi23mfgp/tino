@@ -53,7 +53,9 @@ export default function BemVindo() {
         const links = await enviar<{ email: string; link: string; enviado: boolean }[]>("/api/convites", { emails })
         setConvites(links); setSalvando(false); return
       }
-      router.push("/painel"); router.refresh()
+      // Renda e contas já vieram daqui; o roteiro segue de onde parou
+      // (contas fixas, limites, extrato), porque o progresso sai dos dados.
+      router.push("/montar"); router.refresh()
     } catch (e) { setErro(e instanceof Error ? e.message : "Não consegui salvar."); setSalvando(false) }
   }
   async function pular() {
