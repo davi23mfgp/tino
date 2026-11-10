@@ -76,6 +76,9 @@ export default async function Painel() {
   // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
   // passar pelo mesmo numero que aparece no topo da tela.
   const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos))
+  // Regra 3: lar sem lançamento nenhum não tem nota. O diagnóstico devolvia
+  // "50 de 100" do nada, e quem acabou de entrar lia isso como um parecer.
+  const semDados = (await prisma.transacao.count({ where: { larId: sessao.larId } })) === 0
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
   const nomesDeCategoria = new Map((await prisma.categoria.findMany({
     where: { id: { in: pendentes.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)) } },
@@ -247,7 +250,7 @@ export default async function Painel() {
             <h2 id="saude-titulo">Saúde do dinheiro</h2>
             <Link href="/analise" className={e.linkCabeca}>Ver análise →</Link>
           </div>
-          <div className={e.saudeCorpo}>
+          {semDados ? <p className={e.vazio}>Ainda sem dados. A nota aparece depois dos primeiros lançamentos: <Link href="/importar" className="underline">traga o extrato do banco</Link> ou <Link href="/capturas" className="underline">anote um gasto</Link>.</p> : <><div className={e.saudeCorpo}>
             <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}>
               <span className={e.notaLinha}><strong>{diagnostico.nota}</strong><small className={e.notaMaximo}>/ 100</small></span>
             </div>
@@ -262,14 +265,14 @@ export default async function Painel() {
             <span>1</span>
             <span className="min-w-0"><strong>{diagnostico.prioridades[0].titulo}</strong><small>{diagnostico.prioridades[0].porque}</small></span>
             {diagnostico.prioridades[0].impactoMensalCentavos ? <b>{formatarMoeda(diagnostico.prioridades[0].impactoMensalCentavos)}<small>por mês</small></b> : null}
-          </Link>}
+          </Link>}</>}
         </section>
       </div>
 
       <div className={e.grupo} data-grupo="futuro">
         <section className={e.bloco} data-area="fluxo" aria-labelledby="fluxo-titulo">
           <Cabeca id="fluxo-titulo" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" apoio="o que sobra ou falta em cada mês" />
-          <div className={e.numerosFluxo}>
+          {semDados && mesesFluxo.every((mes) => mes.sobra === 0) ? <p className={e.vazio}>Ainda sem dados. A projeção aparece quando houver renda, contas fixas ou lançamentos.</p> : <><div className={e.numerosFluxo}>
             <div><small>Sobra média, 6 meses</small><Reais centavos={panorama.medias.sobraCentavos} tamanho="grande" sinal tom={panorama.medias.sobraCentavos >= 0 ? "positivo" : "negativo"} /></div>
             {proximoMes && <div><small>Se nada mudar, em {proximoMes.rotulo}</small><Reais centavos={proximoMes.sobra} tamanho="medio" sinal tom={proximoMes.sobra >= 0 ? "positivo" : "negativo"} /></div>}
           </div>
@@ -282,7 +285,7 @@ export default async function Painel() {
               </div>
             ))}
           </div>
-          <p className={e.legendaFluxo}><span data-tipo="real" />já aconteceu <span data-tipo="previsto" />projeção</p>
+          <p className={e.legendaFluxo}><span data-tipo="real" />já aconteceu <span data-tipo="previsto" />projeção</p></>}
         </section>
 
         {panorama.dividas.lista.length > 0 && <section className={cn(e.bloco, e.dividasBloco)} data-area="dividas" aria-labelledby="dividas-titulo">
