@@ -680,6 +680,11 @@ model Transacao {
   @@index([larId, competencia])
   @@index([contaId, data])
   @@index([categoriaId])
+  /// Contas fixas, metas e dívidas apagam e atualizam os lançamentos delas:
+  /// sem índice, cada uma varria o extrato inteiro (auditoria, 10/11/2026).
+  @@index([recorrenciaId])
+  @@index([metaId])
+  @@index([dividaId])
 }
 
 /// Regra de categorização automática. Roda na importação e no reprocessamento.
@@ -1183,6 +1188,8 @@ model ChaveCaptura {
   capturas Captura[]
 
   @@index([larId])
+  /// Toda mensagem do Telegram procura a chave pela conversa.
+  @@index([chatId])
 }
 
 /// Um lançamento que chegou de fora e ainda não virou transação.
@@ -1226,6 +1233,8 @@ model Captura {
   decididoEm  DateTime?
 
   @@index([larId, status])
+  /// A conferência de "chegou uma igual agora há pouco" filtra por lar e hora.
+  @@index([larId, criadoEm])
 }
 
 // ============================================================

@@ -52,9 +52,15 @@ export const POST = comSessao(async (sessao, requisicao) => {
     if (aberto) throw new ErroDeUso("Já existe um caixa aberto. Feche antes de abrir outro.")
     if (dados.aberturaCentavos !== undefined && (!Number.isInteger(dados.aberturaCentavos) || dados.aberturaCentavos < 0)) throw new ErroDeUso("Confira o troco inicial.")
 
-    const caixa = await prisma.caixa.create({
-      data: { lojaId: loja.id, aberturaCentavos: dados.aberturaCentavos ?? 0 },
-    })
+    // A conferência acima não segura dois toques ao mesmo tempo; quem segura é
+    // o índice único parcial do banco (um caixa aberto por loja). Quem perde a
+    // corrida recebe a mesma mensagem, não um erro 500.
+    const caixa = await prisma.caixa
+      .create({ data: { lojaId: loja.id, aberturaCentavos: dados.aberturaCentavos ?? 0 } })
+      .catch((excecao: { code?: string }) => {
+        if (excecao.code === "P2002") throw new ErroDeUso("Já existe um caixa aberto. Feche antes de abrir outro.")
+        throw excecao
+      })
 
     return ok({ caixa }, 201)
   }
