@@ -13,6 +13,7 @@ import { formatarDecimal, formatarMoeda, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
 import { diasEntre, formatarData } from "@/lib/datas"
+import { avisosDeCalendario } from "@/lib/tino/avisos-calendario"
 
 export interface AlertaGerado {
   tipo: string
@@ -226,6 +227,13 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
       })
     }
   }
+
+  // ── Calendário: o que vem pela frente ─────────────────────
+  alertas.push(...avisosDeCalendario({
+    cartoes: panorama.saldoPorConta.filter((c) => c.tipo === "CARTAO_CREDITO").map((c) => ({ id: c.id, nome: c.nome, faturaCentavos: Math.abs(Math.min(0, c.saldoCentavos)), diaFechamento: c.diaFechamento ?? null })),
+    dividas: panorama.dividas.lista,
+    recorrencias: panorama.recorrenciasProximas.map((r) => ({ ...r, fimEm: r.fimEm ?? null })),
+  }, new Date()))
 
   // ── Higiene dos dados ─────────────────────────────────────
   if (panorama.mes.naoCategorizadas >= 5) {

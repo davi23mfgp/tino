@@ -48,7 +48,7 @@ export interface Panorama {
   patrimonioCentavos: number
   /// A parte que está em conta de investimento e não entra no caixa.
   aplicadoCentavos: number
-  saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null }[]
+  saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null; diaFechamento?: number | null }[]
   mes: {
     receitasCentavos: number
     despesasCentavos: number
@@ -120,7 +120,7 @@ export interface Panorama {
   projecao: ReturnType<typeof projetarFluxo>
   aposentadoria: ReturnType<typeof projetarAposentadoria> | null
   mei: (ReturnType<typeof avaliarMei> & { dasEmAberto: string[]; proximoDasEm: Date | null }) | null
-  recorrenciasProximas: { id: string; descricao: string; valorCentavos: number; tipo: string; proximaData: Date }[]
+  recorrenciasProximas: { id: string; descricao: string; valorCentavos: number; tipo: string; proximaData: Date; fimEm?: Date | null }[]
 }
 
 const bps = (parte: number, todo: number) => (todo <= 0 ? 0 : Math.round((parte / todo) * 10_000))
@@ -202,6 +202,7 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       tipo: conta.tipo as string,
       saldoCentavos: conta.saldoInicialCentavos + entradas - saidas + movidoPorTransferencia,
       limiteCentavos: conta.limiteCentavos,
+      diaFechamento: conta.diaFechamento,
     }
   })
 
@@ -558,6 +559,7 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       valorCentavos: recorrencia.valorCentavos,
       tipo: recorrencia.tipo as string,
       proximaData: recorrencia.proximaData,
+      fimEm: recorrencia.fimEm,
     })),
   }
 }
