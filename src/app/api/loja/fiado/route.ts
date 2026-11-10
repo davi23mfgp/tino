@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
+import { campo, validar, z } from "@/lib/validar"
 import { lojaDoLar } from "@/lib/loja/dados"
 import { montarDevedores, resumirFiado } from "@/lib/loja/fiado"
 
@@ -33,7 +34,9 @@ export const GET = comSessao(async (sessao) => {
  * aqui é o que faz a conta do cliente e o caderno do dono discordarem.
  */
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ vendaId: string }>(requisicao)
+  // Sem o id, o Prisma tira o campo do filtro e `findFirst` devolvia uma
+  // venda qualquer da loja, que era marcada como recebida (auditoria, 10/11).
+  const dados = validar(z.object({ vendaId: campo.id() }), await corpo(requisicao))
 
   const loja = await lojaDoLar(sessao.larId)
 

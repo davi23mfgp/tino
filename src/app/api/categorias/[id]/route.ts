@@ -47,6 +47,11 @@ export const DELETE = comSessao<Contexto>(async (sessao, requisicao, contexto) =
   // Excluir categoria com histórico deixaria meses fechados sem classificação.
   // Ou o usuário indica para onde mover, ou os lançamentos ficam sem categoria
   // de forma explícita — nunca somem.
+  // O destino tem de ser deste lar e não a própria categoria: sem isso, um id
+  // de outra conta era gravado nos lançamentos e o nome dela aparecia aqui.
+  if (destinoId && (destinoId === id || !(await prisma.categoria.findFirst({ where: { id: destinoId, larId: sessao.larId }, select: { id: true } })))) {
+    throw new ErroDeUso("Escolha outra categoria desta conta para receber os lançamentos.")
+  }
   if (categoria._count.transacoes > 0) {
     await prisma.transacao.updateMany({
       where: { larId: sessao.larId, categoriaId: id },
