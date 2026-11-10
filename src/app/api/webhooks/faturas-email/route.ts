@@ -1,6 +1,6 @@
 import {Resend} from "resend"
 import {prisma} from "@/lib/prisma"
-import {contaDoEndereco,emailConfigurado} from "@/lib/faturas-email"
+import {codigoDoGmail,contaDoEndereco,emailConfigurado} from "@/lib/faturas-email"
 import {prepararFaturaRecebida} from "@/lib/importar/fatura-recebida"
 export const maxDuration=60
 export async function POST(req:Request){
@@ -13,6 +13,14 @@ export async function POST(req:Request){
  if(!ids.length)return Response.json({ignorado:true})
  try{
  const contas=await prisma.conta.findMany({where:{id:{in:ids},arquivada:false},select:{id:true,larId:true}})
+ // Confirmação do encaminhamento do Gmail: não tem anexo, tem um código que a
+ // pessoa precisa digitar no Gmail. Guarda e mostra na tela de importar.
+ if(/forwarding-noreply@google\.com/i.test(evento.data.from)){
+  let codigo=codigoDoGmail({from:evento.data.from,subject:evento.data.subject})
+  if(!codigo){const {data:completo}=await resend.emails.receiving.get(evento.data.email_id);codigo=codigoDoGmail({from:evento.data.from,subject:completo?.subject,text:completo?.text})}
+  if(codigo)await prisma.conta.updateMany({where:{id:{in:contas.map(c=>c.id)}},data:{codigoGmail:codigo,codigoGmailEm:new Date()}})
+  return Response.json({recebido:true})
+ }
  const {data:anexos,error}=await resend.emails.receiving.attachments.list({emailId:evento.data.email_id})
  if(error||!anexos)throw new Error("Anexos indisponíveis")
  for(const anexo of anexos.data){

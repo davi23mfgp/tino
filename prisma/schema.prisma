@@ -519,6 +519,10 @@ model Conta {
   /// conta). Existe para a fatura que chega por e-mail ser lida sozinha. Nunca
   /// sai do servidor: a tela só sabe se há senha guardada.
   senhaFaturaCifrada String?
+  /// Último código de confirmação do encaminhamento do Gmail que chegou para
+  /// o endereço de faturas desta conta, e quando. A tela mostra por 7 dias.
+  codigoGmail        String?
+  codigoGmailEm      DateTime?
 
   orcamentoMensalCentavos Int?
   id                      String    @id @default(cuid())

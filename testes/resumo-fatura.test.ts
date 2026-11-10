@@ -35,3 +35,16 @@ test("extrato sem total para conferir não é lançado num toque", () => {
 test("arquivo só com duplicado não oferece nada", () => {
   assert.equal(resumoDaPrevia(previa({ novas: 0 })).situacao, "NADA_NOVO")
 })
+
+import { codigoDoGmail } from "../src/lib/faturas-email"
+
+test("código do Gmail sai do assunto, só quando vem do Google", () => {
+  const assunto = "(#123456789) Confirmação de encaminhamento do Gmail: receber e-mails de x@gmail.com"
+  assert.equal(codigoDoGmail({ from: "Equipe Gmail <forwarding-noreply@google.com>", subject: assunto }), "123456789")
+  assert.equal(codigoDoGmail({ from: "golpe@exemplo.com", subject: assunto }), null)
+})
+
+test("código do Gmail sai do corpo quando o assunto não traz", () => {
+  assert.equal(codigoDoGmail({ from: "forwarding-noreply@google.com", subject: "Gmail", text: "Código de confirmação: 987654321" }), "987654321")
+  assert.equal(codigoDoGmail({ from: "forwarding-noreply@google.com", subject: "Gmail", text: "sem código" }), null)
+})

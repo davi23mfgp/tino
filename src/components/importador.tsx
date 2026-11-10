@@ -464,7 +464,7 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
 }
 
 interface LeituraDaFatura { situacao: string; texto: string; totalCentavos?: number }
-interface FaturasRecebidas { configurado: boolean; endereco: string | null; temSenha?: boolean; arquivos: { id: string; arquivoNome: string; criadoEm: string; leitura?: LeituraDaFatura | null }[] }
+interface FaturasRecebidas { configurado: boolean; endereco: string | null; temSenha?: boolean; codigoGmail?: string | null; arquivos: { id: string; arquivoNome: string; criadoEm: string; leitura?: LeituraDaFatura | null }[] }
 
 /**
  * Receber a fatura por e-mail: uma linha. Antes era um cartão inteiro no topo
@@ -544,6 +544,15 @@ function ReceberPorEmail({ contaId, aoEscolher }: { contaId: string; aoEscolher:
           <small>{dados?.configurado ? (dados.endereco ? <>encaminhe a fatura para <code>{dados.endereco}</code></> : "ligado") : "ainda não ativado no servidor"}</small>
         </p>
       </div>
+      {dados?.codigoGmail && (
+        <div>
+          <span aria-hidden><Mail /></span>
+          <p>
+            Código do Gmail: <code>{dados.codigoGmail}</code>
+            <small>digite no Gmail, em Configurações, Encaminhamento, para ele mandar as faturas sozinho.</small>
+          </p>
+        </div>
+      )}
       {dados?.arquivos.map((recebido) => (
         <div key={recebido.id}>
           <span aria-hidden><FileText /></span>

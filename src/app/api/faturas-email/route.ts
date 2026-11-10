@@ -3,7 +3,7 @@ import {comSessao,corpo,ok,ErroDeUso} from "@/lib/api"
 import {enderecoFaturas,emailConfigurado} from "@/lib/faturas-email"
 import {cifrarSenhaDaFatura,prepararFaturaRecebida} from "@/lib/importar/fatura-recebida"
 export const maxDuration=60
-export const GET=comSessao(async(s,r)=>{const contaId=new URL(r.url).searchParams.get("contaId")??"";const conta=await prisma.conta.findFirst({where:{id:contaId,larId:s.larId,arquivada:false}});if(!conta)throw new ErroDeUso("Escolha uma conta.");return ok({configurado:emailConfigurado(),endereco:enderecoFaturas(contaId),temSenha:Boolean(conta.senhaFaturaCifrada),arquivos:await prisma.faturaRecebida.findMany({where:{larId:s.larId,contaId,status:"PENDENTE"},select:{id:true,arquivoNome:true,criadoEm:true,leitura:true},orderBy:{criadoEm:"desc"},take:30})})})
+export const GET=comSessao(async(s,r)=>{const contaId=new URL(r.url).searchParams.get("contaId")??"";const conta=await prisma.conta.findFirst({where:{id:contaId,larId:s.larId,arquivada:false}});if(!conta)throw new ErroDeUso("Escolha uma conta.");return ok({configurado:emailConfigurado(),endereco:enderecoFaturas(contaId),temSenha:Boolean(conta.senhaFaturaCifrada),codigoGmail:conta.codigoGmail&&conta.codigoGmailEm&&Date.now()-conta.codigoGmailEm.getTime()<7*86400000?conta.codigoGmail:null,arquivos:await prisma.faturaRecebida.findMany({where:{larId:s.larId,contaId,status:"PENDENTE"},select:{id:true,arquivoNome:true,criadoEm:true,leitura:true},orderBy:{criadoEm:"desc"},take:30})})})
 
 /**
  * Guarda (ou apaga, com senha vazia) a senha do PDF da fatura desta conta.
