@@ -9,6 +9,7 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { cn } from "@/lib/utils"
 import { useMarca } from "@/components/identidades-visuais"
 import { LigarAvisoDoBanco } from "@/components/ligar-aviso-do-banco"
+import { LigarAtalhoDoIphone } from "@/components/ligar-atalho-do-iphone"
 import { showToast } from "@/components/ui/toast"
 import { DitarGasto } from "@/components/ditar-gasto"
 import { CanalTelegram } from "@/components/canal-telegram"
@@ -102,6 +103,12 @@ export default function Capturas() {
   const [carregando, setCarregando] = useState(true)
   const [emConferencia, setEmConferencia] = useState<string | null>(null)
   const [jeito, setJeito] = useState<Jeito | null>(null)
+  // Começa no sistema do aparelho em uso: quem abre no iPhone não deveria ler
+  // primeiro um guia de Android.
+  const [sistema, setSistema] = useState<"android" | "iphone">("android")
+  useEffect(() => {
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) setSistema("iphone")
+  }, [])
   // O endereço só existe no navegador. Lê-lo direto no corpo do componente faz
   // o servidor renderizar vazio e o cliente renderizar a URL — o React acusa
   // divergência de hidratação e descarta a árvore inteira.
@@ -237,8 +244,8 @@ export default function Capturas() {
     }, 5000)
   }
 
-  async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM") {
-    const nome = origem === "TELEGRAM" ? "Telegram" : "Meu celular"
+  async function criarChave(origem: "NOTIFICACAO" | "TELEGRAM" | "ATALHO") {
+    const nome = origem === "TELEGRAM" ? "Telegram" : origem === "ATALHO" ? "Meu iPhone" : "Meu celular"
     const resposta = await enviar<{ chave: string }>("/api/capturas", { nome, origem }, "PUT")
     setChaveNova(resposta.chave)
     carregar()
@@ -358,7 +365,7 @@ export default function Capturas() {
           <p className={estilos.rotulo}>Jeitos de anotar sozinho</p>
           <div className={estilos.jeitos}>
             <button type="button" onClick={() => setJeito("compartilhar")}><Share2 aria-hidden />Compartilhar</button>
-            <button type="button" onClick={() => setJeito("aviso")}>{ligado("NOTIFICACAO") && <em aria-label="ligado" />}<Bell aria-hidden />Aviso do banco</button>
+            <button type="button" onClick={() => setJeito("aviso")}>{(ligado("NOTIFICACAO") || ligado("ATALHO")) && <em aria-label="ligado" />}<Bell aria-hidden />Aviso do banco</button>
             <button type="button" onClick={() => setJeito("telegram")} data-fora={!canais.telegram || undefined}>{ligado("TELEGRAM") && <em aria-label="ligado" />}<Send aria-hidden />Telegram</button>
             <Link href="/cartoes"><Mail aria-hidden />E-mail</Link>
           </div>
@@ -370,7 +377,7 @@ export default function Capturas() {
           <DialogHeader>
             <DialogTitle>{jeito === "compartilhar" ? "Compartilhar do celular" : jeito === "aviso" ? "Compras pelo aviso do banco" : "Telegram"}</DialogTitle>
             <DialogDescription>
-              {jeito === "compartilhar" ? "Android. Não precisa de chave nem de programa: um toque por compra." : jeito === "aviso" ? "Android: configure o MacroDroid em 5 passos. Você escolhe qual banco pode enviar avisos." : "Mande a compra numa mensagem para o Tino no Telegram, por escrito, em áudio ou o arquivo da fatura, e ela cai na fila."}
+              {jeito === "compartilhar" ? "Android. Não precisa de chave nem de programa: um toque por compra." : jeito === "aviso" ? (sistema === "iphone" ? "iPhone: o app Atalhos avisa o Tino quando o cartão é usado na Carteira." : "Android: configure o MacroDroid em 5 passos. Você escolhe qual banco pode enviar avisos.") : "Mande a compra numa mensagem para o Tino no Telegram, por escrito, em áudio ou o arquivo da fatura, e ela cai na fila."}
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
@@ -381,9 +388,26 @@ export default function Capturas() {
                 <li>Pronto. A compra cai na fila esperando um toque.</li>
               </ol>
             )}
-            {jeito === "aviso" && <LigarAvisoDoBanco semCabecalho endereco={endereco} chaveNova={chaveNova} aoGerar={() => criarChave("NOTIFICACAO")} />}
+            {jeito === "aviso" && (
+              <div className="mb-2 flex gap-2" role="tablist" aria-label="Sistema do celular">
+                {(["android", "iphone"] as const).map((opcao) => (
+                  <button
+                    key={opcao}
+                    type="button"
+                    role="tab"
+                    aria-selected={sistema === opcao}
+                    onClick={() => { setSistema(opcao); setChaveNova(null) }}
+                    className={`min-h-11 flex-1 rounded-full border px-4 text-[calc(13px*var(--escala-letra))] font-medium ${sistema === opcao ? "border-acao/50 bg-acao/10 text-acao" : "border-pauta text-[color:var(--texto-2)]"}`}
+                  >
+                    {opcao === "android" ? "Android" : "iPhone"}
+                  </button>
+                ))}
+              </div>
+            )}
+            {jeito === "aviso" && sistema === "android" && <LigarAvisoDoBanco semCabecalho endereco={endereco} chaveNova={chaveNova} aoGerar={() => criarChave("NOTIFICACAO")} />}
+            {jeito === "aviso" && sistema === "iphone" && <LigarAtalhoDoIphone endereco={endereco} chaveNova={chaveNova} aoGerar={() => criarChave("ATALHO")} />}
             {jeito === "telegram" && <CanalTelegram semCabecalho disponivel={canais.telegram} usuarioDoBot={canais.telegramUsuario} chaves={chaves} chaveNova={chaveNova} aoGerar={() => criarChave("TELEGRAM")} />}
-            {jeito !== "compartilhar" && jeito && <Chaves chaves={chaves.filter((chave) => chave.origem === (jeito === "aviso" ? "NOTIFICACAO" : "TELEGRAM"))} aoRevogar={revogarChave} />}
+            {jeito !== "compartilhar" && jeito && <Chaves chaves={chaves.filter((chave) => chave.origem === (jeito === "aviso" ? (sistema === "iphone" ? "ATALHO" : "NOTIFICACAO") : "TELEGRAM"))} aoRevogar={revogarChave} />}
           </DialogBody>
         </DialogContent>
       </Dialog>
