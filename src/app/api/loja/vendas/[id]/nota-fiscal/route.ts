@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, ok, ErroDeUso } from "@/lib/api"
 import { lojaDoLar } from "@/lib/loja/dados"
+import { REGRAS, consumirLimite } from "@/lib/limite"
 import { emitirNotaDaVenda, PendenciaDeEmissao } from "@/lib/nota-fiscal"
 
 type Contexto = { params: Promise<{ id: string }> }
@@ -31,6 +32,13 @@ export const POST = comSessao<Contexto>(async (sessao, _requisicao, contexto) =>
 
   const venda = await prisma.vendaLoja.findFirst({ where: { id, lojaId: loja.id } })
   if (!venda) throw new ErroDeUso("Venda não encontrada.", 404)
+
+  // Nota já emitida não sai de novo: cada chamada ia ao provedor pago e
+  // trocava chave e número da nota anterior (auditoria, Lote 5). Reemitir
+  // vale só para a rejeitada.
+  const atual = await prisma.notaFiscalVenda.findUnique({ where: { vendaId: id }, select: { status: true } })
+  if (atual?.status === "EMITIDA") throw new ErroDeUso("A nota desta venda já foi emitida.", 409)
+  await consumirLimite(`nota:${sessao.larId}`, REGRAS.caro)
 
   try {
     const nota = await emitirNotaDaVenda({ larId: sessao.larId, vendaId: id })

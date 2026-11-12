@@ -85,7 +85,7 @@ export function interpretarTextoPdf(
 ): Pick<ResultadoPdf, "lancamentos" | "naoReconhecidas" | "conferencia" | "vencimento" | "futuroInformadoCentavos"> {
   const linhas = linhasDoTexto(texto)
   const hoje = opcoes.hoje ?? new Date()
-  return opcoes.faturaCartao ? lerFatura(linhas, hoje) : lerExtrato(linhas, hoje.getUTCFullYear())
+  return opcoes.faturaCartao ? lerFatura(linhas, hoje) : lerExtrato(linhas, hoje)
 }
 
 /** Mesma limpeza de linha que a leitura usa; a releitura pela IA precisa das mesmas linhas. */
@@ -105,7 +105,7 @@ export function linhasDoTexto(texto: string): string[] {
 const DATA = /(?<![\d.,])(\d{2}[\/.-]\d{2}(?:[\/.-]\d{2,4})?)(?![\d,])/
 const VALOR = /(-?\s?R?\$?\s?\d{1,3}(?:\.\d{3})*,\d{2})\s*([DC])?\s*$/
 
-function lerExtrato(linhas: string[], anoPadrao: number) {
+function lerExtrato(linhas: string[], hoje: Date) {
   const lancamentos: LancamentoBruto[] = []
   const naoReconhecidas: string[] = []
 
@@ -119,9 +119,12 @@ function lerExtrato(linhas: string[], anoPadrao: number) {
       continue
     }
 
-    // Extrato costuma omitir o ano ("12/03"); o ano do arquivo entra no lugar.
-    const dataTexto = casaData[1].length <= 5 ? `${casaData[1]}/${anoPadrao}` : casaData[1]
-    const data = lerData(dataTexto)
+    // Extrato costuma omitir o ano ("12/03"). Antes entrava o ano de hoje, e o
+    // extrato de dezembro enviado em janeiro caía no dezembro seguinte
+    // (auditoria, Lote 5). Agora vale a mesma regra da fatura: a data mais
+    // recente que não passa de hoje.
+    const [diaTexto, mesTexto] = casaData[1].split(/[\/.-]/)
+    const data = casaData[1].length <= 5 ? dataSemAno(Number(diaTexto), Number(mesTexto), hoje) : lerData(casaData[1])
     if (!data) {
       naoReconhecidas.push(linha.slice(0, 140))
       continue
@@ -176,7 +179,10 @@ const PARCELA_BARRA = /\s(\d{2})\/(\d{2})$/ // Itaú: "AMAZONMKTPLC*E 10/12"
 const PARCELA_EXTENSO = /\s*\(?parcela\s+(\d{1,2})\s+de\s+(\d{1,2})\)?/i // Mercado Pago, Inter
 
 /// Crédito sem sinal: o Mercado Pago imprime o pagamento com valor positivo.
-const CREDITO = /\b(pagamento|estorno|reembolso|devolu[çc][ãa]o)\b/i
+// "Pagamento" só vale como crédito quando é a linha do pagamento da fatura:
+// solto, casava loja como "PAGAMENTO CONTAS" e a compra sumia da importação
+// (auditoria, Lote 5).
+const CREDITO = /\b(pagamento (efetuado|recebido|da fatura|de fatura|obrigado)|pagto\.? (recebido|efetuado)|estorno|reembolso|devolu[çc][ãa]o)\b/i
 const PAGAMENTO = /\bpagamento\b/i
 
 /// Linha logo abaixo da compra em que o Itaú põe o ramo e a cidade do lojista.

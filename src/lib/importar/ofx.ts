@@ -64,6 +64,9 @@ export function lerOfx(conteudo: string): ExtratoOfx {
     if (!data || valorBruto === undefined) continue
 
     const centavos = paraCentavos(valorBruto)
+    // Valor ilegível ou zero não é lançamento, e uma linha dessas bloqueava a
+    // confirmação do arquivo inteiro, que recusa valor zero (auditoria, Lote 5).
+    if (centavos === 0) continue
     // MEMO costuma ter o texto legível; NAME vem truncado em alguns bancos.
     const descricao = tag(bloco, "MEMO") || tag(bloco, "NAME") || "Lançamento sem descrição"
     const trntype = (tag(bloco, "TRNTYPE") || "").toUpperCase()

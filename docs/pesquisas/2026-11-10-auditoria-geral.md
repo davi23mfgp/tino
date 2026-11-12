@@ -288,3 +288,62 @@ está em `docs/PROMPT-OPUS-AUDITORIA.md`.
   o painel da loja ainda importa a biblioteca direto). Medição em
   `2026-11-12-velocidade-antes-depois.md`. Achado 34 (arquivos gigantes) não
   mexido, como pedido.
+
+## Lote 5: as rotas que a auditoria não leu (12/11/2026)
+
+Três revisores (cavecrew) leram `loja/**`, `tino/*`, `mei/*`, `investir/*`,
+`simulador`, `plano-pagamento`, `importar` e `lib/importar/*`. Cada achado
+abaixo foi conferido no código; os marcados "reproduzido" foram provados com
+o servidor antigo antes da correção.
+
+**Corrigidos**
+- L5-1. Contas a pagar da loja: corpo sem `id` dava baixa na primeira conta da
+  loja (reproduzido). Baixa e conta do mês seguinte agora na mesma transação,
+  sem duplicar em dois toques. Valor e vencimento validados.
+- L5-2. Estoque: entrada sem produto ia para o primeiro produto da loja e
+  trocava o custo dele (reproduzido: Café 500 g foi a R$ 0,01). Custo validado,
+  as duas escritas juntas.
+- L5-3. Simulador: `parcelas` sem limite travava o servidor (reproduzido: um
+  milhão de parcelas ocupou 3 s num pedido; um bilhão seriam dezenas de
+  minutos). Tudo validado, parcela de 1 a 120.
+- L5-4. Importação: duas compras iguais no mesmo arquivo tinham a mesma
+  impressão digital e a segunda sumia ao confirmar (reproduzido na prévia).
+- L5-5. Extrato em PDF sem ano enviado em janeiro caía no dezembro seguinte.
+- L5-6. Fatura em PDF: loja com "pagamento" no nome virava crédito e saía da
+  importação. Fatura em CSV: "crédito" no meio do nome virava renda.
+- L5-7. CSV com data e hora perdia a linha. OFX com valor zero bloqueava a
+  confirmação do arquivo inteiro. Confirmação sem impressão digital deixava
+  entrar o mesmo lançamento duas vezes.
+- L5-8. Venda paga a mais no cartão fechava e gravava o valor a mais, com taxa
+  e previsão erradas. Desconto maior que a venda era zerado em silêncio.
+- L5-9. Nota fiscal já emitida podia ser emitida de novo, a cada toque, no
+  provedor pago. Agora recusa e tem o limite das rotas caras.
+- L5-10. Funcionário da loja podia gravar taxas, prazos e dados fiscais pelo
+  `PUT /api/loja`.
+- L5-11. Meta de investimento: campo vazio gravava R$ 0,00. Plano de
+  pagamento aceitava mês "2026-13". MEI: valores acima do teto do banco davam
+  erro 500. Investir: corte em centavos fracionados.
+
+**Não reproduzido, trava mantida**
+- L5-12. Maquininha, mesmo código lançado duas vezes ao mesmo tempo: no código
+  antigo os três toques simultâneos geraram uma venda só (e um erro 500). A
+  checagem foi para dentro da transação, com trava; agora responde 201, 409, 409.
+
+**Esperando o Davi (decisão de produto)**
+- L5-13. O preço da venda vem da tela, não do catálogo: dono ou funcionário
+  pode vender um produto de R$ 500 por R$ 0,01. Pode ser de propósito (o dono
+  muda preço no balcão). Proposta: o funcionário vende só pelo preço do
+  catálogo; o dono pode mudar.
+- L5-14. Venda que nasce de orçamento ou de OS não confere o valor com o
+  aprovado pelo cliente. Proposta: itens e total vêm do orçamento ou da OS.
+
+**Pendentes, menores (risco, não defeito visto)**
+- Loja: corrida em fechar caixa, cliente com nome repetido, excluir cliente,
+  cadastrar funcionário, teto de 10 negócios, número da venda em dois balcões
+  ao mesmo tempo (erro 500 em vez de nova tentativa), dados da loja gravados
+  pela metade quando a regra é inválida, anexo do relatório lido antes do teto
+  de tamanho, OS aberta duas vezes do mesmo orçamento.
+- Importação: arquivo enviado lido inteiro antes do teto de 10 MB, teto de
+  10.000 linhas na confirmação menor que o da prévia, arquivo de cem mil
+  linhas, fatura por e-mail confirmada duas vezes ao mesmo tempo, CSV em
+  formato americano (MM/DD) lido como brasileiro sem aviso.

@@ -14,9 +14,12 @@ export const GET = comSessao(async (sessao) => {
 })
 
 export const PUT = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ valorMensalCentavos: number; prazoAnos?: number }>(requisicao)
+  const dados = await corpo<{ valorMensalCentavos: unknown; prazoAnos?: number }>(requisicao)
 
-  const valor = Number(dados?.valorMensalCentavos)
+  // `Number(null)` e `Number("")` dão 0: campo vazio era gravado como meta
+  // de R$ 0,00, uma decisão que a pessoa não tomou (auditoria, Lote 5).
+  if (dados?.valorMensalCentavos === null || dados?.valorMensalCentavos === undefined || (typeof dados.valorMensalCentavos === "string" && dados.valorMensalCentavos.trim() === "")) throw new ErroDeUso("Informe um valor válido.")
+  const valor = Number(dados.valorMensalCentavos)
   if (!Number.isSafeInteger(valor) || valor < 0 || valor > 2_147_483_647) throw new ErroDeUso("Informe um valor válido.")
 
   const prazo = dados.prazoAnos ?? 10

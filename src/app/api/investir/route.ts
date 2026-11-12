@@ -19,7 +19,8 @@ export const dynamic = "force-dynamic"
  */
 export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
-  const corteCentavos = Math.max(0, Number(url.searchParams.get("corteCentavos") ?? 0) || 0)
+  // Centavos são inteiros: "2.5" entrava fracionado no cálculo (auditoria, Lote 5).
+  const corteCentavos = Math.max(0, Math.round(Number(url.searchParams.get("corteCentavos") ?? 0) || 0))
   const meses = Math.min(60, Math.max(6, Number(url.searchParams.get("meses") ?? 24) || 24))
 
   const [panorama, jurosNegativoMensalBps] = await Promise.all([

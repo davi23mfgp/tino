@@ -127,7 +127,9 @@ export function lerCsv(conteudo: string): ResultadoCsv {
   for (let i = indiceCabecalho + 1; i < linhas.length; i += 1) {
     const campos = dividirLinha(linhas[i], separador)
     const bruta = campos[colData] ?? ""
-    const data = colData >= 0 ? lerData(bruta) : null
+    // Banco que exporta "15/03/2026 14:22" perdia a linha inteira como "data
+    // não reconhecida" (auditoria, Lote 5): a hora sai antes de ler a data.
+    const data = colData >= 0 ? lerData(bruta.trim().replace(/[\sT]+\d{1,2}:\d{2}(:\d{2})?.*$/, "")) : null
 
     if (!data) {
       descartadas.push({ linha: i + 1, conteudo: linhas[i].slice(0, 120), motivo: "data não reconhecida" })
@@ -170,7 +172,9 @@ export function lerCsvFaturaCartao(conteudo: string): ResultadoCsv {
     ...resultado,
     lancamentos: resultado.lancamentos.map((lancamento) => ({
       ...lancamento,
-      tipo: /estorno|reembolso|credito|crédito|pagamento recebido/i.test(lancamento.descricao)
+      // "Crédito" só no começo: no meio, casava "EMPRESTIMO CREDITO PESSOAL"
+      // e a cobrança virava renda (auditoria, Lote 5).
+      tipo: /\b(estorno|reembolso)\b|^\s*cr[eé]dito\b|pagamento recebido/i.test(lancamento.descricao)
         ? ("RECEITA" as const)
         : ("DESPESA" as const),
     })),

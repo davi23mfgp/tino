@@ -69,6 +69,9 @@ export const PUT = comSessao(async (sessao, requisicao) => {
   if(!await prisma.conta.findFirst({where:{id:dados.contaId,larId:sessao.larId,arquivada:false}}))throw new ErroDeUso("Conta inválida.")
   await doLar(sessao.larId, { membro: dados.membroId })
   if(dados.lancamentos.length>10000||dados.lancamentos.some(l=>!Number.isSafeInteger(l.valorCentavos)||l.valorCentavos<=0||l.valorCentavos>2147483647))throw new ErroDeUso("Valores do arquivo inválidos.")
+  // Sem a impressão digital, o índice único não pega a repetição (nulo não
+  // colide) e o mesmo lançamento entrava duas vezes (auditoria, Lote 5).
+  if (dados.lancamentos.some((l) => typeof l.hashImport !== "string" || !/^[a-f0-9]{16,128}$/.test(l.hashImport))) throw new ErroDeUso("Refaça a prévia do arquivo antes de confirmar.")
   if (dados.competenciaFatura != null && !/^\d{4}-(0[1-9]|1[0-2])$/.test(dados.competenciaFatura)) throw new ErroDeUso("Mês da fatura inválido.")
   if (dados.diaVencimento != null && !(Number.isInteger(dados.diaVencimento) && dados.diaVencimento >= 1 && dados.diaVencimento <= 31)) throw new ErroDeUso("Dia de vencimento inválido.")
   const parcelaValida = (l: (typeof dados.lancamentos)[number]) =>

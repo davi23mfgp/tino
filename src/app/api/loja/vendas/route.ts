@@ -116,9 +116,15 @@ export const POST = comSessao(async (sessao, requisicao) => {
   }
   const [regras, caixa] = await Promise.all([regrasDeRecebimento(loja.id), caixaAberto(loja.id)])
 
+  // Desconto maior que a venda era zerado em silêncio e gravado inteiro; o
+  // orçamento já recusava (auditoria, Lote 5).
+  if ((dados.descontoCentavos ?? 0) > totalDaVenda(dados.itens, 0)) throw new ErroDeUso("O desconto passou do valor da venda.")
   const totalCentavos = totalDaVenda(dados.itens, dados.descontoCentavos ?? 0)
   const conferencia = conferirVenda(totalCentavos, dados.pagamentos)
 
+  if (!conferencia.fechada && conferencia.faltaCentavos === 0) {
+    throw new ErroDeUso("O valor no cartão ou no Pix passou do total da venda. Confira o que foi digitado.")
+  }
   if (!conferencia.fechada) {
     throw new ErroDeUso(
       `Falta ${(conferencia.faltaCentavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} para fechar a venda.`,

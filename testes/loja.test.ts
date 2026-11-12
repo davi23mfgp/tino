@@ -205,6 +205,12 @@ describe("conferência da venda", () => {
     const conferencia = conferirVenda(9500, [{ forma: "CREDITO_VISTA", valorCentavos: 10000 }])
     assert.equal(conferencia.trocoCentavos, 0)
   })
+
+  it("sobra no cartão não fecha a venda", () => {
+    assert.equal(conferirVenda(3500, [{ forma: "CREDITO_VISTA", valorCentavos: 5000 }]).fechada, false)
+    assert.equal(conferirVenda(3500, [{ forma: "PIX", valorCentavos: 1000 }, { forma: "DINHEIRO", valorCentavos: 3000 }]).fechada, true)
+    assert.equal(conferirVenda(3500, [{ forma: "CREDITO_VISTA", valorCentavos: 3500 }]).fechada, true)
+  })
 })
 
 describe("troco não é receita", () => {

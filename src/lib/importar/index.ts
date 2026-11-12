@@ -208,15 +208,20 @@ export async function previaImportacao(params: {
   ])
   const mapaCategorias = new Map(categorias.map((categoria) => [categoria.nome, categoria.id]))
 
-  const hashes = brutos.map((bruto) =>
-    impressaoDigital({
-      contaId: params.contaId,
-      data: bruto.data,
-      valorCentavos: bruto.valorCentavos,
-      descricao: bruto.descricao,
-      identificadorExterno: bruto.identificadorExterno,
-    }),
-  )
+  // Duas compras iguais no mesmo dia (dois cafés de R$ 4,50) davam a mesma
+  // impressão digital, e a segunda era descartada em silêncio ao gravar
+  // (auditoria, Lote 5). A repetição dentro do arquivo ganha o número da vez:
+  // o mesmo arquivo importado de novo gera as mesmas impressões, e continua
+  // reconhecido como já importado.
+  const vezes = new Map<string, number>()
+  const hashes = brutos.map((bruto) => {
+    const base = { contaId: params.contaId, data: bruto.data, valorCentavos: bruto.valorCentavos, descricao: bruto.descricao, identificadorExterno: bruto.identificadorExterno }
+    const primeira = impressaoDigital(base)
+    if (bruto.identificadorExterno) return primeira
+    const vez = (vezes.get(primeira) ?? 0) + 1
+    vezes.set(primeira, vez)
+    return vez === 1 ? primeira : impressaoDigital({ ...base, descricao: `${bruto.descricao} #${vez}` })
+  })
 
   const jaExistem = new Set(
     (
