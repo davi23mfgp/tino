@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import { buscar } from "@/lib/cliente"
 import { formatarMoeda, formatarPercentual } from "@/lib/dinheiro"
-import { GraficoDaDivisao } from "@/components/graficos"
+import { GraficoDaDivisao } from "@/components/graficos-sob-demanda"
 import { Cartao } from "@/components/ui/painel"
 
 /**

@@ -11,7 +11,7 @@ describe("assunto do aviso", () => {
     assert.equal(assuntoDoAviso("orcamento_perto"), "Orçamento")
     assert.equal(assuntoDoAviso("mei_das_atrasado"), "MEI e DAS")
     assert.equal(assuntoDoAviso("mei_estouro_grave"), "MEI e DAS")
-    assert.equal(assuntoDoAviso("caixa_negativo"), "Fluxo de caixa")
+    assert.equal(assuntoDoAviso("caixa_negativo"), "Entra e sai por mês")
   })
   it("tipo novo ou ausente cai em Outros avisos, não some", () => {
     assert.equal(assuntoDoAviso("tipo_que_ninguem_listou"), ASSUNTO_OUTROS)

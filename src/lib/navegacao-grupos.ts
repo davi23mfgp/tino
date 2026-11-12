@@ -145,7 +145,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
     pergunta: "Análise, fluxo de caixa, simulador e investimentos",
     itens: [
       { rota: "/analise", rotulo: "Análise", Icone: PieChart },
-      { rota: "/projecao", rotulo: "Fluxo de caixa", Icone: LineChart },
+      { rota: "/projecao", rotulo: "Entra e sai por mês", Icone: LineChart },
       { rota: "/simulador", rotulo: "Simulador", Icone: Wand2 },
       { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     ],

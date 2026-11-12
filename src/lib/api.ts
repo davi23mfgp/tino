@@ -69,18 +69,20 @@ export function comSessao<T>(handler: (sessao: Sessao, requisicao: Request, cont
       return erro("Seu acesso a este lar é só de leitura.", 403)
     }
 
-    // Teto geral por pessoa. As rotas caras e o login têm limite próprio, mais
-    // apertado; este segura o laço em qualquer outra rota (raspagem, script
-    // travado, sessão roubada varrendo a API).
-    try {
-      const { consumirLimite, REGRAS } = await import("@/lib/limite")
-      await consumirLimite(
-        `api:${escrita ? "escrita" : "leitura"}:${sessao.usuarioId}`,
-        escrita ? REGRAS.apiEscrita : REGRAS.apiLeitura,
-      )
-    } catch (excecao) {
-      if (excecao instanceof ErroDeUso) return erro(excecao.message, excecao.status)
-      throw excecao
+    // Teto geral por pessoa, só nas escritas. As rotas caras e o login têm
+    // limite próprio, mais apertado. Nas leituras o teto saiu (auditoria,
+    // achado 32): cada leitura abria uma transação com trava no banco só para
+    // contar, e uma tela com dez leituras fazia dez travas antes de mostrar
+    // qualquer coisa. Ler o que é seu não gasta dinheiro nem muda nada, e a
+    // sessão já é exigida acima.
+    if (escrita) {
+      try {
+        const { consumirLimite, REGRAS } = await import("@/lib/limite")
+        await consumirLimite(`api:escrita:${sessao.usuarioId}`, REGRAS.apiEscrita)
+      } catch (excecao) {
+        if (excecao instanceof ErroDeUso) return erro(excecao.message, excecao.status)
+        throw excecao
+      }
     }
 
     // A parede da tela é o que a pessoa vê; esta é a que vale. Sem ela, quem

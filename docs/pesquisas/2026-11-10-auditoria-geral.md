@@ -282,3 +282,9 @@ está em `docs/PROMPT-OPUS-AUDITORIA.md`.
   na arte do site) esperando o canvas, passo 69: tirar ou trocar muda o
   desenho. Não testado no navegador: a tela Funil do admin (pede o segundo
   fator) e a etapa "pagou", que só um aviso real do Mercado Pago dispara.
+- **Lote 2, 12/11/2026:** achado 31 em parte (Extrato, Meu mês, Anotar e
+  Contas a pagar chegam com dados; as outras telas ainda buscam depois), 32
+  corrigido (leitura sem trava), 33 em parte (gráficos de Análise e Orçamento;
+  o painel da loja ainda importa a biblioteca direto). Medição em
+  `2026-11-12-velocidade-antes-depois.md`. Achado 34 (arquivos gigantes) não
+  mexido, como pedido.
