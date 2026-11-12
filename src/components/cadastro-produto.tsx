@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ArrowLeft, UserRound, Users, Heart, Eye, EyeOff } from "lucide-react"
 import { TinoMarca } from "@/components/tino-mascote"
+import { MarcarEtapa } from "@/components/marcar-etapa"
 
 import { enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
@@ -53,6 +54,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
   // ── Passo 2: os dados ─────────────────────────────────
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
+      <MarcarEtapa etapa="CADASTRO_INICIADO" produto={modoMei ? "mei" : "pessoal"} />
       <div className="w-full max-w-md rounded-[24px] border border-pauta bg-papel-1 p-6 shadow-xl sm:p-8">
         <Link href={modoMei ? "/para-mei" : "/"} className="text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground inline-flex min-h-11 items-center gap-2"><ArrowLeft className="size-4" />Voltar</Link>
         <div className="mt-3 flex items-center gap-2"><TinoMarca className="size-8" /><span className="text-lg font-semibold">tino.</span></div>

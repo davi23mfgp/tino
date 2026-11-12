@@ -15,6 +15,7 @@ import { precoVigenteCentavos, valoresVigentes } from "@/lib/parametros"
 import { gatewayMercadoPago } from "@/lib/pagamento/mercadopago"
 import { gatewayStripe } from "@/lib/pagamento/stripe"
 import type { EfeitoDoEvento, Gateway } from "@/lib/pagamento/tipos"
+import { gravarEtapa } from "@/lib/funil-gravar"
 
 export { GatewayNaoConfigurado, WebhookInvalido } from "@/lib/pagamento/tipos"
 export type { EfeitoDoEvento, Gateway } from "@/lib/pagamento/tipos"
@@ -117,6 +118,11 @@ async function aplicarDentro(tx: Prisma.TransactionClient, provedor: ProvedorPag
       canceladaEm: efeito.status === "CANCELADA" ? (assinatura.canceladaEm ?? new Date()) : undefined,
     },
   })
+
+  // Primeira ativação paga conta no funil (achado 14). Fica dentro da mesma
+  // transação do evento: se o webhook falhar no meio, o funil não registra
+  // um pagamento que não aconteceu.
+  if (efeito.status === "ATIVA" && !assinatura.inicioEm) await gravarEtapa("ASSINATURA_PAGA", { usuarioId: assinatura.usuarioId }, tx)
 
   if (efeito.cobranca) {
     const dados = efeito.cobranca

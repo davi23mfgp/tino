@@ -81,6 +81,8 @@ export function Roteiro({ estado }: { estado: EstadoDoRoteiro }) {
     setDetalhando(false)
     if (passo < 4) setPasso(passo + 1)
     else {
+      // Fim do roteiro conta no funil (achado 14). Falha calada: medir não segura a pessoa.
+      void enviar("/api/funil/roteiro", {}).catch(() => {})
       router.push("/painel")
       router.refresh()
     }

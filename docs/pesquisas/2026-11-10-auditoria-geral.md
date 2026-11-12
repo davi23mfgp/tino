@@ -274,3 +274,11 @@ está em `docs/PROMPT-OPUS-AUDITORIA.md`.
   defeitos que a vazia não mostra.
 - As capturas de página inteira mostram a barra de baixo no meio da tela: é
   efeito da captura, não defeito do app.
+- **Lote 3, 12/11/2026:** corrigidos 23, 28 (tabela aprovada pelo Davi) e 30.
+  Achado 21: `/orcamento` não é órfã (tem orçamento do casal e divisão da
+  renda), e ligar a Maquininha é mudança visível; os dois vão para o canvas.
+- **Lote 4, 12/11/2026:** corrigidos 14 (funil próprio, tela Funil no admin),
+  15, 16, 42, 44 (só a explicação do botão) e 45. Achado 46 (números fixos
+  na arte do site) esperando o canvas, passo 69: tirar ou trocar muda o
+  desenho. Não testado no navegador: a tela Funil do admin (pede o segundo
+  fator) e a etapa "pagou", que só um aviso real do Mercado Pago dispara.

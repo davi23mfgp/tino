@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma"
 import { registrarAcesso } from "@/lib/registro-acesso"
 import { semearLar } from "@/lib/semear"
 import { VERSAO_TERMOS } from "@/lib/termos"
+import { gravarEtapa } from "@/lib/funil-gravar"
 
 export async function POST(requisicao: Request) {
   if (!origemPermitida(requisicao)) return erro("Origem da requisição não permitida.", 403)
@@ -59,6 +60,7 @@ export async function POST(requisicao: Request) {
     await semearLar(lar.id, { modoMei: dados.modoMei })
     await abrirTeste(usuario.id, dados.modoMei ? "loja" : "pessoal")
     await registrarAcesso(requisicao, usuario.id, "CADASTRO")
+    await gravarEtapa("CADASTRO_CRIADO", { usuarioId: usuario.id, produto: dados.modoMei ? "mei" : "pessoal" })
     await gravarCookieSessao(await criarToken({
       usuarioId: usuario.id, email: usuario.email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel,
       produto: dados.modoMei ? "mei" : "pessoal",

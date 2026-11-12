@@ -4,6 +4,7 @@ import { ArrowRight, Plus, Wallet, ScanLine, Smartphone, TrendingUp, Send, Bell,
 import { diasDeTesteDaVitrine, planosDaVitrine } from "@/lib/vitrine-dados"
 import { Leao } from "./leao"
 import { ENDERECO_DO_SITE } from "@/lib/site"
+import { MarcarEtapa } from "@/components/marcar-etapa"
 import { Revelar } from "@/components/landing/movimento"
 import { Abertura, BotaoVivo, EmSequencia } from "@/components/landing/entrada"
 import { DemonstracaoReal } from "@/components/landing/demonstracao-real"
@@ -65,6 +66,7 @@ function Comecar({ texto = "Começar agora" }: { texto?: string }) {
 export default async function Vitrine() {
   const [planos, dias] = await Promise.all([planosDaVitrine(), diasDeTesteDaVitrine()])
   return <div className="lp">
+    <MarcarEtapa etapa="VISITA" produto="pessoal" />
     <DadosEstruturados menorPrecoCentavos={Math.min(...planos.map((plano) => plano.mensalCentavos))} />
     <a href="#conteudo" className="lp-pular">Pular para o conteúdo</a>
     <header className="lp-menu">

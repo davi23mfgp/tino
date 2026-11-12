@@ -12,6 +12,7 @@ import { origemPermitida } from "@/lib/origem-segura"
 import { COOKIE_ORIGEM, origemDaRequisicao } from "@/lib/origem-cadastro"
 import { cookies } from "next/headers"
 import type { Prisma } from "@prisma/client"
+import { gravarEtapa } from "@/lib/funil-gravar"
 
 interface Entrada {
   nome: string
@@ -125,6 +126,7 @@ export const POST = comPublica(async (requisicao: Request) => {
   const { lar, membro, usuario } = criado
 
   await registrarAcesso(requisicao, usuario.id, "CADASTRO")
+  await gravarEtapa("CADASTRO_CRIADO", { usuarioId: usuario.id, produto: dados.modoMei ? "mei" : "pessoal" })
 
   await gravarCookieSessao(
     await criarToken({ usuarioId: usuario.id, email, nome, larId: lar.id, membroId: membro.id, papel: membro.papel, produto: dados.modoMei ? "mei" : "pessoal" }),

@@ -22,6 +22,7 @@ export const ABAS = [
   { rota: "/admin", rotulo: "Visão geral" },
   { rota: "/admin/contas", rotulo: "Contas" },
   { rota: "/admin/pagamentos", rotulo: "Pagamentos" },
+  { rota: "/admin/funil", rotulo: "Funil" },
   { rota: "/admin/suporte", rotulo: "Suporte" },
   { rota: "/admin/erros", rotulo: "Erros" },
   { rota: "/admin/logs", rotulo: "Logs" },

@@ -2,6 +2,7 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { ArrowRight, Plus, Package, ReceiptText, Banknote, Store } from "lucide-react"
 import { Leao } from "../leao"
+import { MarcarEtapa } from "@/components/marcar-etapa"
 import { Abertura, BotaoVivo, EmSequencia } from "@/components/landing/entrada"
 import { Revelar } from "@/components/landing/movimento"
 import { PreviaAtual } from "@/components/landing/demonstracao-sistema"
@@ -28,6 +29,7 @@ function ComecarMei() { return <BotaoVivo><Link href="/cadastro/mei" className="
 export default async function LandingMei() {
   const [planos, dias] = await Promise.all([planosDaVitrine(), diasDeTesteDaVitrine()])
   return <div className="lp lp-mei">
+    <MarcarEtapa etapa="VISITA" produto="mei" />
     <a href="#conteudo-mei" className="lp-pular">Pular para o conteúdo</a>
     <header className="lp-menu"><Link href="/para-mei" className="lp-marca"><Leao tamanho={38} /><span>tino+</span></Link><nav aria-label="Navegação MEI"><Link href="/">Para você</Link><a href="#recursos">Recursos</a><a href="#planos">Preços</a><a href="#duvidas">Dúvidas</a></nav><Link href="/login/mei" className="lp-botao lp-entrar">Entrar MEI</Link></header>
     <main id="conteudo-mei">

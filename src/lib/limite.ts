@@ -48,6 +48,9 @@ export const REGRAS = {
   /// umas dez leituras; 300 por minuto é navegação muito rápida com folga.
   apiLeitura: { maximo: 300, janelaSegundos: 60, bloqueioSegundos: 60 },
   apiEscrita: { maximo: 60, janelaSegundos: 60, bloqueioSegundos: 120 },
+  /// Etapas anônimas do funil: uma visita manda no máximo três. Vinte por
+  /// minuto por IP deixam passar uma família na mesma rede e seguram robô.
+  funil: { maximo: 20, janelaSegundos: 60, bloqueioSegundos: 300 },
   /// Webhooks e rotas públicas sem sessão, por IP.
   publico: { maximo: 120, janelaSegundos: 60, bloqueioSegundos: 120 },
 } satisfies Record<string, Regra>

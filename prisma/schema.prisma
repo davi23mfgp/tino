@@ -2318,3 +2318,30 @@ model ConviteLar {
 
   @@index([larId, email])
 }
+
+/// As etapas do caminho de quem chega ao site até pagar (auditoria, achado 14).
+/// A ordem do enum é a ordem do funil.
+enum EtapaFunil {
+  VISITA
+  CLIQUE_COMECAR
+  CADASTRO_INICIADO
+  CADASTRO_CRIADO
+  ROTEIRO_TERMINADO
+  ASSINATURA_PAGA
+}
+
+/// Medição própria, sem ferramenta de terceiros e sem cookie: as três
+/// primeiras etapas são anônimas (só contagem), as três últimas levam o
+/// usuário para valer uma vez só por pessoa. Nada de IP, navegador ou página
+/// de origem: o funil precisa de contagem, não de quem a pessoa é.
+model EventoFunil {
+  id        String     @id @default(cuid())
+  etapa     EtapaFunil
+  /// "pessoal" ou "mei": os dois produtos têm funis diferentes.
+  produto   String?
+  usuarioId String?
+  criadoEm  DateTime   @default(now())
+
+  @@unique([etapa, usuarioId])
+  @@index([etapa, criadoEm])
+}
