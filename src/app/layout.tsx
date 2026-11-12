@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { ENDERECO_DO_SITE } from "@/lib/site"
 import "./globals.css"
 import "./liquid-glass.css"
 import "./cores-de-tema.css"
@@ -24,7 +25,7 @@ import "./cores-de-tema.css"
  */
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tino-kappa.vercel.app"),
+  metadataBase: new URL(ENDERECO_DO_SITE),
   title: "Tino, seu contador pessoal",
   description:
     "Organize contas, dívidas e metas em um lugar só. Projeção de caixa, plano de pagamento e ajuda para decidir empréstimo. Para pessoa física e MEI.",

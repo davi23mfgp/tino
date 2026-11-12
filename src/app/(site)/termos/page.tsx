@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { VERSAO_TERMOS } from "@/lib/termos"
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/termos" },
   title: "Termos de Uso · Tino",
   description: "O que o Tino é, o que não é, e as regras de uso, cobrança e cancelamento.",
 }

@@ -7,10 +7,11 @@ import { Revelar } from "@/components/landing/movimento"
 import { PreviaAtual } from "@/components/landing/demonstracao-sistema"
 import { DemonstracaoReal } from "@/components/landing/demonstracao-real"
 import { Precos } from "@/components/landing/precos"
-import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
+import { diasDeTesteDaVitrine, planosDaVitrine } from "@/lib/vitrine-dados"
 
 export const revalidate = 300
-export const metadata: Metadata = { title: "Tino MEI · Seu negócio, no controle.", description: "Venda no balcão, acompanhe estoque e fiado e feche o caixa. Um espaço para o seu negócio, com cadastro e acesso próprios." }
+export const metadata: Metadata = {
+  alternates: { canonical: "/para-mei" }, title: "Tino MEI · Seu negócio, no controle.", description: "Venda no balcão, acompanhe estoque e fiado e feche o caixa. Um espaço para o seu negócio, com cadastro e acesso próprios." }
 const RECURSOS = [
   { Icone: Store, nome: "Balcão", texto: "Registre a venda e como recebeu." },
   { Icone: Package, nome: "Estoque", texto: "Veja quantidade, custo e margem." },
@@ -25,7 +26,7 @@ const DUVIDAS = [
 ]
 function ComecarMei() { return <BotaoVivo><Link href="/cadastro/mei" className="lp-botao">Começar meu negócio <ArrowRight size={16} aria-hidden /></Link></BotaoVivo> }
 export default async function LandingMei() {
-  const [planos, dias] = await Promise.all([planosVigentes(), diasDeTesteVigentes()])
+  const [planos, dias] = await Promise.all([planosDaVitrine(), diasDeTesteDaVitrine()])
   return <div className="lp lp-mei">
     <a href="#conteudo-mei" className="lp-pular">Pular para o conteúdo</a>
     <header className="lp-menu"><Link href="/para-mei" className="lp-marca"><Leao tamanho={38} /><span>tino+</span></Link><nav aria-label="Navegação MEI"><Link href="/">Para você</Link><a href="#recursos">Recursos</a><a href="#planos">Preços</a><a href="#duvidas">Dúvidas</a></nav><Link href="/login/mei" className="lp-botao lp-entrar">Entrar MEI</Link></header>
@@ -39,6 +40,6 @@ export default async function LandingMei() {
       <section id="duvidas" className="lp-secao lp-duvidas"><div><span className="lp-tag">Antes de começar</span><h2>Sem complicar.</h2></div><EmSequencia>{DUVIDAS.map(([pergunta, resposta]) => <details key={pergunta}><summary>{pergunta}<Plus size={19} aria-hidden /></summary><p>{resposta}</p></details>)}</EmSequencia></section>
       <section className="lp-secao lp-final"><Revelar><Leao tamanho={110} /><h2>Mais tino no negócio.<br />Mais clareza no dia.</h2><ComecarMei /></Revelar></section>
     </main>
-    <footer className="lp-secao lp-rodape"><Link href="/para-mei" className="lp-marca"><Leao tamanho={38} /><span>tino+</span></Link><p>Seu negócio, no controle.</p><nav aria-label="Rodapé MEI"><Link href="/">Finanças pessoais</Link><Link href="/login/mei">Entrar MEI</Link><Link href="/termos">Termos</Link><Link href="/privacidade">Privacidade</Link></nav><small>© {new Date().getFullYear()} Tino</small></footer>
+    <footer className="lp-secao lp-rodape"><Link href="/para-mei" className="lp-marca"><Leao tamanho={38} /><span>tino+</span></Link><p>Seu negócio, no controle.</p><nav aria-label="Rodapé MEI"><Link href="/">Finanças pessoais</Link><Link href="/login/mei">Entrar MEI</Link><Link href="/termos">Termos</Link><Link href="/privacidade">Privacidade</Link></nav><small>© {new Date().getFullYear()} Tino. CNPJ 63.443.755/0001-80. Contato: davi23mfgp@gmail.com</small></footer>
   </div>
 }

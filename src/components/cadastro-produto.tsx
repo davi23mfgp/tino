@@ -140,6 +140,8 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
           </label>
 
           {erro && <p className="text-sm text-negativo">{erro}</p>}
+          {/* O botão desligado sem explicação parecia defeito (auditoria, achado 44). */}
+          {!aceite && !criando && <p className="text-sm text-muted-fg">Marque o aceite dos Termos acima para criar a conta.</p>}
 
           <button
             type="submit"
