@@ -808,7 +808,7 @@ export function FluxoDeCaixaNoTempo({
           type="single"
           value={granularidade}
           onValueChange={(valor) => { if (valor) setGranularidade(valor as "dia" | "mes" | "ano") }}
-          aria-label="Período do fluxo de caixa"
+          aria-label="Período do entra e sai"
         >
           <ToggleGroupItem value="dia">Dias</ToggleGroupItem>
           <ToggleGroupItem value="mes">Meses</ToggleGroupItem>

@@ -1,6 +1,6 @@
 # Palavras de contador na tela (achado 28)
 
-Proposta para o Davi aprovar. Nada foi trocado ainda. Critério: a palavra que
+Aprovada pelo Davi e aplicada em 12/11/2026. "DRE" não aparecia em tela (só em comentário), então não houve troca. Critério: a palavra que
 uma pessoa de 65 anos usa ao falar do próprio dinheiro. Inspiração: Nubank
 ("guardar", "resgatar" virou "tirar") e o modo simples da própria loja.
 

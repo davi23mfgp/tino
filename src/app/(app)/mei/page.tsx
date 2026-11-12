@@ -324,7 +324,7 @@ export default function Mei() {
 
         <section className={`${estilos.bloco} ${estilos.lista}`} aria-labelledby="titulo-das">
           <h2 id="titulo-das">
-            DAS · {perfil.dasMensalCentavos === null ? "informe o valor da sua guia" : `${formatarMoeda(perfil.dasMensalCentavos)} por mês`}, todo dia {perfil.diaVencimentoDas}
+            Guia do MEI (DAS) · {perfil.dasMensalCentavos === null ? "informe o valor da sua guia" : `${formatarMoeda(perfil.dasMensalCentavos)} por mês`}, todo dia {perfil.diaVencimentoDas}
             {perfil.dasDaTabela && <small className={estilos.dica}> (tabela de 2026 para a sua atividade; confira na guia)</small>}
           </h2>
           {dasDaLista.length === 0 && <p className={estilos.dica}>Nenhum DAS a mostrar ainda.</p>}
