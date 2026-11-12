@@ -329,7 +329,7 @@ o servidor antigo antes da correção.
   antigo os três toques simultâneos geraram uma venda só (e um erro 500). A
   checagem foi para dentro da transação, com trava; agora responde 201, 409, 409.
 
-**Esperando o Davi (decisão de produto)**
+**Decididos pelo Davi em 12/11/2026 ("pode sim as duas") e corrigidos**
 - L5-13. O preço da venda vem da tela, não do catálogo: dono ou funcionário
   pode vender um produto de R$ 500 por R$ 0,01. Pode ser de propósito (o dono
   muda preço no balcão). Proposta: o funcionário vende só pelo preço do
