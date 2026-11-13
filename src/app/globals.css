@@ -47,8 +47,12 @@
        10,2px e 9,4px -- compacto sem sair da faixa em que se le num balcao,
        que era o risco em 0.7 (9,1 / 8,4 / 7,7px).
 
+       Recalibrado em 13/11: o Davi escolheu a opcao A do passo 63 do canvas
+       (letra em 100%). Em 0.85 a maior parte do texto util ficava entre 9 e
+       11px, e o pedido agora e que uma pessoa de 65 anos leia sem ajuda.
+
        Esta e a unica linha a mexer para recalibrar. */
-    --escala-letra: 0.85;
+    --escala-letra: 1;
 
     /* Pilha do sistema: no Mac e no iPhone resolve para a San Francisco de
        verdade; nas outras plataformas cai na fonte nativa delas. */
