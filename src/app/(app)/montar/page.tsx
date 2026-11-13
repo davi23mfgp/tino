@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { competenciaAtual } from "@/lib/datas"
+import { feitosDoRoteiro } from "@/lib/roteiro-feitos"
 import { Roteiro, type EstadoDoRoteiro } from "./roteiro"
 
 export const dynamic = "force-dynamic"
@@ -15,8 +16,11 @@ export const metadata: Metadata = { title: "Montar o seu Tino · Tino", robots: 
  * uma por tela. O que já foi feito vem dos dados, não de uma marca guardada:
  * quem cadastrou a conta por outra tela não precisa responder de novo.
  */
-export default async function Montar() {
+export default async function Montar({ searchParams }: { searchParams: Promise<{ passo?: string }> }) {
   const sessao = await sessaoDaPagina()
+  // A lista do Início manda para o passo certo: `/montar?passo=3`.
+  const pedido = Number((await searchParams).passo)
+  const passoPedido = Number.isInteger(pedido) && pedido >= 1 && pedido <= 5 ? pedido - 1 : null
   const larId = sessao.larId
   const [contas, membro, receitas, despesas, limites, lancamentos, categorias] = await Promise.all([
     prisma.conta.findMany({ where: { larId, arquivada: false, tipo: { not: "INVESTIMENTO" } }, select: { id: true, nome: true, tipo: true, instituicao: true }, orderBy: { criadoEm: "asc" } }),
@@ -29,13 +33,10 @@ export default async function Montar() {
   ])
 
   const estado: EstadoDoRoteiro = {
-    // O cadastro já cria "Conta corrente" e "Carteira", sem banco: só conta
-    // com banco escolhido ou cartão vale como passo feito, senão o roteiro
-    // começaria pulando a pergunta 1 para todo mundo.
-    feitos: [contas.some((conta) => conta.tipo === "CARTAO_CREDITO" || Boolean(conta.instituicao)), receitas > 0 || (membro?.rendaMensalCentavos ?? 0) > 0, despesas > 0, limites > 0, lancamentos > 0],
+    feitos: feitosDoRoteiro({ contas, rendasFixas: receitas, rendaDeclaradaCentavos: membro?.rendaMensalCentavos ?? 0, contasFixas: despesas, limitesDoMes: limites, lancamentos }),
     contas,
     categorias,
     competencia: competenciaAtual(),
   }
-  return <Roteiro estado={estado} />
+  return <Roteiro estado={estado} passoInicial={passoPedido} />
 }

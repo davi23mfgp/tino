@@ -42,12 +42,12 @@ function valorValido(texto: string) {
   return Number.isSafeInteger(centavos) && centavos > 0 && centavos <= 2147483647 ? centavos : null
 }
 
-export function Roteiro({ estado }: { estado: EstadoDoRoteiro }) {
+export function Roteiro({ estado, passoInicial = null }: { estado: EstadoDoRoteiro; passoInicial?: number | null }) {
   const router = useRouter()
   const [feitos, setFeitos] = useState(estado.feitos)
   const [contas, setContas] = useState(estado.contas)
   const primeiro = estado.feitos.findIndex((feito) => !feito)
-  const [passo, setPasso] = useState(primeiro === -1 ? 0 : primeiro)
+  const [passo, setPasso] = useState(passoInicial ?? (primeiro === -1 ? 0 : primeiro))
   const [ocupado, setOcupado] = useState(false)
   const [erro, setErro] = useState("")
   const [aviso, setAviso] = useState("")

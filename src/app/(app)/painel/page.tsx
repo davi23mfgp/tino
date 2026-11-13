@@ -9,6 +9,8 @@ import { AbasDoInicio } from "./abas-do-inicio"
 import { ConferirNoInicio, type CapturaNoInicio } from "./conferir-no-inicio"
 import { LogoDaCompra } from "./logo-da-compra"
 import { ConviteNegocio } from "@/components/convite-negocio"
+import { ListaDoRoteiro } from "@/components/lista-do-roteiro"
+import { feitosDoRoteiro } from "@/lib/roteiro-feitos"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
@@ -78,7 +80,17 @@ export default async function Painel() {
   const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos))
   // Regra 3: lar sem lançamento nenhum não tem nota. O diagnóstico devolvia
   // "50 de 100" do nada, e quem acabou de entrar lia isso como um parecer.
-  const semDados = (await prisma.transacao.count({ where: { larId: sessao.larId } })) === 0
+  // As mesmas contagens servem à lista "Montar o seu Tino" (passo 61, opção A).
+  const [lancamentosDoLar, contasDoRoteiro, membroDoRoteiro, rendasFixas, contasFixas, limitesDoMes] = await Promise.all([
+    prisma.transacao.count({ where: { larId: sessao.larId } }),
+    prisma.conta.findMany({ where: { larId: sessao.larId, arquivada: false, tipo: { not: "INVESTIMENTO" } }, select: { tipo: true, instituicao: true } }),
+    sessao.membroId ? prisma.membro.findUnique({ where: { id: sessao.membroId }, select: { rendaMensalCentavos: true } }) : null,
+    prisma.recorrencia.count({ where: { larId: sessao.larId, tipo: "RECEITA", ativa: true } }),
+    prisma.recorrencia.count({ where: { larId: sessao.larId, tipo: "DESPESA", ativa: true } }),
+    prisma.orcamento.count({ where: { larId: sessao.larId, competencia } }),
+  ])
+  const semDados = lancamentosDoLar === 0
+  const feitosDoComeco = feitosDoRoteiro({ contas: contasDoRoteiro, rendasFixas, rendaDeclaradaCentavos: membroDoRoteiro?.rendaMensalCentavos ?? 0, contasFixas, limitesDoMes, lancamentos: lancamentosDoLar })
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
   const nomesDeCategoria = new Map((await prisma.categoria.findMany({
     where: { id: { in: pendentes.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)) } },
@@ -178,6 +190,8 @@ export default async function Painel() {
         <nav className={cn(estilos.atalhos, estilos.atalhosDentro)} aria-label="Atalhos">{atalhos}</nav>
       </div>
     </section>
+
+    <ListaDoRoteiro feitos={feitosDoComeco} />
 
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
