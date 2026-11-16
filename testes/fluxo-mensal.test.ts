@@ -30,6 +30,19 @@ function base(extra: Partial<DadosDoFluxo> = {}): DadosDoFluxo {
 }
 
 describe("fluxo de caixa mês a mês", () => {
+  it("fatura paga antes do vencimento não sai de novo", () => {
+    // Pagou os R$ 3.000 no dia 1, a fatura vence dia 6: o saldo já caiu para
+    // R$ 2.000 e a fatura não pode sair outra vez.
+    const paga = { cartaoId: "c1", cartao: "Platinum", competencia: "2026-10", venceEm: "2026-10-06", fechada: true, comprasConhecidasCentavos: 250_000, parcelasCentavos: 50_000, mediaComprasCentavos: 280_000, pagoCentavos: 300_000 }
+    const [outubro] = montarFluxoMensal(base({ contas: [{ id: "cc", nome: "Conta corrente", saldoCentavos: 200_000 }], faturas: [paga] }))
+    // aluguel 2.000 + variável 1.000, sem a fatura
+    assert.equal(outubro.saiCentavos, 300_000)
+    assert.equal(outubro.terminaCentavos, 300_000)
+    // Pagamento parcial desconta só o que foi pago.
+    const [parcial] = montarFluxoMensal(base({ faturas: [{ ...paga, pagoCentavos: 100_000 }] }))
+    assert.equal(parcial.saiCentavos, 500_000)
+  })
+
   it("faz a conta do Davi: tem 5 mil, entra 4 mil, saem 6 mil, sobram 3 mil", () => {
     const [outubro] = montarFluxoMensal(base())
     assert.equal(outubro.comecaCentavos, 500_000)
