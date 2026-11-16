@@ -11,6 +11,8 @@ import { formatarMoeda } from "@/lib/dinheiro"
 import { Checkbox } from "@/components/ui/checkbox"
 import { SeletorCategoria, type CategoriaSelecionavel } from "@/components/seletor-categoria"
 import estilos from "./importador.module.css"
+import { efeitoDaImportacao, frasesDoEfeito } from "@/lib/importar/efeito"
+import { cn } from "@/lib/utils"
 
 interface Conta {
   id: string
@@ -38,6 +40,8 @@ interface LancamentoPrevia {
 }
 
 interface Previa {
+  /// Saldo da conta antes de importar; nulo em cartão (ver `lib/importar/efeito.ts`).
+  saldoAntesCentavos?: number | null
   formato: "ofx" | "csv" | "pdf"
   total: number
   novas: number
@@ -360,6 +364,9 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
   const dias = [...porDia.entries()]
 
   const fecha = previa.conferencia && previa.conferencia.lidoCentavos === previa.conferencia.informadoCentavos
+  // O que vai acontecer ao confirmar. Recalcula a cada caixa marcada ou
+  // desmarcada, porque incluir uma repetida muda o saldo final.
+  const frasesDoQueMuda = frasesDoEfeito(efeitoDaImportacao(previa.lancamentos, previa.saldoAntesCentavos ?? null), { conta, saldoAntesCentavos: previa.saldoAntesCentavos ?? null, competenciaFatura: previa.competenciaFatura })
 
   return (
     <div className={estilos.conferir}>
@@ -380,6 +387,7 @@ function Conferencia({ previa, arquivo, conta, categorias, filtro, aoFiltrar, ao
             </p>
           </div>
 
+          {frasesDoQueMuda.map((frase) => <p key={frase} className={cn(estilos.nota, "valor-sensivel")}>{frase}</p>)}
           {fecha && <p className={estilos.nota} data-tom="bom">A soma do que foi lido fecha com o total da fatura: {formatarMoeda(previa.conferencia!.informadoCentavos)}.</p>}
           {previa.parcelasFuturas && previa.parcelasFuturas.compras > 0 && (
             <div className={estilos.nota}>

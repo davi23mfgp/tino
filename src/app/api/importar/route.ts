@@ -4,6 +4,7 @@ import { confirmarImportacao, previaImportacao, type FormatoImportacao } from "@
 import { PdfProtegido } from "@/lib/importar/pdf"
 import { prisma } from "@/lib/prisma"
 import { doLar } from "@/lib/validar"
+import { saldosDasContas } from "@/lib/saldos-das-contas"
 
 /// Extrato de um ano cabe folgado em 10 MB; acima disso é arquivo errado.
 const TAMANHO_MAXIMO = 10 * 1024 * 1024
@@ -41,7 +42,10 @@ export const POST = comSessao(async (sessao, requisicao) => {
       faturaCartao: faturaCartao || conta.tipo === "CARTAO_CREDITO",
       senhaPdf,
     })
-    return ok(previa)
+    // Para a prévia dizer o que a importação faz com a conta (saldo antes e
+    // depois). Cartão não tem saldo de conta: lá o que muda é a fatura.
+    const saldoAntesCentavos = conta.tipo === "CARTAO_CREDITO" ? null : ((await saldosDasContas(sessao.larId, [conta])).get(conta.id) ?? null)
+    return ok({ ...previa, saldoAntesCentavos })
   } catch (excecao) {
     // A tela precisa distinguir "faltou senha" de "arquivo quebrado": só no
     // primeiro caso faz sentido mostrar o campo de senha.
