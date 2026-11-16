@@ -16,12 +16,18 @@ import { atualizarAlertas } from "@/lib/tino/alertas"
 export const LIMITE_POR_DIA = 2
 const PESO = { CRITICO: 0, ATENCAO: 1, INFO: 2 } as const
 /// Dos avisos informativos, só os de calendário valem uma notificação.
-const INFO_QUE_SAI = ["fatura_fecha", "parcela_acaba", "fixa_termina", "vencimento_proximo"]
+const INFO_QUE_SAI = ["fatura_fecha", "fatura_vence", "das_vence", "parcela_acaba", "fixa_termina", "vencimento_proximo"]
 
 export interface AvisoPendente { id: string; tipo: string; severidade: keyof typeof PESO; titulo: string; acaoRota: string | null; criadoEm: Date }
 
-export function avisosParaEntregar(pendentes: AvisoPendente[], limite = LIMITE_POR_DIA): AvisoPendente[] {
+/**
+ * `desligados`: avisos que a pessoa desligou em Configurações. Desligar só
+ * impedia aviso NOVO; o que já estava na fila saía por notificação mesmo
+ * desligado (achado de 16/11/2026).
+ */
+export function avisosParaEntregar(pendentes: AvisoPendente[], limite = LIMITE_POR_DIA, desligados: ReadonlySet<string> = new Set()): AvisoPendente[] {
   return pendentes
+    .filter((aviso) => !desligados.has(aviso.tipo))
     .filter((aviso) => aviso.severidade !== "INFO" || INFO_QUE_SAI.includes(aviso.tipo))
     .sort((a, b) => PESO[a.severidade] - PESO[b.severidade] || b.criadoEm.getTime() - a.criadoEm.getTime())
     .slice(0, limite)
@@ -35,7 +41,8 @@ export async function entregarAvisosDoLar(larId: string): Promise<number> {
   ])
   if (inscricoes.length === 0) return 0
   let entregues = 0
-  for (const aviso of avisosParaEntregar(pendentes)) {
+  const desligados = new Set((await prisma.vigiaConfig.findMany({ where: { larId, ativo: false }, select: { tipo: true } })).map((linha) => linha.tipo))
+  for (const aviso of avisosParaEntregar(pendentes, LIMITE_POR_DIA, desligados)) {
     let chegou = false
     for (const inscricao of inscricoes) {
       chegou = (await empurrar(inscricao, { tipo: "aviso", id: aviso.id, titulo: aviso.titulo, rota: aviso.acaoRota ?? "/painel" }).catch(() => false)) || chegou

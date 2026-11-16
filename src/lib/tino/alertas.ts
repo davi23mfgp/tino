@@ -52,6 +52,21 @@ export const VIGIAS = [
     frase: "Avisa quando uma conta fixa vence nos próximos 3 dias.",
   },
   {
+    tipo: "fatura_fecha",
+    nome: "Fatura que fecha",
+    frase: "Avisa três dias antes de a fatura do cartão fechar.",
+  },
+  {
+    tipo: "fatura_vence",
+    nome: "Fatura que vence",
+    frase: "Avisa três dias antes do vencimento da fatura do cartão.",
+  },
+  {
+    tipo: "das_vence",
+    nome: "DAS do MEI",
+    frase: "Avisa três dias antes do vencimento da guia do MEI.",
+  },
+  {
     tipo: "caixa_negativo",
     nome: "Caixa negativo à frente",
     frase: "Avisa quando a projeção mostra o saldo virando negativo.",
@@ -212,7 +227,8 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
 
   // ── Calendário: o que vem pela frente ─────────────────────
   alertas.push(...avisosDeCalendario({
-    cartoes: panorama.saldoPorConta.filter((c) => c.tipo === "CARTAO_CREDITO").map((c) => ({ id: c.id, nome: c.nome, faturaCentavos: Math.abs(Math.min(0, c.saldoCentavos)), diaFechamento: c.diaFechamento ?? null })),
+    cartoes: panorama.saldoPorConta.filter((c) => c.tipo === "CARTAO_CREDITO").map((c) => ({ id: c.id, nome: c.nome, faturaCentavos: Math.abs(Math.min(0, c.saldoCentavos)), diaFechamento: c.diaFechamento ?? null, diaVencimento: c.diaVencimento ?? null })),
+    das: panorama.mei && panorama.mei.dasDoMesPago === false && panorama.mei.proximoDasEm ? { venceEm: panorama.mei.proximoDasEm } : null,
     dividas: panorama.dividas.lista,
     recorrencias: panorama.recorrenciasProximas.map((r) => ({ ...r, fimEm: r.fimEm ?? null })),
   }, new Date()))

@@ -48,7 +48,7 @@ export interface Panorama {
   patrimonioCentavos: number
   /// A parte que está em conta de investimento e não entra no caixa.
   aplicadoCentavos: number
-  saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null; diaFechamento?: number | null }[]
+  saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null; diaFechamento?: number | null; diaVencimento?: number | null }[]
   mes: {
     receitasCentavos: number
     despesasCentavos: number
@@ -119,7 +119,9 @@ export interface Panorama {
   }
   projecao: ReturnType<typeof projetarFluxo>
   aposentadoria: ReturnType<typeof projetarAposentadoria> | null
-  mei: (ReturnType<typeof avaliarMei> & { dasEmAberto: string[]; proximoDasEm: Date | null }) | null
+  /// `dasDoMesPago`: o DAS que vence neste mês (o da competência anterior) já
+  /// foi marcado como pago. Nulo quando não há o que pagar (MEI aberto agora).
+  mei: (ReturnType<typeof avaliarMei> & { dasEmAberto: string[]; proximoDasEm: Date | null; dasDoMesPago: boolean | null }) | null
   recorrenciasProximas: { id: string; descricao: string; valorCentavos: number; tipo: string; proximaData: Date; fimEm?: Date | null }[]
 }
 
@@ -203,6 +205,7 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       saldoCentavos: conta.saldoInicialCentavos + entradas - saidas + movidoPorTransferencia,
       limiteCentavos: conta.limiteCentavos,
       diaFechamento: conta.diaFechamento,
+      diaVencimento: conta.diaVencimento,
     }
   })
 
@@ -483,7 +486,14 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       Date.UTC(ano, mesAtual - 1, Math.min(lar.meiPerfil.diaVencimentoDas, 28)),
     )
 
-    mei = { ...situacao, dasEmAberto, proximoDasEm }
+    // O DAS que vence neste mês é o da competência anterior. Sem linha
+    // daquele mês e com o MEI aberto depois dele, não há guia a pagar.
+    const competenciaDoDas = competenciaMaisMeses(competencia, -1)
+    const jaExistia = !abertura || abertura.toISOString().slice(0, 7) <= competenciaDoDas
+    const linhaDoDas = meiCompetencias.find((linha) => linha.competencia === competenciaDoDas)
+    const dasDoMesPago = jaExistia ? (linhaDoDas?.dasPago ?? false) : null
+
+    mei = { ...situacao, dasEmAberto, proximoDasEm, dasDoMesPago }
   }
 
   return {

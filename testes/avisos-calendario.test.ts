@@ -55,3 +55,42 @@ test("entrega: grave primeiro, informativo comum fica no app, no máximo 2 por d
   ])
   assert.deepEqual(r.map((a) => a.id), ["4", "3"])
 })
+
+test("fatura que vence em 3 dias avisa, sem citar valor; em 10 dias, não", () => {
+  const r = avisosDeCalendario({ ...vazio, cartoes: [
+    { id: "a", nome: "Itaú Visa", faturaCentavos: 662_759, diaFechamento: null, diaVencimento: 13 },
+    { id: "b", nome: "Nubank", faturaCentavos: 50_000, diaFechamento: null, diaVencimento: 20 },
+    { id: "c", nome: "Inter", faturaCentavos: 0, diaFechamento: null, diaVencimento: 11 },
+  ] }, hoje)
+  assert.equal(r.length, 1)
+  assert.equal(r[0].tipo, "fatura_vence")
+  assert.equal(r[0].titulo, "Fatura do Itaú Visa vence em 3 dias")
+  assert.equal(r[0].chave, "fatura_vence:a:2026-11")
+  assert.doesNotMatch(r[0].texto, /R\$/)
+})
+
+test("fatura que vence hoje sobe para atenção", () => {
+  const r = avisosDeCalendario({ ...vazio, cartoes: [{ id: "a", nome: "X", faturaCentavos: 100, diaFechamento: null, diaVencimento: 10 }] }, hoje)
+  assert.equal(r[0]?.titulo, "Fatura do X vence hoje")
+  assert.equal(r[0]?.severidade, "ATENCAO")
+})
+
+test("DAS avisa de 3 dias antes até o dia; vencido ou longe, não", () => {
+  const das = (dia: string) => avisosDeCalendario({ ...vazio, das: { venceEm: new Date(`${dia}T00:00:00Z`) } }, hoje)
+  assert.equal(das("2026-11-13")[0]?.titulo, "O DAS do MEI vence em 3 dias")
+  assert.equal(das("2026-11-10")[0]?.titulo, "O DAS do MEI vence hoje")
+  assert.equal(das("2026-11-20").length, 0)
+  assert.equal(das("2026-11-09").length, 0)
+  assert.equal(avisosDeCalendario({ ...vazio, das: null }, hoje).length, 0)
+})
+
+test("entrega: aviso desligado em Configurações não sai nem se já estava na fila", async () => {
+  const { avisosParaEntregar } = await import("../src/lib/tino/entregar-avisos")
+  const d = (n: number) => new Date(2026, 10, n)
+  const fila = [
+    { id: "1", tipo: "fatura_vence", severidade: "INFO" as const, titulo: "a", acaoRota: null, criadoEm: d(1) },
+    { id: "2", tipo: "das_vence", severidade: "INFO" as const, titulo: "b", acaoRota: null, criadoEm: d(2) },
+  ]
+  assert.deepEqual(avisosParaEntregar(fila).map((a) => a.id).sort(), ["1", "2"])
+  assert.deepEqual(avisosParaEntregar(fila, 2, new Set(["fatura_vence"])).map((a) => a.id), ["2"])
+})

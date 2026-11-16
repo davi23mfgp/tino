@@ -12,7 +12,9 @@ import type { AlertaGerado } from "@/lib/tino/alertas"
  * teste não depender do relógio.
  */
 export interface EntradaCalendario {
-  cartoes: { id: string; nome: string; faturaCentavos: number; diaFechamento: number | null }[]
+  cartoes: { id: string; nome: string; faturaCentavos: number; diaFechamento: number | null; diaVencimento?: number | null }[]
+  /// DAS do MEI que vence neste mês e ainda não foi marcado como pago.
+  das?: { venceEm: Date } | null
   dividas: { id: string; credor: string; parcelaCentavos: number; parcelasTotal: number | null; parcelasPagas: number }[]
   recorrencias: { id: string; descricao: string; valorCentavos: number; tipo: string; fimEm: Date | null }[]
 }
@@ -40,6 +42,41 @@ export function avisosDeCalendario(entrada: EntradaCalendario, hoje: Date): Aler
       acaoRota: `/cartoes?cartao=${cartao.id}`,
       chave: `fatura_fecha:${cartao.id}:${fecha.toISOString().slice(0, 7)}`,
     })
+  }
+
+  // Fatura que VENCE (16/11/2026): só existia o aviso de fechamento, e é o
+  // vencimento que gera juros se passar. Sem valor no texto: o saldo do cartão
+  // mistura a fatura fechada com a aberta, e dizer um número aqui seria
+  // inventar o valor a pagar.
+  for (const cartao of entrada.cartoes) {
+    if (!cartao.diaVencimento || cartao.faturaCentavos <= 0) continue
+    let vence = diaSeguro(zeroHora.getUTCFullYear(), zeroHora.getUTCMonth() + 1, cartao.diaVencimento)
+    if (vence < zeroHora) vence = diaSeguro(zeroHora.getUTCFullYear(), zeroHora.getUTCMonth() + 2, cartao.diaVencimento)
+    const dias = diasEntre(zeroHora, vence)
+    if (dias > JANELA_FECHAMENTO_DIAS) continue
+    avisos.push({
+      tipo: "fatura_vence",
+      severidade: dias === 0 ? "ATENCAO" : "INFO",
+      titulo: dias === 0 ? `Fatura do ${cartao.nome} vence hoje` : `Fatura do ${cartao.nome} vence em ${dias} dia${dias === 1 ? "" : "s"}`,
+      texto: "Confira o valor em Cartões. Pagar depois do vencimento gera juros e multa.",
+      acaoRota: `/cartoes?cartao=${cartao.id}`,
+      chave: `fatura_vence:${cartao.id}:${vence.toISOString().slice(0, 7)}`,
+    })
+  }
+
+  // DAS do MEI antes de vencer: até aqui o Tino só avisava depois do atraso.
+  if (entrada.das) {
+    const dias = diasEntre(zeroHora, entrada.das.venceEm)
+    if (dias >= 0 && dias <= JANELA_FECHAMENTO_DIAS) {
+      avisos.push({
+        tipo: "das_vence",
+        severidade: dias === 0 ? "ATENCAO" : "INFO",
+        titulo: dias === 0 ? "O DAS do MEI vence hoje" : `O DAS do MEI vence em ${dias} dia${dias === 1 ? "" : "s"}`,
+        texto: "Pague a guia e marque como paga em MEI e DAS. DAS atrasado gera multa e juros.",
+        acaoRota: "/mei",
+        chave: `das_vence:${entrada.das.venceEm.toISOString().slice(0, 7)}`,
+      })
+    }
   }
 
   for (const divida of entrada.dividas) {
