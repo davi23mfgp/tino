@@ -11,12 +11,22 @@ export const GET = comSessao(async (sessao) => {
     orderBy: { criadoEm: "desc" },
   })
 
-  const provedor = criarProvedor()
+  // Open Finance está desligado (Davi, 28/09/2026), e sem provedor
+  // configurado `criarProvedor` lança de propósito em produção. A tela de
+  // Configurações lê esta rota para listar conexões antigas: responder erro
+  // 500 a cada abertura enchia o registro de erros do admin com um defeito
+  // que não existe. Ler as conexões não precisa do provedor.
+  let nomeDoProvedor = "desligado"
+  try {
+    nomeDoProvedor = criarProvedor().nome
+  } catch {
+    // Fica "desligado": a tela não oferece conexão nenhuma.
+  }
   return ok({
-    provedor: provedor.nome,
+    provedor: nomeDoProvedor,
     // O sandbox devolve dados fictícios. A tela precisa dizer isso em letras
     // grandes, senão o usuário toma decisão com número inventado.
-    sandbox: provedor.nome === "sandbox",
+    sandbox: nomeDoProvedor === "sandbox",
     conexoes: conexoes.map((conexao) => ({
       ...conexao,
       diasParaExpirar: conexao.consentimentoExpiraEm
