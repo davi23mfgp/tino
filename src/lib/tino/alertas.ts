@@ -13,6 +13,7 @@ import { formatarDecimal, formatarMoeda, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
 import { diasEntre, formatarData } from "@/lib/datas"
+import { avisosDeVencimento } from "@/lib/tino/avisos-vencimento"
 import { avisosDeCalendario } from "@/lib/tino/avisos-calendario"
 
 export interface AlertaGerado {
@@ -207,26 +208,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
   }
 
   // ── Contas fixas ──────────────────────────────────────────
-  const JANELA_VENCIMENTO_DIAS = 3
-  const proximaDespesa = panorama.recorrenciasProximas.find((r) => r.tipo === "DESPESA")
-  if (proximaDespesa) {
-    const dias = diasEntre(new Date(), proximaDespesa.proximaData)
-    if (dias >= 0 && dias <= JANELA_VENCIMENTO_DIAS) {
-      alertas.push({
-        tipo: "vencimento_proximo",
-        severidade: dias === 0 ? "ATENCAO" : "INFO",
-        titulo:
-          dias === 0
-            ? `${proximaDespesa.descricao} vence hoje`
-            : `${proximaDespesa.descricao} vence em ${dias} dia${dias === 1 ? "" : "s"}`,
-        texto: `${formatarMoeda(proximaDespesa.valorCentavos)}, em ${formatarData(proximaDespesa.proximaData)}.`,
-        acaoRota: "/meu-mes",
-        // A chave leva a data: a próxima ocorrência do MESMO fixo, mês que
-        // vem, é um vencimento diferente e merece avisar de novo.
-        chave: `vencimento_proximo:${proximaDespesa.id}:${formatarData(proximaDespesa.proximaData)}`,
-      })
-    }
-  }
+  alertas.push(...avisosDeVencimento(panorama.recorrenciasProximas, new Date()))
 
   // ── Calendário: o que vem pela frente ─────────────────────
   alertas.push(...avisosDeCalendario({

@@ -37,6 +37,9 @@ self.addEventListener("push", (evento) => {
         icon: "/icones/icone-192.png",
         badge: "/icones/icone-192.png",
         data: { rota: carga.rota || "/painel" },
+        // Conta que vence: o botão leva à confirmação daquela conta. O toque
+        // na notificação inteira faz o mesmo; o botão só diz para que serve.
+        ...(String(carga.rota || "").includes("pagar=") ? { actions: [{ action: "pagar", title: "Já paguei" }] } : {}),
       }),
     )
     return

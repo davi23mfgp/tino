@@ -41,9 +41,14 @@
       "url": "/lancar?modo=voz"
     },
     {
-      "name": "Ver a análise",
-      "short_name": "Análise",
-      "url": "/analise"
+      "name": "Pagar uma conta do mês",
+      "short_name": "Pagar conta",
+      "url": "/recorrencias"
+    },
+    {
+      "name": "Conferir compras",
+      "short_name": "Conferir",
+      "url": "/capturas"
     }
   ],
   "share_target": {
