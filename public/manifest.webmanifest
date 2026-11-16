@@ -58,7 +58,10 @@
     "params": {
       "title": "titulo",
       "text": "texto",
-      "url": "endereco"
+      "url": "endereco",
+      "files": [
+        { "name": "arquivo", "accept": ["application/pdf", "text/csv", "application/x-ofx", ".pdf", ".csv", ".ofx"] }
+      ]
     }
   }
 }

@@ -108,8 +108,11 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
     // de ligar a chave. Continua dando para desligar.
     setFaturaCartao(contas.find((c) => c.id === id)?.tipo === "CARTAO_CREDITO")
     setPrevia(null)
+    // Só a fatura recebida por e-mail pertence a uma conta: essa sai junto.
+    // O arquivo que a pessoa escolheu ou compartilhou do celular fica, senão
+    // escolher a conta depois do arquivo obrigava a escolher o arquivo de novo.
+    if (recebidoId) setArquivo(null)
     setRecebidoId(null)
-    setArquivo(null)
   }
 
   function escolher(novo: File | null, recebido: string | null = null) {
@@ -205,6 +208,26 @@ export function Importador({ contaInicial = "", aoConcluir }: { contaInicial?: s
   // O aviso sai fora do setPrevia: em desenvolvimento o React roda a
   // atualização duas vezes, e o aviso aparecia repetido.
   const avisoEmMassa = useRef(0)
+  // Arquivo que veio pelo "Compartilhar" do celular (16/11/2026): chega já
+  // escolhido, e a pessoa só diz a conta e manda ler. O parâmetro sai do
+  // endereço para recarregar a página não buscar de novo um arquivo que o
+  // servidor já apagou.
+  useEffect(() => {
+    const veio = new URLSearchParams(window.location.search).get("compartilhado")
+    if (!veio) return
+    window.history.replaceState(null, "", window.location.pathname)
+    if (veio === "recusado") { showToast("Esse arquivo o Tino não lê. Mande PDF, CSV ou OFX de até 10 MB.", { variant: "error" }); return }
+    fetch("/api/importar/compartilhado", { cache: "no-store" })
+      .then(async (resposta) => {
+        if (!resposta.ok) throw new Error()
+        const nome = decodeURIComponent(resposta.headers.get("X-Nome-Do-Arquivo") ?? "arquivo")
+        setArquivo(new File([await resposta.blob()], nome))
+        setPrevia(null)
+        showToast(`${nome} chegou. Escolha a conta e toque em Ler arquivo.`)
+      })
+      .catch(() => showToast("O arquivo compartilhado não está mais aqui. Compartilhe de novo ou escolha o arquivo.", { variant: "error" }))
+  }, [])
+
   useEffect(() => {
     const iguais = avisoEmMassa.current
     if (!iguais) return

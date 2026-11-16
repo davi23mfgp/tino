@@ -2345,3 +2345,16 @@ model EventoFunil {
   @@unique([etapa, usuarioId])
   @@index([etapa, criadoEm])
 }
+
+/// Arquivo que chegou pelo "Compartilhar" do celular (fatura ou extrato do app
+/// do banco) e espera a pessoa abrir a tela de importar. Vive no máximo uma
+/// hora e some ao ser lido: é só a ponte entre o toque em compartilhar e a
+/// tela, porque o envio é uma navegação e não dá para segurar o arquivo no
+/// navegador sem service worker. Um por usuário.
+model ArquivoCompartilhado {
+  usuarioId String   @id
+  larId     String
+  nome      String
+  conteudo  Bytes
+  criadoEm  DateTime @default(now())
+}
