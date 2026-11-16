@@ -43,7 +43,7 @@ export function Destaque({
 }) {
   return (
     <section className={cn("superficie-clara p-5 sm:p-6", className)}>
-      <p className="text-[max(10px,calc(11px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] opacity-70">
+      <p className="text-[max(10px,calc(11px*var(--escala-letra)))] font-semibold opacity-70">
         {rotulo}
       </p>
 

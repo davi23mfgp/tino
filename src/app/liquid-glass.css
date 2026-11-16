@@ -111,23 +111,10 @@ body::before {
 .superficie-clara { border-radius: var(--raio-bloco); }
 .area-do-app .ficha { border-color: var(--vidro-borda); box-shadow: var(--vidro-luz), var(--vidro-sombra); }
 
-/* O bloco branco volta (Davi, 22/09: "pode usar o branco pra contrastar
-   também em algumas ocasiões"). É o único claro da tela, e é isso que o faz
-   funcionar: no meio do escuro, o olho vai nele primeiro. Dois por tela
-   viram duas chamadas e a hierarquia some.
-
-   Contraste medido sobre o branco (OKLab -> sRGB linear -> WCAG):
-   título 16,7:1, apoio 7,5:1, botão preto com texto claro 17,2:1. */
-.superficie-clara {
-  background: oklch(0.97 0.004 145);
-  color: oklch(0.18 0.01 145);
-  border: 1px solid oklch(0.88 0.01 145);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: 0 20px 44px -26px oklch(0 0 0 / 70%);
-}
-.superficie-clara .apoio-claro { color: oklch(0.42 0.01 145); }
-.superficie-clara .acao-clara { background: oklch(0.18 0.01 145); color: oklch(0.97 0 0); }
+/* O bloco branco saiu em 16/11/2026 (passo 64, opção C): `.superficie-clara`
+   usa o vidro da regra acima, como os outros cartões. */
+.superficie-clara .apoio-claro { color: var(--texto-2); }
+.superficie-clara .acao-clara { background: var(--acao); color: var(--background); }
 .superficie-clara .acao-clara:active { transform: scale(.97); }
 
 /* ---------- barra de baixo: pílula de vidro grosso ---------- */

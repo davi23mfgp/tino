@@ -64,7 +64,7 @@ export function Situacao({
 }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <p className="text-[calc(12px*var(--escala-letra))] font-medium uppercase tracking-[0.08em] text-muted-fg">{rotulo}</p>
+      <p className="text-[calc(12px*var(--escala-letra))] font-medium text-muted-fg">{rotulo}</p>
       <p className={cn("numero mt-1 text-[clamp(24px,4vw,32px)] font-bold leading-none tracking-[-0.03em]", COR_DO_TOM[tom])}>
         {valorCentavos !== undefined ? formatarMoeda(valorCentavos) : valorTexto}
       </p>
@@ -161,7 +161,7 @@ export function Comparacao({
 
   return (
     <div className={cn("min-w-0", className)}>
-      <p className="text-[calc(12px*var(--escala-letra))] font-medium uppercase tracking-[0.08em] text-muted-fg">{rotulo}</p>
+      <p className="text-[calc(12px*var(--escala-letra))] font-medium text-muted-fg">{rotulo}</p>
       <p className="numero mt-1 text-[calc(20px*var(--escala-letra))] font-semibold leading-none">{formatarMoeda(atualCentavos)}</p>
       <p
         className={cn(

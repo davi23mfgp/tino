@@ -5,7 +5,7 @@
    prazo se repetiam num segundo cartão logo abaixo do topo. */
 
 .resumo { padding:20px; border-radius:var(--raio-bloco); }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); text-transform:uppercase; letter-spacing:.12em; font-weight:650; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra)));   font-weight:650; color:var(--texto-3); }
 .total { margin-top:6px; font-size:calc(clamp(36px,5vw,46px) * var(--escala-letra)); font-weight:720; line-height:1.03; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
 .prazo { margin-top:6px; font-size:calc(14px * var(--escala-letra)); color:var(--texto-2); }
 .prazo b { color:var(--acao); font-weight:650; }

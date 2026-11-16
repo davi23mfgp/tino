@@ -97,7 +97,7 @@
 .lista { min-width:0; }
 @media (min-width:1180px) { .lista { columns:2; column-gap:28px; } }
 .dia { break-inside:avoid; }
-.dia > p { padding:12px 0 2px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+.dia > p { padding:12px 0 2px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650;   color:var(--texto-3); }
 .linha { display:flex; align-items:center; gap:10px; min-height:58px; padding:8px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
 .linha[data-fora] { opacity:.45; }
 .linha > div { flex:1; min-width:0; display:grid; justify-items:start; gap:4px; }

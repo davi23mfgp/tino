@@ -34,7 +34,7 @@ export function ComprometidoPorMes({
 
   return (
     <section className={cn("mt-5", className)}>
-      <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
+      <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold text-[color:var(--texto-3)]">
         {rotulo}
       </p>
 

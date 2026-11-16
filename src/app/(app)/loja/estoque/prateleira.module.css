@@ -6,7 +6,7 @@
 .pagina { display:grid; gap:16px; min-width:0; max-width:1240px; margin:0 auto; }
 .bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 92%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
 .num { font-variant-numeric:tabular-nums; }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600;   color:var(--texto-3); }
 
 .topo { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .topo p { font-size:calc(13px * var(--escala-letra)); color:var(--texto-3); }

@@ -91,7 +91,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
           /><button type="button" onClick={() => setMostrarSenha(!mostrarSenha)} aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"} className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center text-muted-fg">{mostrarSenha ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></div><span className="block text-xs text-muted-fg">Use pelo menos 8 caracteres.</span></label>
 
           {modoMei && <div className="space-y-4 border-t border-pauta pt-4">
-            <p className="text-xs uppercase tracking-widest text-muted-fg">Sobre o negócio</p>
+            <p className="text-xs text-muted-fg">Sobre o negócio</p>
             <label className="block space-y-2 text-sm"><span>Razão social</span><input required maxLength={160} value={razaoSocial} onChange={(evento)=>setRazaoSocial(evento.target.value)} className={campo} /></label>
             <label className="block space-y-2 text-sm"><span>CNPJ</span><input required inputMode="numeric" placeholder="00.000.000/0000-00" value={cnpj} onChange={(evento)=>setCnpj(evento.target.value)} className={campo} /></label>
             <label className="block space-y-2 text-sm"><span>Telefone ou WhatsApp</span><input required inputMode="tel" placeholder="(00) 00000-0000" value={telefoneContato} onChange={(evento)=>setTelefoneContato(evento.target.value)} className={campo} /></label>
@@ -100,7 +100,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
           </div>}
 
           {!modoMei && <div className="space-y-2 pt-2">
-            <p className="text-xs uppercase tracking-widest text-muted-fg">Em casa, o dinheiro é de</p>
+            <p className="text-xs text-muted-fg">Em casa, o dinheiro é de</p>
             <div className="grid grid-cols-3 gap-2">{TIPOS.map((tipo) => (
               <button
                 key={tipo.valor}

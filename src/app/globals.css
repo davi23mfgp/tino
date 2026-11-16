@@ -371,17 +371,17 @@
 
      Contraste calculado, não escolhido no olho (OKLab → sRGB linear → WCAG):
      título 16,74:1, apoio 7,53:1, texto do botão 17,24:1. */
-  .superficie-clara {
-    background: oklch(0.96 0 0);
-    color: oklch(0.18 0 0);
-    border: 1px solid oklch(0.88 0 0);
-    border-radius: var(--raio-bloco);
-  }
-  .superficie-clara .apoio-claro { color: oklch(0.42 0 0); }
+  /* Desde 16/11/2026 (Davi, passo 64 do canvas, opção C) o bloco de destaque
+     tem o mesmo vidro dos outros cartões: o branco no meio do escuro lia como
+     dois estilos na mesma tela. O destaque fica por conta da posição (é o
+     primeiro) e do botão de ação. A classe continua para não mexer em quem
+     a usa; o vidro vem de `liquid-glass.css`. */
+  .superficie-clara { border-radius: var(--raio-bloco); }
+  .superficie-clara .apoio-claro { color: var(--texto-2); }
   .superficie-clara .acao-clara {
     display: inline-flex; align-items: center; gap: 8px;
     min-height: 44px; padding: 0 20px; border-radius: var(--raio-pilula);
-    background: oklch(0.18 0 0); color: oklch(0.97 0 0);
+    background: var(--acao); color: var(--background);
     font-weight: 620;
   }
   .superficie-clara .acao-clara:hover { opacity: .9; }
@@ -540,7 +540,7 @@
 .app-nav-item:hover,.app-nav-item.is-active { background:var(--papel-1);color:var(--foreground); }
 .app-nav-item.is-active { font-weight:600; }
 .app-brand { display:flex;align-items:center;gap:8px;margin:4px 10px 42px;font-size: calc(32px * var(--escala-letra));font-weight:700;letter-spacing:-.06em; }
-.app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size: max(10px, calc(12px * var(--escala-letra)));letter-spacing:.12em;text-transform:uppercase; }
+.app-sidebar-caption { margin:0 14px 12px;color:var(--texto-3);font-size: max(10px, calc(12px * var(--escala-letra))); }
 .app-header { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px; }
 /* No celular o Início traz sino e conta dentro do cartão do topo; a barra
    repetiria os dois e o título. */
@@ -712,7 +712,7 @@
    docs/PRINCIPIO-DE-TELA.md. É o começo padrão de toda tela do app. */
 .app-abertura { padding:20px; border:1px solid var(--pauta); border-radius:var(--raio-bloco);
   background:linear-gradient(125deg,color-mix(in oklab,var(--papel-1),var(--acao) 10%),var(--papel-1) 62%); }
-.app-abertura-rotulo { font-size:max(10px, calc(12px * var(--escala-letra)));text-transform:uppercase;letter-spacing:.14em;font-weight:650;color:var(--texto-3); }
+.app-abertura-rotulo { font-size:max(10px, calc(12px * var(--escala-letra)));font-weight:650;color:var(--texto-3); }
 .app-abertura-titulo { margin-top:8px;font-size:calc(clamp(20px,3vw,28px) * var(--escala-letra));font-weight:670;line-height:1.15;letter-spacing:-.03em; }
 .app-abertura-titulo em { font-style:normal;color:var(--acao); }
 .app-abertura-apoio { margin-top:8px;font-size:calc(13px * var(--escala-letra));color:var(--texto-2);max-width:62ch; }

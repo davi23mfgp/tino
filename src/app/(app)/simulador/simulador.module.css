@@ -3,7 +3,7 @@
 .pagina { display:grid; gap:12px; }
 
 .topo { padding:18px 20px; border-radius:var(--raio-bloco); }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700;   color:var(--texto-3); }
 .manchete { margin-top:6px; font-size:calc(20px * var(--escala-letra)); font-weight:700; letter-spacing:-.02em; line-height:1.3; }
 .manchete em { font-style:normal; color:var(--acao); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .manchete em[data-piora] { color:var(--negativo); }

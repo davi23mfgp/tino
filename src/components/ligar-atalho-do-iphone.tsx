@@ -85,7 +85,7 @@ export function LigarAtalhoDoIphone({
       ) : (
         <>
           <div className="mt-3 rounded-[var(--raio-campo)] border border-acao/40 bg-acao/[0.07] p-3">
-            <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-[0.14em] text-[color:var(--texto-3)]">
+            <p className="text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold text-[color:var(--texto-3)]">
               Cole isto no atalho
             </p>
             <p className="numero mt-2 break-all text-[calc(12px*var(--escala-letra))] leading-relaxed">{url}</p>
