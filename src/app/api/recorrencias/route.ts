@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ErroDeUso, ok } from "@/lib/api"
 import { campo, doLar, validar, z } from "@/lib/validar"
 import { competenciaDe, diaSeguro } from "@/lib/datas"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
 
 const PASSO_MESES: Record<string, number> = {
   MENSAL: 1,
@@ -145,6 +146,7 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     })
     if (jaLancado) return { jaLancado: true as const, transacaoId: jaLancado.id }
 
+    const contaDaRecorrencia = await tx.conta.findFirst({ where: { id: recorrencia.contaId, larId: sessao.larId }, select: { tipo: true, diaFechamento: true, diaVencimento: true } })
     const transacao = await tx.transacao.create({
       data: {
         larId: sessao.larId,
@@ -157,6 +159,11 @@ export const PUT = comSessao(async (sessao, requisicao) => {
         competencia,
         origem: "RECORRENCIA",
         recorrenciaId: recorrencia.id,
+        // Conta fixa no cartão (assinatura, plano de saúde) entra na fatura
+        // do ciclo certo. Sem isto ficava nula, e o fluxo punha a compra na
+        // fatura do mês da data, errando o mês perto do fechamento
+        // (auditoria de 16/11/2026). Mesma regra de `api/transacoes`.
+        competenciaFatura: contaDaRecorrencia ? competenciaDoCartao(data, contaDaRecorrencia) : null,
       },
     })
 
