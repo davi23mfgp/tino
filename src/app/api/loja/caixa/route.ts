@@ -100,13 +100,17 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     aberto.sangrias.map((s) => s.valorCentavos),
   )
 
-  const caixa = await prisma.caixa.update({
-    where: { id: aberto.id },
+  // Fecha só se ainda está aberto: dois aparelhos fechando juntos gravavam
+  // um por cima do outro, e o contado da gaveta que valia era o do último.
+  const fechou = await prisma.caixa.updateMany({
+    where: { id: aberto.id, fechadoEm: null },
     data: {
       fechadoEm: new Date(),
       fechamentoInformadoCentavos: dados.fechamentoInformadoCentavos ?? 0,
     },
   })
+  if (fechou.count === 0) throw new ErroDeUso("Este caixa já foi fechado em outro aparelho.", 409)
+  const caixa = await prisma.caixa.findUniqueOrThrow({ where: { id: aberto.id } })
 
   return ok({
     caixa,
