@@ -56,13 +56,18 @@ export function SubAbas({ mei, apenasLoja }: { mei?: boolean; apenasLoja?: boole
 function Mais({ grupos, ativo, desktop = false }: { grupos: GrupoNav[]; ativo: boolean; desktop?: boolean }) {
   const [aberto, setAberto] = useState(false)
   const caminho = usePathname()
-  return <Drawer shouldScaleBackground={false} open={aberto} onOpenChange={setAberto}>
+  // Arrastar só pela alça (17/11/2026): no Extrato e em Cartões o grupo da
+  // tela atual abre sozinho, o menu fica mais alto que a tela e rola por
+  // dentro. No Safari do iPhone a gaveta tomava esse rolar por "arrastar para
+  // fechar" e o toque travava; no Início nenhum grupo abre e nada rolava, por
+  // isso lá funcionava. Fechar continua pelo Concluir e pelo toque fora.
+  return <Drawer shouldScaleBackground={false} handleOnly open={aberto} onOpenChange={setAberto}>
     <DrawerTrigger asChild><button aria-label="Mais recursos" className={cn(desktop ? "app-nav-item" : "app-bottom-item", ativo && "is-active")}>
       <Menu className="size-5" aria-hidden /><span>Mais</span>
     </button></DrawerTrigger>
     <DrawerContent >
       <DrawerHeader><DrawerTitle>Seu Tino</DrawerTitle><DrawerDescription>Escolha o que quer organizar.</DrawerDescription></DrawerHeader>
-      <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-5">
+      <div data-vaul-no-drag className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-5">
       <div className="mb-4"><GatilhoBuscaPaginas variant="barra" /></div>
       <nav aria-label="Todos os recursos">
         <Accordion type="single" collapsible defaultValue={grupos.find(g => g.itens.some(i => estaAtivo(caminho, i.rota)))?.chave}>
