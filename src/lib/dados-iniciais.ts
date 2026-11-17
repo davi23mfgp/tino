@@ -21,6 +21,10 @@ const ROTAS = {
   "/api/meu-mes": () => import("@/app/api/meu-mes/route"),
   "/api/capturas": () => import("@/app/api/capturas/route"),
   "/api/loja/contas": () => import("@/app/api/loja/contas/route"),
+  "/api/loja": () => import("@/app/api/loja/route"),
+  "/api/dividas": () => import("@/app/api/dividas/route"),
+  "/api/recorrencias": () => import("@/app/api/recorrencias/route"),
+  "/api/mei": () => import("@/app/api/mei/route"),
 } as const
 
 export type RotaComDadoInicial = keyof typeof ROTAS
