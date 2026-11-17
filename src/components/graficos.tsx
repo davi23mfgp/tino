@@ -6,6 +6,7 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
   ComposedChart,
   Line,
@@ -897,4 +898,11 @@ export interface PontoFluxoGrafico {
   futuro: boolean
   /** Último ponto realizado, que também inicia a linha pontilhada. */
   viradaDoFuturo?: boolean
+}
+
+/** Vendas do período no painel da loja. Mora aqui para carregar sob demanda, como os outros gráficos. */
+export function GraficoDeVendasDaLoja({ dados, periodo }: { dados: { nome: string; totalCentavos: number }[]; periodo: "mes" | "dia" }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%"><AreaChart data={dados} margin={{top:12,right:8,left:-22,bottom:0}}><defs><linearGradient id="area-painel-loja" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="currentColor" stopOpacity={0.28}/><stop offset="100%" stopColor="currentColor" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="currentColor" strokeOpacity={0.09}/><XAxis dataKey="nome" tickLine={false} axisLine={false} minTickGap={20}/><YAxis tickLine={false} axisLine={false} tickFormatter={(valor:number)=>formatarMoeda(valor,false)}/><Tooltip formatter={(valor)=>formatarMoeda(Number(valor))} labelFormatter={(rotulo)=>periodo === "dia" ? `${rotulo}` : `Dia ${rotulo}`} /><Area type="monotone" dataKey="totalCentavos" name="Vendas" stroke="currentColor" strokeWidth={2} fill="url(#area-painel-loja)" /></AreaChart></ResponsiveContainer>
+  )
 }

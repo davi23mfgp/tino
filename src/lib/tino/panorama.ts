@@ -6,6 +6,7 @@
  * dois lugares e o usuário perde a confiança no sistema inteiro.
  */
 
+import { competenciaDosLimites } from "@/lib/orcamento-herdado"
 import { prisma } from "@/lib/prisma"
 import { saldoDisponivel, patrimonio, aplicado } from "@/lib/saldo-disponivel"
 import {
@@ -163,7 +164,13 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
         where: { larId, competencia: { in: historicoCompetencias } },
         include: { categoria: true },
       }),
-      prisma.orcamento.findMany({ where: { larId, competencia }, include: { categoria: true } }),
+      // Limite herdado do último mês que tem, como Meu mês e /orcamento: lendo
+      // só o mês exato, o Início ficava sem orçamento todo começo de mês e
+      // as duas telas mostravam números diferentes (achado de 17/11/2026).
+      prisma.orcamento
+        .findMany({ where: { larId, competencia: { lte: competencia } }, distinct: ["competencia"], select: { competencia: true } })
+        .then((meses) => competenciaDosLimites(meses.map((linha) => linha.competencia), competencia))
+        .then((base) => (base ? prisma.orcamento.findMany({ where: { larId, competencia: base }, include: { categoria: true } }) : [])),
       prisma.meta.findMany({ where: { larId, status: "ATIVA" }, orderBy: { prioridade: "desc" } }),
       prisma.divida.findMany({ where: { larId, quitada: false } }),
       prisma.recorrencia.findMany({ where: { larId, ativa: true }, orderBy: { proximaData: "asc" } }),
@@ -338,7 +345,10 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   medias.custoFixoCentavos += compromissoMetas
 
   // ── Orçamento ─────────────────────────────────────────────
-  const linhasOrcamento = orcamentos.map((orcamento) => {
+  // Categoria de conta fixa sai do orçamento, como no Meu mês: aluguel não é
+  // gasto que se controla por limite, e "passou do orçamento" nele é falso alarme.
+  const categoriasDeContaFixa = new Set(recorrencias.filter((r) => r.tipo === "DESPESA" && r.categoriaId).map((r) => r.categoriaId as string))
+  const linhasOrcamento = orcamentos.filter((orcamento) => !categoriasDeContaFixa.has(orcamento.categoriaId)).map((orcamento) => {
     const gasto = porCategoria.get(orcamento.categoriaId)?.totalCentavos ?? 0
     return {
       categoriaId: orcamento.categoriaId,

@@ -24,3 +24,8 @@ export const GraficoDaDivisao = dynamic(() => import("@/components/graficos").th
   ssr: false,
   loading: () => <Reserva altura={240} />,
 })
+export const GraficoDeVendasDaLoja = dynamic(() => import("@/components/graficos").then((modulo) => modulo.GraficoDeVendasDaLoja), {
+  ssr: false,
+  // O espaço já tem a altura fixa no CSS do painel; a reserva só evita o vazio piscar.
+  loading: () => <Reserva altura={0} />,
+})
