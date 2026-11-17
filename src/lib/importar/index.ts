@@ -194,6 +194,7 @@ export async function previaImportacao(params: {
     }
   } else {
     const resultado = params.faturaCartao ? lerCsvFaturaCartao(texto) : lerCsv(texto)
+    if (resultado.datasAmericanas) avisos.push("As datas deste arquivo estão no formato americano (mês antes do dia) e foram lidas assim. Confira duas ou três linhas antes de importar.")
     brutos = resultado.lancamentos
     if (resultado.descartadas.length > 0) {
       avisos.push(`${resultado.descartadas.length} linha(s) do CSV foram ignoradas (data ou valor ilegível).`)

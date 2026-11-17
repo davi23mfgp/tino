@@ -35,3 +35,16 @@ describe("importação: achados do Lote 5", () => {
     assert.equal(lancamentos[0].data.toISOString().slice(0, 10), "2026-03-15")
   })
 })
+
+it("CSV com data americana (mês/dia) é lido como americano e avisa", async () => {
+  const { lerCsv, datasSaoAmericanas } = await import("../src/lib/importar/csv")
+  const r = lerCsv("Date,Description,Amount\n03/15/2026,Coffee,-4.50\n03/04/2026,Book,-20.00")
+  assert.equal(r.datasAmericanas, true)
+  assert.deepEqual(r.lancamentos.map((l) => l.data.toISOString().slice(0, 10)), ["2026-03-15", "2026-03-04"])
+  // Brasileiro continua brasileiro; ambíguo fica brasileiro.
+  assert.equal(datasSaoAmericanas(["15/03/2026", "04/03/2026"]), false)
+  assert.equal(datasSaoAmericanas(["03/04/2026", "05/06/2026"]), false)
+  // Misturado (13 na frente e 15 atrás) é arquivo estranho: não troca.
+  assert.equal(datasSaoAmericanas(["13/03/2026", "03/15/2026"]), false)
+  assert.equal(lerCsv("Data;Descrição;Valor\n15/03/2026;Café;-4,50").datasAmericanas, false)
+})

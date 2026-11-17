@@ -13,7 +13,17 @@ const TAMANHO_MAXIMO = 10 * 1024 * 1024
  * Prévia da importação. Recebe o arquivo, devolve o que aconteceria.
  * Nada é gravado aqui — a gravação só ocorre no PUT, depois da conferência.
  */
+/// O mesmo teto que a confirmação aceita. Antes a prévia mostrava 12 mil linhas
+/// e o botão de confirmar recusava com "valores inválidos", sem dizer o motivo.
+const LINHAS_MAXIMAS = 10_000
+
 export const POST = comSessao(async (sessao, requisicao) => {
+  // O tamanho é conferido pelo cabeçalho antes de ler o corpo: `formData()`
+  // carrega o arquivo inteiro na memória, e um arquivo de 500 MB derrubava a
+  // função antes de chegar ao teto de 10 MB logo abaixo. A folga cobre o
+  // envelope do formulário (nome da conta, senha do PDF).
+  const declarado = Number(requisicao.headers.get("content-length") ?? 0)
+  if (declarado > TAMANHO_MAXIMO + 64 * 1024) return erro("Arquivo muito grande (limite de 10 MB).", 413)
   const formulario = await requisicao.formData()
   const arquivo = formulario.get("arquivo")
   const contaId = String(formulario.get("contaId") ?? "")
@@ -45,6 +55,9 @@ export const POST = comSessao(async (sessao, requisicao) => {
     // Para a prévia dizer o que a importação faz com a conta (saldo antes e
     // depois). Cartão não tem saldo de conta: lá o que muda é a fatura.
     const saldoAntesCentavos = conta.tipo === "CARTAO_CREDITO" ? null : ((await saldosDasContas(sessao.larId, [conta])).get(conta.id) ?? null)
+    if (previa.novas > LINHAS_MAXIMAS) {
+      throw new ErroDeUso(`O arquivo tem ${previa.novas.toLocaleString("pt-BR")} lançamentos novos, e o limite é ${LINHAS_MAXIMAS.toLocaleString("pt-BR")} por vez. Exporte do banco um período menor (um ano, por exemplo) e importe em partes.`)
+    }
     return ok({ ...previa, saldoAntesCentavos })
   } catch (excecao) {
     // A tela precisa distinguir "faltou senha" de "arquivo quebrado": só no
@@ -72,7 +85,7 @@ export const PUT = comSessao(async (sessao, requisicao) => {
 
   if(!await prisma.conta.findFirst({where:{id:dados.contaId,larId:sessao.larId,arquivada:false}}))throw new ErroDeUso("Conta inválida.")
   await doLar(sessao.larId, { membro: dados.membroId })
-  if(dados.lancamentos.length>10000||dados.lancamentos.some(l=>!Number.isSafeInteger(l.valorCentavos)||l.valorCentavos<=0||l.valorCentavos>2147483647))throw new ErroDeUso("Valores do arquivo inválidos.")
+  if(dados.lancamentos.length>LINHAS_MAXIMAS||dados.lancamentos.some(l=>!Number.isSafeInteger(l.valorCentavos)||l.valorCentavos<=0||l.valorCentavos>2147483647))throw new ErroDeUso("Valores do arquivo inválidos.")
   // Sem a impressão digital, o índice único não pega a repetição (nulo não
   // colide) e o mesmo lançamento entrava duas vezes (auditoria, Lote 5).
   if (dados.lancamentos.some((l) => typeof l.hashImport !== "string" || !/^[a-f0-9]{16,128}$/.test(l.hashImport))) throw new ErroDeUso("Refaça a prévia do arquivo antes de confirmar.")
