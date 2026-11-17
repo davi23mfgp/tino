@@ -112,15 +112,28 @@ export async function confirmarFaturaRecebida(params: { larId: string; id: strin
     throw new ErroDeUso(resumo.texto, 409)
   }
 
-  const importacao = await confirmarImportacao({
-    larId: params.larId,
-    contaId: fatura.contaId,
-    arquivoNome: fatura.arquivoNome,
-    formato: detectarFormato(fatura.arquivoNome),
-    membroId: params.membroId ?? null,
-    ...dadosParaConfirmar(lida.previa),
-  })
+  // Reserva antes de lançar: dois toques em "Lançar" (ou o celular e o
+  // computador juntos) liam os dois a fatura como pendente e importavam duas
+  // vezes, a segunda gerando uma importação vazia no histórico. Só quem muda
+  // PENDENTE para CONCLUIDA segue; se o lançamento falhar, a fatura volta.
+  const reservada = await prisma.faturaRecebida.updateMany({ where: { id: fatura.id, status: "PENDENTE" }, data: { status: "CONCLUIDA" } })
+  if (reservada.count === 0) throw new ErroDeUso("Esta fatura já foi lançada.", 409)
+
+  let importacao: Awaited<ReturnType<typeof confirmarImportacao>>
+  try {
+    importacao = await confirmarImportacao({
+      larId: params.larId,
+      contaId: fatura.contaId,
+      arquivoNome: fatura.arquivoNome,
+      formato: detectarFormato(fatura.arquivoNome),
+      membroId: params.membroId ?? null,
+      ...dadosParaConfirmar(lida.previa),
+    })
+  } catch (excecao) {
+    await prisma.faturaRecebida.update({ where: { id: fatura.id }, data: { status: "PENDENTE" } })
+    throw excecao
+  }
   // O arquivo some depois de lançado: fatura guardada é dado de sobra parado no banco.
-  await prisma.faturaRecebida.update({ where: { id: fatura.id }, data: { status: "CONCLUIDA", conteudo: Buffer.alloc(0) } })
+  await prisma.faturaRecebida.update({ where: { id: fatura.id }, data: { conteudo: Buffer.alloc(0) } })
   return { importacao, resumo }
 }
