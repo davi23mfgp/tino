@@ -30,7 +30,7 @@ export async function montarDadosDoFluxo(larId: string, hoje: string, meses = 12
   const historico = Array.from({ length: MESES_DE_HISTORICO }, (_, indice) => competenciaMaisMeses(atual, -(indice + 1)))
   const horizonte = Array.from({ length: meses + 1 }, (_, indice) => competenciaMaisMeses(atual, indice))
 
-  const [lar, contas, movimentos, transferencias, recorrencias, transacoes, parcelas, dividas] = await Promise.all([
+  const [lar, contas, movimentos, transferencias, recorrencias, transacoes, parcelas, dividas, pagamentosDeFatura] = await Promise.all([
     prisma.lar.findUniqueOrThrow({ where: { id: larId }, select: { fluxoForaChaves: true } }),
     prisma.conta.findMany({ where: { larId, arquivada: false }, orderBy: { criadoEm: "asc" } }),
     // O saldo é derivado dos lançamentos pela mesma regra de /api/contas, para
@@ -44,6 +44,10 @@ export async function montarDadosDoFluxo(larId: string, hoje: string, meses = 12
     }),
     prisma.parcelaCompra.findMany({ where: { paga: false, competencia: { in: horizonte }, parcelamento: { larId, ativo: true } }, select: { competencia: true, valorCentavos: true, parcelamento: { select: { contaId: true } } } }),
     prisma.divida.findMany({ where: { larId, quitada: false }, select: { parcelaCentavos: true, diaVencimento: true } }),
+    // Dinheiro que entrou no cartão: é o pagamento da fatura (a perna de
+    // entrada da transferência leva `transferenciaParId`). Dois meses para
+    // trás bastam: só a fatura fechada e ainda não vencida precisa disto.
+    prisma.transacao.findMany({ where: { larId, pago: true, tipo: "TRANSFERENCIA", transferenciaParId: { not: null }, conta: { tipo: "CARTAO_CREDITO" }, data: { gte: new Date(new Date(`${hoje}T00:00:00Z`).getTime() - 62 * 86_400_000) } }, select: { contaId: true, valorCentavos: true, data: true } }),
   ])
 
   const tipoDaConta = new Map(contas.map((conta) => [conta.id, conta.tipo]))
@@ -119,6 +123,10 @@ export async function montarDadosDoFluxo(larId: string, hoje: string, meses = 12
         comprasConhecidasCentavos: Math.max(0, totalDa(competencia)),
         parcelasCentavos: parcelas.filter((p) => p.parcelamento.contaId === cartao.id && p.competencia === competencia).reduce((soma, p) => soma + p.valorCentavos, 0),
         mediaComprasCentavos: media,
+        // Pago entre o fechamento e o vencimento desta fatura. Antes do
+        // fechamento, o pagamento abate a fatura anterior ou é adiantamento,
+        // e o saldo do cartão já mostra isso.
+        pagoCentavos: ciclo ? pagamentosDeFatura.filter((p) => p.contaId === cartao.id && p.data.toISOString().slice(0, 10) > ciclo.fechaEm && p.data.toISOString().slice(0, 10) <= ciclo.venceEm).reduce((soma, p) => soma + p.valorCentavos, 0) : 0,
       })
     }
   }

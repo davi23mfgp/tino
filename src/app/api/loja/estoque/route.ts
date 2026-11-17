@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
+import { campo } from "@/lib/validar"
 import { lojaDoLar } from "@/lib/loja/dados"
 import { situacaoDoProduto } from "@/lib/loja/estoque"
 import { referenciaDaBarra } from "@/lib/loja/prateleira"
@@ -115,6 +116,13 @@ export const POST = comSessao(async (sessao, requisicao) => {
     motivo?: string
   }>(requisicao)
 
+  // Sem o produto, o filtro caía para a loja inteira e a entrada ia para o
+  // primeiro produto dela (reproduzido na auditoria, Lote 5).
+  if (!campo.id().safeParse(dados.produtoId).success) throw new ErroDeUso("Escolha o produto.")
+  const custo = dados.custoUnitarioCentavos === undefined ? undefined : campo.centavos().safeParse(dados.custoUnitarioCentavos)
+  if (custo && !custo.success) throw new ErroDeUso("Informe o custo em reais, sem número negativo.")
+  const custoUnitario = custo?.success ? custo.data : 0
+
   const loja = await lojaDoLar(sessao.larId)
 
   const produto = await prisma.produtoLoja.findFirst({
@@ -134,24 +142,24 @@ export const POST = comSessao(async (sessao, requisicao) => {
     throw new ErroDeUso("Entrada de zero peça não muda nada.")
   }
 
-  const movimento = await prisma.movimentoEstoque.create({
-    data: {
-      produtoId: produto.id,
-      tipo: dados.tipo,
-      quantidade,
-      custoUnitarioCentavos: dados.tipo === "ENTRADA" ? (dados.custoUnitarioCentavos ?? 0) : 0,
-      motivo: dados.motivo ?? null,
-    },
-  })
-
-  // O custo do produto acompanha a última entrada com custo informado: é o que
-  // a tela de venda mostra como referência de margem no momento de dar desconto.
-  if (dados.tipo === "ENTRADA" && (dados.custoUnitarioCentavos ?? 0) > 0) {
-    await prisma.produtoLoja.update({
-      where: { id: produto.id },
-      data: { custoCentavos: dados.custoUnitarioCentavos as number },
+  const movimento = await prisma.$transaction(async (tx) => {
+    const criado = await tx.movimentoEstoque.create({
+      data: {
+        produtoId: produto.id,
+        tipo: dados.tipo,
+        quantidade,
+        custoUnitarioCentavos: dados.tipo === "ENTRADA" ? custoUnitario : 0,
+        motivo: typeof dados.motivo === "string" ? dados.motivo.slice(0, 200) : null,
+      },
     })
-  }
+
+    // O custo do produto acompanha a última entrada com custo informado: é o que
+    // a tela de venda mostra como referência de margem no momento de dar desconto.
+    if (dados.tipo === "ENTRADA" && custoUnitario > 0) {
+      await tx.produtoLoja.update({ where: { id: produto.id }, data: { custoCentavos: custoUnitario } })
+    }
+    return criado
+  })
 
   return ok({ movimento }, 201)
 })

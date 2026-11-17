@@ -75,7 +75,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const orcamento = dados.orcamentoId
     ? await prisma.orcamentoLoja.findFirst({
         where: { id: dados.orcamentoId, lojaId: loja.id },
-        select: { id: true, status: true, cliente: { select: { id: true, nome: true, telefone: true } } },
+        select: { id: true, status: true, totalCentavos: true, cliente: { select: { id: true, nome: true, telefone: true } } },
       })
     : null
   if (dados.orcamentoId) {
@@ -89,7 +89,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
   // Venda que fecha uma ordem de serviço: a OS fica ligada à venda, e a
   // ficha dela passa a dizer em que venda foi paga.
   const ordem = dados.ordemId
-    ? await prisma.ordemServicoLoja.findFirst({ where: { id: dados.ordemId, lojaId: loja.id }, select: { id: true, vendaId: true, cliente: { select: { id: true, nome: true, telefone: true } } } })
+    ? await prisma.ordemServicoLoja.findFirst({ where: { id: dados.ordemId, lojaId: loja.id }, select: { id: true, vendaId: true, valorCentavos: true, cliente: { select: { id: true, nome: true, telefone: true } } } })
     : null
   if (dados.ordemId) {
     if (sessao.papel === "FUNCIONARIO_LOJA") throw new ErroDeUso("Ordem de serviço só o dono cobra.", 403)
@@ -106,19 +106,50 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const idsProduto = [...new Set(dados.itens.flatMap((item) => (item.produtoId ? [item.produtoId] : [])))]
   const idsServico = [...new Set(dados.itens.flatMap((item) => (item.servicoId ? [item.servicoId] : [])))]
   if (dados.itens.some((item) => item.produtoId && item.servicoId)) throw new ErroDeUso("Um item não pode ser produto e serviço ao mesmo tempo.")
-  if (idsProduto.length > 0) {
-    const daLoja = await prisma.produtoLoja.count({ where: { id: { in: idsProduto }, lojaId: loja.id } })
-    if (daLoja !== idsProduto.length) throw new ErroDeUso("Produto não encontrado nesta loja.", 404)
-  }
-  if (idsServico.length > 0) {
-    const daLoja = await prisma.servicoLoja.count({ where: { id: { in: idsServico }, lojaId: loja.id, ativo: true } })
-    if (daLoja !== idsServico.length) throw new ErroDeUso("Serviço não encontrado nesta loja.", 404)
+  const [produtosDaLoja, servicosDaLoja] = await Promise.all([
+    idsProduto.length > 0 ? prisma.produtoLoja.findMany({ where: { id: { in: idsProduto }, lojaId: loja.id }, select: { id: true, nome: true, precoCentavos: true } }) : [],
+    idsServico.length > 0 ? prisma.servicoLoja.findMany({ where: { id: { in: idsServico }, lojaId: loja.id, ativo: true }, select: { id: true, nome: true, precoCentavos: true } }) : [],
+  ])
+  if (produtosDaLoja.length !== idsProduto.length) throw new ErroDeUso("Produto não encontrado nesta loja.", 404)
+  if (servicosDaLoja.length !== idsServico.length) throw new ErroDeUso("Serviço não encontrado nesta loja.", 404)
+
+  // O funcionário vende pelo preço do catálogo; mudar preço ou dar desconto é
+  // do dono (Davi, 12/11/2026, auditoria L5-13). Antes, quem estava no balcão
+  // vendia um produto de R$ 500 por R$ 0,01. Item sem preço no catálogo (zero)
+  // e item avulso continuam livres: não há preço de referência para comparar.
+  if (sessao.papel === "FUNCIONARIO_LOJA") {
+    if ((dados.descontoCentavos ?? 0) > 0) throw new ErroDeUso("Desconto só o dono dá. Chame o responsável pela loja.", 403)
+    const catalogo = new Map([...produtosDaLoja, ...servicosDaLoja].map((linha) => [linha.id, linha]))
+    for (const item of dados.itens) {
+      const doCatalogo = catalogo.get(item.produtoId ?? item.servicoId ?? "")
+      if (doCatalogo && doCatalogo.precoCentavos > 0 && item.precoUnitarioCentavos !== doCatalogo.precoCentavos) {
+        throw new ErroDeUso(`O preço de ${doCatalogo.nome} é ${(doCatalogo.precoCentavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}. Só o dono muda preço.`, 403)
+      }
+    }
   }
   const [regras, caixa] = await Promise.all([regrasDeRecebimento(loja.id), caixaAberto(loja.id)])
 
+  // Desconto maior que a venda era zerado em silêncio e gravado inteiro; o
+  // orçamento já recusava (auditoria, Lote 5).
+  if ((dados.descontoCentavos ?? 0) > totalDaVenda(dados.itens, 0)) throw new ErroDeUso("O desconto passou do valor da venda.")
   const totalCentavos = totalDaVenda(dados.itens, dados.descontoCentavos ?? 0)
+
+  // A venda de um orçamento ou de uma OS cobra o que o cliente aprovou (Davi,
+  // 12/11/2026, auditoria L5-14). Antes, o total vinha dos itens da tela e um
+  // orçamento de R$ 1.000 podia virar venda de R$ 1 ou de R$ 2.000. A OS sem
+  // valor combinado continua livre.
+  const formatar = (centavos: number) => (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+  if (orcamento && totalCentavos !== orcamento.totalCentavos) {
+    throw new ErroDeUso(`O total não bate com o orçamento aprovado (${formatar(orcamento.totalCentavos)}). Para cobrar outro valor, mude o orçamento antes.`, 409)
+  }
+  if (!orcamento && ordem && ordem.valorCentavos !== null && totalCentavos !== ordem.valorCentavos) {
+    throw new ErroDeUso(`O total não bate com o valor da ordem de serviço (${formatar(ordem.valorCentavos)}). Para cobrar outro valor, mude a ordem antes.`, 409)
+  }
   const conferencia = conferirVenda(totalCentavos, dados.pagamentos)
 
+  if (!conferencia.fechada && conferencia.faltaCentavos === 0) {
+    throw new ErroDeUso("O valor no cartão ou no Pix passou do total da venda. Confira o que foi digitado.")
+  }
   if (!conferencia.fechada) {
     throw new ErroDeUso(
       `Falta ${(conferencia.faltaCentavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} para fechar a venda.`,
@@ -183,7 +214,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       lojaId: loja.id,
       caixaId: caixa?.id ?? null,
       clienteId: cliente?.id ?? null,
-      numero: await proximoNumero(loja.id),
+      numero: await proximoNumero(transacao, loja.id),
       totalCentavos,
       descontoCentavos: dados.descontoCentavos ?? 0,
       observacao: dados.observacao ?? null,

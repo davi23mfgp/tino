@@ -41,13 +41,21 @@ export const POST = comSessao(async (sessao, requisicao) => {
     throw new ErroDeUso("Número de parcelas: use de 1 a 480.")
   }
 
+  // Taxa e custos entravam crus: fração, negativo ou texto chegavam à conta do
+  // CET e só estouravam ao salvar, com erro 500 (auditoria, 10/11/2026).
+  if (valorCentavos > 2_147_483_647) throw new ErroDeUso("Valor do empréstimo alto demais.")
+  const jurosMensalBps = Number(dados.jurosMensalBps ?? 0)
+  if (!Number.isInteger(jurosMensalBps) || jurosMensalBps < 0 || jurosMensalBps > 100_000) throw new ErroDeUso("Juros ao mês: use um número como 2,5.")
+  const custosExtrasCentavos = Number(dados.custosExtrasCentavos ?? 0)
+  if (!Number.isSafeInteger(custosExtrasCentavos) || custosExtrasCentavos < 0 || custosExtrasCentavos > 2_147_483_647) throw new ErroDeUso("Custos extras inválidos.")
+
   const panorama = await montarPanorama(sessao.larId, competenciaAtual())
 
   const analise = analisarEmprestimo({
     valorCentavos,
     parcelas,
-    jurosMensalBps: Number(dados.jurosMensalBps ?? 0),
-    custosExtrasCentavos: dados.custosExtrasCentavos ?? 0,
+    jurosMensalBps,
+    custosExtrasCentavos,
     rendaMensalCentavos: panorama.medias.receitaCentavos || panorama.mes.receitasCentavos || 1,
     parcelasAtuaisCentavos: panorama.dividas.parcelaMensalCentavos,
     sobraMensalCentavos: panorama.medias.sobraCentavos,
@@ -62,8 +70,8 @@ export const POST = comSessao(async (sessao, requisicao) => {
         titulo: dados.titulo?.trim() || `${parcelas}x de empréstimo`,
         valorCentavos,
         parcelas,
-        jurosMensalBps: Number(dados.jurosMensalBps ?? 0),
-        custosExtrasCentavos: dados.custosExtrasCentavos ?? 0,
+        jurosMensalBps,
+        custosExtrasCentavos,
         // A tabela de amortização completa fica fora do JSON gravado: são
         // centenas de linhas recalculáveis a qualquer momento pela simulação.
         resultado: {

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok } from "@/lib/api"
+import { INT_MAX, campo, validar, z } from "@/lib/validar"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
@@ -82,6 +83,20 @@ async function montarBase(larId: string, competencia: string): Promise<{ base: C
   }
 }
 
+const rotulo = campo.texto(80)
+const delta = z.preprocess((valor) => (typeof valor === "string" && valor.trim() !== "" ? Number(valor) : valor), z.number().int().min(-INT_MAX).max(INT_MAX))
+const AJUSTE = z.discriminatedUnion("tipo", [
+  z.object({ tipo: z.literal("RENDA"), rotulo, deltaCentavos: delta, aPartirDe: campo.competencia().optional() }),
+  z.object({ tipo: z.literal("CUSTO"), rotulo, deltaCentavos: delta, aPartirDe: campo.competencia().optional() }),
+  z.object({ tipo: z.literal("GASTO_UNICO"), rotulo, valorCentavos: campo.centavos(), competencia: campo.competencia() }),
+  z.object({ tipo: z.literal("RECEITA_UNICA"), rotulo, valorCentavos: campo.centavos(), competencia: campo.competencia() }),
+  z.object({ tipo: z.literal("NOVA_COMPRA_PARCELADA"), rotulo, valorTotalCentavos: campo.centavos(), parcelas: campo.inteiro(1, 120), competenciaInicial: campo.competencia() }),
+  z.object({ tipo: z.literal("NOVO_EMPRESTIMO"), rotulo, valorCentavos: campo.centavos(), parcelas: campo.inteiro(1, 120), jurosMensalBps: campo.bps(), custosExtrasCentavos: campo.centavos().optional(), competencia: campo.competencia() }),
+  z.object({ tipo: z.literal("QUITAR_DIVIDA"), rotulo, dividaId: campo.id(), competencia: campo.competencia() }),
+  z.object({ tipo: z.literal("PAGAMENTO_EXTRA"), rotulo, valorMensalCentavos: campo.centavos(), aPartirDe: campo.competencia().optional() }),
+  z.object({ tipo: z.literal("APORTE_META"), rotulo, deltaCentavos: delta, aPartirDe: campo.competencia().optional() }),
+])
+
 /** Cenário atual, sem nenhuma hipótese — é o que a tela mostra ao abrir. */
 export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
@@ -93,9 +108,12 @@ export const GET = comSessao(async (sessao, requisicao) => {
 
 /** Roda as hipóteses e devolve a comparação com o cenário atual. */
 export const POST = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ ajustes: Ajuste[]; meses?: number }>(requisicao)
-  const meses = Math.min(Math.max(dados.meses ?? 24, 6), 60)
+  // Nada era validado: `parcelas` de um bilhão fazia o laço do simulador rodar
+  // sem fim e travar o servidor para todos; zero dividia por zero (auditoria,
+  // Lote 5). Parcela até 120 meses, valores em centavos inteiros.
+  const dados = validar(z.object({ ajustes: z.array(AJUSTE).max(30).default([]), meses: campo.inteiro(6, 60).optional() }), await corpo(requisicao))
+  const meses = dados.meses ?? 24
   const { base, nomes } = await montarBase(sessao.larId, competenciaAtual())
 
-  return ok({ ...comparar(base, dados.ajustes ?? [], meses), entrada: base, nomesDividas: nomes })
+  return ok({ ...comparar(base, dados.ajustes as Ajuste[], meses), entrada: base, nomesDividas: nomes })
 })

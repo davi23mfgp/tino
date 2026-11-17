@@ -12,6 +12,7 @@ import { ErroDeUso } from "@/lib/api"
 import { podeConfirmar, podeDescartar } from "@/lib/captura/transicoes"
 import { categorizar, type RegraAplicavel } from "@/lib/categorizar"
 import { lerNotificacao, lerTextoLivre, type NotificacaoLida } from "@/lib/captura/notificacao"
+import { escolherConta } from "@/lib/captura/estruturada"
 import type { OrigemCaptura } from "@prisma/client"
 
 /// Confiança mínima para o app propor o lançamento já pronto para um toque.
@@ -79,6 +80,9 @@ export interface ResultadoCaptura {
   leitura: NotificacaoLida
   /// Mensagem curta para o bot ou o atalho responder no celular.
   resposta: string
+  /// A captura apontou a conta sem dúvida (ver `escolherConta`). Só com isto
+  /// o atalho confirmado no celular vira lançamento direto.
+  contaCerta?: boolean
 }
 
 /**
@@ -99,8 +103,13 @@ export async function registrarCaptura(params: {
   /// mensagem do WhatsApp, `Idempotency-Key` da API). Quando vem, é ela que
   /// decide se o aviso é repetido.
   eventoId?: string | null
+  /// Captura que já chegou em campos (atalho do iPhone): pula o leitor de texto.
+  leituraPronta?: NotificacaoLida
+  /// Nome do cartão na Carteira, quando o atalho manda.
+  cartaoNome?: string | null
 }): Promise<ResultadoCaptura> {
-  const leitura = params.textoLivre ? lerTextoLivre(params.texto) : lerNotificacao(params.texto)
+  const leitura =
+    params.leituraPronta ?? (params.textoLivre ? lerTextoLivre(params.texto) : lerNotificacao(params.texto))
 
   // O índice de evento é único no banco inteiro, então um id que já pertence a
   // OUTRO lar não pode ser gravado de novo nem devolvido: a captura é criada
@@ -189,19 +198,13 @@ export async function registrarCaptura(params: {
     prisma.categoria.findMany({ where: { larId: params.larId }, select: { id: true, nome: true } }),
   ])
 
-  // A conta sai do final do cartão quando o aviso traz; senão, do nome do banco.
-  const porFinal = leitura.cartaoFinal
-    ? contas.find((conta) => conta.nome.includes(leitura.cartaoFinal as string))
-    : undefined
-  const porBanco = leitura.instituicao
-    ? contas.find(
-        (conta) =>
-          conta.instituicao?.toLowerCase() === leitura.instituicao?.toLowerCase() ||
-          conta.nome.toLowerCase().includes((leitura.instituicao as string).toLowerCase()),
-      )
-    : undefined
-
-  const conta = porFinal ?? porBanco ?? contas.find((c) => c.tipo === "CARTAO_CREDITO") ?? contas[0]
+  // A conta sai do final do cartão quando o aviso traz; senão, do nome do
+  // banco ou do cartão. Sem pista nenhuma, vai o palpite, marcado como incerto.
+  const { conta, certa: contaCerta } = escolherConta(contas, {
+    cartaoFinal: leitura.cartaoFinal,
+    instituicao: leitura.instituicao,
+    cartaoNome: params.cartaoNome,
+  })
 
   const sugestao = leitura.estabelecimento
     ? categorizar(
@@ -240,6 +243,7 @@ export async function registrarCaptura(params: {
     id: captura.id,
     status: "PENDENTE",
     leitura,
+    contaCerta,
     resposta: `Anotei ${valorFormatado}${captura.estabelecimento ? ` em ${captura.estabelecimento}` : ""}${
       sugestao?.categoriaNome || sugestao?.categoriaId ? "" : ", falta a categoria"
     }.${parecida ? " Chegou uma igual a essa agora há pouco: confira se não são a mesma." : ""}`,

@@ -1,6 +1,7 @@
 import { comSessao, corpo, ErroDeUso, ok } from "@/lib/api"
 import { conferirSenha, limparCookieSessao } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { gateway } from "@/lib/pagamento"
 
 export const dynamic = "force-dynamic"
 
@@ -34,6 +35,19 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   if (!dados.senha || !(await conferirSenha(dados.senha, usuario.senhaHash))) {
     throw new ErroDeUso("Senha incorreta.", 401)
+  }
+
+  // A assinatura some do banco junto com a conta (cascata), mas no provedor
+  // ela continuava cobrando o cartão de quem já não existe (auditoria,
+  // 10/11/2026). Cancela lá primeiro; se o provedor não responder, não apaga,
+  // para a pessoa não ficar sem conta e ainda pagando.
+  const assinatura = await prisma.assinatura.findUnique({ where: { usuarioId: usuario.id } })
+  if (assinatura?.idExterno && assinatura.status !== "CANCELADA") {
+    try {
+      await gateway(assinatura.provedor).cancelar(assinatura.idExterno)
+    } catch {
+      throw new ErroDeUso("Não consegui cancelar a assinatura no provedor de pagamento, então não apaguei a conta. Cancele em Assinatura e tente de novo.", 502)
+    }
   }
 
   const outros = await prisma.usuario.count({ where: { larId: usuario.larId, id: { not: usuario.id } } })

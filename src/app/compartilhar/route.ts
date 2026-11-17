@@ -2,6 +2,8 @@ import { redirect } from "next/navigation"
 
 import { getSessao } from "@/lib/auth"
 import { registrarCaptura } from "@/lib/captura"
+import { prisma } from "@/lib/prisma"
+import { arquivoAceito, nomeSeguro } from "@/lib/importar/arquivo-compartilhado"
 
 export const dynamic = "force-dynamic"
 
@@ -28,8 +30,25 @@ export async function POST(requisicao: Request) {
   if (!sessao) redirect("/login")
 
   let texto = ""
+  // `redirect` lança por dentro: dentro do `try` cairia no `catch` abaixo e
+  // mandaria o arquivo bom para "vazio". O destino é decidido aqui e o
+  // redirecionamento acontece fora.
+  let destinoDoArquivo: string | null = null
   try {
     const formulario = await requisicao.formData()
+    // Fatura ou extrato compartilhado do app do banco (16/11/2026): o arquivo
+    // espera numa gaveta de uma hora e a pessoa cai na tela de importar com
+    // ele já escolhido. Não é lido aqui: falta dizer em qual conta entra, e
+    // nada entra sem a conferência dela (regra 5).
+    const arquivo = formulario.getAll("arquivo").find((valor): valor is File => valor instanceof File && valor.size > 0)
+    if (arquivo) {
+      if (!arquivoAceito(arquivo.name, arquivo.size)) destinoDoArquivo = "/importar?compartilhado=recusado"
+      else {
+      const dados = { larId: sessao.larId, nome: nomeSeguro(arquivo.name), conteudo: Buffer.from(await arquivo.arrayBuffer()), criadoEm: new Date() }
+      await prisma.arquivoCompartilhado.upsert({ where: { usuarioId: sessao.usuarioId }, create: { usuarioId: sessao.usuarioId, ...dados }, update: dados })
+      destinoDoArquivo = "/importar?compartilhado=arquivo"
+      }
+    }
     // O Android nem sempre manda os três campos, e qual deles carrega o aviso
     // muda conforme o app de origem: uns põem tudo em `texto`, outros separam
     // título e corpo. Juntar o que veio custa nada e evita perder a compra.
@@ -39,11 +58,13 @@ export async function POST(requisicao: Request) {
       .join(" ")
       .trim()
   } catch {
+    if (destinoDoArquivo) redirect(destinoDoArquivo)
     // Corpo ilegível é problema de quem mandou, não da pessoa. Ela já está
     // olhando a tela: manda para a fila com o aviso em vez de tela de erro.
     redirect("/capturas?compartilhado=vazio")
   }
 
+  if (destinoDoArquivo) redirect(destinoDoArquivo)
   if (!texto) redirect("/capturas?compartilhado=vazio")
 
   const resultado = await registrarCaptura({

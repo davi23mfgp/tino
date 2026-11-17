@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { BarChart3, Package, ShoppingBag, Wallet } from "lucide-react"
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { GraficoDeVendasDaLoja } from "@/components/graficos-sob-demanda"
 
 import { buscar, enviar } from "@/lib/cliente"
 import { formatarMoeda, paraCentavos } from "@/lib/dinheiro"
@@ -66,7 +66,7 @@ export default function PainelDaLoja() {
           {editandoMeta ? <form onSubmit={salvarMeta} className={estilos.metaForm}><label>Meta de vendas (R$)<input required inputMode="decimal" value={valorMeta} onChange={(e)=>setValorMeta(e.target.value)} placeholder="Ex.: 5.000,00" /></label><button disabled={salvandoMeta}>Salvar meta</button></form> : <button className={estilos.link} onClick={()=>{setValorMeta(dados.metaCentavos ? formatarMoeda(dados.metaCentavos,false) : "");setEditandoMeta(true)}}>{dados.metaCentavos ? "Alterar meta" : "Criar meta"}</button>}</div></section>
       <div className={estilos.dois}>
         <section className={estilos.bloco}><div className={estilos.titulo}><h3>Vendas por {periodo === "dia" ? "hora" : "dia"}</h3><span>{formatarMoeda(dados.atual.brutoCentavos)}</span></div>
-          {dados.atual.vendas ? <div className={estilos.grafico}><ResponsiveContainer width="100%" height="100%"><AreaChart data={grafico} margin={{top:12,right:8,left:-22,bottom:0}}><defs><linearGradient id="area-painel-loja" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="currentColor" stopOpacity={0.28}/><stop offset="100%" stopColor="currentColor" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="currentColor" strokeOpacity={0.09}/><XAxis dataKey="nome" tickLine={false} axisLine={false} minTickGap={20}/><YAxis tickLine={false} axisLine={false} tickFormatter={(valor:number)=>formatarMoeda(valor,false)}/><Tooltip formatter={(valor)=>formatarMoeda(Number(valor))} labelFormatter={(rotulo)=>periodo === "dia" ? `${rotulo}` : `Dia ${rotulo}`} /><Area type="monotone" dataKey="totalCentavos" name="Vendas" stroke="currentColor" strokeWidth={2} fill="url(#area-painel-loja)" /></AreaChart></ResponsiveContainer></div> : <p className={estilos.vazio}>Sem vendas neste período. Quando registrar a primeira, o gráfico aparece aqui.</p>}
+          {dados.atual.vendas ? <div className={estilos.grafico}><GraficoDeVendasDaLoja dados={grafico} periodo={periodo} /></div> : <p className={estilos.vazio}>Sem vendas neste período. Quando registrar a primeira, o gráfico aparece aqui.</p>}
         </section>
         <section className={estilos.bloco}><h3>Mais vendidos</h3>{dados.produtos.length ? <ol className={estilos.lista}>{dados.produtos.map((produto) => <li key={produto.nome}><span>{produto.nome}<small>{produto.unidades} {produto.unidades === 1 ? "peça" : "peças"}</small></span><b>{formatarMoeda(produto.totalCentavos)}</b></li>)}</ol> : <div className={estilos.vazio}><p>Sem produtos vendidos neste período.</p><Link href="/loja/estoque">Ver prateleira</Link></div>}</section>
         <section className={estilos.bloco}><h3>Como recebeu</h3>{dados.formas.length ? <div className={estilos.lista}>{dados.formas.map((forma) => <div key={forma.forma}><span>{FORMAS[forma.forma] ?? forma.forma}</span><b>{formatarMoeda(forma.totalCentavos)}</b></div>)}</div> : <p className={estilos.vazio}>As formas de pagamento aparecem após uma venda.</p>}</section>

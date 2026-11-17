@@ -13,7 +13,7 @@
 
 .topo { --cor:var(--ambar); padding:20px; border-radius:var(--raio-bloco); }
 .topo[data-completa] { --cor:var(--acao); }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700;   color:var(--texto-3); }
 .manchete { margin-top:8px; font-size:calc(23px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; line-height:1.3; }
 .manchete em { font-style:normal; color:var(--cor); white-space:nowrap; }
 .apoio { margin-top:6px; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.5; color:var(--texto-2); }

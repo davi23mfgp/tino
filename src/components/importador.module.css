@@ -66,8 +66,8 @@
 
 /* Receber por e-mail: uma linha, e as faturas que chegaram embaixo dela. */
 .email { display:grid; gap:4px; padding:4px 16px; }
-.email > div { display:flex; align-items:center; gap:12px; min-height:56px; }
-.email > div > span:first-child { display:grid; place-items:center; flex-shrink:0; width:36px; height:36px; border-radius:12px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
+.email > div, .email form > div { display:flex; align-items:center; gap:12px; min-height:56px; }
+.email > div > span:first-child, .email form > div > span:first-child { display:grid; place-items:center; flex-shrink:0; width:36px; height:36px; border-radius:12px; background:color-mix(in oklab, var(--foreground), transparent 93%); }
 .email svg { width:17px; height:17px; }
 .email p { flex:1; min-width:0; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
 .email p small { display:block; font-weight:400; font-size:max(10px, calc(12px * var(--escala-letra))); color:var(--texto-3); overflow-wrap:anywhere; }
@@ -97,7 +97,7 @@
 .lista { min-width:0; }
 @media (min-width:1180px) { .lista { columns:2; column-gap:28px; } }
 .dia { break-inside:avoid; }
-.dia > p { padding:12px 0 2px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+.dia > p { padding:12px 0 2px; font-size:max(10px, calc(11.5px * var(--escala-letra))); font-weight:650;   color:var(--texto-3); }
 .linha { display:flex; align-items:center; gap:10px; min-height:58px; padding:8px 0; border-top:1px solid color-mix(in oklab, var(--foreground), transparent 92%); }
 .linha[data-fora] { opacity:.45; }
 .linha > div { flex:1; min-width:0; display:grid; justify-items:start; gap:4px; }

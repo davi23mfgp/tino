@@ -24,7 +24,7 @@ const ENDERECO = "https://api.groq.com/openai/v1/audio/transcriptions"
 
 /// Áudio de recado é curto. Acima disso é outra coisa (música, gravação de
 /// reunião), e transcrever sairia caro para devolver lixo.
-const TAMANHO_MAXIMO = 8 * 1024 * 1024
+export const TAMANHO_MAXIMO_AUDIO = 8 * 1024 * 1024
 
 /// Whisper alucina texto inteiro quando recebe silêncio ou ruído. Abaixo de
 /// um segundo e meio de fala não há o que aproveitar, e o custo de aceitar é
@@ -53,7 +53,7 @@ export function transcricaoDisponivel(): boolean {
  */
 export async function transcrever(conteudo: ArrayBuffer, nome = "audio.ogg"): Promise<string> {
   if (!transcricaoDisponivel()) throw new AudioIndisponivel()
-  if (conteudo.byteLength > TAMANHO_MAXIMO) throw new AudioLongoDemais()
+  if (conteudo.byteLength > TAMANHO_MAXIMO_AUDIO) throw new AudioLongoDemais()
   if (conteudo.byteLength < TAMANHO_MINIMO) throw new AudioVazio()
 
   const formulario = new FormData()

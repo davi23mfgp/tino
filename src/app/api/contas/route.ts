@@ -1,3 +1,4 @@
+import { TipoConta } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { saldosDasContas } from "@/lib/saldos-das-contas"
 import { CLASSES } from "@/lib/tino/investir"
@@ -39,9 +40,17 @@ export const POST = comSessao(async (sessao, requisicao) => {
     classeDeAtivo?: string
     bandeira?: string
     quantidadeMilesimos?: number
+    percentualCdiBps?: number
   }>(requisicao)
 
   for(const valor of [dados.saldoInicialCentavos,dados.limiteCentavos,dados.quantidadeMilesimos])if(valor!==undefined&&(!Number.isSafeInteger(valor)||Math.abs(valor)>2147483647))throw new ErroDeUso("Valor inválido.")
+  // O saldo pode ser negativo (conta no cheque especial); limite e quantidade
+  // não. Tipo, dias e tamanhos seguem a edição em `contas/[id]`, que já
+  // validava: a criação aceitava limite negativo e dia 45 (auditoria, 10/11).
+  if (!(Object.values(TipoConta) as string[]).includes(dados.tipo ?? "CORRENTE")) throw new ErroDeUso("Tipo de conta inválido.")
+  if ((dados.limiteCentavos ?? 0) < 0 || (dados.quantidadeMilesimos ?? 0) < 0) throw new ErroDeUso("Limite e quantidade não podem ser negativos.")
+  for (const dia of [dados.diaFechamento, dados.diaVencimento]) if (dia != null && !(Number.isInteger(dia) && dia >= 1 && dia <= 31)) throw new ErroDeUso("O dia vai de 1 a 31.")
+  if (typeof dados.nome !== "string" || dados.nome.trim().length > 80 || (dados.instituicao?.length ?? 0) > 80 || (dados.cor?.length ?? 0) > 30) throw new ErroDeUso("Nome, banco ou cor longos demais.")
   // Ticker é código de negociação: letras e dígitos, nada além disso — o valor
   // entra numa URL de consulta de cotação.
   if(dados.ticker&&!/^[A-Za-z0-9.]{1,12}$/.test(dados.ticker.trim()))throw new ErroDeUso("Código do ativo inválido.")
@@ -50,6 +59,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
   // Bandeira só existe em cartão de crédito, e só o que o banco de dados aceita.
   const BANDEIRAS = ["VISA","MASTERCARD","ELO","AMERICAN_EXPRESS","HIPERCARD","OUTRA"]
   if(dados.bandeira&&(!BANDEIRAS.includes(dados.bandeira)||dados.tipo!=="CARTAO_CREDITO"))throw new ErroDeUso("Bandeira inválida.")
+  if (dados.percentualCdiBps != null && (!Number.isInteger(dados.percentualCdiBps) || dados.percentualCdiBps < 1 || dados.percentualCdiBps > 30_000 || dados.tipo !== "INVESTIMENTO")) throw new ErroDeUso("Percentual do CDI inválido.")
   const conta = await prisma.conta.create({
     data: {
       larId: sessao.larId,
@@ -65,6 +75,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       ticker: dados.ticker?.trim().toUpperCase() || null,
       classeDeAtivo: dados.tipo === "INVESTIMENTO" && dados.classeDeAtivo ? (dados.classeDeAtivo as never) : null,
       quantidadeMilesimos: dados.quantidadeMilesimos ?? null,
+      percentualCdiBps: dados.percentualCdiBps ?? null,
       bandeira: (dados.tipo === "CARTAO_CREDITO" && dados.bandeira ? dados.bandeira : null) as never,
     },
   })

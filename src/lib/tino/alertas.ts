@@ -12,7 +12,11 @@ import { prisma } from "@/lib/prisma"
 import { formatarDecimal, formatarMoeda, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
-import { diasEntre, formatarData } from "@/lib/datas"
+import { diasEntre, formatarData, hojeNoFuso } from "@/lib/datas"
+import { avisosDeVencimento } from "@/lib/tino/avisos-vencimento"
+import { avisosDeCalendario } from "@/lib/tino/avisos-calendario"
+import { comprasRepetidas, fixasQueSubiram } from "@/lib/tino/avisos-de-conferencia"
+import { avisosDeMilhas } from "@/lib/milhas"
 
 export interface AlertaGerado {
   tipo: string
@@ -48,6 +52,36 @@ export const VIGIAS = [
     tipo: "vencimento_proximo",
     nome: "Vencimento próximo",
     frase: "Avisa quando uma conta fixa vence nos próximos 3 dias.",
+  },
+  {
+    tipo: "fatura_fecha",
+    nome: "Fatura que fecha",
+    frase: "Avisa três dias antes de a fatura do cartão fechar.",
+  },
+  {
+    tipo: "fatura_vence",
+    nome: "Fatura que vence",
+    frase: "Avisa três dias antes do vencimento da fatura do cartão.",
+  },
+  {
+    tipo: "das_vence",
+    nome: "DAS do MEI",
+    frase: "Avisa três dias antes do vencimento da guia do MEI.",
+  },
+  {
+    tipo: "fixa_subiu",
+    nome: "Conta fixa que subiu",
+    frase: "Avisa quando uma assinatura ou conta de valor fixo vem mais cara que no mês anterior.",
+  },
+  {
+    tipo: "compra_repetida",
+    nome: "Compra repetida",
+    frase: "Avisa quando a mesma compra aparece duas vezes no mesmo dia, na mesma conta.",
+  },
+  {
+    tipo: "milhas_vencem",
+    nome: "Milhas que vencem",
+    frase: "Avisa 60, 30 e 7 dias antes de os pontos que você anotou vencerem.",
   },
   {
     tipo: "caixa_negativo",
@@ -180,7 +214,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     alertas.push({
       tipo: "meta_atrasada",
       severidade: "INFO",
-      titulo: `${meta.nome}: revise o aporte`,
+      titulo: `${meta.nome}: revise quanto guarda por mês`,
       texto: `Com ${formatarMoeda(meta.aporteAtualCentavos)} por mês a meta não fecha no prazo. Seriam necessários ${formatarMoeda(meta.aporteNecessarioCentavos)}, ${formatarMoeda(diferenca)} a mais.`,
       acaoRota: "/metas",
       chave: `meta_atrasada:${mes}:${meta.id}`,
@@ -206,26 +240,16 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
   }
 
   // ── Contas fixas ──────────────────────────────────────────
-  const JANELA_VENCIMENTO_DIAS = 3
-  const proximaDespesa = panorama.recorrenciasProximas.find((r) => r.tipo === "DESPESA")
-  if (proximaDespesa) {
-    const dias = diasEntre(new Date(), proximaDespesa.proximaData)
-    if (dias >= 0 && dias <= JANELA_VENCIMENTO_DIAS) {
-      alertas.push({
-        tipo: "vencimento_proximo",
-        severidade: dias === 0 ? "ATENCAO" : "INFO",
-        titulo:
-          dias === 0
-            ? `${proximaDespesa.descricao} vence hoje`
-            : `${proximaDespesa.descricao} vence em ${dias} dia${dias === 1 ? "" : "s"}`,
-        texto: `${formatarMoeda(proximaDespesa.valorCentavos)}, em ${formatarData(proximaDespesa.proximaData)}.`,
-        acaoRota: "/meu-mes",
-        // A chave leva a data: a próxima ocorrência do MESMO fixo, mês que
-        // vem, é um vencimento diferente e merece avisar de novo.
-        chave: `vencimento_proximo:${proximaDespesa.id}:${formatarData(proximaDespesa.proximaData)}`,
-      })
-    }
-  }
+  const hoje = hojeNoFuso(panorama.lar.fusoHorario)
+  alertas.push(...avisosDeVencimento(panorama.recorrenciasProximas, hoje))
+
+  // ── Calendário: o que vem pela frente ─────────────────────
+  alertas.push(...avisosDeCalendario({
+    cartoes: panorama.saldoPorConta.filter((c) => c.tipo === "CARTAO_CREDITO").map((c) => ({ id: c.id, nome: c.nome, faturaCentavos: Math.abs(Math.min(0, c.saldoCentavos)), diaFechamento: c.diaFechamento ?? null, diaVencimento: c.diaVencimento ?? null })),
+    das: panorama.mei && panorama.mei.dasDoMesPago === false && panorama.mei.proximoDasEm ? { venceEm: panorama.mei.proximoDasEm } : null,
+    dividas: panorama.dividas.lista,
+    recorrencias: panorama.recorrenciasProximas.map((r) => ({ ...r, fimEm: r.fimEm ?? null })),
+  }, hoje))
 
   // ── Higiene dos dados ─────────────────────────────────────
   if (panorama.mes.naoCategorizadas >= 5) {
@@ -303,6 +327,9 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
 export const AVISOS_DE_ESTADO = ["reserva_baixa", "divida_alta", "estrategia_divida", "mes_no_vermelho", "sem_categoria"] as const
 
 /** Das chaves de estado, as que não são do mês corrente: saem da lista. */
+/** Avisos que só valem enquanto o motor continua gerando: têm prazo ou dependem de um lançamento que pode ser apagado. */
+export const AVISOS_COM_DATA = ["vencimento_proximo", "fatura_fecha", "fatura_vence", "das_vence", "milhas_vencem", "compra_repetida"] as const
+
 export function chavesSuperadas(chaves: string[], competencia: string): string[] {
   return chaves.filter((chave) => {
     const [tipo, mes] = chave.split(":")
@@ -316,6 +343,38 @@ export function chavesSuperadas(chaves: string[], competencia: string): string[]
  * `skipDuplicates` no índice (larId, chave) é o que torna a função idempotente:
  * pode rodar a cada abertura do app sem multiplicar avisos.
  */
+/**
+ * Avisos que não dependem do panorama: olham lançamentos recentes e o saldo
+ * de milhas. Ficam fora de `gerarAlertas` para o panorama, que já é a
+ * consulta mais pesada do app, não crescer por causa de três avisos.
+ */
+async function avisosDeFora(larId: string, fusoHorario?: string): Promise<AlertaGerado[]> {
+  const hoje = hojeNoFuso(fusoHorario)
+  const [pagamentos, recentes, saldos] = await Promise.all([
+    prisma.transacao.findMany({
+      where: { larId, tipo: "DESPESA", pago: true, recorrenciaId: { not: null }, data: { gte: new Date(hoje.getTime() - 100 * 86_400_000) } },
+      select: { recorrenciaId: true, competencia: true, valorCentavos: true, recorrencia: { select: { descricao: true, valorVariavel: true } } },
+    }),
+    prisma.transacao.findMany({
+      where: { larId, tipo: "DESPESA", data: { gte: new Date(hoje.getTime() - 7 * 86_400_000) } },
+      select: { id: true, contaId: true, data: true, descricao: true, valorCentavos: true, recorrenciaId: true, observacao: true },
+    }),
+    prisma.saldoMilhas.findMany({ where: { larId } }),
+  ])
+  return [
+    ...fixasQueSubiram(pagamentos.map((linha) => ({
+      recorrenciaId: linha.recorrenciaId!, descricao: linha.recorrencia?.descricao ?? "Conta fixa", valorVariavel: linha.recorrencia?.valorVariavel ?? true,
+      competencia: linha.competencia, valorCentavos: linha.valorCentavos,
+    }))),
+    ...comprasRepetidas(recentes.map((linha) => ({
+      id: linha.id, contaId: linha.contaId, data: linha.data.toISOString().slice(0, 10), descricao: linha.descricao, valorCentavos: linha.valorCentavos,
+      // Parcela traz "3/10" na descrição; conta fixa tem recorrência.
+      repeteDeProposito: Boolean(linha.recorrenciaId) || /\b\d{1,2}\s*\/\s*\d{1,2}\b/.test(linha.descricao),
+    }))),
+    ...avisosDeMilhas(saldos, hoje),
+  ]
+}
+
 export async function atualizarAlertas(larId: string) {
   // Metas: reaproveita a atualização interna, sem serviço externo de agenda.
   await (await import("@/lib/metas")).atualizarLembretesMetas(larId)
@@ -323,7 +382,9 @@ export async function atualizarAlertas(larId: string) {
     montarPanorama(larId),
     prisma.vigiaConfig.findMany({ where: { larId, ativo: false }, select: { tipo: true } }),
   ])
-  const gerados = gerarAlertas(panorama, new Set(desligados.map((v) => v.tipo)))
+  const desativados = new Set(desligados.map((v) => v.tipo))
+  const gerados = gerarAlertas(panorama, desativados)
+  gerados.push(...(await avisosDeFora(larId, panorama.lar.fusoHorario)).filter((aviso) => !desativados.has(aviso.tipo)))
 
   // `upsert` por (larId, chave), não `createMany({ skipDuplicates })`.
   //
@@ -360,6 +421,14 @@ export async function atualizarAlertas(larId: string) {
       update: mudouOMotivo ? { ...conteudo, dispensadoEm: null } : conteudo,
     })
   }
+
+  // Aviso com data que deixou de valer sai da lista (17/11/2026): "Aluguel
+  // vence em 2 dias" continuava aberto doze dias depois de pago, porque nada
+  // fechava o aviso que parava de ser gerado. Arquiva, não apaga.
+  const chavesDeAgora = new Set(gerados.map((alerta) => alerta.chave))
+  const comData = await prisma.alerta.findMany({ where: { larId, dispensadoEm: null, tipo: { in: [...AVISOS_COM_DATA] } }, select: { id: true, chave: true } })
+  const vencidos = comData.filter((linha) => !chavesDeAgora.has(linha.chave)).map((linha) => linha.id)
+  if (vencidos.length) await prisma.alerta.updateMany({ where: { id: { in: vencidos } }, data: { dispensadoEm: new Date() } })
 
   // Arquiva (não apaga) o aviso de estado de mês passado, como "Limpar tudo".
   const abertos = await prisma.alerta.findMany({

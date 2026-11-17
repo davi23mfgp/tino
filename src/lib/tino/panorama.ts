@@ -6,6 +6,7 @@
  * dois lugares e o usuário perde a confiança no sistema inteiro.
  */
 
+import { competenciaDosLimites } from "@/lib/orcamento-herdado"
 import { prisma } from "@/lib/prisma"
 import { saldoDisponivel, patrimonio, aplicado } from "@/lib/saldo-disponivel"
 import {
@@ -41,6 +42,7 @@ export interface Panorama {
     diaInicioMes: number
     estrategiaDivida: "AVALANCHE" | "BOLA_DE_NEVE" | "PROPORCIONAL"
     mesesReserva: number
+    fusoHorario?: string
   }
   competencia: string
   saldoTotalCentavos: number
@@ -48,7 +50,7 @@ export interface Panorama {
   patrimonioCentavos: number
   /// A parte que está em conta de investimento e não entra no caixa.
   aplicadoCentavos: number
-  saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null }[]
+  saldoPorConta: { id: string; nome: string; tipo: string; saldoCentavos: number; limiteCentavos: number | null; diaFechamento?: number | null; diaVencimento?: number | null }[]
   mes: {
     receitasCentavos: number
     despesasCentavos: number
@@ -119,8 +121,10 @@ export interface Panorama {
   }
   projecao: ReturnType<typeof projetarFluxo>
   aposentadoria: ReturnType<typeof projetarAposentadoria> | null
-  mei: (ReturnType<typeof avaliarMei> & { dasEmAberto: string[]; proximoDasEm: Date | null }) | null
-  recorrenciasProximas: { id: string; descricao: string; valorCentavos: number; tipo: string; proximaData: Date }[]
+  /// `dasDoMesPago`: o DAS que vence neste mês (o da competência anterior) já
+  /// foi marcado como pago. Nulo quando não há o que pagar (MEI aberto agora).
+  mei: (ReturnType<typeof avaliarMei> & { dasEmAberto: string[]; proximoDasEm: Date | null; dasDoMesPago: boolean | null }) | null
+  recorrenciasProximas: { id: string; descricao: string; valorCentavos: number; tipo: string; proximaData: Date; fimEm?: Date | null }[]
 }
 
 const bps = (parte: number, todo: number) => (todo <= 0 ? 0 : Math.round((parte / todo) * 10_000))
@@ -160,7 +164,13 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
         where: { larId, competencia: { in: historicoCompetencias } },
         include: { categoria: true },
       }),
-      prisma.orcamento.findMany({ where: { larId, competencia }, include: { categoria: true } }),
+      // Limite herdado do último mês que tem, como Meu mês e /orcamento: lendo
+      // só o mês exato, o Início ficava sem orçamento todo começo de mês e
+      // as duas telas mostravam números diferentes (achado de 17/11/2026).
+      prisma.orcamento
+        .findMany({ where: { larId, competencia: { lte: competencia } }, distinct: ["competencia"], select: { competencia: true } })
+        .then((meses) => competenciaDosLimites(meses.map((linha) => linha.competencia), competencia))
+        .then((base) => (base ? prisma.orcamento.findMany({ where: { larId, competencia: base }, include: { categoria: true } }) : [])),
       prisma.meta.findMany({ where: { larId, status: "ATIVA" }, orderBy: { prioridade: "desc" } }),
       prisma.divida.findMany({ where: { larId, quitada: false } }),
       prisma.recorrencia.findMany({ where: { larId, ativa: true }, orderBy: { proximaData: "asc" } }),
@@ -202,6 +212,8 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       tipo: conta.tipo as string,
       saldoCentavos: conta.saldoInicialCentavos + entradas - saidas + movidoPorTransferencia,
       limiteCentavos: conta.limiteCentavos,
+      diaFechamento: conta.diaFechamento,
+      diaVencimento: conta.diaVencimento,
     }
   })
 
@@ -333,7 +345,10 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
   medias.custoFixoCentavos += compromissoMetas
 
   // ── Orçamento ─────────────────────────────────────────────
-  const linhasOrcamento = orcamentos.map((orcamento) => {
+  // Categoria de conta fixa sai do orçamento, como no Meu mês: aluguel não é
+  // gasto que se controla por limite, e "passou do orçamento" nele é falso alarme.
+  const categoriasDeContaFixa = new Set(recorrencias.filter((r) => r.tipo === "DESPESA" && r.categoriaId).map((r) => r.categoriaId as string))
+  const linhasOrcamento = orcamentos.filter((orcamento) => !categoriasDeContaFixa.has(orcamento.categoriaId)).map((orcamento) => {
     const gasto = porCategoria.get(orcamento.categoriaId)?.totalCentavos ?? 0
     return {
       categoriaId: orcamento.categoriaId,
@@ -482,7 +497,14 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       Date.UTC(ano, mesAtual - 1, Math.min(lar.meiPerfil.diaVencimentoDas, 28)),
     )
 
-    mei = { ...situacao, dasEmAberto, proximoDasEm }
+    // O DAS que vence neste mês é o da competência anterior. Sem linha
+    // daquele mês e com o MEI aberto depois dele, não há guia a pagar.
+    const competenciaDoDas = competenciaMaisMeses(competencia, -1)
+    const jaExistia = !abertura || abertura.toISOString().slice(0, 7) <= competenciaDoDas
+    const linhaDoDas = meiCompetencias.find((linha) => linha.competencia === competenciaDoDas)
+    const dasDoMesPago = jaExistia ? (linhaDoDas?.dasPago ?? false) : null
+
+    mei = { ...situacao, dasEmAberto, proximoDasEm, dasDoMesPago }
   }
 
   return {
@@ -495,6 +517,7 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       diaInicioMes: lar.diaInicioMes,
       estrategiaDivida: lar.estrategiaDivida as Panorama["lar"]["estrategiaDivida"],
       mesesReserva: lar.mesesReserva,
+      fusoHorario: lar.fusoHorario,
     },
     competencia,
     saldoTotalCentavos,
@@ -552,12 +575,13 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     projecao,
     aposentadoria,
     mei,
-    recorrenciasProximas: recorrencias.slice(0, 10).map((recorrencia) => ({
+    recorrenciasProximas: recorrencias.slice(0, 15).map((recorrencia) => ({
       id: recorrencia.id,
       descricao: recorrencia.descricao,
       valorCentavos: recorrencia.valorCentavos,
       tipo: recorrencia.tipo as string,
       proximaData: recorrencia.proximaData,
+      fimEm: recorrencia.fimEm,
     })),
   }
 }

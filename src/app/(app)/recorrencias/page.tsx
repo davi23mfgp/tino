@@ -120,6 +120,20 @@ export default function Recorrencias() {
     carregar().catch((erro: unknown) => setErro(erro instanceof Error ? erro.message : "Não foi possível carregar as contas."))
   }, [carregar])
 
+  // Atalho do aviso de vencimento (16/11/2026): `/recorrencias?pagar=<id>`
+  // abre direto a confirmação daquela conta, com o valor já preenchido. A
+  // pessoa confere e dá um toque; nada é lançado sozinho (regra 5). O
+  // parâmetro sai do endereço para recarregar a página não reabrir o diálogo.
+  useEffect(() => {
+    if (!dados) return
+    const pedido = new URLSearchParams(window.location.search).get("pagar")
+    if (!pedido) return
+    window.history.replaceState(null, "", window.location.pathname)
+    const recorrencia = dados.recorrencias.find((linha) => linha.id === pedido)
+    if (!recorrencia) { showToast("Não achei essa conta. Ela pode ter sido apagada."); return }
+    setValorDoMes({ recorrencia, valor: formatarDecimal(recorrencia.valorCentavos / 100, 2), erro: "" })
+  }, [dados])
+
   function abrirNova() {
     setErroFormulario("")
     setForm({ ...VAZIO, tipo: lado, contaId: contas[0]?.id ?? "" })

@@ -24,7 +24,7 @@
 .patrimonio:has([data-sinal="alta"]) { --cor:var(--positivo); }
 .patrimonio:has([data-sinal="baixa"]) { --cor:var(--negativo); }
 .patrimonio header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700;   color:var(--texto-3); }
 .total { font-size:calc(clamp(32px,5vw,40px) * var(--escala-letra)); font-weight:750; letter-spacing:-.035em; line-height:1; font-variant-numeric:tabular-nums; }
 .resultado { font-size:calc(14px * var(--escala-letra)); font-weight:700; color:var(--cor); font-variant-numeric:tabular-nums; }
 .resultado small { font-weight:500; color:var(--texto-3); }

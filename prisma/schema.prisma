@@ -303,6 +303,7 @@ model Lar {
   conexoes         ConexaoOpenFinance[]
   alertas          Alerta[]
   vigiaConfigs     VigiaConfig[]
+  saldosMilhas     SaldoMilhas[]
   avisoProativo    AvisoProativo?
   conversas        Conversa[]
   meiPerfil        MeiPerfil?
@@ -515,6 +516,15 @@ model Conta {
   /// Regra de acúmulo e saldo informado pelo usuário, por cartão.
   pontosConfiguracao Json?
 
+  /// Senha do PDF da fatura, cifrada (`cifrarSegredo`, contexto com o id da
+  /// conta). Existe para a fatura que chega por e-mail ser lida sozinha. Nunca
+  /// sai do servidor: a tela só sabe se há senha guardada.
+  senhaFaturaCifrada String?
+  /// Último código de confirmação do encaminhamento do Gmail que chegou para
+  /// o endereço de faturas desta conta, e quando. A tela mostra por 7 dias.
+  codigoGmail        String?
+  codigoGmailEm      DateTime?
+
   orcamentoMensalCentavos Int?
   id                      String    @id @default(cuid())
   larId                   String
@@ -548,6 +558,10 @@ model Conta {
   /// Em que classe esta conta entra na carteira. Só faz sentido em conta de
   /// investimento; `null` significa "ainda não classificada", e a tela pede.
   classeDeAtivo       ClasseDeAtivo?
+  /// Renda fixa atrelada ao CDI: 11000 = 110% do CDI. Com isto e as datas das
+  /// aplicações (as transferências para a conta), o Tino calcula o rendimento
+  /// bruto com a taxa diária do Banco Central, sem a pessoa digitar o saldo.
+  percentualCdiBps    Int?
 
   conexaoId      String?
   conexao        ConexaoOpenFinance? @relation(fields: [conexaoId], references: [id])
@@ -671,6 +685,11 @@ model Transacao {
   @@index([larId, competencia])
   @@index([contaId, data])
   @@index([categoriaId])
+  /// Contas fixas, metas e dívidas apagam e atualizam os lançamentos delas:
+  /// sem índice, cada uma varria o extrato inteiro (auditoria, 10/11/2026).
+  @@index([recorrenciaId])
+  @@index([metaId])
+  @@index([dividaId])
 }
 
 /// Regra de categorização automática. Roda na importação e no reprocessamento.
@@ -1174,6 +1193,8 @@ model ChaveCaptura {
   capturas Captura[]
 
   @@index([larId])
+  /// Toda mensagem do Telegram procura a chave pela conversa.
+  @@index([chatId])
 }
 
 /// Um lançamento que chegou de fora e ainda não virou transação.
@@ -1217,6 +1238,8 @@ model Captura {
   decididoEm  DateTime?
 
   @@index([larId, status])
+  /// A conferência de "chegou uma igual agora há pouco" filtra por lar e hora.
+  @@index([larId, criadoEm])
 }
 
 // ============================================================
@@ -2110,6 +2133,10 @@ model FaturaRecebida {
   arquivoNome String
   conteudo    Bytes
   status      String   @default("PENDENTE")
+  /// O que a leitura automática achou (ver `ResumoDaFatura`). Nulo: ainda não
+  /// foi lida. Guarda só contagem e totais; os lançamentos são relidos na
+  /// confirmação, para o duplicado ser conferido contra o extrato daquela hora.
+  leitura     Json?
   criadoEm    DateTime @default(now())
 
   @@unique([eventoId, contaId, arquivoNome])
@@ -2295,4 +2322,73 @@ model ConviteLar {
   aceitoEm  DateTime?
 
   @@index([larId, email])
+}
+
+/// As etapas do caminho de quem chega ao site até pagar (auditoria, achado 14).
+/// A ordem do enum é a ordem do funil.
+enum EtapaFunil {
+  VISITA
+  CLIQUE_COMECAR
+  CADASTRO_INICIADO
+  CADASTRO_CRIADO
+  ROTEIRO_TERMINADO
+  ASSINATURA_PAGA
+}
+
+/// Medição própria, sem ferramenta de terceiros e sem cookie: as três
+/// primeiras etapas são anônimas (só contagem), as três últimas levam o
+/// usuário para valer uma vez só por pessoa. Nada de IP, navegador ou página
+/// de origem: o funil precisa de contagem, não de quem a pessoa é.
+model EventoFunil {
+  id        String     @id @default(cuid())
+  etapa     EtapaFunil
+  /// "pessoal" ou "mei": os dois produtos têm funis diferentes.
+  produto   String?
+  usuarioId String?
+  criadoEm  DateTime   @default(now())
+
+  @@unique([etapa, usuarioId])
+  @@index([etapa, criadoEm])
+}
+
+/// Arquivo que chegou pelo "Compartilhar" do celular (fatura ou extrato do app
+/// do banco) e espera a pessoa abrir a tela de importar. Vive no máximo uma
+/// hora e some ao ser lido: é só a ponte entre o toque em compartilhar e a
+/// tela, porque o envio é uma navegação e não dá para segurar o arquivo no
+/// navegador sem service worker. Um por usuário.
+model ArquivoCompartilhado {
+  usuarioId String   @id
+  larId     String
+  nome      String
+  conteudo  Bytes
+  criadoEm  DateTime @default(now())
+}
+
+/// Saldo de pontos ou milhas num programa (Livelo, Smiles...), digitado pela
+/// pessoa. Nenhum programa brasileiro publica API de saldo (estudo de
+/// 16/11/2026), então o Tino guarda o que a pessoa informa e a data em que
+/// informou, e a tela mostra essa data: saldo velho exibido como atual seria
+/// número inventado.
+model SaldoMilhas {
+  id    String @id @default(cuid())
+  larId String
+  lar   Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+
+  /// Nome do programa, como em `PROGRAMAS_MILHAS`, ou outro que a pessoa escrever.
+  programa String
+  pontos   Int
+
+  /// O lote que vence primeiro: quantos pontos e quando. Os programas mostram
+  /// isso no extrato; é o que gera o aviso antes de perder.
+  pontosQueVencem Int?
+  venceEm         DateTime?
+
+  /// Quanto a pessoa pagou por estes pontos, quando comprou ou transferiu com
+  /// custo. Serve para o custo por milheiro. Nulo: ganhou sem pagar ou não sabe.
+  custoCentavos Int?
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  @@unique([larId, programa])
 }

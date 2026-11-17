@@ -190,7 +190,10 @@ export function BarraTopo({nome,admin,avatarUrl,competencia,apenasLoja,mei}:{nom
           que existe atalho. A forma de barra e a mesma do resto do app e ja
           carrega o rotulo e a pista `Ctrl K`. */}
       {!apenasLoja && <div className="hidden sm:block"><GatilhoBuscaPaginas variant="barra" /></div>}
-      {!apenasLoja && !mei && <FabAdicionar ancorado />}
+      {/* No celular o "+" mora na barra de baixo; aqui em cima ele era o mesmo
+          botão repetido (Davi, passo 64, opção C). No computador não há barra
+          de baixo (ela some em 1024px), então este é o único e fica. */}
+      {!apenasLoja && !mei && <div className="hidden lg:contents"><FabAdicionar ancorado /></div>}
       <AcoesDaConta nome={nome} admin={admin} avatarUrl={avatarUrl} apenasLoja={apenasLoja} mei={mei} />
     </div>
   </header>

@@ -1,8 +1,10 @@
 import Link from "next/link"
 import type { Metadata } from "next"
 import { ArrowRight, Plus, Wallet, ScanLine, Smartphone, TrendingUp, Send, Bell, FileText, MessageCircle } from "lucide-react"
-import { diasDeTesteVigentes, planosVigentes } from "@/lib/parametros"
+import { diasDeTesteDaVitrine, planosDaVitrine } from "@/lib/vitrine-dados"
 import { Leao } from "./leao"
+import { ENDERECO_DO_SITE } from "@/lib/site"
+import { MarcarEtapa } from "@/components/marcar-etapa"
 import { Revelar } from "@/components/landing/movimento"
 import { Abertura, BotaoVivo, EmSequencia } from "@/components/landing/entrada"
 import { DemonstracaoReal } from "@/components/landing/demonstracao-real"
@@ -16,6 +18,7 @@ import { VitrineRecursos } from "@/components/landing/vitrine-recursos"
 // para ver a primeira dobra.
 export const revalidate = 300
 export const metadata: Metadata = {
+  alternates: { canonical: "/" },
   title: "Tino · Seu dinheiro, mais simples.",
   description: "Contas, cartões, dívidas e planos em um só lugar. Anote pelo Telegram, confira antes de entrar no saldo e saiba quando fica livre das dívidas.",
   openGraph: { title: "Tino · Seu dinheiro, mais simples.", description: "Clareza para hoje. Um plano para o que vem depois.", type: "website", locale: "pt_BR", siteName: "Tino" },
@@ -40,12 +43,31 @@ const FAQ = [
   ["Também posso organizar minha loja?", "Sim. O Tino MEI tem uma página própria em /para-mei, com cadastro e acesso separados para organizar o negócio."],
   ["O Tino substitui um contador?", "O Tino ajuda a organizar suas finanças e acompanhar o negócio. Obrigações que exigem um profissional continuam com seu contador."],
 ]
+
+/**
+ * Dados estruturados (achado 15): dizem ao buscador que isto é um aplicativo de
+ * finanças, de quem é e quanto custa, com o preço que o admin mantém. É bloco
+ * de dados, não script: o navegador não executa, e a política de conteúdo não
+ * precisa abrir exceção.
+ */
+function DadosEstruturados({ menorPrecoCentavos }: { menorPrecoCentavos: number }) {
+  const dados = [
+    { "@context": "https://schema.org", "@type": "Organization", name: "Tino", url: ENDERECO_DO_SITE, logo: `${ENDERECO_DO_SITE}/icones/icone-192.png`, email: "davi23mfgp@gmail.com" },
+    {
+      "@context": "https://schema.org", "@type": "SoftwareApplication", name: "Tino", applicationCategory: "FinanceApplication", operatingSystem: "Web, Android, iOS", url: ENDERECO_DO_SITE, inLanguage: "pt-BR",
+      offers: { "@type": "Offer", price: (menorPrecoCentavos / 100).toFixed(2), priceCurrency: "BRL" },
+    },
+  ]
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(dados).replace(/</g, "\\u003c") }} />
+}
 function Comecar({ texto = "Começar agora" }: { texto?: string }) {
   return <BotaoVivo><Link href="/cadastro" className="lp-botao">{texto}<ArrowRight size={16} aria-hidden /></Link></BotaoVivo>
 }
 export default async function Vitrine() {
-  const [planos, dias] = await Promise.all([planosVigentes(), diasDeTesteVigentes()])
+  const [planos, dias] = await Promise.all([planosDaVitrine(), diasDeTesteDaVitrine()])
   return <div className="lp">
+    <MarcarEtapa etapa="VISITA" produto="pessoal" />
+    <DadosEstruturados menorPrecoCentavos={Math.min(...planos.map((plano) => plano.mensalCentavos))} />
     <a href="#conteudo" className="lp-pular">Pular para o conteúdo</a>
     <header className="lp-menu">
       <Link href="/" className="lp-marca" aria-label="Início do Tino"><Leao tamanho={38} /><span>tino.</span></Link>
@@ -63,7 +85,7 @@ export default async function Vitrine() {
             <span key="telas"><Smartphone size={18} /> No celular e no computador</span>]}
         </EmSequencia>
       </section>
-      <section className="lp-secao" id="planejamento"><Revelar className="lp-painel-claro"><div><span className="lp-tag">Planeje o próximo passo</span><h2>Hoje, um plano.<br />Amanhã, mais<br />possibilidades.</h2><p>Veja no fluxo de caixa quanto pode sobrar em cada mês. Ajuste o orçamento e entenda o efeito das suas escolhas.</p><Comecar texto="Começar meu plano" /></div><div className="lp-tela-projecao"><img src="/demonstracao/projecao-desktop.webp" alt="Fluxo de caixa atual do Tino com saldo projetado mês a mês" width={1265} height={712} loading="lazy" /></div></Revelar></section>
+      <section className="lp-secao" id="planejamento"><Revelar className="lp-painel-claro"><div><span className="lp-tag">Planeje o próximo passo</span><h2>Hoje, um plano.<br />Amanhã, mais<br />possibilidades.</h2><p>Veja quanto entra, quanto sai e quanto pode sobrar em cada mês. Ajuste o orçamento e entenda o efeito das suas escolhas.</p><Comecar texto="Começar meu plano" /></div><div className="lp-tela-projecao"><img src="/demonstracao/projecao-desktop.webp" alt="Tela do Tino com o que entra, o que sai e o saldo previsto mês a mês" width={1265} height={712} loading="lazy" /></div></Revelar></section>
       <section className="lp-secao lp-faixa-produto" id="vantagens"><Revelar className="lp-produto-grande"><div className="lp-produto-texto"><h2>O dinheiro é seu.<br />A clareza também.</h2><p>Saldo, gastos e compromissos.<br />Uma visão completa para decidir melhor.</p><Comecar /></div><div className="lp-desktop lp-desktop-inclinado"><img src="/demonstracao/inicio-desktop.webp" alt="Painel real do Tino: resultado do mês, cartões e compras para conferir" width={1265} height={712} loading="lazy" /></div></Revelar></section>
       <section className="lp-secao lp-alternada" id="visao"><Revelar className="lp-secao-texto"><h2>Encontre cada gasto.<br />Entenda o todo.</h2><p>Escolha o mês, busque lançamentos e filtre por conta ou categoria. Entradas, saídas e resultado ficam à vista.</p><Comecar texto="Organizar meu dinheiro" /></Revelar><Revelar className="lp-moldura-recurso"><img src="/demonstracao/extrato-desktop.webp" alt="Tela atual de transações do Tino com calendário, totais, busca e filtros" width={1265} height={712} loading="lazy" /></Revelar></section>
       <section className="lp-secao lp-alternada lp-invertida" id="cartoes"><Revelar className="lp-secao-texto"><h2>A próxima fatura<br />já está no radar.</h2><p>Veja seus cartões lado a lado, confira compras e parcelas e acompanhe as faturas por mês. Filtre o que precisa conferir.</p><Comecar texto="Conhecer meus cartões" /></Revelar><Revelar className="lp-moldura-recurso lp-cartoes-visual"><img src="/demonstracao/cartoes-desktop.webp" alt="Tela atual de cartões do Tino: cartões lado a lado, compras e faturas por mês" width={1265} height={712} loading="lazy" /></Revelar></section>
@@ -89,6 +111,6 @@ export default async function Vitrine() {
       <section className="lp-secao lp-duvidas" id="duvidas"><div><span className="lp-tag">Ficou alguma dúvida?</span><h2>Vamos simplificar.</h2></div><EmSequencia passo={0.05}>{FAQ.map(([pergunta,resposta]) => <details key={pergunta}><summary>{pergunta}<Plus size={19} aria-hidden /></summary><p>{resposta}</p></details>)}</EmSequencia></section>
       <section className="lp-secao lp-final"><Revelar><Leao tamanho={136} /><h2>Mais tino no dinheiro.<br />Mais espaço para a vida.</h2><Comecar texto={`Experimentar por ${dias} dias`} /></Revelar></section>
     </main>
-    <footer className="lp-secao lp-rodape"><Link href="/" className="lp-marca"><Leao tamanho={38} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><Link href="/para-mei">Para MEI</Link><a href="#recursos">Recursos</a><a href="#planos">Preços</a><Link href="/termos">Termos</Link><Link href="/privacidade">Privacidade</Link><Link href="/login">Entrar</Link></nav><small>© {new Date().getFullYear()} Tino</small></footer>
+    <footer className="lp-secao lp-rodape"><Link href="/" className="lp-marca"><Leao tamanho={38} /><span>tino.</span></Link><p>Seu dinheiro, mais simples.</p><nav aria-label="Rodapé"><Link href="/para-mei">Para MEI</Link><a href="#recursos">Recursos</a><a href="#planos">Preços</a><Link href="/termos">Termos</Link><Link href="/privacidade">Privacidade</Link><Link href="/login">Entrar</Link></nav><small>© {new Date().getFullYear()} Tino. CNPJ 63.443.755/0001-80. Contato: davi23mfgp@gmail.com</small></footer>
   </div>
 }

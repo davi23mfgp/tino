@@ -9,7 +9,7 @@
 .coluna { display:grid; gap:14px; min-width:0; align-content:start; }
 .bloco { min-width:0; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
 .num { font-variant-numeric:tabular-nums; }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:600;   color:var(--texto-3); }
 
 .barra { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 .botao { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px !important; padding:0 16px !important; border-radius:99px; border:1px solid color-mix(in oklab, var(--foreground), transparent 85%); font-size:calc(13.5px * var(--escala-letra)); font-weight:600; white-space:nowrap; }
@@ -86,7 +86,7 @@
 .linha[data-situacao="vencida"]::before { content:""; position:absolute; left:-14px; top:14px; bottom:14px; width:3px; border-radius:3px; background:var(--negativo); }
 .data { width:38px; flex-shrink:0; text-align:center; line-height:1; }
 .data b { display:block; font-size:calc(20px * var(--escala-letra)); font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
-.data small { font-size:max(10px, calc(10px * var(--escala-letra))); letter-spacing:.08em; text-transform:uppercase; color:var(--texto-3); }
+.data small { font-size:max(10px, calc(10px * var(--escala-letra)));   color:var(--texto-3); }
 .linha[data-situacao="vencida"] .data b { color:var(--negativo); }
 .info { flex:1; min-width:0; display:grid; gap:6px; }
 .info > div { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }

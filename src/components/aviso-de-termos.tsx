@@ -19,15 +19,19 @@ export function AvisoDeTermos({ mudancas }: { mudancas: string }) {
     await enviar("/api/usuario/termos", {}).catch(() => {})
   }
 
+  // Uma linha só (Davi, passo 63 do canvas, 13/11/2026). O bloco com o texto
+  // inteiro ocupava um quarto da tela em toda tela. O que mudou continua a um
+  // toque, em "Ler", e segue no aviso para quem usa leitor de tela.
   return (
-    <div role="status" className="mb-4 flex flex-wrap items-center gap-3 rounded-[var(--raio-bloco)] border border-[var(--vidro-borda)] bg-[var(--papel-1)] px-4 py-3 text-[calc(13px*var(--escala-letra))] backdrop-blur-xl">
+    <div role="status" className="mb-4 flex items-center gap-3 rounded-full border border-[var(--vidro-borda)] bg-[var(--papel-1)] py-1.5 pl-4 pr-1.5 text-[calc(13px*var(--escala-letra))] backdrop-blur-xl">
       <p className="min-w-0 flex-1 text-muted-fg">
-        <b className="font-semibold text-foreground">Atualizamos a política de privacidade.</b> {mudancas}{" "}
+        <b className="font-semibold text-foreground">Política de privacidade atualizada.</b>{" "}
+        <span className="sr-only">{mudancas}</span>
         <Link href="/privacidade" className="underline underline-offset-2">
-          Ler a política
+          Ler
         </Link>
       </p>
-      <button type="button" onClick={() => void entendi()} className="rounded-full bg-primary px-4 py-2 font-semibold text-primary-foreground">
+      <button type="button" onClick={() => void entendi()} className="min-h-11 shrink-0 rounded-full border border-[var(--vidro-borda)] px-4 font-semibold text-foreground">
         Entendi
       </button>
     </div>

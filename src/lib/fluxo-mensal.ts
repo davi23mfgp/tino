@@ -53,6 +53,10 @@ export interface FaturaDoFluxo {
   parcelasCentavos: number
   /// Média mensal de compras à vista do cartão, para completar a fatura aberta.
   mediaComprasCentavos: number
+  /// O que já foi pago desta fatura depois do fechamento. Quem paga antes do
+  /// vencimento já teve o saldo da conta reduzido: sem descontar aqui, a mesma
+  /// fatura saía duas vezes até o dia de vencer (revisão de 16/11/2026).
+  pagoCentavos?: number
 }
 export interface DadosDoFluxo {
   hoje: string
@@ -154,7 +158,7 @@ export function montarFluxoMensal(dados: DadosDoFluxo): MesDoFluxo[] {
     // ── Saídas ────────────────────────────────────────────
     for (const fatura of dados.faturas.filter((linha) => competenciaDe(linha.venceEm) === competencia && linha.venceEm >= dados.hoje)) {
       const compras = fatura.fechada ? fatura.comprasConhecidasCentavos : Math.max(fatura.comprasConhecidasCentavos, fatura.mediaComprasCentavos)
-      incluir({ chave: `cartao:${fatura.cartaoId}`, rotulo: `Fatura ${fatura.cartao}`, detalhe: fatura.semVencimento ? "sem vencimento cadastrado" : `vence dia ${dia(fatura.venceEm)}`, tipo: "SAIDA", centavos: compras + fatura.parcelasCentavos, estimado: compras > fatura.comprasConhecidasCentavos })
+      incluir({ chave: `cartao:${fatura.cartaoId}`, rotulo: `Fatura ${fatura.cartao}`, detalhe: fatura.semVencimento ? "sem vencimento cadastrado" : `vence dia ${dia(fatura.venceEm)}`, tipo: "SAIDA", centavos: Math.max(0, compras + fatura.parcelasCentavos - (fatura.pagoCentavos ?? 0)), estimado: compras > fatura.comprasConhecidasCentavos })
     }
     recorrenciasDoMes("DESPESA", "SAIDA")
     // No mês corrente, só a parcela que ainda vai vencer. A que venceu antes

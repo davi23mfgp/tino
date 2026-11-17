@@ -1,6 +1,7 @@
 import {Resend} from "resend"
 import {prisma} from "@/lib/prisma"
-import {contaDoEndereco,emailConfigurado} from "@/lib/faturas-email"
+import {codigoDoGmail,contaDoEndereco,emailConfigurado} from "@/lib/faturas-email"
+import {prepararFaturaRecebida} from "@/lib/importar/fatura-recebida"
 export const maxDuration=60
 export async function POST(req:Request){
  if(!emailConfigurado())return Response.json({erro:"Recebimento não configurado."},{status:503})
@@ -12,6 +13,14 @@ export async function POST(req:Request){
  if(!ids.length)return Response.json({ignorado:true})
  try{
  const contas=await prisma.conta.findMany({where:{id:{in:ids},arquivada:false},select:{id:true,larId:true}})
+ // Confirmação do encaminhamento do Gmail: não tem anexo, tem um código que a
+ // pessoa precisa digitar no Gmail. Guarda e mostra na tela de importar.
+ if(/forwarding-noreply@google\.com/i.test(evento.data.from)){
+  let codigo=codigoDoGmail({from:evento.data.from,subject:evento.data.subject})
+  if(!codigo){const {data:completo}=await resend.emails.receiving.get(evento.data.email_id);codigo=codigoDoGmail({from:evento.data.from,subject:completo?.subject,text:completo?.text})}
+  if(codigo)await prisma.conta.updateMany({where:{id:{in:contas.map(c=>c.id)}},data:{codigoGmail:codigo,codigoGmailEm:new Date()}})
+  return Response.json({recebido:true})
+ }
  const {data:anexos,error}=await resend.emails.receiving.attachments.list({emailId:evento.data.email_id})
  if(error||!anexos)throw new Error("Anexos indisponíveis")
  for(const anexo of anexos.data){
@@ -24,7 +33,12 @@ export async function POST(req:Request){
   const leitor=resposta.body.getReader();const partes:Uint8Array[]=[];let tamanho=0
   while(true){const p=await leitor.read();if(p.done)break;tamanho+=p.value.length;if(tamanho>10*1024*1024){await leitor.cancel();throw new Error("Anexo acima de 10 MB")}partes.push(p.value)}
   const conteudo=Buffer.concat(partes)
-  for(const conta of destinos)await prisma.faturaRecebida.upsert({where:{eventoId_contaId_arquivoNome:{eventoId:evento.data.email_id,contaId:conta.id,arquivoNome:anexo.filename}},create:{larId:conta.larId,contaId:conta.id,eventoId:evento.data.email_id,arquivoNome:anexo.filename,conteudo},update:{}})
+  for(const conta of destinos){
+   const recebida=await prisma.faturaRecebida.upsert({where:{eventoId_contaId_arquivoNome:{eventoId:evento.data.email_id,contaId:conta.id,arquivoNome:anexo.filename}},create:{larId:conta.larId,contaId:conta.id,eventoId:evento.data.email_id,arquivoNome:anexo.filename,conteudo},update:{}})
+   // A leitura falhar não pode devolver erro ao provedor: o arquivo já está
+   // guardado, e um reenvio só repetiria a falha. A pessoa abre em Conferir.
+   await prepararFaturaRecebida(recebida.id,{avisar:true}).catch(()=>null)
+  }
  }
  return Response.json({recebido:true})
  }catch{return Response.json({erro:"Falha ao receber anexos. O provedor pode reenviar."},{status:503})}

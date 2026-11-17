@@ -149,7 +149,7 @@ export default function FecharMes() {
 
               {atual && (
                 <Cartao estatico>
-                  <p className="text-[calc(11.5px*var(--escala-letra))] uppercase tracking-[0.14em] text-muted-fg">Venda {atual.numero} · {dataCurta(atual.dia)}</p>
+                  <p className="text-[calc(11.5px*var(--escala-letra))] text-muted-fg">Venda {atual.numero} · {dataCurta(atual.dia)}</p>
                   <div className="mt-2 flex items-baseline justify-between gap-3">
                     <b className="min-w-0 truncate text-[calc(22px*var(--escala-letra))] font-medium">{atual.cliente ?? "Sem cliente"}</b>
                     <span className="numero shrink-0 text-[calc(26px*var(--escala-letra))] font-light">{formatarMoeda(atual.totalCentavos)}</span>

@@ -4,6 +4,7 @@ import { VERSAO_TERMOS } from "@/lib/termos"
 import estilos from "./privacidade.module.css"
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacidade" },
   title: "Privacidade · Tino",
   description: "O que o Tino guarda, por quê, com quem compartilha e como você apaga.",
 }

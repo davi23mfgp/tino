@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client"
 /**
  * Escolha do gateway e regra de assinatura.
  *
@@ -14,6 +15,7 @@ import { precoVigenteCentavos, valoresVigentes } from "@/lib/parametros"
 import { gatewayMercadoPago } from "@/lib/pagamento/mercadopago"
 import { gatewayStripe } from "@/lib/pagamento/stripe"
 import type { EfeitoDoEvento, Gateway } from "@/lib/pagamento/tipos"
+import { gravarEtapa } from "@/lib/funil-gravar"
 
 export { GatewayNaoConfigurado, WebhookInvalido } from "@/lib/pagamento/tipos"
 export type { EfeitoDoEvento, Gateway } from "@/lib/pagamento/tipos"
@@ -79,22 +81,31 @@ export async function valorDoPlanoCentavos(planoId: CodigoDoPlano, ciclo: CicloC
  * aberta para duas entregas simultâneas.
  */
 export async function aplicarEvento(provedor: ProvedorPagamento, efeito: EfeitoDoEvento): Promise<"novo" | "repetido"> {
+  // Trava e efeito na mesma transação. Antes a trava era gravada sozinha: se o
+  // passo seguinte falhava, a reentrega do provedor batia na trava, saía como
+  // "repetido" e o pagamento nunca valia (auditoria, 10/11/2026). Agora, se
+  // qualquer parte falha, nada fica gravado e a reentrega aplica de novo.
   try {
-    await prisma.eventoWebhook.create({
-      data: { provedor, idEvento: efeito.idEvento, tipo: efeito.tipo },
+    return await prisma.$transaction(async (tx) => {
+      await tx.eventoWebhook.create({
+        data: { provedor, idEvento: efeito.idEvento, tipo: efeito.tipo },
+      })
+      return aplicarDentro(tx, provedor, efeito)
     })
   } catch (excecao) {
     const codigo = (excecao as { code?: string }).code
     if (codigo === "P2002") return "repetido"
     throw excecao
   }
+}
 
-  const assinatura = await localizarAssinatura(provedor, efeito)
+async function aplicarDentro(tx: Prisma.TransactionClient, provedor: ProvedorPagamento, efeito: EfeitoDoEvento): Promise<"novo"> {
+  const assinatura = await localizarAssinatura(provedor, efeito, tx)
   // Evento de uma assinatura que não é nossa (conta de teste do provedor,
   // cobrança avulsa). Fica registrado como recebido e não muda nada.
   if (!assinatura) return "novo"
 
-  await prisma.assinatura.update({
+  await tx.assinatura.update({
     where: { id: assinatura.id },
     data: {
       status: efeito.status ?? undefined,
@@ -108,9 +119,14 @@ export async function aplicarEvento(provedor: ProvedorPagamento, efeito: EfeitoD
     },
   })
 
+  // Primeira ativação paga conta no funil (achado 14). Fica dentro da mesma
+  // transação do evento: se o webhook falhar no meio, o funil não registra
+  // um pagamento que não aconteceu.
+  if (efeito.status === "ATIVA" && !assinatura.inicioEm) await gravarEtapa("ASSINATURA_PAGA", { usuarioId: assinatura.usuarioId }, tx)
+
   if (efeito.cobranca) {
     const dados = efeito.cobranca
-    await prisma.cobranca.upsert({
+    await tx.cobranca.upsert({
       where: { provedor_idExterno: { provedor, idExterno: dados.idExterno } },
       create: {
         assinaturaId: assinatura.id,
@@ -135,16 +151,16 @@ export async function aplicarEvento(provedor: ProvedorPagamento, efeito: EfeitoD
   return "novo"
 }
 
-async function localizarAssinatura(provedor: ProvedorPagamento, efeito: EfeitoDoEvento) {
+async function localizarAssinatura(provedor: ProvedorPagamento, efeito: EfeitoDoEvento, banco: Prisma.TransactionClient = prisma) {
   // A referência é o nosso próprio id e é o caminho mais confiável: ela existe
   // desde antes de o provedor ter atribuído um id à assinatura dele.
   if (efeito.referencia) {
-    const porReferencia = await prisma.assinatura.findUnique({ where: { id: efeito.referencia } })
+    const porReferencia = await banco.assinatura.findUnique({ where: { id: efeito.referencia } })
     if (porReferencia) return porReferencia
   }
 
   if (efeito.idExterno) {
-    return prisma.assinatura.findFirst({ where: { provedor, idExterno: efeito.idExterno } })
+    return banco.assinatura.findFirst({ where: { provedor, idExterno: efeito.idExterno } })
   }
 
   return null

@@ -34,7 +34,20 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
   const data = dados.data ? new Date(dados.data) : undefined
   if (data && Number.isNaN(data.getTime())) throw new ErroDeUso("Data inválida.")
 
-  const transacao = await prisma.transacao.update({
+  // Transferência são duas linhas que têm de dizer o mesmo valor e a mesma
+  // data: mudar só uma fazia o saldo das duas contas parar de fechar
+  // (auditoria, 10/11). A conta de cada ponta pode mudar sozinha.
+  const parId =
+    atual.transferenciaParId ??
+    (await prisma.transacao.findFirst({ where: { transferenciaParId: id, larId: sessao.larId }, select: { id: true } }))?.id ??
+    null
+  const mudaPar = parId && (dados.valorCentavos !== undefined || data)
+  if (mudaPar && dados.contaId && dados.contaId === (await prisma.transacao.findUnique({ where: { id: parId }, select: { contaId: true } }))?.contaId) {
+    throw new ErroDeUso("A transferência não pode sair e entrar na mesma conta.")
+  }
+
+  const [transacao] = await prisma.$transaction([
+    prisma.transacao.update({
     where: { id },
     data: {
       ...(dados.descricao !== undefined ? { descricao: dados.descricao.trim() } : {}),
@@ -49,7 +62,19 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
       ...(dados.meiFaturamento !== undefined ? { meiFaturamento: dados.meiFaturamento } : {}),
     },
     include: { categoria: true, conta: true },
-  })
+  }),
+    ...(mudaPar && parId
+      ? [
+          prisma.transacao.update({
+            where: { id: parId },
+            data: {
+              ...(dados.valorCentavos !== undefined ? { valorCentavos: Math.abs(dados.valorCentavos) } : {}),
+              ...(data ? { data, competencia: competenciaDe(data) } : {}),
+            },
+          }),
+        ]
+      : []),
+  ])
 
   // É aqui que o Tino aprende: o usuário corrige uma vez e não corrige mais.
   if (dados.criarRegra && dados.categoriaId) {

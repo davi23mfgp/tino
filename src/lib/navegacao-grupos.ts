@@ -82,7 +82,7 @@ export const NUCLEO: GrupoNav[] = [
   {
     chave: "inicio",
     titulo: "Início",
-    pergunta: "Saldo, resultado do mes e o que decidir",
+    pergunta: "Saldo, resultado do mês e o que decidir",
     itens: [{ rota: "/painel", rotulo: "Início", Icone: BarChart3 }],
   },
   {
@@ -106,7 +106,7 @@ export const NUCLEO: GrupoNav[] = [
   {
     chave: "perfil",
     titulo: "Perfil",
-    pergunta: "Seus dados e preferencias",
+    pergunta: "Seus dados e preferências",
     itens: [{ rota: "/configuracoes", rotulo: "Perfil", Icone: User }],
   },
 ]
@@ -121,7 +121,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
   {
     chave: "planejar",
     titulo: "Planejar",
-    pergunta: "Orcamento, contas fixas, metas e reserva",
+    pergunta: "Orçamento, contas fixas, metas e reserva",
     itens: [
       // Orçamento e Contas fixas viraram uma planilha só (passo 59b, D).
       { rota: "/meu-mes", rotulo: "Meu mês", Icone: PiggyBank },
@@ -132,7 +132,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
   {
     chave: "dividas",
     titulo: "Dívidas",
-    pergunta: "Dividas, plano de pagamento e emprestimo",
+    pergunta: "Dívidas, plano de pagamento e empréstimo",
     itens: [
       { rota: "/dividas", rotulo: "Dívidas", Icone: TrendingDown },
       { rota: "/plano", rotulo: "Plano de pagamento", Icone: ListChecks },
@@ -142,10 +142,10 @@ export const GRUPOS_NAV: GrupoNav[] = [
   {
     chave: "analisar",
     titulo: "Analisar",
-    pergunta: "Analise, fluxo de caixa, simulador e investimentos",
+    pergunta: "Análise, fluxo de caixa, simulador e investimentos",
     itens: [
       { rota: "/analise", rotulo: "Análise", Icone: PieChart },
-      { rota: "/projecao", rotulo: "Fluxo de caixa", Icone: LineChart },
+      { rota: "/projecao", rotulo: "Entra e sai por mês", Icone: LineChart },
       { rota: "/simulador", rotulo: "Simulador", Icone: Wand2 },
       { rota: "/investir", rotulo: "Investimentos", Icone: Sprout },
     ],
@@ -153,7 +153,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
   {
     chave: "ajustes",
     titulo: "Ajustes",
-    pergunta: "Configuracoes e categorias",
+    pergunta: "Configurações e categorias",
     itens: [{ rota: "/configuracoes", rotulo: "Configurações", Icone: Settings }, { rota: "/bancos", rotulo: "Bancos e contas", Icone: Landmark }, { rota: "/categorias", rotulo: "Categorias e ícones", Icone: Tags }],
   },
 ]
@@ -171,7 +171,7 @@ export const GRUPOS_NAV: GrupoNav[] = [
 export const GRUPO_LOJA: GrupoNav = {
   chave: "loja",
   titulo: "Loja",
-  pergunta: "Balcao, prateleira, fiado e MEI",
+  pergunta: "Balcão, prateleira, fiado e MEI",
   itens: [
     { rota: "/loja/painel", rotulo: "Visão geral", Icone: BarChart3 },
     { rota: "/loja", rotulo: "Balcão", Icone: ShoppingBag },
@@ -230,6 +230,7 @@ export function grupoDoCaminho(grupos: GrupoNav[], caminho: string): GrupoNav | 
 /** Título da página no cabeçalho — mesma lista das abas, nunca um mapa à parte. */
 /** Telas que não estão no menu mas precisam de título no topo; sem nome aqui, o topo dizia só "Tino" (inventário de 07/10/2026). */
 const TITULOS_FORA_DO_MENU: Record<string, string> = {
+  "/montar": "Montar o seu Tino",
   "/orcamento": "Orçamento",
   "/recorrencias": "Contas fixas",
   "/loja/comecar": "Seu negócio",

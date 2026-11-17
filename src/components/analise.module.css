@@ -13,7 +13,7 @@
 @media (min-width:1024px) { .topo { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:stretch; } }
 
 .parecer { display:grid; align-content:center; gap:6px; padding:18px 20px; }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.14em; text-transform:uppercase; opacity:.7; }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700;   opacity:.7; }
 .parecer h2 { font-size:calc(clamp(20px, 5.6vw, 24px) * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; line-height:1.2; }
 .parecer p { font-size:calc(13.5px * var(--escala-letra)); }
 
@@ -38,7 +38,7 @@
 .cartao { display:grid; gap:8px; align-content:start; min-width:0; padding:14px 16px 16px; border-radius:var(--raio-bloco); border:1px solid var(--vidro-borda); background:linear-gradient(160deg, color-mix(in oklab, var(--foreground), transparent 90%), transparent 45%), var(--papel-1); backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); }
 .cartao header { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
 .cartao h3 { min-width:0; font-size:calc(14px * var(--escala-letra)); font-weight:650; }
-.selo { flex-shrink:0; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:750; letter-spacing:.12em; text-transform:uppercase; color:var(--cor); }
+.selo { flex-shrink:0; font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:750;   color:var(--cor); }
 .valor { font-size:calc(26px * var(--escala-letra)); font-weight:720; letter-spacing:-.02em; line-height:1.1; color:var(--cor); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .cartao footer { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 12px; }
 .cartao footer span { font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
@@ -62,7 +62,7 @@
 .demais li strong { display:block; font-size:calc(14px * var(--escala-letra)); font-weight:600; }
 .demais li small { display:block; font-size:max(10px, calc(12px * var(--escala-letra))); line-height:1.4; color:var(--texto-3); }
 .demais li b { flex-shrink:0; font-size:calc(15px * var(--escala-letra)); font-weight:700; color:var(--cor); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.rotuloBloco { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotuloBloco { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700;   color:var(--texto-3); }
 
 /* ── Categorias ─────────────────────────────────────────── */
 /* No computador, o que subiu e o calendário numa coluna, a lista na outra:

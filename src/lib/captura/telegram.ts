@@ -27,6 +27,26 @@ export async function responder(chatId: string | number, texto: string) {
   })
 }
 
+/**
+ * Manda um aviso e diz se chegou. `responder` não olha a resposta, e para o
+ * aviso isso importa: o que não chegou tem de continuar pendente. Sem
+ * `parse_mode`, porque título de aviso traz nome de loja ("C&A") e o HTML do
+ * Telegram recusaria a mensagem inteira por um "&".
+ */
+export async function enviarAviso(chatId: string, texto: string): Promise<boolean> {
+  if (!telegramDisponivel()) return false
+  try {
+    const resposta = await fetch(`${BASE}/bot${token()}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: texto }),
+    })
+    return resposta.ok
+  } catch {
+    return false
+  }
+}
+
 /** Baixa um arquivo enviado ao bot. */
 export async function baixarArquivo(fileId: string): Promise<{ nome: string; conteudo: ArrayBuffer }> {
   const resposta = await fetch(`${BASE}/bot${token()}/getFile?file_id=${encodeURIComponent(fileId)}`)

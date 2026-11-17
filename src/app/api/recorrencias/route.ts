@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, corpo, ok } from "@/lib/api"
+import { comSessao, corpo, ErroDeUso, ok } from "@/lib/api"
 import { campo, doLar, validar, z } from "@/lib/validar"
 import { competenciaDe, diaSeguro } from "@/lib/datas"
+import { competenciaDoCartao } from "@/lib/competencia-cartao"
 
 const PASSO_MESES: Record<string, number> = {
   MENSAL: 1,
@@ -118,14 +119,14 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     return ok({ desfeito: true })
   }
 
+  // Valor e data vinham crus: negativo ou fração entrava no extrato, e data
+  // inválida virava competência "NaN" (auditoria, 10/11/2026).
+  if (dados.valorCentavos !== undefined && !(Number.isSafeInteger(dados.valorCentavos) && dados.valorCentavos > 0 && dados.valorCentavos <= 2_147_483_647)) {
+    throw new ErroDeUso("Valor inválido.")
+  }
   const data = dados.data ? new Date(dados.data) : recorrencia.proximaData
+  if (Number.isNaN(data.getTime())) throw new ErroDeUso("Data inválida.")
   const competencia = competenciaDe(data)
-
-  const jaLancado = await prisma.transacao.findFirst({
-    where: { larId: sessao.larId, recorrenciaId: recorrencia.id, competencia },
-    select: { id: true },
-  })
-  if (jaLancado) return ok({ jaLancado: true, transacaoId: jaLancado.id })
 
   const passo = PASSO_MESES[recorrencia.periodicidade] ?? 1
   const proxima = diaSeguro(
@@ -135,6 +136,17 @@ export const PUT = comSessao(async (sessao, requisicao) => {
   )
 
   const resultado = await prisma.$transaction(async (tx) => {
+    // Conferir e lançar dentro da mesma trava: com a conferência fora, dois
+    // toques seguidos em "Paguei" passavam os dois e lançavam a conta duas
+    // vezes no mês.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${recorrencia.id}))`
+    const jaLancado = await tx.transacao.findFirst({
+      where: { larId: sessao.larId, recorrenciaId: recorrencia.id, competencia },
+      select: { id: true },
+    })
+    if (jaLancado) return { jaLancado: true as const, transacaoId: jaLancado.id }
+
+    const contaDaRecorrencia = await tx.conta.findFirst({ where: { id: recorrencia.contaId, larId: sessao.larId }, select: { tipo: true, diaFechamento: true, diaVencimento: true } })
     const transacao = await tx.transacao.create({
       data: {
         larId: sessao.larId,
@@ -147,6 +159,11 @@ export const PUT = comSessao(async (sessao, requisicao) => {
         competencia,
         origem: "RECORRENCIA",
         recorrenciaId: recorrencia.id,
+        // Conta fixa no cartão (assinatura, plano de saúde) entra na fatura
+        // do ciclo certo. Sem isto ficava nula, e o fluxo punha a compra na
+        // fatura do mês da data, errando o mês perto do fechamento
+        // (auditoria de 16/11/2026). Mesma regra de `api/transacoes`.
+        competenciaFatura: contaDaRecorrencia ? competenciaDoCartao(data, contaDaRecorrencia) : null,
       },
     })
 
@@ -164,6 +181,8 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     return transacao
   })
 
+  // O mesmo formato de antes para quem já tinha lançado: a tela trata os dois.
+  if ("jaLancado" in resultado) return ok(resultado)
   return ok(resultado, 201)
 })
 

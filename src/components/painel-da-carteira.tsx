@@ -217,7 +217,7 @@ function OndePorODinheiro({
 
   return (
     <div className={estilos.onde}>
-      <div className={estilos.aporteTopo}><p className={estilos.pergunta}>Próximo aporte</p>
+      <div className={estilos.aporteTopo}><p className={estilos.pergunta}>Quanto vai investir agora</p>
       <div className={estilos.chips} role="group" aria-label="Quanto vai investir">
         {opcoes.map((opcao) => (
           <button key={opcao} type="button" aria-pressed={!digitando && valor === opcao} onClick={() => { setDigitando(false); setValor(opcao) }}>
@@ -232,7 +232,7 @@ function OndePorODinheiro({
         <label className={estilos.linhaValor}>
           <span>Quanto vai investir</span>
           <span className={estilos.valorDigitado}>
-            R$ <input value={outro} onChange={(evento) => setOutro(evento.target.value)} inputMode="decimal" placeholder="0,00" aria-label="Valor do aporte em reais" autoFocus />
+            R$ <input value={outro} onChange={(evento) => setOutro(evento.target.value)} inputMode="decimal" placeholder="0,00" aria-label="Quanto vai investir, em reais" autoFocus />
           </span>
         </label>
       )}
@@ -251,7 +251,7 @@ function OndePorODinheiro({
                 <b>{letra.rotulo}</b>
                 <small>{atual}%</small>
               </span>
-              <div className={estilos.aporteDaParte}><small>Destinar neste aporte</small><strong className="valor-sensivel">{formatarMoeda(parte)}</strong></div>
+              <div className={estilos.aporteDaParte}><small>Colocar aqui desta vez</small><strong className="valor-sensivel">{formatarMoeda(parte)}</strong></div>
               <span className={estilos.regua} role="img" aria-label={`${letra.rotulo}: ${atual}% da carteira, alvo ${alvo}%`}>
                 <span style={{ width: `${Math.min(100, (atual / topoDaRegua) * 100)}%` }} />
                 <em style={{ left: `${(alvo / topoDaRegua) * 100}%` }} />

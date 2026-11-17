@@ -120,7 +120,7 @@ export function CarteiraInvestimentos() {
           contaDestinoId: retirada ? dados.get("conta") : movimento.id,
           tipo: "TRANSFERENCIA",
           valorCentavos: paraCentavos(String(dados.get("valor"))),
-          descricao: `${retirada ? "Resgate" : "Aporte"}: ${movimento.nome}`,
+          descricao: `${retirada ? "Tirei" : "Coloquei"}: ${movimento.nome}`,
           data: new Date().toISOString().slice(0, 10),
         })
       } else {
@@ -244,7 +244,7 @@ export function CarteiraInvestimentos() {
           <form onSubmit={salvar} className="space-y-4">
             {movimento ? (
               <>
-                <label className="block text-sm">Movimento<SelectNative name="direcao"><option value="aporte">Aporte</option><option value="resgate">Resgate</option></SelectNative></label>
+                <label className="block text-sm">Movimento<SelectNative name="direcao"><option value="aporte">Coloquei</option><option value="resgate">Tirei</option></SelectNative></label>
                 <label className="block text-sm">Conta de origem ou destino<SelectNative name="conta" required><option value="">Escolha uma conta</option>{origens.map((conta) => <option value={conta.id} key={conta.id}>{conta.nome}</option>)}</SelectNative></label>
               </>
             ) : (

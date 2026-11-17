@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 
 import { prisma } from "@/lib/prisma"
 import { empurrar, pushConfigurado } from "@/lib/push"
+import { entregarAvisosDoLar } from "@/lib/tino/entregar-avisos"
+import { enviarResumosDaSemana } from "@/lib/tino/resumo-semana"
 import { segredoConfere } from "@/lib/segredo"
 import { expurgarRegistrosVencidos } from "@/lib/registro-acesso"
 import { identificarLojasComIA } from "@/lib/marcas-ia"
@@ -47,13 +49,18 @@ export async function GET(requisicao: Request) {
   // Falha dela não derruba o lembrete.
   const lojas = await identificarLojasComIA().catch(() => ({ motivo: "falha-na-ia" as const }))
 
+  // Resumo da semana pelo Telegram, aos domingos. Antes da checagem do push
+  // de propósito: quem só usa o Telegram não pode ficar sem resumo porque o
+  // servidor não tem chave de notificação.
+  const resumos = await enviarResumosDaSemana(new Date()).catch(() => 0)
+
   if (!pushConfigurado()) {
-    return NextResponse.json({ erro: "Push não configurado neste ambiente.", lojas }, { status: 503 })
+    return NextResponse.json({ erro: "Push não configurado neste ambiente.", lojas, resumos }, { status: 503 })
   }
 
   const agora = new Date()
   const inscricoes = await prisma.inscricaoPush.findMany({
-    include: { usuario: { select: { lar: { select: { fusoHorario: true } } } } },
+    include: { usuario: { select: { larId: true, lar: { select: { fusoHorario: true } } } } },
   })
 
   let enviados = 0
@@ -85,5 +92,12 @@ export async function GET(requisicao: Request) {
     }
   }
 
-  return NextResponse.json({ enviados, pulados, total: inscricoes.length, lojas })
+  // Avisos do Tino (fatura que fecha, renda que termina, mês no vermelho):
+  // uma passada por lar que tem aparelho inscrito, independente da hora do
+  // lembrete de anotar.
+  let avisos = 0
+  const lares = [...new Set(inscricoes.map((inscricao) => inscricao.usuario.larId))]
+  for (const larId of lares) avisos += await entregarAvisosDoLar(larId).catch(() => 0)
+
+  return NextResponse.json({ enviados, pulados, avisos, total: inscricoes.length, lojas, resumos })
 }

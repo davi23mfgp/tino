@@ -6,6 +6,7 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
   ComposedChart,
   Line,
@@ -147,7 +148,7 @@ function Dica({
        valor sumia. Fundo solido aqui, que e o unico lugar do app em que algo
        flutua por cima de cor cheia. */
     <div className="rounded-xl border border-pauta superficie-flutuante px-3 py-2 shadow-alta">
-      {label && <p className="mb-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{label}</p>}
+      {label && <p className="mb-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{label}</p>}
       {payload.map((linha, indice) => (
         <p key={indice} className="flex items-center gap-2 text-[calc(12px*var(--escala-letra))]">
           <span className="size-2 rounded-full" style={{ background: linha.color }} />
@@ -309,7 +310,7 @@ export function GraficoCategorias({
           <span className="numero valor-sensivel text-[calc(18px*var(--escala-letra))] font-semibold leading-none tracking-tight">
             {formatarMoeda(total)}
           </span>
-          <span className="mt-1 whitespace-nowrap text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-[color:var(--texto-3)]">
+          <span className="mt-1 whitespace-nowrap text-[max(10px,calc(12px*var(--escala-letra)))] text-[color:var(--texto-3)]">
             no mês
           </span>
         </div>
@@ -536,7 +537,7 @@ export function GraficoAnel({
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-[calc(20px*var(--escala-letra))] font-semibold leading-none tracking-tight">{valor}</span>
-        <span className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">{rotulo}</span>
+        <span className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">{rotulo}</span>
       </div>
     </div>
   )
@@ -651,7 +652,7 @@ export function GraficoDaDivisao({
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <span className="numero text-[calc(19px*var(--escala-letra))] font-semibold leading-none">{total}</span>
-        <span className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-widest text-muted-fg">por mês</span>
+        <span className="mt-1 text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">por mês</span>
       </div>
     </div>
   )
@@ -792,7 +793,7 @@ export function FluxoDeCaixaNoTempo({
             sai por mês. O saldo acumulado saiu daqui junto com as barras — ele
             é outra conta, e continua disponível no botão abaixo. */}
         <div>
-          <p className="text-[max(10px,calc(12px*var(--escala-letra)))] uppercase tracking-[.12em] text-muted-fg">
+          <p className="text-[max(10px,calc(12px*var(--escala-letra)))] text-muted-fg">
             Sobra por mês, na média
           </p>
           <p className={cn("numero text-[calc(19px*var(--escala-letra))] font-semibold leading-tight tracking-tight sm:text-[calc(24px*var(--escala-letra))]", sobraMedia < 0 && "text-negativo")}>
@@ -808,7 +809,7 @@ export function FluxoDeCaixaNoTempo({
           type="single"
           value={granularidade}
           onValueChange={(valor) => { if (valor) setGranularidade(valor as "dia" | "mes" | "ano") }}
-          aria-label="Período do fluxo de caixa"
+          aria-label="Período do entra e sai"
         >
           <ToggleGroupItem value="dia">Dias</ToggleGroupItem>
           <ToggleGroupItem value="mes">Meses</ToggleGroupItem>
@@ -897,4 +898,11 @@ export interface PontoFluxoGrafico {
   futuro: boolean
   /** Último ponto realizado, que também inicia a linha pontilhada. */
   viradaDoFuturo?: boolean
+}
+
+/** Vendas do período no painel da loja. Mora aqui para carregar sob demanda, como os outros gráficos. */
+export function GraficoDeVendasDaLoja({ dados, periodo }: { dados: { nome: string; totalCentavos: number }[]; periodo: "mes" | "dia" }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%"><AreaChart data={dados} margin={{top:12,right:8,left:-22,bottom:0}}><defs><linearGradient id="area-painel-loja" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="currentColor" stopOpacity={0.28}/><stop offset="100%" stopColor="currentColor" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="currentColor" strokeOpacity={0.09}/><XAxis dataKey="nome" tickLine={false} axisLine={false} minTickGap={20}/><YAxis tickLine={false} axisLine={false} tickFormatter={(valor:number)=>formatarMoeda(valor,false)}/><Tooltip formatter={(valor)=>formatarMoeda(Number(valor))} labelFormatter={(rotulo)=>periodo === "dia" ? `${rotulo}` : `Dia ${rotulo}`} /><Area type="monotone" dataKey="totalCentavos" name="Vendas" stroke="currentColor" strokeWidth={2} fill="url(#area-painel-loja)" /></AreaChart></ResponsiveContainer>
+  )
 }

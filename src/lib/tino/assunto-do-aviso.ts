@@ -32,8 +32,8 @@ export interface GrupoDeAvisos<T extends AvisoAgrupavel> {
 }
 
 const ASSUNTO_POR_TIPO: Record<string, string> = {
-  caixa_negativo: "Fluxo de caixa",
-  mes_no_vermelho: "Fluxo de caixa",
+  caixa_negativo: "Entra e sai por mês",
+  mes_no_vermelho: "Entra e sai por mês",
   orcamento_estourado: "Orçamento",
   orcamento_perto: "Orçamento",
   sem_categoria: "Orçamento",

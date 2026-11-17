@@ -12,7 +12,7 @@ import { balancoMensal } from "@/lib/tino/balanco"
 import { montarDiagnostico } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { Cartao, Vazio } from "@/components/ui/painel"
-import { GraficoBalanco, GraficoDozeMeses } from "@/components/graficos"
+import { GraficoBalanco, GraficoDozeMeses } from "@/components/graficos-sob-demanda"
 import { cn } from "@/lib/utils"
 import { AbasInternas } from "@/components/abas-internas"
 import { EntradasESaidas } from "@/components/entradas-saidas"
@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic"
 /// Cabeçalho de grupo do balanço: o nome contábil e, ao lado, o que ele
 /// significa para quem não é contador.
 const estiloGrupo =
-  "flex items-baseline gap-2 pb-1 text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold uppercase tracking-widest text-muted-fg [&>span]:text-[max(10px,calc(12px*var(--escala-letra)))] [&>span]:font-normal [&>span]:normal-case [&>span]:tracking-normal [&>span]:opacity-70"
+  "flex items-baseline gap-2 pb-1 text-[max(10px,calc(12px*var(--escala-letra)))] font-semibold text-muted-fg [&>span]:text-[max(10px,calc(12px*var(--escala-letra)))] [&>span]:font-normal [&>span]:normal-case [&>span]:tracking-normal [&>span]:opacity-70"
 
 const NOME_GRUPO: Record<string, string> = {
   MORADIA: "Moradia",

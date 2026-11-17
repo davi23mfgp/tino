@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, ErroDeUso, ok } from "@/lib/api"
-import { validarAnexo } from "@/lib/loja/relatorio-mei"
+import { comSessao, corpoGrandeDemais, ErroDeUso, ok } from "@/lib/api"
+import { ANEXO_TAMANHO_MAXIMO, validarAnexo } from "@/lib/loja/relatorio-mei"
 
 export const dynamic = "force-dynamic"
 
@@ -12,6 +12,7 @@ const vendaDoLar = (larId: string, vendaId: string) => prisma.vendaLoja.findFirs
  * "pendente de nota" para "com nota". Anexar de novo troca a anterior.
  */
 export const POST = comSessao(async (sessao, requisicao) => {
+  if (corpoGrandeDemais(requisicao, ANEXO_TAMANHO_MAXIMO)) throw new ErroDeUso("O arquivo passa de 3 MB. Mande a nota em PDF ou XML.", 413)
   const formulario = await requisicao.formData().catch(() => null)
   const vendaId = formulario?.get("vendaId")
   const arquivo = formulario?.get("arquivo")

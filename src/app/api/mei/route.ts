@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso } from "@/lib/api"
+import { INT_MAX } from "@/lib/campos"
 import { anoDoMei } from "@/lib/loja/mei-ano"
 
 /** O MEI do ano (a conta mora em `anoDoMei`, que a ajuda tributária também usa). */
@@ -23,8 +24,9 @@ export const PUT = comSessao(async (sessao, requisicao) => {
 
   // Limite zero ou dia 40 quebrariam a tela inteira (divisão por zero, DAS
   // vencendo em dia que não existe); recusa aqui, com a mensagem do campo.
-  const centavosValidos = (valor: number | undefined) => valor === undefined || (Number.isInteger(valor) && valor >= 0)
-  if (dados.limiteAnualCentavos !== undefined && (!Number.isInteger(dados.limiteAnualCentavos) || dados.limiteAnualCentavos <= 0)) throw new ErroDeUso("Informe o limite anual.")
+  // Acima do teto do Int o banco recusava e a resposta era erro 500 (auditoria, Lote 5).
+  const centavosValidos = (valor: number | undefined) => valor === undefined || (Number.isInteger(valor) && valor >= 0 && valor <= INT_MAX)
+  if (dados.limiteAnualCentavos !== undefined && (!Number.isInteger(dados.limiteAnualCentavos) || dados.limiteAnualCentavos <= 0 || dados.limiteAnualCentavos > INT_MAX)) throw new ErroDeUso("Informe o limite anual.")
   if ((dados.dasMensalCentavos !== null && !centavosValidos(dados.dasMensalCentavos)) || !centavosValidos(dados.proLaboreCentavos)) throw new ErroDeUso("Confira o valor do DAS e do pró-labore.")
   if (dados.diaVencimentoDas !== undefined && (!Number.isInteger(dados.diaVencimentoDas) || dados.diaVencimentoDas < 1 || dados.diaVencimentoDas > 31)) throw new ErroDeUso("O dia do DAS vai de 1 a 31.")
   if (dados.dataAbertura && Number.isNaN(Date.parse(dados.dataAbertura))) throw new ErroDeUso("Data de abertura inválida.")
@@ -66,7 +68,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
   }
 
   for (const valor of [dados.receitaComercioCentavos, dados.receitaServicosCentavos, dados.dasValorCentavos]) {
-    if (valor !== undefined && (!Number.isInteger(valor) || valor < 0)) throw new ErroDeUso("Valores do mês precisam ser zero ou mais.")
+    if (valor !== undefined && (!Number.isInteger(valor) || valor < 0 || valor > INT_MAX)) throw new ErroDeUso("Valores do mês precisam ser zero ou mais.")
   }
 
   const conteudo = {

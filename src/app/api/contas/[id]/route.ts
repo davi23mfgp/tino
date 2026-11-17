@@ -26,6 +26,8 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
         arquivada: z.boolean(),
         classeDeAtivo: z.string().max(30).nullable(),
         bandeira: z.enum(BandeiraCartao).nullable(),
+        // 11000 = 110% do CDI. Teto de 300%: acima disso é erro de digitação.
+        percentualCdiBps: z.number().int().min(1).max(30_000).nullable(),
       })
       .partial()
       .strict(),
@@ -48,6 +50,7 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
     "arquivada",
     "classeDeAtivo",
     "bandeira",
+    "percentualCdiBps",
   ] as const
 
   // Classe de ativo é a carteira do ARCA: aceitar um texto qualquer aqui faria
@@ -56,6 +59,8 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
     if (!CLASSES_VALIDAS.has(String(dados.classeDeAtivo))) throw new ErroDeUso("Classe de ativo inválida.")
     if (conta.tipo !== "INVESTIMENTO") throw new ErroDeUso("Só conta de investimento tem classe de ativo.")
   }
+
+  if (dados.percentualCdiBps != null && conta.tipo !== "INVESTIMENTO") throw new ErroDeUso("Só conta de investimento rende pelo CDI.")
 
   await doLar(sessao.larId, { membro: dados.membroId })
 

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { comSessao, ok } from "@/lib/api"
+import { comSessao, lerCompetencia, ok } from "@/lib/api"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPlanoPagamento, type AlvoPagamento } from "@/lib/tino/plano-pagamento"
 import { compromissosFuturos } from "@/lib/parcelamentos"
@@ -20,7 +20,9 @@ import { valoresVigentes } from "@/lib/parametros"
  */
 export const GET = comSessao(async (sessao, requisicao) => {
   const url = new URL(requisicao.url)
-  const competencia = url.searchParams.get("competencia") ?? competenciaAtual()
+  // "2026-13" não batia com a chave das parcelas e as contava em dobro no
+  // custo de vida (auditoria, Lote 5).
+  const competencia = lerCompetencia(url.searchParams.get("competencia"), competenciaAtual())
 
   const [panorama, dividas, compromissos, contas, parametros] = await Promise.all([
     montarPanorama(sessao.larId, competencia),

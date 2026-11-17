@@ -46,7 +46,7 @@ export const PLANOS: Plano[] = [
       "Dívidas com ordem de ataque e plano mês a mês",
       "Orçamento por categoria e metas com data",
       "Projeção de caixa de 12 meses",
-      "Parecer com DRE, balanço e indicadores",
+      "Indicadores do mês com a referência de cada um",
       "Anotar por texto, por voz, pelo Telegram ou pelo celular",
     ],
     naoInclui: ["Venda no balcão", "Controle de estoque", "Acompanhamento do limite do MEI"],

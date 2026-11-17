@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { VERSAO_TERMOS } from "@/lib/termos"
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/termos" },
   title: "Termos de Uso · Tino",
   description: "O que o Tino é, o que não é, e as regras de uso, cobrança e cancelamento.",
 }
@@ -80,7 +81,7 @@ const SECOES = [
     conteudo: [
       "O período de teste, os preços e o que cada plano inclui aparecem na tela Assinatura antes de você contratar. A cobrança é recorrente até você cancelar e é processada pelo Stripe ou pelo Mercado Pago.",
       "Arrependimento: em até 7 dias da primeira contratação paga, você pode desistir e receber de volta tudo o que pagou (Código de Defesa do Consumidor, art. 49).",
-      "Cancelamento: a qualquer momento, na tela Assinatura, sem multa. O acesso continua até o fim do período já pago. [A DEFINIR: reembolso proporcional depois dos 7 dias, sim ou não.]",
+      "Cancelamento: a qualquer momento, na tela Assinatura, sem multa. O acesso continua até o fim do período já pago. Depois dos 7 dias de arrependimento, não há reembolso proporcional do período em curso.",
       "Mudança de preço é avisada com pelo menos 30 dias de antecedência e só vale a partir da cobrança seguinte.",
       "Com a assinatura vencida, você continua vendo e exportando seus dados; só a criação de lançamentos novos fica pausada.",
     ],

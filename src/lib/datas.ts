@@ -157,6 +157,17 @@ function dataValida(ano: number, mes1a12: number, dia: number): Date | null {
   return data.getUTCMonth() === mes1a12 - 1 && data.getUTCDate() === dia ? data : null
 }
 
+/**
+ * Meia-noite (em UTC) do dia de hoje no fuso da pessoa. É a base de "vence
+ * hoje" e "vence em 2 dias": as datas de vencimento são gravadas como
+ * meia-noite UTC do dia, então "hoje" tem de ser o mesmo tipo de data. Com
+ * `new Date()` cru, às 21h em Brasília já era amanhã em UTC, e a conta de
+ * amanhã aparecia como "vence hoje" (achado de 17/11/2026).
+ */
+export function hojeNoFuso(fuso = "America/Sao_Paulo", agora: Date = new Date()): Date {
+  return new Date(`${agora.toLocaleDateString("en-CA", { timeZone: fuso })}T00:00:00Z`)
+}
+
 export function diasEntre(de: Date, ate: Date): number {
   return Math.round((ate.getTime() - de.getTime()) / 86_400_000)
 }

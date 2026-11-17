@@ -16,6 +16,33 @@ export interface ResultadoCsv {
   cabecalho: string[]
   /// Linhas que não viraram lançamento, com o motivo — o usuário vê o que ficou de fora.
   descartadas: { linha: number; conteudo: string; motivo: string }[]
+  /// Verdadeiro quando as datas vieram no formato americano (mês/dia/ano).
+  datasAmericanas?: boolean
+}
+
+/**
+ * Lê o arquivo inteiro para decidir se a data é dia/mês (Brasil) ou mês/dia
+ * (Estados Unidos, que é como exportam conta no exterior, Wise e alguns
+ * cartões). Um "03/15/2026" só existe como mês/dia; se alguma linha assim
+ * aparece e nenhuma tem o primeiro número acima de 12, o arquivo é americano.
+ * Antes o "03/15" era descartado e o "03/04" virava 3 de abril em silêncio.
+ * Quando nada decide (todas as datas com os dois números até 12), fica o
+ * jeito brasileiro, que é o caso de quase todo arquivo que chega aqui.
+ */
+export function datasSaoAmericanas(celulas: string[]): boolean {
+  let primeiroPassa = false
+  let segundoPassa = false
+  for (const celula of celulas) {
+    const partes = /^(\d{1,2})[\/.-](\d{1,2})[\/.-]\d{2,4}/.exec(celula.trim())
+    if (!partes) continue
+    if (Number(partes[1]) > 12) primeiroPassa = true
+    if (Number(partes[2]) > 12) segundoPassa = true
+  }
+  return segundoPassa && !primeiroPassa
+}
+
+function trocarDiaEMes(celula: string): string {
+  return celula.replace(/^(\d{1,2})([\/.-])(\d{1,2})([\/.-])/, "$3$2$1$4")
 }
 
 /** Separador é o candidato que mais aparece na primeira linha não vazia. */
@@ -123,11 +150,15 @@ export function lerCsv(conteudo: string): ResultadoCsv {
 
   const lancamentos: LancamentoBruto[] = []
   const descartadas: ResultadoCsv["descartadas"] = []
+  const americanas = colData >= 0 && datasSaoAmericanas(linhas.slice(indiceCabecalho + 1).map((linha) => dividirLinha(linha, separador)[colData] ?? ""))
 
   for (let i = indiceCabecalho + 1; i < linhas.length; i += 1) {
     const campos = dividirLinha(linhas[i], separador)
     const bruta = campos[colData] ?? ""
-    const data = colData >= 0 ? lerData(bruta) : null
+    // Banco que exporta "15/03/2026 14:22" perdia a linha inteira como "data
+    // não reconhecida" (auditoria, Lote 5): a hora sai antes de ler a data.
+    const semHora = bruta.trim().replace(/[\sT]+\d{1,2}:\d{2}(:\d{2})?.*$/, "")
+    const data = colData >= 0 ? lerData(americanas ? trocarDiaEMes(semHora) : semHora) : null
 
     if (!data) {
       descartadas.push({ linha: i + 1, conteudo: linhas[i].slice(0, 120), motivo: "data não reconhecida" })
@@ -157,7 +188,7 @@ export function lerCsv(conteudo: string): ResultadoCsv {
     })
   }
 
-  return { lancamentos, cabecalho, descartadas }
+  return { lancamentos, cabecalho, descartadas, datasAmericanas: americanas }
 }
 
 /**
@@ -170,7 +201,9 @@ export function lerCsvFaturaCartao(conteudo: string): ResultadoCsv {
     ...resultado,
     lancamentos: resultado.lancamentos.map((lancamento) => ({
       ...lancamento,
-      tipo: /estorno|reembolso|credito|crédito|pagamento recebido/i.test(lancamento.descricao)
+      // "Crédito" só no começo: no meio, casava "EMPRESTIMO CREDITO PESSOAL"
+      // e a cobrança virava renda (auditoria, Lote 5).
+      tipo: /\b(estorno|reembolso)\b|^\s*cr[eé]dito\b|pagamento recebido/i.test(lancamento.descricao)
         ? ("RECEITA" as const)
         : ("DESPESA" as const),
     })),

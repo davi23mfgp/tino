@@ -52,7 +52,7 @@
 .titulo { font-size:calc(21px * var(--escala-letra)); font-weight:700; }
 .limpar { min-height:44px; font-size:calc(15px * var(--escala-letra)); font-weight:500; color:var(--acao); }
 .limpar:disabled { opacity:.4; }
-.rotulo { margin-bottom:10px; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { margin-bottom:10px; font-size:max(10px, calc(12px * var(--escala-letra))); font-weight:700;   color:var(--texto-3); }
 
 .segmento { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:4px; border-radius:var(--raio-pilula); background:color-mix(in oklab, var(--foreground), transparent 93%); }
 .segmento button { min-height:40px; border-radius:var(--raio-pilula); font-size:calc(14.5px * var(--escala-letra)); color:var(--foreground); }

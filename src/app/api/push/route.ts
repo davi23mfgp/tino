@@ -1,4 +1,5 @@
-import { comSessao, corpo, exigir, ok } from "@/lib/api"
+import { enderecoDePushValido } from "@/lib/push-endereco"
+import { comSessao, corpo, ErroDeUso, exigir, ok } from "@/lib/api"
 import { prisma } from "@/lib/prisma"
 import { pushConfigurado, empurrar } from "@/lib/push"
 
@@ -41,7 +42,12 @@ export const POST = comSessao(async (sessao, requisicao) => {
     testar?: boolean
   }>(requisicao)
 
-  const endpoint = exigir(dados.endpoint, "Endereço do aparelho")
+  const endpoint = enderecoDePushValido(exigir(dados.endpoint, "Endereço do aparelho"))
+  if (!endpoint) throw new ErroDeUso("Este navegador mandou um endereço de notificação que o Tino não reconhece.")
+  // O endereço é único por aparelho. Se já é de outra pessoa, não é deste
+  // usuário tomar: antes o `update` trocava o dono e roubava os avisos dela.
+  const dono = await prisma.inscricaoPush.findUnique({ where: { endpoint }, select: { usuarioId: true } })
+  if (dono && dono.usuarioId !== sessao.usuarioId) throw new ErroDeUso("Este aparelho já recebe avisos de outra conta. Saia dela no aparelho e tente de novo.", 409)
   const p256dh = exigir(dados.chaves?.p256dh, "Chave do aparelho")
   const auth = exigir(dados.chaves?.auth, "Chave do aparelho")
   // Fora de 0–23 não existe hora; o valor vem do cliente e não se confia nele.

@@ -80,6 +80,10 @@ export const GET = comSessao(async (sessao) => {
  * está de pé é o provedor de emissão, não um campo que o dono preenche à mão.
  */
 export const PUT = comSessao(async (sessao, requisicao) => {
+  // `/api/loja` fica liberado ao funcionário porque o balcão lê as regras de
+  // recebimento daqui. Gravar não: taxa e prazo errados mudam o líquido de
+  // toda venda seguinte (auditoria, Lote 5).
+  if (sessao.papel === "FUNCIONARIO_LOJA") throw new ErroDeUso("Só o dono muda os dados e as taxas da loja.", 403)
   const dados = await corpo<{
     nome?: string
     endereco?: string

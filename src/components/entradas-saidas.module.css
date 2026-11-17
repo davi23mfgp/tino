@@ -15,7 +15,7 @@
 .aba [data-tom="atencao"] { color:var(--ambar); }
 
 .topo { display:grid; gap:14px; padding:22px 20px; border-radius:var(--raio-bloco); }
-.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--texto-3); }
+.rotulo { font-size:max(10px, calc(11px * var(--escala-letra))); font-weight:700;   color:var(--texto-3); }
 .tres { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
 .tres dt { font-size:max(10px, calc(11px * var(--escala-letra))); color:var(--texto-3); }
 /* Três valores numa linha de 360px: o número encolhe com a largura (clamp) e

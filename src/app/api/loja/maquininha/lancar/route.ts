@@ -39,19 +39,25 @@ export const POST = comSessao(async (sessao, requisicao) => {
   ])
   const fuso = lar?.fusoHorario ?? "America/Sao_Paulo"
   const observacao = dados.codigo ? `Lançada pela conferência da maquininha · código ${dados.codigo}` : "Lançada pela conferência da maquininha"
-  if (dados.codigo && await prisma.vendaLoja.count({ where: { lojaId: loja.id, observacao, cancelada: false } })) {
-    throw new ErroDeUso("Esta venda da maquininha já foi lançada.", 409)
-  }
 
   const vendidoEm = instanteNoFuso(dados.dia, dados.hora ?? "12:00", fuso)
   const forma = dados.forma ?? (dados.parcelas > 1 ? "CREDITO_PARCELADO" : "CREDITO_VISTA")
   const liquido = dados.liquidoCentavos ?? dados.brutoCentavos
   const competencia = competenciaDaVenda(vendidoEm, fuso)
   const venda = await prisma.$transaction(async (transacao) => {
+    // A checagem do código repetido mora dentro da transação, com trava por
+    // loja: fora dela, dois toques em "Lançar" passavam os dois, e a receita
+    // do MEI contava a venda duas vezes (auditoria, Lote 5).
+    if (dados.codigo) {
+      await transacao.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"maquininha:" + loja.id}))::text`
+      if (await transacao.vendaLoja.count({ where: { lojaId: loja.id, observacao, cancelada: false } })) {
+        throw new ErroDeUso("Esta venda da maquininha já foi lançada.", 409)
+      }
+    }
     const criada = await transacao.vendaLoja.create({
       data: {
         lojaId: loja.id,
-        numero: await proximoNumero(loja.id),
+        numero: await proximoNumero(transacao, loja.id),
         totalCentavos: dados.brutoCentavos,
         observacao,
         criadoEm: vendidoEm,

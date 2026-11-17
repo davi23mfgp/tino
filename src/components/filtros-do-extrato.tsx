@@ -133,60 +133,39 @@ export function FiltrosDoExtrato({
         </button>
       </div>
 
-      <div className={estilos.linha} role="toolbar" aria-label="Filtros rápidos">
-        {diaEscolhido && (
-          <button type="button" className={estilos.chip} data-ligado onClick={aoSoltarDia} aria-label={`Ver o mês inteiro em vez do dia ${Number(diaEscolhido.slice(8, 10))}`}>
-            Dia {Number(diaEscolhido.slice(8, 10))} <X aria-hidden className="size-3.5" />
-          </button>
-        )}
-
-        <div className={estilos.tiposRapidos} role="group" aria-label="Tipo de movimento">
-        {TIPOS.map((opcao) => (
-          <button
-            key={opcao.valor}
-            type="button"
-            className={estilos.chip}
-            data-ligado={tipo === opcao.valor || undefined}
-            aria-pressed={tipo === opcao.valor}
-            onClick={() => aoMudarTipo(opcao.valor)}
-          >
-            {opcao.rotulo}
-          </button>
-        ))}
-
+      {/* Só o que está ligado aparece aqui (Davi, passo 64 do canvas, opção C,
+          16/11/2026). As duas fileiras de filtro ficavam sempre à vista e
+          empurravam o primeiro lançamento para baixo; agora tudo mora dentro
+          de Filtros, e esta linha mostra o filtro ativo com o X para tirar. */}
+      {(diaEscolhido || tipo !== "todos" || conta || categoria || semCategoria) && (
+        <div className={estilos.linha} role="toolbar" aria-label="Filtros ligados">
+          {diaEscolhido && (
+            <button type="button" className={estilos.chip} data-ligado onClick={aoSoltarDia} aria-label={`Ver o mês inteiro em vez do dia ${Number(diaEscolhido.slice(8, 10))}`}>
+              Dia {Number(diaEscolhido.slice(8, 10))} <X aria-hidden className="size-3.5" />
+            </button>
+          )}
+          {tipo !== "todos" && (
+            <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarTipo("todos")} aria-label="Voltar a ver entradas e saídas">
+              {TIPOS.find((opcao) => opcao.valor === tipo)?.rotulo} <X aria-hidden className="size-3.5" />
+            </button>
+          )}
+          {conta && (
+            <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarConta("")} aria-label={`Tirar o filtro da conta ${conta.nome}`}>
+              <span className={estilos.nome}>{nomeCurtoDaConta(conta.nome)}</span> <X aria-hidden className="size-3.5" />
+            </button>
+          )}
+          {categoria && (
+            <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarCategoria(null)} aria-label={`Tirar o filtro da categoria ${categoria.nome}`}>
+              <span className={estilos.nome}>{categoria.nome}</span> <X aria-hidden className="size-3.5" />
+            </button>
+          )}
+          {semCategoria && (
+            <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarSemCategoria(false)} aria-label="Tirar o filtro de sem categoria">
+              Sem categoria <X aria-hidden className="size-3.5" />
+            </button>
+          )}
         </div>
-        <div className={estilos.detalhesRapidos} role="group" aria-label="Conta e categoria">
-        {conta ? (
-          <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarConta("")} aria-label={`Tirar o filtro da conta ${conta.nome}`}>
-            <span className={estilos.nome}>{nomeCurtoDaConta(conta.nome)}</span> <X aria-hidden className="size-3.5" />
-          </button>
-        ) : (
-          <button type="button" className={estilos.chip} onClick={() => setAberta(true)}>
-            Conta <ChevronDown aria-hidden className="size-3.5" />
-          </button>
-        )}
-
-        {categoria ? (
-          <button type="button" className={estilos.chip} data-ligado onClick={() => aoMudarCategoria(null)} aria-label={`Tirar o filtro da categoria ${categoria.nome}`}>
-            <span className={estilos.nome}>{categoria.nome}</span> <X aria-hidden className="size-3.5" />
-          </button>
-        ) : (
-          <button type="button" className={estilos.chip} onClick={() => setAberta(true)}>
-            Categoria <ChevronDown aria-hidden className="size-3.5" />
-          </button>
-        )}
-
-        <button
-          type="button"
-          className={estilos.chip}
-          data-ligado={semCategoria || undefined}
-          aria-pressed={semCategoria}
-          onClick={() => aoMudarSemCategoria(!semCategoria)}
-        >
-          Sem categoria
-        </button>
-        </div>
-      </div>
+      )}
 
       <Dialog open={aberta} onOpenChange={setAberta}>
         <DialogContent largura="curta" className={estilos.folha}>

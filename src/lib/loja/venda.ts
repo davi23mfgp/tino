@@ -198,7 +198,10 @@ export function conferirVenda(
     pagoCentavos,
     faltaCentavos: Math.max(0, totalCentavos - pagoCentavos),
     trocoCentavos: Math.min(sobra, emDinheiro),
-    fechada: pagoCentavos >= totalCentavos,
+    // Sobra que não sai do dinheiro não fecha a venda: era gravada como
+    // recebida no cartão, com taxa e previsão sobre o valor a mais
+    // (auditoria, Lote 5).
+    fechada: pagoCentavos >= totalCentavos && sobra <= emDinheiro,
   }
 }
 

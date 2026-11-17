@@ -21,24 +21,7 @@ import { prisma } from "@/lib/prisma"
 
 export { z }
 
-/** Maior valor que cabe num `Int` do Postgres. */
-const INT_MAX = 2_147_483_647
-
-export const campo = {
-  /** ID gerado pelo Prisma (cuid). Não aceita qualquer texto: limita o que vai para a consulta. */
-  id: () => z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/, "identificador inválido"),
-  texto: (maximo = 200) => z.string().trim().max(maximo),
-  textoObrigatorio: (maximo = 200) => z.string().trim().min(1).max(maximo),
-  /** Dinheiro em centavos: inteiro, não negativo, dentro de `Int`. */
-  centavos: () => z.coerce.number().int().min(0).max(INT_MAX),
-  /** Taxa em pontos-base: 0 a 100.000 (1.000% a.m. já é absurdo; acima disso é erro de digitação). */
-  bps: () => z.coerce.number().int().min(0).max(100_000),
-  dia: () => z.coerce.number().int().min(1).max(31),
-  inteiro: (min = 0, max = INT_MAX) => z.coerce.number().int().min(min).max(max),
-  data: () => z.coerce.date().refine((d) => !Number.isNaN(d.getTime()), "data inválida"),
-  competencia: () => z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "use AAAA-MM"),
-  email: () => z.string().trim().toLowerCase().max(254).email(),
-}
+export { campo, INT_MAX } from "@/lib/campos"
 
 /**
  * Valida e devolve o dado já tipado e limpo (trim, coerção).

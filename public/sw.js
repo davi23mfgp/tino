@@ -24,6 +24,27 @@ self.addEventListener("activate", (evento) => evento.waitUntil(self.clients.clai
  * problema de quem perde o celular.
  */
 self.addEventListener("push", (evento) => {
+  let carga = {}
+  try { carga = evento.data ? evento.data.json() : {} } catch { carga = {} }
+
+  // Aviso do Tino (fatura que fecha, renda que termina). Só o título: o valor
+  // fica dentro do app, pelo mesmo motivo do lembrete acima.
+  if (carga.tipo === "aviso" && carga.titulo) {
+    evento.waitUntil(
+      self.registration.showNotification(carga.titulo, {
+        body: "Toque para ver no Tino.",
+        tag: `tino-aviso-${carga.id || carga.titulo}`,
+        icon: "/icones/icone-192.png",
+        badge: "/icones/icone-192.png",
+        data: { rota: carga.rota || "/painel" },
+        // Conta que vence: o botão leva à confirmação daquela conta. O toque
+        // na notificação inteira faz o mesmo; o botão só diz para que serve.
+        ...(String(carga.rota || "").includes("pagar=") ? { actions: [{ action: "pagar", title: "Já paguei" }] } : {}),
+      }),
+    )
+    return
+  }
+
   evento.waitUntil(
     self.registration.showNotification("Gastou alguma coisa?", {
       body: "Toque para anotar em cinco segundos.",
@@ -43,7 +64,8 @@ self.addEventListener("push", (evento) => {
 self.addEventListener("notificationclick", (evento) => {
   evento.notification.close()
 
-  const destino = evento.action === "ditar" ? "/lancar?modo=voz" : "/lancar"
+  const rotaDoAviso = evento.notification.data && evento.notification.data.rota
+  const destino = rotaDoAviso || (evento.action === "ditar" ? "/lancar?modo=voz" : "/lancar")
 
   evento.waitUntil(
     (async () => {

@@ -1,6 +1,7 @@
 /** Parâmetros globais do sistema: ler e editar sem deploy. */
 
 import { NextResponse } from "next/server"
+import { revalidateTag } from "next/cache"
 
 import { comAdmin } from "@/lib/admin"
 import { PARAMETROS, gravarParametro, restaurarParametro, valoresVigentes } from "@/lib/parametros"
@@ -35,6 +36,8 @@ export const PUT = comAdmin(async (sessao, requisicao) => {
     return NextResponse.json({ erro: "Valor inválido para este parâmetro." }, { status: 400 })
   }
 
+  // O site guarda preço e dias de teste por 5 minutos; o preço novo aparece já.
+  revalidateTag("parametros", { expire: 0 })
   const valores = await valoresVigentes()
   return NextResponse.json({ chave: dados.chave, valor: valores[dados.chave] })
 })

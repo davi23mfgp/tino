@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ArrowLeft, UserRound, Users, Heart, Eye, EyeOff } from "lucide-react"
 import { TinoMarca } from "@/components/tino-mascote"
+import { MarcarEtapa } from "@/components/marcar-etapa"
 
 import { enviar } from "@/lib/cliente"
 import { cn } from "@/lib/utils"
@@ -53,6 +54,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
   // ── Passo 2: os dados ─────────────────────────────────
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
+      <MarcarEtapa etapa="CADASTRO_INICIADO" produto={modoMei ? "mei" : "pessoal"} />
       <div className="w-full max-w-md rounded-[24px] border border-pauta bg-papel-1 p-6 shadow-xl sm:p-8">
         <Link href={modoMei ? "/para-mei" : "/"} className="text-[calc(13px*var(--escala-letra))] text-muted-fg hover:text-foreground inline-flex min-h-11 items-center gap-2"><ArrowLeft className="size-4" />Voltar</Link>
         <div className="mt-3 flex items-center gap-2"><TinoMarca className="size-8" /><span className="text-lg font-semibold">tino.</span></div>
@@ -89,7 +91,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
           /><button type="button" onClick={() => setMostrarSenha(!mostrarSenha)} aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"} className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 place-items-center text-muted-fg">{mostrarSenha ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></div><span className="block text-xs text-muted-fg">Use pelo menos 8 caracteres.</span></label>
 
           {modoMei && <div className="space-y-4 border-t border-pauta pt-4">
-            <p className="text-xs uppercase tracking-widest text-muted-fg">Sobre o negócio</p>
+            <p className="text-xs text-muted-fg">Sobre o negócio</p>
             <label className="block space-y-2 text-sm"><span>Razão social</span><input required maxLength={160} value={razaoSocial} onChange={(evento)=>setRazaoSocial(evento.target.value)} className={campo} /></label>
             <label className="block space-y-2 text-sm"><span>CNPJ</span><input required inputMode="numeric" placeholder="00.000.000/0000-00" value={cnpj} onChange={(evento)=>setCnpj(evento.target.value)} className={campo} /></label>
             <label className="block space-y-2 text-sm"><span>Telefone ou WhatsApp</span><input required inputMode="tel" placeholder="(00) 00000-0000" value={telefoneContato} onChange={(evento)=>setTelefoneContato(evento.target.value)} className={campo} /></label>
@@ -98,7 +100,7 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
           </div>}
 
           {!modoMei && <div className="space-y-2 pt-2">
-            <p className="text-xs uppercase tracking-widest text-muted-fg">Em casa, o dinheiro é de</p>
+            <p className="text-xs text-muted-fg">Em casa, o dinheiro é de</p>
             <div className="grid grid-cols-3 gap-2">{TIPOS.map((tipo) => (
               <button
                 key={tipo.valor}
@@ -140,6 +142,8 @@ export default function Cadastro({ modoMei = false }: { modoMei?: boolean }) {
           </label>
 
           {erro && <p className="text-sm text-negativo">{erro}</p>}
+          {/* O botão desligado sem explicação parecia defeito (auditoria, achado 44). */}
+          {!aceite && !criando && <p className="text-sm text-muted-fg">Marque o aceite dos Termos acima para criar a conta.</p>}
 
           <button
             type="submit"

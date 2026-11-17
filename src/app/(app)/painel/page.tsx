@@ -9,6 +9,8 @@ import { AbasDoInicio } from "./abas-do-inicio"
 import { ConferirNoInicio, type CapturaNoInicio } from "./conferir-no-inicio"
 import { LogoDaCompra } from "./logo-da-compra"
 import { ConviteNegocio } from "@/components/convite-negocio"
+import { ListaDoRoteiro } from "@/components/lista-do-roteiro"
+import { feitosDoRoteiro } from "@/lib/roteiro-feitos"
 import { sessaoDaPagina } from "@/lib/pagina"
 import { prisma } from "@/lib/prisma"
 import { iconeDaCategoria } from "@/lib/icone-categoria"
@@ -76,6 +78,19 @@ export default async function Painel() {
   // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
   // passar pelo mesmo numero que aparece no topo da tela.
   const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos))
+  // Regra 3: lar sem lançamento nenhum não tem nota. O diagnóstico devolvia
+  // "50 de 100" do nada, e quem acabou de entrar lia isso como um parecer.
+  // As mesmas contagens servem à lista "Montar o seu Tino" (passo 61, opção A).
+  const [lancamentosDoLar, contasDoRoteiro, membroDoRoteiro, rendasFixas, contasFixas, limitesDoMes] = await Promise.all([
+    prisma.transacao.count({ where: { larId: sessao.larId } }),
+    prisma.conta.findMany({ where: { larId: sessao.larId, arquivada: false, tipo: { not: "INVESTIMENTO" } }, select: { tipo: true, instituicao: true } }),
+    sessao.membroId ? prisma.membro.findUnique({ where: { id: sessao.membroId }, select: { rendaMensalCentavos: true } }) : null,
+    prisma.recorrencia.count({ where: { larId: sessao.larId, tipo: "RECEITA", ativa: true } }),
+    prisma.recorrencia.count({ where: { larId: sessao.larId, tipo: "DESPESA", ativa: true } }),
+    prisma.orcamento.count({ where: { larId: sessao.larId, competencia } }),
+  ])
+  const semDados = lancamentosDoLar === 0
+  const feitosDoComeco = feitosDoRoteiro({ contas: contasDoRoteiro, rendasFixas, rendaDeclaradaCentavos: membroDoRoteiro?.rendaMensalCentavos ?? 0, contasFixas, limitesDoMes, lancamentos: lancamentosDoLar })
   const diagnostico = montarDiagnostico(panorama, { compromissos, parcelamentosRestanteCentavos: parcelamentos.restanteCentavos })
   const nomesDeCategoria = new Map((await prisma.categoria.findMany({
     where: { id: { in: pendentes.map((linha) => linha.categoriaId).filter((id): id is string => Boolean(id)) } },
@@ -176,6 +191,8 @@ export default async function Painel() {
       </div>
     </section>
 
+    <ListaDoRoteiro feitos={feitosDoComeco} />
+
     <nav className={cn(estilos.atalhos, estilos.atalhosFora)} aria-label="Atalhos">{atalhos}</nav>
 
     {!temNegocio && <ConviteNegocio />}
@@ -247,7 +264,7 @@ export default async function Painel() {
             <h2 id="saude-titulo">Saúde do dinheiro</h2>
             <Link href="/analise" className={e.linkCabeca}>Ver análise →</Link>
           </div>
-          <div className={e.saudeCorpo}>
+          {semDados ? <p className={e.vazio}>Ainda sem dados. A nota aparece depois dos primeiros lançamentos. <Link href="/montar" className="underline">Montar o seu Tino em 5 passos</Link>.</p> : <><div className={e.saudeCorpo}>
             <div className={e.anelNota} style={{ "--nota": `${diagnostico.nota * 3.6}deg` } as CSSProperties} data-situacao={diagnostico.situacao}>
               <span className={e.notaLinha}><strong>{diagnostico.nota}</strong><small className={e.notaMaximo}>/ 100</small></span>
             </div>
@@ -262,14 +279,14 @@ export default async function Painel() {
             <span>1</span>
             <span className="min-w-0"><strong>{diagnostico.prioridades[0].titulo}</strong><small>{diagnostico.prioridades[0].porque}</small></span>
             {diagnostico.prioridades[0].impactoMensalCentavos ? <b>{formatarMoeda(diagnostico.prioridades[0].impactoMensalCentavos)}<small>por mês</small></b> : null}
-          </Link>}
+          </Link>}</>}
         </section>
       </div>
 
       <div className={e.grupo} data-grupo="futuro">
         <section className={e.bloco} data-area="fluxo" aria-labelledby="fluxo-titulo">
-          <Cabeca id="fluxo-titulo" titulo="Fluxo de caixa" href="/projecao" acao="Ver projeção" apoio="o que sobra ou falta em cada mês" />
-          <div className={e.numerosFluxo}>
+          <Cabeca id="fluxo-titulo" titulo="Entra e sai por mês" href="/projecao" acao="Ver projeção" apoio="o que sobra ou falta em cada mês" />
+          {semDados && mesesFluxo.every((mes) => mes.sobra === 0) ? <p className={e.vazio}>Ainda sem dados. A projeção aparece quando houver renda, contas fixas ou lançamentos. <Link href="/montar" className="underline">Montar o seu Tino</Link>.</p> : <><div className={e.numerosFluxo}>
             <div><small>Sobra média, 6 meses</small><Reais centavos={panorama.medias.sobraCentavos} tamanho="grande" sinal tom={panorama.medias.sobraCentavos >= 0 ? "positivo" : "negativo"} /></div>
             {proximoMes && <div><small>Se nada mudar, em {proximoMes.rotulo}</small><Reais centavos={proximoMes.sobra} tamanho="medio" sinal tom={proximoMes.sobra >= 0 ? "positivo" : "negativo"} /></div>}
           </div>
@@ -282,7 +299,7 @@ export default async function Painel() {
               </div>
             ))}
           </div>
-          <p className={e.legendaFluxo}><span data-tipo="real" />já aconteceu <span data-tipo="previsto" />projeção</p>
+          <p className={e.legendaFluxo}><span data-tipo="real" />já aconteceu <span data-tipo="previsto" />projeção</p></>}
         </section>
 
         {panorama.dividas.lista.length > 0 && <section className={cn(e.bloco, e.dividasBloco)} data-area="dividas" aria-labelledby="dividas-titulo">

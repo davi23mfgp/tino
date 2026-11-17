@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { diaDoVencimento, diaNoFuso, resumoDasContas, situacaoDaConta } from "@/lib/loja/contas"
 import { comSessao, corpo, exigir, ok, ErroDeUso } from "@/lib/api"
+import { campo, validar, z } from "@/lib/validar"
 import { lojaDoLar } from "@/lib/loja/dados"
 
 export const dynamic = "force-dynamic"
@@ -51,14 +52,18 @@ export const POST = comSessao(async (sessao, requisicao) => {
 
   const loja = await lojaDoLar(sessao.larId)
 
-  if (!dados.valorCentavos || dados.valorCentavos <= 0) throw new ErroDeUso("Informe o valor da conta.")
+  // Valor e data entravam crus: "10.5", texto ou data inválida viravam erro 500
+  // (auditoria, Lote 5).
+  const valor = campo.centavos().safeParse(dados.valorCentavos)
+  if (!valor.success || valor.data <= 0) throw new ErroDeUso("Informe o valor da conta.")
+  if (Number.isNaN(new Date(dados.vencimento).getTime())) throw new ErroDeUso("Informe o vencimento.")
 
   const conta = await prisma.contaDaLoja.create({
     data: {
       lojaId: loja.id,
       descricao: exigir(dados.descricao, "Informe do que é a conta").trim(),
       categoria: (dados.categoria ?? "OUTRO") as never,
-      valorCentavos: dados.valorCentavos,
+      valorCentavos: valor.data,
       vencimento: new Date(dados.vencimento),
       mensal: dados.mensal ?? false,
     },
@@ -75,17 +80,23 @@ export const POST = comSessao(async (sessao, requisicao) => {
  * problema, e mudar o valor do aluguel obrigaria a corrigir onze linhas.
  */
 export const PATCH = comSessao(async (sessao, requisicao) => {
-  const dados = await corpo<{ id: string }>(requisicao)
+  // Sem o id, o Prisma tirava o campo do filtro e dava baixa na primeira conta
+  // da loja (reproduzido na auditoria, Lote 5, com um corpo vazio).
+  const dados = validar(z.object({ id: campo.id() }), await corpo(requisicao))
 
   const loja = await lojaDoLar(sessao.larId)
   const conta = await prisma.contaDaLoja.findFirst({ where: { id: dados.id, lojaId: loja.id } })
   if (!conta) throw new ErroDeUso("Conta não encontrada.", 404)
   if (conta.paga) throw new ErroDeUso("Essa conta já estava paga.")
 
-  await prisma.contaDaLoja.update({
-    where: { id: conta.id },
+  // A baixa e a conta do mês seguinte valem juntas, e só para quem marcou
+  // primeiro: dois toques em "Paguei" criavam duas contas no mês seguinte.
+  await prisma.$transaction(async (tx) => {
+  const { count } = await tx.contaDaLoja.updateMany({
+    where: { id: conta.id, paga: false },
     data: { paga: true, pagaEm: new Date() },
   })
+  if (count === 0) throw new ErroDeUso("Essa conta já estava paga.")
 
   if (conta.mensal) {
     const proximo = new Date(conta.vencimento)
@@ -95,7 +106,7 @@ export const PATCH = comSessao(async (sessao, requisicao) => {
     const mesAlvo = proximo.getUTCMonth() + 1
     const ultimoDia = new Date(Date.UTC(proximo.getUTCFullYear(), mesAlvo + 1, 0)).getUTCDate()
 
-    await prisma.contaDaLoja.create({
+    await tx.contaDaLoja.create({
       data: {
         lojaId: loja.id,
         descricao: conta.descricao,
@@ -106,6 +117,7 @@ export const PATCH = comSessao(async (sessao, requisicao) => {
       },
     })
   }
+  })
 
   return ok({ paga: true })
 })
