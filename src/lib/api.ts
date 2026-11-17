@@ -19,6 +19,18 @@ export function ok<T>(dados: T, status = 200) {
   return NextResponse.json(dados, { status })
 }
 
+/**
+ * Recusa pelo tamanho declarado antes de ler o corpo. `formData()` carrega o
+ * envio inteiro na memória, então o teto conferido depois (no `File.size`)
+ * chegava tarde: um envio enorme derrubava a função antes. A folga cobre o
+ * envelope do formulário. Sem `content-length` (envio em partes), passa e o
+ * teto de depois continua valendo.
+ */
+export function corpoGrandeDemais(requisicao: Request, limiteBytes: number): boolean {
+  const declarado = Number(requisicao.headers.get("content-length") ?? 0)
+  return declarado > limiteBytes + 64 * 1024
+}
+
 export function erro(mensagem: string, status = 400) {
   return NextResponse.json({ erro: mensagem }, { status })
 }

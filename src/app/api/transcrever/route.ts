@@ -1,9 +1,10 @@
-import { comSessao, ok, ErroDeUso } from "@/lib/api"
+import { comSessao, corpoGrandeDemais, ok, ErroDeUso } from "@/lib/api"
 import { consumirLimite, REGRAS } from "@/lib/limite"
 import {
   AudioIndisponivel,
   AudioLongoDemais,
   AudioVazio,
+  TAMANHO_MAXIMO_AUDIO,
   transcrever,
   transcricaoDisponivel,
 } from "@/lib/captura/transcricao"
@@ -33,6 +34,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     throw new ErroDeUso("A transcrição de áudio não está configurada neste servidor.")
   }
 
+  if (corpoGrandeDemais(requisicao, TAMANHO_MAXIMO_AUDIO)) throw new ErroDeUso("Áudio comprido demais. Grave só o gasto.", 413)
   const formulario = await requisicao.formData().catch(() => null)
   const arquivo = formulario?.get("audio")
   if (!(arquivo instanceof Blob)) throw new ErroDeUso("Nenhum áudio recebido.")

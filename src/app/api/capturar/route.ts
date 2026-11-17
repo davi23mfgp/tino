@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 
+import { corpoGrandeDemais } from "@/lib/api"
+
 import { autenticarChave, confirmarCaptura, registrarCaptura } from "@/lib/captura"
 import { lerEstruturada, type CapturaEstruturada } from "@/lib/captura/estruturada"
 import { formatarMoeda } from "@/lib/dinheiro"
@@ -37,6 +39,10 @@ export async function POST(requisicao: Request) {
 
   const chave = await autenticarChave(chaveValor)
   if (!chave) return NextResponse.json({ erro: "Chave inválida ou revogada." }, { status: 401 })
+
+  // Uma notificação ou um "mercado 52,30" cabe em poucos bytes. Sem teto, o
+  // corpo era lido inteiro na memória, qualquer que fosse o tamanho.
+  if (corpoGrandeDemais(requisicao, 64 * 1024)) return NextResponse.json({ erro: "Mensagem grande demais para uma anotação." }, { status: 413 })
 
   // Aceita JSON, formulário e texto puro: cada app de automação manda de um
   // jeito, e recusar formato é onde a integração morre para o usuário comum.
