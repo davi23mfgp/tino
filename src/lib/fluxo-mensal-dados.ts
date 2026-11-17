@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { cicloDaFatura, faturaAberta } from "@/lib/cartoes"
 import { competenciaMaisMeses, diasNoMes, partesCompetencia } from "@/lib/datas"
-import type { DadosDoFluxo, FaturaDoFluxo } from "@/lib/fluxo-mensal"
+import { montarFluxoMensal, resumirFluxo, type DadosDoFluxo, type FaturaDoFluxo } from "@/lib/fluxo-mensal"
 
 /// Meses fechados que entram nas médias. Seis pegam a sazonalidade curta sem
 /// arrastar o que a casa gastava há um ano.
@@ -150,4 +150,11 @@ export async function montarDadosDoFluxo(larId: string, hoje: string, meses = 12
     dividas: dividas.map((divida) => ({ centavos: divida.parcelaCentavos, dia: divida.diaVencimento })),
     dividasPagasNoMesCentavos: doCaixa.filter((t) => t.tipo === "DESPESA" && t.dividaId && t.competencia === atual).reduce((soma, t) => soma + t.valorCentavos, 0),
   }
+}
+
+/** A previsão pronta, para as telas que não são a Projeção. */
+export async function previsaoDoLar(larId: string, meses = 12) {
+  const hoje = new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })
+  const { contasDoFluxo: _contas, ...dados } = await montarDadosDoFluxo(larId, hoje, meses)
+  return resumirFluxo(montarFluxoMensal(dados))
 }

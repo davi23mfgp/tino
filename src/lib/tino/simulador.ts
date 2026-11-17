@@ -50,6 +50,12 @@ export interface CenarioBase {
   /// Lançamentos pontuais já conhecidos: IPVA, 13º, viagem marcada.
   eventos?: { competencia: string; descricao: string; valorCentavos: number; tipo: "RECEITA" | "DESPESA" }[]
   aporteMetaMensalCentavos?: number
+  /// Entradas e saídas de cada mês tiradas da Projeção (`lib/fluxo-mensal.ts`),
+  /// sem as parcelas de dívida, que o simulador conta à parte com os juros.
+  /// Quando existe para o mês, substitui renda, custo de vida e parcelas
+  /// daquele mês: a fatura já vem no vencimento, com as parcelas do cartão
+  /// dentro. Depois do último mês previsto valem renda e custo de vida.
+  fluxoPorCompetencia?: Record<string, { entraCentavos: number; saiCentavos: number }>
 }
 
 export type Ajuste =
@@ -193,7 +199,8 @@ export function simular(base: CenarioBase, ajustes: Ajuste[] = [], meses = 24): 
     const eventos: string[] = []
 
     // ── Receita ─────────────────────────────────────────────
-    let receitas = base.rendaMensalCentavos
+    const doFluxo = base.fluxoPorCompetencia?.[competencia]
+    let receitas = doFluxo ? doFluxo.entraCentavos : base.rendaMensalCentavos
     for (const ajuste of ajustes) {
       if (ajuste.tipo === "RENDA" && vigente(competencia, ajuste.aPartirDe)) {
         receitas += ajuste.deltaCentavos
@@ -217,7 +224,7 @@ export function simular(base: CenarioBase, ajustes: Ajuste[] = [], meses = 24): 
     }
 
     // ── Custo de vida ───────────────────────────────────────
-    let custoDeVida = base.custoDeVidaMensalCentavos
+    let custoDeVida = doFluxo ? doFluxo.saiCentavos : base.custoDeVidaMensalCentavos
     for (const ajuste of ajustes) {
       if (ajuste.tipo === "CUSTO" && vigente(competencia, ajuste.aPartirDe)) {
         custoDeVida += ajuste.deltaCentavos
@@ -238,7 +245,8 @@ export function simular(base: CenarioBase, ajustes: Ajuste[] = [], meses = 24): 
     custoDeVida = Math.max(0, custoDeVida)
 
     // ── Parcelas ────────────────────────────────────────────
-    const parcelasContratadas = base.parcelasPorCompetencia[competencia] ?? 0
+    // Com o mês da Projeção, as parcelas já estão dentro da fatura.
+    const parcelasContratadas = doFluxo ? 0 : (base.parcelasPorCompetencia[competencia] ?? 0)
     const novas = parcelasSimuladas[competencia] ?? []
     const parcelas = parcelasContratadas + novas.reduce((soma, item) => soma + item.valorCentavos, 0)
     for (const nova of novas) eventos.push(nova.rotulo)

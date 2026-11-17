@@ -50,3 +50,12 @@ describe("hoje no fuso da pessoa", () => {
     assert.equal(avisosDeVencimento([conta18], hojeNoFuso("America/Sao_Paulo", tarde))[0].titulo, "Luz vence em 1 dia")
   })
 })
+
+describe("mês atual no fuso do Brasil", () => {
+  it("dia 30 de novembro às 22h em Brasília ainda é novembro", async () => {
+    const { competenciaDe, hojeNoFuso } = await import("../src/lib/datas")
+    const noite = new Date("2026-12-01T01:00:00Z") // 30/11, 22h em Brasília
+    assert.equal(competenciaDe(noite), "2026-12") // o relógio cru já pulava
+    assert.equal(competenciaDe(hojeNoFuso("America/Sao_Paulo", noite)), "2026-11")
+  })
+})
