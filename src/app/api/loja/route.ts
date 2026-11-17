@@ -94,19 +94,6 @@ export const PUT = comSessao(async (sessao, requisicao) => {
 
   const loja = await lojaDoLar(sessao.larId)
 
-  const camposSimples = ["nome", "endereco", "cnpj", "inscricaoEstadual"] as const
-  if (camposSimples.some((campo) => dados[campo] !== undefined)) {
-    await prisma.loja.update({
-      where: { id: loja.id },
-      data: {
-        ...(dados.nome !== undefined ? { nome: dados.nome } : {}),
-        ...(dados.endereco !== undefined ? { endereco: dados.endereco } : {}),
-        ...(dados.cnpj !== undefined ? { cnpj: dados.cnpj.replace(/\D/g, "") || null } : {}),
-        ...(dados.inscricaoEstadual !== undefined ? { inscricaoEstadual: dados.inscricaoEstadual || null } : {}),
-      },
-    })
-  }
-
   // Taxa fora de 0–99,99% ou prazo quebrado viraria líquido negativo ou data
   // de recebimento impossível em toda venda seguinte.
   const FORMAS = new Set(["DINHEIRO", "PIX", "DEBITO", "CREDITO_VISTA", "CREDITO_PARCELADO", "FIADO"])
@@ -116,13 +103,30 @@ export const PUT = comSessao(async (sessao, requisicao) => {
     if (!Number.isInteger(regra.prazoDias) || regra.prazoDias < 0 || regra.prazoDias > 365) throw new ErroDeUso("Prazo precisa estar entre 0 e 365 dias.")
   }
 
-  for (const regra of dados.regras ?? []) {
-    await prisma.formaRecebimento.upsert({
-      where: { lojaId_forma: { lojaId: loja.id, forma: regra.forma } },
-      update: { taxaBps: regra.taxaBps, prazoDias: regra.prazoDias },
-      create: { lojaId: loja.id, forma: regra.forma, taxaBps: regra.taxaBps, prazoDias: regra.prazoDias },
-    })
-  }
+  // Valida tudo antes e grava tudo junto: a regra inválida dava erro depois
+  // de o nome e o CNPJ já estarem salvos, e a tela dizia "não salvou".
+  await prisma.$transaction(async (transacao) => {
+    const camposSimples = ["nome", "endereco", "cnpj", "inscricaoEstadual"] as const
+    if (camposSimples.some((campo) => dados[campo] !== undefined)) {
+      await transacao.loja.update({
+        where: { id: loja.id },
+        data: {
+          ...(dados.nome !== undefined ? { nome: dados.nome } : {}),
+          ...(dados.endereco !== undefined ? { endereco: dados.endereco } : {}),
+          ...(dados.cnpj !== undefined ? { cnpj: dados.cnpj.replace(/\D/g, "") || null } : {}),
+          ...(dados.inscricaoEstadual !== undefined ? { inscricaoEstadual: dados.inscricaoEstadual || null } : {}),
+        },
+      })
+    }
+
+    for (const regra of dados.regras ?? []) {
+      await transacao.formaRecebimento.upsert({
+        where: { lojaId_forma: { lojaId: loja.id, forma: regra.forma } },
+        update: { taxaBps: regra.taxaBps, prazoDias: regra.prazoDias },
+        create: { lojaId: loja.id, forma: regra.forma, taxaBps: regra.taxaBps, prazoDias: regra.prazoDias },
+      })
+    }
+  })
 
   return ok({ atualizado: true })
 })

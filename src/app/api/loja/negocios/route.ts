@@ -29,11 +29,15 @@ export const GET = comSessao(async (sessao) => {
 /** Abre um negócio novo e já entra nele; a área é escolhida em seguida, em /loja/comecar. */
 export const POST = comSessao(async (sessao, requisicao) => {
   const { nome } = validar(z.object({ nome: campo.textoObrigatorio(60) }), await corpo(requisicao))
-  const total = await prisma.loja.count({ where: { larId: sessao.larId } })
   // Teto de bom senso: quem precisa de mais de dez negócios na mesma conta
-  // já é caso de sistema de gestão de rede, não de MEI.
-  if (total >= 10) throw new ErroDeUso("Esta conta já tem dez negócios.")
-  const loja = await prisma.loja.create({ data: { larId: sessao.larId, nome: nome.trim() } })
+  // já é caso de sistema de gestão de rede, não de MEI. Contar e criar sob a
+  // mesma trava: sem ela, vários cliques juntos passavam todos do teto.
+  const loja = await prisma.$transaction(async (transacao) => {
+    await transacao.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"negocios:" + sessao.larId}))::text`
+    const total = await transacao.loja.count({ where: { larId: sessao.larId } })
+    if (total >= 10) throw new ErroDeUso("Esta conta já tem dez negócios.")
+    return transacao.loja.create({ data: { larId: sessao.larId, nome: nome.trim() } })
+  })
   ;(await cookies()).set(COOKIE_NEGOCIO, loja.id, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 365 })
   return ok({ id: loja.id }, 201)
 })

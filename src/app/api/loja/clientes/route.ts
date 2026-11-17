@@ -54,14 +54,25 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const dados = validar(ESQUEMA_CLIENTE, await corpo(requisicao))
   const loja = await lojaDoLar(sessao.larId)
   const nome = dados.nome.replace(/\s+/g, " ")
-  const existente = await prisma.clienteLoja.findFirst({
-    where: { lojaId: loja.id, nome: { equals: nome, mode: "insensitive" } },
-    orderBy: { criadoEm: "asc" },
+  // Trava pelo nome dentro da loja: dois toques em "Salvar" (ou o balcão e o
+  // celular juntos) liam os dois "não existe" e criavam a Dona Cida duas vezes.
+  // Não há chave única no banco porque já existem cadastros repetidos de antes,
+  // e a trava resolve sem migrar dado de ninguém.
+  const resultado = await prisma.$transaction(async (transacao) => {
+    await transacao.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"cliente:" + loja.id + ":" + nome.toLowerCase()}))::text`
+    const existente = await transacao.clienteLoja.findFirst({
+      where: { lojaId: loja.id, nome: { equals: nome, mode: "insensitive" } },
+      orderBy: { criadoEm: "asc" },
+    })
+    if (existente) return { cliente: existente, existente: true }
+    const cliente = await transacao.clienteLoja.create({
+      data: { lojaId: loja.id, nome, telefone: dados.telefone || null, email: dados.email || null, observacao: dados.observacao || null },
+    })
+    return { cliente, existente: false }
   })
-  await trazerDeVolta(existente)
-  if (existente) return ok({ cliente: existente, existente: true })
-  const cliente = await prisma.clienteLoja.create({
-    data: { lojaId: loja.id, nome, telefone: dados.telefone || null, email: dados.email || null, observacao: dados.observacao || null },
-  })
-  return ok({ cliente, existente: false }, 201)
+  if (resultado.existente) {
+    await trazerDeVolta(resultado.cliente)
+    return ok(resultado)
+  }
+  return ok(resultado, 201)
 })
