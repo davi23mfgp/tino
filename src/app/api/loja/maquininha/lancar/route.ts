@@ -57,7 +57,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     const criada = await transacao.vendaLoja.create({
       data: {
         lojaId: loja.id,
-        numero: await proximoNumero(loja.id),
+        numero: await proximoNumero(transacao, loja.id),
         totalCentavos: dados.brutoCentavos,
         observacao,
         criadoEm: vendidoEm,

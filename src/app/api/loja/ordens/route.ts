@@ -102,6 +102,13 @@ export const POST = comSessao(async (sessao, requisicao) => {
       )
       return ok({ ordem, existente: false }, 201)
     } catch (excecao) {
+      // Dois toques em "Abrir OS" no mesmo orçamento: a chave única barra a
+      // segunda, e ela devolve a OS que a primeira abriu. Antes caía nas
+      // tentativas de numeração e terminava em erro 500 (auditoria, Lote 5).
+      if (dados.orcamentoId && excecao instanceof Prisma.PrismaClientKnownRequestError && excecao.code === "P2002") {
+        const existente = await prisma.ordemServicoLoja.findUnique({ where: { orcamentoId: dados.orcamentoId }, select: { id: true, numero: true } })
+        if (existente) return ok({ ordem: existente, existente: true })
+      }
       if (!(excecao instanceof Prisma.PrismaClientKnownRequestError && excecao.code === "P2002") || tentativa === 2) throw excecao
     }
   }

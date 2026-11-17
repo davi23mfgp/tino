@@ -214,7 +214,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       lojaId: loja.id,
       caixaId: caixa?.id ?? null,
       clienteId: cliente?.id ?? null,
-      numero: await proximoNumero(loja.id),
+      numero: await proximoNumero(transacao, loja.id),
       totalCentavos,
       descontoCentavos: dados.descontoCentavos ?? 0,
       observacao: dados.observacao ?? null,

@@ -6,6 +6,8 @@
  * no Tino pessoal é o mesmo aqui: dois cálculos do mesmo número divergem.
  */
 
+import type { Prisma } from "@prisma/client"
+
 import { prisma } from "@/lib/prisma"
 import { ErroDeUso } from "@/lib/api"
 
@@ -70,8 +72,17 @@ export function caixaAberto(lojaId: string) {
  * ocupando o número dela, e reaproveitar número faria dois pedidos diferentes
  * atenderem pelo mesmo nome.
  */
-export async function proximoNumero(lojaId: string): Promise<number> {
-  const ultima = await prisma.vendaLoja.findFirst({
+/**
+ * Próximo número de venda, dentro da transação que cria a venda.
+ *
+ * A trava por loja segura o segundo balcão até o primeiro gravar: sem ela,
+ * duas vendas no mesmo instante liam o mesmo "último número", e a segunda
+ * batia na chave única e devolvia erro 500 com o carrinho já montado
+ * (auditoria, Lote 5). A trava solta sozinha no fim da transação.
+ */
+export async function proximoNumero(transacao: Prisma.TransactionClient, lojaId: string): Promise<number> {
+  await transacao.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${"numero-venda:" + lojaId}))::text`
+  const ultima = await transacao.vendaLoja.findFirst({
     where: { lojaId },
     orderBy: { numero: "desc" },
     select: { numero: true },
