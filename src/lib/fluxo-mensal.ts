@@ -176,3 +176,30 @@ export function montarFluxoMensal(dados: DadosDoFluxo): MesDoFluxo[] {
   }
   return meses
 }
+
+export interface ResumoDoFluxo {
+  meses: MesDoFluxo[]
+  /// Saldo das contas do caixa hoje, sem as linhas tiradas da Projeção.
+  saldoInicialCentavos: number
+  /// Médias dos meses inteiros (sem o corrente, que só tem o resto do mês).
+  entraMediaCentavos: number
+  saiMediaCentavos: number
+}
+
+/**
+ * Uma conta de previsão só (Davi, 17/11/2026). Até aqui Início, Simulador e
+ * Investir tinham contas próprias (cartão pela data da compra, média de 12
+ * meses, parcelas de outro jeito) e a mesma pergunta dava três números. Todas
+ * as telas leem daqui, que é a conta da Projeção: fatura no vencimento,
+ * pagamento já feito descontado e as linhas que a pessoa tirou respeitadas.
+ */
+export function resumirFluxo(meses: MesDoFluxo[]): ResumoDoFluxo {
+  const inteiros = meses.slice(1)
+  const media = (lista: number[]) => (lista.length ? Math.round(lista.reduce((soma, valor) => soma + valor, 0) / lista.length) : 0)
+  return {
+    meses,
+    saldoInicialCentavos: meses[0]?.comecaCentavos ?? 0,
+    entraMediaCentavos: media(inteiros.map((mes) => mes.entraCentavos)),
+    saiMediaCentavos: media(inteiros.map((mes) => mes.saiCentavos)),
+  }
+}

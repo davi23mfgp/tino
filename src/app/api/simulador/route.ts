@@ -4,6 +4,7 @@ import { INT_MAX, campo, validar, z } from "@/lib/validar"
 import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { compromissosFuturos } from "@/lib/parcelamentos"
+import { previsaoDoLar } from "@/lib/fluxo-mensal-dados"
 import { comparar, type Ajuste, type CenarioBase } from "@/lib/tino/simulador"
 import { valorVigente } from "@/lib/parametros"
 
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic"
  * em telas diferentes.
  */
 async function montarBase(larId: string, competencia: string): Promise<{ base: CenarioBase; nomes: Record<string, string> }> {
-  const [panorama, dividas, compromissos, chequeEspecialPadraoBps] = await Promise.all([
+  const [panorama, dividas, compromissos, chequeEspecialPadraoBps, previsao] = await Promise.all([
     montarPanorama(larId, competencia),
     prisma.divida.findMany({ where: { larId, quitada: false } }),
     compromissosFuturos(larId, 36),
@@ -25,13 +26,16 @@ async function montarBase(larId: string, competencia: string): Promise<{ base: C
     // fica mais em constante: é parâmetro do sistema, editável em
     // /admin/configuracoes, porque muda por decisão do Banco Central.
     valorVigente("juros.chequeEspecialBps"),
+    previsaoDoLar(larId, 24),
   ])
 
   const simuladas: CenarioBase["dividas"] = []
 
   // Fatura de cartão em aberto é dívida de verdade: sai do saldo quando for
   // paga, e não é abatida sozinha por qualquer entrada na conta corrente.
-  for (const saldo of panorama.saldoPorConta) {
+  // Com a Projeção como base, a fatura sai do caixa no vencimento, como saída
+  // do mês: mantê-la também como dívida contaria o mesmo cartão duas vezes.
+  for (const saldo of previsao.meses.length ? [] : panorama.saldoPorConta) {
     if (saldo.tipo !== "CARTAO_CREDITO" || saldo.saldoCentavos >= 0) continue
     simuladas.push({
       id: saldo.id,
@@ -68,16 +72,35 @@ async function montarBase(larId: string, competencia: string): Promise<{ base: C
   // contar o mesmo dinheiro duas vezes.
   const custoDeVida = Math.max(0, panorama.medias.despesaCentavos - (parcelasPorCompetencia[competencia] ?? 0))
 
+  // A mesma conta da Projeção, mês a mês, sem a linha de dívidas (o simulador
+  // calcula a parcela com os juros de cada uma). Sem previsão, fica a média.
+  const semDividas = (mes: (typeof previsao.meses)[number]) => mes.itens.filter((item) => item.chave === "dividas" && !item.fora).reduce((soma, item) => soma + item.centavos, 0)
+  // No mês corrente a Projeção só conta a parcela que ainda falta pagar; o
+  // simulador cobra a parcela cheia de cada dívida. O que já foi pago volta
+  // como entrada, para o mês fechar igual à Projeção.
+  const parcelaCheia = simuladas.reduce((soma, divida) => soma + divida.parcelaCentavos, 0)
+  const fluxoPorCompetencia = Object.fromEntries(previsao.meses.map((mes, indice) => [mes.competencia, {
+    entraCentavos: mes.entraCentavos + (indice === 0 ? Math.max(0, parcelaCheia - semDividas(mes)) : 0),
+    saiCentavos: mes.saiCentavos - semDividas(mes),
+  }]))
+  const inteiros = previsao.meses.slice(1)
+  const usaPrevisao = previsao.meses.length > 0
+
   return {
     base: {
       competenciaInicial: competencia,
-      saldoInicialCentavos: panorama.saldoTotalCentavos,
-      rendaMensalCentavos: renda,
-      custoDeVidaMensalCentavos: custoDeVida,
+      saldoInicialCentavos: usaPrevisao ? previsao.saldoInicialCentavos : panorama.saldoTotalCentavos,
+      // Depois dos 24 meses previstos, continua com a média deles.
+      rendaMensalCentavos: usaPrevisao ? previsao.entraMediaCentavos : renda,
+      custoDeVidaMensalCentavos: usaPrevisao && inteiros.length ? Math.round(inteiros.reduce((soma, mes) => soma + mes.saiCentavos - semDividas(mes), 0) / inteiros.length) : custoDeVida,
+      fluxoPorCompetencia: usaPrevisao ? fluxoPorCompetencia : undefined,
       parcelasPorCompetencia,
       dividas: simuladas,
       jurosChequeEspecialBps: dividaChequeEspecial?.jurosMensalBps ?? chequeEspecialPadraoBps,
-      aporteMetaMensalCentavos: panorama.metas.reduce((soma, meta) => soma + meta.aporteAtualCentavos, 0),
+      // Com a Projeção como base, o que se guarda para metas fica nas contas do
+      // caixa (poupança), como a Projeção conta. Descontar de novo baixava o
+      // saldo do simulador em todo mês. "Guardar todo mês" continua somando.
+      aporteMetaMensalCentavos: usaPrevisao ? 0 : panorama.metas.reduce((soma, meta) => soma + meta.aporteAtualCentavos, 0),
     },
     nomes: Object.fromEntries(simuladas.map((divida) => [divida.id, divida.nome])),
   }

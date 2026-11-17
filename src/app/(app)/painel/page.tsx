@@ -22,6 +22,7 @@ import { montarPanorama } from "@/lib/tino/panorama"
 import { montarDiagnostico, type Indicador } from "@/lib/tino/diagnostico"
 import { compromissosFuturos, resumoParcelamentos } from "@/lib/parcelamentos"
 import { montarFluxoDeCaixa } from "@/lib/fluxo-caixa"
+import { previsaoDoLar } from "@/lib/fluxo-mensal-dados"
 import { projetarComParcelas } from "@/lib/projecao-com-parcelas"
 import { AcoesDaConta } from "@/components/barra-topo"
 import { ROTULO_BANDEIRA, finalDoCartao } from "@/lib/bandeiras"
@@ -77,7 +78,14 @@ export default async function Painel() {
 
   // Depende do saldo, entao vem depois do panorama: a linha do caixa tem que
   // passar pelo mesmo numero que aparece no topo da tela.
-  const fluxo = await montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos))
+  const [fluxo, previsao] = await Promise.all([
+    montarFluxoDeCaixa(sessao.larId, panorama.saldoTotalCentavos, projetarComParcelas(panorama, compromissos)),
+    previsaoDoLar(sessao.larId),
+  ])
+  // Os meses que já passaram são o que aconteceu; os que vêm leem a mesma
+  // conta da Projeção, para o Início e a Projeção mostrarem o mesmo número
+  // (17/11/2026). Antes o Início contava o cartão no dia da compra.
+  const previstoPorMes = new Map(previsao.meses.map((mes) => [mes.competencia, mes.entraCentavos - mes.saiCentavos]))
   // Regra 3: lar sem lançamento nenhum não tem nota. O diagnóstico devolvia
   // "50 de 100" do nada, e quem acabou de entrar lia isso como um parecer.
   // As mesmas contagens servem à lista "Montar o seu Tino" (passo 61, opção A).
@@ -131,7 +139,7 @@ export default async function Painel() {
 
   // Fluxo: seis meses que aconteceram e seis de projeção, uma barra por mês
   // com o valor escrito (Davi: "está muito escalonado, espaçado").
-  const mesesFluxo = fluxo.mes.map((ponto) => ({ chave: ponto.chave, rotulo: ponto.rotulo.split("/")[0].split(" ")[0].toLowerCase().slice(0, 3), sobra: ponto.entrouCentavos - ponto.saiuCentavos, futuro: ponto.futuro }))
+  const mesesFluxo = fluxo.mes.map((ponto) => ({ chave: ponto.chave, rotulo: ponto.rotulo.split("/")[0].split(" ")[0].toLowerCase().slice(0, 3), sobra: ponto.futuro && previstoPorMes.has(ponto.chave.slice(0, 7)) ? previstoPorMes.get(ponto.chave.slice(0, 7))! : ponto.entrouCentavos - ponto.saiuCentavos, futuro: ponto.futuro }))
   // Uma régua só para o que sobrou e o que faltou: 120 px dão a distância do
   // maior mês positivo ao maior negativo, e cada lado ocupa só o que precisa.
   const maiorSobra = Math.max(0, ...mesesFluxo.map((mes) => mes.sobra))

@@ -3,6 +3,7 @@ import { competenciaAtual } from "@/lib/datas"
 import { montarPanorama } from "@/lib/tino/panorama"
 import { dividirRenda, efeitoDoCorte } from "@/lib/tino/investir"
 import { valorVigente } from "@/lib/parametros"
+import { previsaoDoLar } from "@/lib/fluxo-mensal-dados"
 
 export const dynamic = "force-dynamic"
 
@@ -23,20 +24,24 @@ export const GET = comSessao(async (sessao, requisicao) => {
   const corteCentavos = Math.max(0, Math.round(Number(url.searchParams.get("corteCentavos") ?? 0) || 0))
   const meses = Math.min(60, Math.max(6, Number(url.searchParams.get("meses") ?? 24) || 24))
 
-  const [panorama, jurosNegativoMensalBps] = await Promise.all([
+  const [panorama, jurosNegativoMensalBps, previsao] = await Promise.all([
     montarPanorama(sessao.larId, competenciaAtual()),
     // O juro do saldo negativo é o mesmo teto do cheque especial usado no plano
     // de pagamento e no simulador: as três telas têm de projetar com a mesma
     // taxa, senão a mesma pergunta recebe três respostas.
     valorVigente("juros.chequeEspecialBps"),
+    previsaoDoLar(sessao.larId),
   ])
 
-  const receita = panorama.medias.receitaCentavos
-  const despesa = panorama.medias.despesaCentavos
+  // A mesma previsão da Projeção (17/11/2026): média dos meses inteiros que
+  // ela prevê. Sem previsão (conta nova), fica a média do histórico.
+  const temPrevisao = previsao.meses.length > 1
+  const receita = temPrevisao ? previsao.entraMediaCentavos : panorama.medias.receitaCentavos
+  const despesa = temPrevisao ? previsao.saiMediaCentavos : panorama.medias.despesaCentavos
   const sobra = receita - despesa
 
   const corte = efeitoDoCorte({
-    saldoInicialCentavos: panorama.saldoTotalCentavos,
+    saldoInicialCentavos: temPrevisao ? previsao.saldoInicialCentavos : panorama.saldoTotalCentavos,
     receitaMensalCentavos: receita,
     despesaMensalCentavos: despesa,
     cortePorMesCentavos: corteCentavos,
@@ -48,7 +53,7 @@ export const GET = comSessao(async (sessao, requisicao) => {
     receitaMensalCentavos: receita,
     despesaMensalCentavos: despesa,
     sobraMensalCentavos: sobra,
-    saldoAtualCentavos: panorama.saldoTotalCentavos,
+    saldoAtualCentavos: temPrevisao ? previsao.saldoInicialCentavos : panorama.saldoTotalCentavos,
     // Sem histórico não há média, e média inventada viraria plano inventado.
     temBase: receita > 0,
     divisaoSugerida: dividirRenda(receita),

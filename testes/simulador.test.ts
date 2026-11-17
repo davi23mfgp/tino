@@ -216,3 +216,18 @@ describe("comparar", () => {
     )
   })
 })
+
+describe("simular — com os meses da Projeção", () => {
+  it("usa entradas e saídas previstas de cada mês, sem somar as parcelas de novo", () => {
+    // Agosto: fatura de 300 mil vence; setembro: só 100 mil. Depois, a média.
+    const resultado = simular(base({
+      parcelasPorCompetencia: { "2026-08": 90000 },
+      fluxoPorCompetencia: {
+        "2026-08": { entraCentavos: 700000, saiCentavos: 800000 },
+        "2026-09": { entraCentavos: 700000, saiCentavos: 100000 },
+      },
+    }), [], 3)
+    // 500.000 − 100.000 = 400.000; + 600.000 = 1.000.000; + 250.000 (média) = 1.250.000.
+    assert.deepEqual(resultado.meses.map((mes) => mes.saldoAcumuladoCentavos), [400000, 1000000, 1250000])
+  })
+})
