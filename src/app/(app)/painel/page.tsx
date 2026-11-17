@@ -287,7 +287,7 @@ export default async function Painel() {
         <section className={e.bloco} data-area="fluxo" aria-labelledby="fluxo-titulo">
           <Cabeca id="fluxo-titulo" titulo="Entra e sai por mês" href="/projecao" acao="Ver projeção" apoio="o que sobra ou falta em cada mês" />
           {semDados && mesesFluxo.every((mes) => mes.sobra === 0) ? <p className={e.vazio}>Ainda sem dados. A projeção aparece quando houver renda, contas fixas ou lançamentos. <Link href="/montar" className="underline">Montar o seu Tino</Link>.</p> : <><div className={e.numerosFluxo}>
-            <div><small>Sobra média, 6 meses</small><Reais centavos={panorama.medias.sobraCentavos} tamanho="grande" sinal tom={panorama.medias.sobraCentavos >= 0 ? "positivo" : "negativo"} /></div>
+            <div><small>Sobra média, 12 meses</small><Reais centavos={panorama.medias.sobraCentavos} tamanho="grande" sinal tom={panorama.medias.sobraCentavos >= 0 ? "positivo" : "negativo"} /></div>
             {proximoMes && <div><small>Se nada mudar, em {proximoMes.rotulo}</small><Reais centavos={proximoMes.sobra} tamanho="medio" sinal tom={proximoMes.sobra >= 0 ? "positivo" : "negativo"} /></div>}
           </div>
           <div className={e.barrasFluxo} role="img" aria-label={mesesFluxo.map((mes) => `${mes.rotulo}: ${formatarMoeda(mes.sobra)}${mes.futuro ? " previsto" : ""}`).join("; ")}>

@@ -24,8 +24,14 @@ export function competenciaDe(data: Date): string {
   return `${ano}-${mes}`
 }
 
-export function competenciaAtual(): string {
-  return competenciaDe(new Date())
+/**
+ * O mês de agora no Brasil, não em UTC. Com o relógio cru, do último dia do
+ * mês às 21h em diante o servidor já estava no mês seguinte, e o app abria o
+ * mês novo vazio (achado de 17/11/2026). O fuso é o do Brasil porque é onde
+ * mora quem usa; telas que conhecem o fuso do lar podem passar o dele.
+ */
+export function competenciaAtual(fuso = "America/Sao_Paulo"): string {
+  return competenciaDe(hojeNoFuso(fuso))
 }
 
 export function partesCompetencia(competencia: string): { ano: number; mes: number } {
