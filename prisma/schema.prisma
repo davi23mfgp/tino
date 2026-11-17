@@ -303,6 +303,7 @@ model Lar {
   conexoes         ConexaoOpenFinance[]
   alertas          Alerta[]
   vigiaConfigs     VigiaConfig[]
+  saldosMilhas     SaldoMilhas[]
   avisoProativo    AvisoProativo?
   conversas        Conversa[]
   meiPerfil        MeiPerfil?
@@ -557,6 +558,10 @@ model Conta {
   /// Em que classe esta conta entra na carteira. Só faz sentido em conta de
   /// investimento; `null` significa "ainda não classificada", e a tela pede.
   classeDeAtivo       ClasseDeAtivo?
+  /// Renda fixa atrelada ao CDI: 11000 = 110% do CDI. Com isto e as datas das
+  /// aplicações (as transferências para a conta), o Tino calcula o rendimento
+  /// bruto com a taxa diária do Banco Central, sem a pessoa digitar o saldo.
+  percentualCdiBps    Int?
 
   conexaoId      String?
   conexao        ConexaoOpenFinance? @relation(fields: [conexaoId], references: [id])
@@ -2357,4 +2362,33 @@ model ArquivoCompartilhado {
   nome      String
   conteudo  Bytes
   criadoEm  DateTime @default(now())
+}
+
+/// Saldo de pontos ou milhas num programa (Livelo, Smiles...), digitado pela
+/// pessoa. Nenhum programa brasileiro publica API de saldo (estudo de
+/// 16/11/2026), então o Tino guarda o que a pessoa informa e a data em que
+/// informou, e a tela mostra essa data: saldo velho exibido como atual seria
+/// número inventado.
+model SaldoMilhas {
+  id    String @id @default(cuid())
+  larId String
+  lar   Lar    @relation(fields: [larId], references: [id], onDelete: Cascade)
+
+  /// Nome do programa, como em `PROGRAMAS_MILHAS`, ou outro que a pessoa escrever.
+  programa String
+  pontos   Int
+
+  /// O lote que vence primeiro: quantos pontos e quando. Os programas mostram
+  /// isso no extrato; é o que gera o aviso antes de perder.
+  pontosQueVencem Int?
+  venceEm         DateTime?
+
+  /// Quanto a pessoa pagou por estes pontos, quando comprou ou transferiu com
+  /// custo. Serve para o custo por milheiro. Nulo: ganhou sem pagar ou não sabe.
+  custoCentavos Int?
+
+  atualizadoEm DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+
+  @@unique([larId, programa])
 }

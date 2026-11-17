@@ -563,7 +563,7 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
     projecao,
     aposentadoria,
     mei,
-    recorrenciasProximas: recorrencias.slice(0, 10).map((recorrencia) => ({
+    recorrenciasProximas: recorrencias.slice(0, 15).map((recorrencia) => ({
       id: recorrencia.id,
       descricao: recorrencia.descricao,
       valorCentavos: recorrencia.valorCentavos,

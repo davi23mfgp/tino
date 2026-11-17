@@ -20,8 +20,31 @@ const TETO = 5
 
 export interface ContaQueVence { id: string; descricao: string; valorCentavos: number; tipo: string; proximaData: Date }
 
+/// Conta vencida há mais de 30 dias sai do aviso: a essa altura é cadastro
+/// esquecido, e a tela de contas fixas é quem mostra.
+const ATRASO_MAXIMO_DIAS = 30
+
 export function avisosDeVencimento(proximas: ContaQueVence[], hoje: Date) {
-  return proximas
+  // Conta que venceu e não foi marcada como paga (17/11/2026): o aviso de
+  // "vence em 2 dias" ficava parado na lista depois da data, dizendo uma
+  // coisa falsa, e não existia aviso de atraso. O dia não entra na chave: é
+  // um aviso só, com o título acompanhando os dias.
+  const atrasadas = proximas
+    .filter((conta) => conta.tipo === "DESPESA")
+    .map((conta) => ({ conta, dias: -diasEntre(hoje, conta.proximaData) }))
+    .filter(({ dias }) => dias > 0 && dias <= ATRASO_MAXIMO_DIAS)
+    .sort((a, b) => b.dias - a.dias)
+    .slice(0, TETO)
+    .map(({ conta, dias }) => ({
+      tipo: "vencimento_proximo" as const,
+      severidade: "ATENCAO" as const,
+      titulo: `${conta.descricao} venceu há ${dias} dia${dias === 1 ? "" : "s"}`,
+      texto: `${formatarMoeda(conta.valorCentavos)}, em ${formatarData(conta.proximaData)}. Se já pagou, marque como paga.`,
+      acaoRota: `/recorrencias?pagar=${conta.id}`,
+      chave: `vencimento_atrasado:${conta.id}:${formatarData(conta.proximaData)}`,
+    }))
+
+  const aVencer = proximas
     .filter((conta) => conta.tipo === "DESPESA")
     .map((conta) => ({ conta, dias: diasEntre(hoje, conta.proximaData) }))
     .filter(({ dias }) => dias >= 0 && dias <= JANELA_VENCIMENTO_DIAS)
@@ -37,4 +60,6 @@ export function avisosDeVencimento(proximas: ContaQueVence[], hoje: Date) {
       // vem, é um vencimento diferente e merece avisar de novo.
       chave: `vencimento_proximo:${conta.id}:${formatarData(conta.proximaData)}`,
     }))
+
+  return [...atrasadas, ...aVencer]
 }

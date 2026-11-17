@@ -40,6 +40,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
     classeDeAtivo?: string
     bandeira?: string
     quantidadeMilesimos?: number
+    percentualCdiBps?: number
   }>(requisicao)
 
   for(const valor of [dados.saldoInicialCentavos,dados.limiteCentavos,dados.quantidadeMilesimos])if(valor!==undefined&&(!Number.isSafeInteger(valor)||Math.abs(valor)>2147483647))throw new ErroDeUso("Valor inválido.")
@@ -58,6 +59,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
   // Bandeira só existe em cartão de crédito, e só o que o banco de dados aceita.
   const BANDEIRAS = ["VISA","MASTERCARD","ELO","AMERICAN_EXPRESS","HIPERCARD","OUTRA"]
   if(dados.bandeira&&(!BANDEIRAS.includes(dados.bandeira)||dados.tipo!=="CARTAO_CREDITO"))throw new ErroDeUso("Bandeira inválida.")
+  if (dados.percentualCdiBps != null && (!Number.isInteger(dados.percentualCdiBps) || dados.percentualCdiBps < 1 || dados.percentualCdiBps > 30_000 || dados.tipo !== "INVESTIMENTO")) throw new ErroDeUso("Percentual do CDI inválido.")
   const conta = await prisma.conta.create({
     data: {
       larId: sessao.larId,
@@ -73,6 +75,7 @@ export const POST = comSessao(async (sessao, requisicao) => {
       ticker: dados.ticker?.trim().toUpperCase() || null,
       classeDeAtivo: dados.tipo === "INVESTIMENTO" && dados.classeDeAtivo ? (dados.classeDeAtivo as never) : null,
       quantidadeMilesimos: dados.quantidadeMilesimos ?? null,
+      percentualCdiBps: dados.percentualCdiBps ?? null,
       bandeira: (dados.tipo === "CARTAO_CREDITO" && dados.bandeira ? dados.bandeira : null) as never,
     },
   })
