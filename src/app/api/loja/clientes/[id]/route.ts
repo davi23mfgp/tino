@@ -85,16 +85,24 @@ export const PATCH = comSessao<Contexto>(async (sessao, requisicao, contexto) =>
 export const DELETE = comSessao<Contexto>(async (sessao, _requisicao, contexto) => {
   const { id } = await contexto.params
   const { cliente } = await clienteDaLoja(sessao.larId, id)
-  const [vendas, orcamentos, ordens, compromissos] = await Promise.all([
-    prisma.vendaLoja.count({ where: { clienteId: cliente.id } }),
-    prisma.orcamentoLoja.count({ where: { clienteId: cliente.id } }),
-    prisma.ordemServicoLoja.count({ where: { clienteId: cliente.id } }),
-    prisma.compromissoLoja.count({ where: { clienteId: cliente.id } }),
-  ])
-  if (vendas + orcamentos + ordens + compromissos > 0) {
-    await prisma.clienteLoja.update({ where: { id: cliente.id }, data: { arquivado: true } })
-    return ok({ resultado: "arquivado" as const })
-  }
-  await prisma.clienteLoja.delete({ where: { id: cliente.id } })
-  return ok({ resultado: "excluido" as const })
+  // A linha do cliente fica presa (FOR UPDATE) enquanto conta e apaga: um
+  // orçamento ou OS criado no mesmo instante espera, em vez de ser criado
+  // entre a contagem e o apagar e sumir junto (orçamento e OS apagam em
+  // cascata com o cliente; a venda perdia o nome do cliente).
+  const resultado = await prisma.$transaction(async (transacao) => {
+    await transacao.$queryRaw`SELECT id FROM "ClienteLoja" WHERE id = ${cliente.id} FOR UPDATE`
+    const [vendas, orcamentos, ordens, compromissos] = await Promise.all([
+      transacao.vendaLoja.count({ where: { clienteId: cliente.id } }),
+      transacao.orcamentoLoja.count({ where: { clienteId: cliente.id } }),
+      transacao.ordemServicoLoja.count({ where: { clienteId: cliente.id } }),
+      transacao.compromissoLoja.count({ where: { clienteId: cliente.id } }),
+    ])
+    if (vendas + orcamentos + ordens + compromissos > 0) {
+      await transacao.clienteLoja.update({ where: { id: cliente.id }, data: { arquivado: true } })
+      return "arquivado" as const
+    }
+    await transacao.clienteLoja.delete({ where: { id: cliente.id } })
+    return "excluido" as const
+  })
+  return ok({ resultado })
 })

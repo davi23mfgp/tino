@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client"
+
 import { prisma } from "@/lib/prisma"
 import { comSessao, corpo, ok, ErroDeUso, exigir } from "@/lib/api"
 import { hashSenha } from "@/lib/auth"
@@ -39,13 +41,23 @@ export const POST = comSessao(async (sessao, requisicao) => {
   const jaExiste = await prisma.usuario.findUnique({ where: { email }, select: { id: true } })
   if (jaExiste) throw new ErroDeUso("Já existe uma conta com esse e-mail.", 409)
 
-  const membro = await prisma.membro.create({
-    data: { larId: sessao.larId, nome, papel: "FUNCIONARIO_LOJA" },
-  })
-
-  const usuario = await prisma.usuario.create({
-    data: { email, nome, senhaHash: await hashSenha(senha), larId: sessao.larId, membroId: membro.id },
-  })
+  // Membro e usuário juntos: se o segundo falhava (e-mail tomado no mesmo
+  // instante), sobrava um membro "funcionário" sem login. E o e-mail repetido
+  // que escapa da conferência acima vira 409 com a mesma frase, não erro 500.
+  const senhaHash = await hashSenha(senha)
+  let usuario: { id: string; nome: string; email: string }
+  try {
+    usuario = await prisma.$transaction(async (transacao) => {
+      const membro = await transacao.membro.create({ data: { larId: sessao.larId, nome, papel: "FUNCIONARIO_LOJA" } })
+      return transacao.usuario.create({
+        data: { email, nome, senhaHash, larId: sessao.larId, membroId: membro.id },
+        select: { id: true, nome: true, email: true },
+      })
+    })
+  } catch (excecao) {
+    if (excecao instanceof Prisma.PrismaClientKnownRequestError && excecao.code === "P2002") throw new ErroDeUso("Já existe uma conta com esse e-mail.", 409)
+    throw excecao
+  }
 
   return ok({ id: usuario.id, nome: usuario.nome, email: usuario.email }, 201)
 })
