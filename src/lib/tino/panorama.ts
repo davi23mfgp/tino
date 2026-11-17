@@ -41,6 +41,7 @@ export interface Panorama {
     diaInicioMes: number
     estrategiaDivida: "AVALANCHE" | "BOLA_DE_NEVE" | "PROPORCIONAL"
     mesesReserva: number
+    fusoHorario?: string
   }
   competencia: string
   saldoTotalCentavos: number
@@ -506,6 +507,7 @@ export async function montarPanorama(larId: string, competencia = competenciaAtu
       diaInicioMes: lar.diaInicioMes,
       estrategiaDivida: lar.estrategiaDivida as Panorama["lar"]["estrategiaDivida"],
       mesesReserva: lar.mesesReserva,
+      fusoHorario: lar.fusoHorario,
     },
     competencia,
     saldoTotalCentavos,

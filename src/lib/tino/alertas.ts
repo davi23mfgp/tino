@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma"
 import { formatarDecimal, formatarMoeda, textoDeMeses } from "@/lib/dinheiro"
 import { rotuloCompetencia } from "@/lib/datas"
 import { montarPanorama, type Panorama } from "@/lib/tino/panorama"
-import { diasEntre, formatarData } from "@/lib/datas"
+import { diasEntre, formatarData, hojeNoFuso } from "@/lib/datas"
 import { avisosDeVencimento } from "@/lib/tino/avisos-vencimento"
 import { avisosDeCalendario } from "@/lib/tino/avisos-calendario"
 import { comprasRepetidas, fixasQueSubiram } from "@/lib/tino/avisos-de-conferencia"
@@ -240,7 +240,8 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
   }
 
   // ── Contas fixas ──────────────────────────────────────────
-  alertas.push(...avisosDeVencimento(panorama.recorrenciasProximas, new Date()))
+  const hoje = hojeNoFuso(panorama.lar.fusoHorario)
+  alertas.push(...avisosDeVencimento(panorama.recorrenciasProximas, hoje))
 
   // ── Calendário: o que vem pela frente ─────────────────────
   alertas.push(...avisosDeCalendario({
@@ -248,7 +249,7 @@ export function gerarAlertas(panorama: Panorama, desativados: ReadonlySet<string
     das: panorama.mei && panorama.mei.dasDoMesPago === false && panorama.mei.proximoDasEm ? { venceEm: panorama.mei.proximoDasEm } : null,
     dividas: panorama.dividas.lista,
     recorrencias: panorama.recorrenciasProximas.map((r) => ({ ...r, fimEm: r.fimEm ?? null })),
-  }, new Date()))
+  }, hoje))
 
   // ── Higiene dos dados ─────────────────────────────────────
   if (panorama.mes.naoCategorizadas >= 5) {
@@ -347,8 +348,8 @@ export function chavesSuperadas(chaves: string[], competencia: string): string[]
  * de milhas. Ficam fora de `gerarAlertas` para o panorama, que já é a
  * consulta mais pesada do app, não crescer por causa de três avisos.
  */
-async function avisosDeFora(larId: string): Promise<AlertaGerado[]> {
-  const hoje = new Date()
+async function avisosDeFora(larId: string, fusoHorario?: string): Promise<AlertaGerado[]> {
+  const hoje = hojeNoFuso(fusoHorario)
   const [pagamentos, recentes, saldos] = await Promise.all([
     prisma.transacao.findMany({
       where: { larId, tipo: "DESPESA", pago: true, recorrenciaId: { not: null }, data: { gte: new Date(hoje.getTime() - 100 * 86_400_000) } },
@@ -383,7 +384,7 @@ export async function atualizarAlertas(larId: string) {
   ])
   const desativados = new Set(desligados.map((v) => v.tipo))
   const gerados = gerarAlertas(panorama, desativados)
-  gerados.push(...(await avisosDeFora(larId)).filter((aviso) => !desativados.has(aviso.tipo)))
+  gerados.push(...(await avisosDeFora(larId, panorama.lar.fusoHorario)).filter((aviso) => !desativados.has(aviso.tipo)))
 
   // `upsert` por (larId, chave), não `createMany({ skipDuplicates })`.
   //

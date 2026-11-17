@@ -32,3 +32,21 @@ describe("aviso de conta que vence", () => {
     assert.equal(avisosDeVencimento(Array.from({ length: 9 }, (_, i) => conta("c" + i, 1)), hoje).length, 5)
   })
 })
+
+describe("hoje no fuso da pessoa", () => {
+  it("às 22h de Brasília ainda é hoje, não amanhã em UTC", async () => {
+    const { hojeNoFuso } = await import("../src/lib/datas")
+    const noite = new Date("2026-11-18T01:30:00Z") // 17/11, 22h30 em Brasília
+    assert.equal(hojeNoFuso("America/Sao_Paulo", noite).toISOString(), "2026-11-17T00:00:00.000Z")
+    // A conta do dia 18 é "amanhã", não "hoje".
+    const conta18 = { id: "x", descricao: "Luz", valorCentavos: 100, tipo: "DESPESA", proximaData: new Date("2026-11-18T00:00:00Z") }
+    assert.equal(avisosDeVencimento([conta18], hojeNoFuso("America/Sao_Paulo", noite))[0].titulo, "Luz vence em 1 dia")
+  })
+  it("à tarde, a conta de amanhã não vira hoje por arredondamento", async () => {
+    const { hojeNoFuso } = await import("../src/lib/datas")
+    const tarde = new Date("2026-11-17T19:00:00Z") // 16h em Brasília
+    const conta18 = { id: "x", descricao: "Luz", valorCentavos: 100, tipo: "DESPESA", proximaData: new Date("2026-11-18T00:00:00Z") }
+    assert.equal(avisosDeVencimento([conta18], tarde)[0].titulo, "Luz vence hoje") // o defeito, com o relógio cru
+    assert.equal(avisosDeVencimento([conta18], hojeNoFuso("America/Sao_Paulo", tarde))[0].titulo, "Luz vence em 1 dia")
+  })
+})

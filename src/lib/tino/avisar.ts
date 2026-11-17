@@ -23,6 +23,7 @@ import type { SeveridadeAlerta } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
 import { enviarModelo, modeloDeAvisoConfigurado, whatsappDisponivel } from "@/lib/captura/whatsapp"
+import { enviarAviso } from "@/lib/captura/telegram"
 
 /// Ordem de gravidade. O enum do banco não garante ordem, e comparar por
 /// string daria errado em silêncio.
@@ -169,15 +170,19 @@ export async function avisar(larId: string, agora = new Date()): Promise<Resulta
     }
   }
 
+  // Até 17/11/2026 o Telegram caía no envio da Meta: com o WhatsApp
+  // desligado, nenhum aviso do Telegram saía, e a tela dizia "a Meta recusou".
   const entregues: string[] = []
   for (const aviso of avisos) {
-    const foi = await enviarModelo(destino, modelo as string, [aviso.titulo, aviso.texto])
+    const foi = config.canal === "TELEGRAM"
+      ? await enviarAviso(destino, `${aviso.titulo}\n\n${aviso.texto}`)
+      : await enviarModelo(destino, modelo as string, [aviso.titulo, aviso.texto])
     if (!foi) break
     entregues.push(aviso.alertaId)
   }
 
   if (entregues.length === 0) {
-    return { avisos, enviou: false, motivo: "A Meta recusou a mensagem." }
+    return { avisos, enviou: false, motivo: config.canal === "TELEGRAM" ? "O Telegram recusou a mensagem." : "A Meta recusou a mensagem." }
   }
 
   // Marca só o que saiu. Se a entrega parou no meio, o resto continua
